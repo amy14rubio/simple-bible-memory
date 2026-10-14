@@ -3,8 +3,10 @@ import type { Card } from '../../domain/types';
 import type { Rating } from '../../domain/study/rating';
 import { Button } from '../../components/ui';
 import { ActionBar, RatingBar } from './RatingBar';
+import { useI18n } from '../../i18n/I18nProvider';
 
 export function FlashcardMode({ card, intervals, onRate }: { card: Card; intervals?: Record<Rating, string>; onRate: (r: Rating) => void }) {
+  const { t } = useI18n();
   const [revealed, setRevealed] = useState(false);
   return (
     <>
@@ -18,7 +20,7 @@ export function FlashcardMode({ card, intervals, onRate }: { card: Card; interva
         )}
       </div>
       <ActionBar>
-        {revealed ? <RatingBar intervals={intervals} onRate={onRate} /> : <Button className="w-full" onClick={() => setRevealed(true)} autoFocus>Show answer</Button>}
+        {revealed ? <RatingBar intervals={intervals} onRate={onRate} /> : <Button className="w-full" onClick={() => setRevealed(true)} autoFocus>{t('study.showAnswer')}</Button>}
       </ActionBar>
     </>
   );

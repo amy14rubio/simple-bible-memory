@@ -26,6 +26,7 @@ Requires Node 20+.
 - FSRS scheduling (ts-fsrs) with a six-month cap on review gaps, review history, due queue, new-cards-per-day limit; every study session is recorded. **Extra practice** (deck menu) lets you go through every card without affecting your schedule or statistics.
 - Add cards one at a time ("Add another card") or paste a chapter or verse range and **split it into one card per verse** (with a preview first).
 - Rating labels are colored like Anki (Again red, Hard orange, Good green, Easy blue) and so are the new / learning / to-review counters. Only the text is colored, and light mode uses deeper shades so it stays readable.
+- **English and Spanish** interface (Settings > Language; "System" follows your browser). Only the app's own text is translated: verses, passages, references, sources and deck names stay exactly as you typed them.
 - Light/dark/system theme, keyboard shortcuts (1-4 to rate), accessible (every screen is axe-checked in both themes).
 - Design: scripture is set in Literata, the interface in Instrument Sans, with one accent (a deep oxblood).
 - Optional "Find passage on Bible Gateway" link that opens the site in your browser. The app never fetches or copies Bible text.

@@ -48,6 +48,9 @@ const BOOKS: [name: string, aliases: string[]][] = [
   ['Jude', ['jud', 'jd']], ['Revelation', ['revelations', 'rev', 'rv', 'revelation of john']],
 ];
 
+/** Every book's canonical (English) name, in Bible order. */
+export const CANONICAL_BOOKS: string[] = BOOKS.map(([name]) => name);
+
 /** Books with a single chapter: "Jude 3" means verse 3. */
 const SINGLE_CHAPTER = new Set(['Obadiah', 'Philemon', '2 John', '3 John', 'Jude']);
 

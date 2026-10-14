@@ -3,6 +3,7 @@ import { createTestDatabase } from '../../test/db';
 import { createDeckRepository, type DeckRepository } from './deckRepository';
 import { createCardRepository, type CardRepository } from './cardRepository';
 import type { Database } from '../database/Database';
+import { ValidationError } from '../../domain/errors';
 
 let db: Database, decks: DeckRepository, cards: CardRepository, clock: number;
 const card = { reference: 'John 3:16', verseText: 'Example verse text.' };
@@ -12,6 +13,19 @@ beforeEach(async () => {
   clock = 1000;
   decks = createDeckRepository(db, () => clock);
   cards = createCardRepository(db, () => clock);
+});
+
+describe('validation errors carry a code, so the screen can show them in the right language', () => {
+  it('for decks and cards', async () => {
+    const d = await decks.create({ title: 'D' });
+    const code = async (p: Promise<unknown>) => { try { await p; return 'no error'; } catch (e) { return e instanceof ValidationError ? e.code : 'other'; } };
+    expect(await code(decks.create({ title: ' ' }))).toBe('deck-title-required');
+    expect(await code(decks.update(d.id, { title: '' }))).toBe('deck-title-required');
+    expect(await code(cards.create(d.id, { reference: '', verseText: 'x' }))).toBe('reference-required');
+    expect(await code(cards.create(d.id, { reference: 'r', verseText: ' ' }))).toBe('verse-text-required');
+    expect(await code(cards.createMany(d.id, [{ reference: 'r', verseText: '' }]))).toBe('verse-text-required');
+    expect(await code(cards.update('x', { reference: ' ', verseText: 'v' }))).toBe('reference-required');
+  });
 });
 
 describe('decks', () => {

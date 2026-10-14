@@ -4,8 +4,8 @@ import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, Button, ButtonLink, EmptyState, ErrorMessage, Page } from '../../components/ui';
 import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
-import { RATING_LABELS, type Rating } from '../../domain/study/rating';
-import { formatInterval } from '../../domain/scheduling/format';
+import type { Rating } from '../../domain/study/rating';
+import { useI18n } from '../../i18n/I18nProvider';
 import { CardState } from '../../domain/scheduling/scheduler';
 import type { QueueEntry } from '../../data/repositories/reviewRepository';
 import { FlashcardMode } from './FlashcardMode';
@@ -20,6 +20,8 @@ type Mode = 'flashcard' | 'type' | 'blanks';
 /** A card rated Again/Hard in learning comes due within minutes: show it again later in this session. */
 const REQUEUE_WITHIN_MS = 20 * 60_000;
 
+const RATING_KEYS = { 1: 'rating.again', 2: 'rating.hard', 3: 'rating.good', 4: 'rating.easy' } as const;
+
 const shuffle = <T,>(items: T[]): T[] => {
   const a = [...items];
   for (let i = a.length - 1; i > 0; i--) {
@@ -30,6 +32,7 @@ const shuffle = <T,>(items: T[]): T[] => {
 };
 
 export function StudySessionPage() {
+  const { t } = useI18n();
   const { id = '', mode = '' } = useParams();
   const extraPractice = useSearchParams()[0].get('practice') === '1';
   const { decks, cards, reviews, settings } = useRepositories();
@@ -50,16 +53,16 @@ export function StudySessionPage() {
     },
     [id, extraPractice, decks, cards, reviews, settings],
   );
-  const exit = <BackButton to={`/decks/${id}`} label="Exit study" />;
+  const exit = <BackButton to={`/decks/${id}`} label={t('study.exit')} />;
   if (loading || !data) return null;
-  if (!data.deck) return <><AppBar back={exit} /><Page><ErrorMessage error="This deck no longer exists." /></Page></>;
-  if (!['flashcard', 'type', 'blanks'].includes(mode)) return <><AppBar back={exit} /><Page><ErrorMessage error="Unknown study mode." /></Page></>;
+  if (!data.deck) return <><AppBar back={exit} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;
+  if (!['flashcard', 'type', 'blanks'].includes(mode)) return <><AppBar back={exit} /><Page><ErrorMessage error={t('error.unknownMode')} /></Page></>;
   if (data.queue.length === 0) {
     return (
       <>
         <AppBar back={exit} />
-        <EmptyState title="Nothing due right now" action={<ButtonLink to={`/decks/${id}`} variant="secondary">Back to deck</ButtonLink>}>
-          You're all caught up for now.
+        <EmptyState title={t('study.nothingDue')} action={<ButtonLink to={`/decks/${id}`} variant="secondary">{t('common.backToDeck')}</ButtonLink>}>
+          {t('study.caughtUp')}
         </EmptyState>
       </>
     );
@@ -70,6 +73,7 @@ export function StudySessionPage() {
 function Session({ deckId, mode, extraPractice, references, passages, initialQueue, initialDifficulty, seed }: {
   deckId: string; mode: Mode; extraPractice: boolean; references: string[]; passages: string[]; initialQueue: QueueEntry[]; initialDifficulty: Difficulty; seed: string;
 }) {
+  const { t, formatInterval, describeError } = useI18n();
   const { reviews, scheduler } = useRepositories();
   const [queue, setQueue] = useState(initialQueue);
   const [index, setIndex] = useState(0);
@@ -85,7 +89,7 @@ function Session({ deckId, mode, extraPractice, references, passages, initialQue
     const now = Date.now();
     const due = scheduler.preview(entry.schedule, now);
     return { 1: formatInterval(due[1] - now), 2: formatInterval(due[2] - now), 3: formatInterval(due[3] - now), 4: formatInterval(due[4] - now) } as Record<Rating, string>;
-  }, [entry, extraPractice, scheduler]);
+  }, [entry, extraPractice, scheduler, formatInterval]);
 
   // Anki-style counters: new / learning / to review, for the cards still ahead (the current one is underlined).
   const remaining = useMemo(() => {
@@ -111,13 +115,13 @@ function Session({ deckId, mode, extraPractice, references, passages, initialQue
       setTally((t) => ({ ...t, [r]: t[r] + 1 }));
       setIndex((i) => i + 1);
     } catch (e) {
-      setError(`Could not save your rating: ${e instanceof Error ? e.message : String(e)}`);
+      setError(t('study.saveFailed', { message: describeError(e) }));
     } finally {
       busy.current = false;
     }
-  }, [entry, extraPractice, reviews, mode]);
+  }, [entry, extraPractice, reviews, mode, t, describeError]);
 
-  const exit = <BackButton to={`/decks/${deckId}`} label="Exit study" />;
+  const exit = <BackButton to={`/decks/${deckId}`} label={t('study.exit')} />;
 
   if (!entry) {
     const reviewed = tally[1] + tally[2] + tally[3] + tally[4];
@@ -125,18 +129,15 @@ function Session({ deckId, mode, extraPractice, references, passages, initialQue
       <div className="relative">
         <AppBar back={exit} />
         <div className="space-y-6 px-5 py-20 text-center">
-          <h1 className="font-serif text-3xl font-medium tracking-tight">Session complete</h1>
+          <h1 className="font-serif text-3xl font-medium tracking-tight">{t('study.complete')}</h1>
           <p className="text-muted">
-            {reviewed} {reviewed === 1 ? 'review' : 'reviews'}:{' '}
-            {([1, 2, 3, 4] as Rating[]).map((r) => `${tally[r]} ${RATING_LABELS[r]}`).join(', ')}.
+            {t('study.summary', { count: reviewed, detail: ([1, 2, 3, 4] as Rating[]).map((r) => `${tally[r]} ${t(RATING_KEYS[r])}`).join(', ') })}
           </p>
-          <p className="text-sm text-muted">
-            {extraPractice ? "Extra practice only: your schedule and statistics were not changed." : 'Your reviews were saved and your schedule updated.'}
-          </p>
+          <p className="text-sm text-muted">{extraPractice ? t('study.extraDone') : t('study.saved')}</p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
-            <Link to={`/decks/${deckId}/cards`} className="inline-flex min-h-12 items-center rounded-lg border border-border px-5 text-[0.9375rem] font-medium hover:bg-surface">Browse cards</Link>
-            {extraPractice && <Button variant="secondary" onClick={() => { setIndex(0); setTally({ 1: 0, 2: 0, 3: 0, 4: 0 }); setQueue(shuffle(initialQueue)); }}>Practice again</Button>}
-            <ButtonLink to={`/decks/${deckId}`}>Back to deck</ButtonLink>
+            <Link to={`/decks/${deckId}/cards`} className="inline-flex min-h-12 items-center rounded-lg border border-border px-5 text-[0.9375rem] font-medium hover:bg-surface">{t('study.browse')}</Link>
+            {extraPractice && <Button variant="secondary" onClick={() => { setIndex(0); setTally({ 1: 0, 2: 0, 3: 0, 4: 0 }); setQueue(shuffle(initialQueue)); }}>{t('study.practiceAgain')}</Button>}
+            <ButtonLink to={`/decks/${deckId}`}>{t('common.backToDeck')}</ButtonLink>
           </div>
         </div>
       </div>
@@ -154,15 +155,15 @@ function Session({ deckId, mode, extraPractice, references, passages, initialQue
   return (
     <div className="relative flex min-h-dvh flex-col">
       {/* Not drawn, but screen readers can still read how far through the session you are. */}
-      <progress className="sr-only" max={queue.length} value={index} aria-label="Session progress" />
+      <progress className="sr-only" max={queue.length} value={index} aria-label={t('study.progress')} />
       <AppBar back={exit} />
       <div className="flex flex-1 flex-col px-5">
-        <ul aria-label="Cards remaining" className="flex gap-3 pt-3 text-sm font-normal">
-          {counter('new', 'New')}
-          {counter('learning', 'Learning')}
-          {counter('review', 'To review')}
+        <ul aria-label={t('study.remaining')} className="flex gap-3 pt-3 text-sm font-normal">
+          {counter('new', t('study.counterNew'))}
+          {counter('learning', t('study.counterLearning'))}
+          {counter('review', t('study.counterReview'))}
         </ul>
-        {extraPractice && <p className="pt-2 text-sm text-muted">Extra practice: your schedule and statistics won't change.</p>}
+        {extraPractice && <p className="pt-2 text-sm text-muted">{t('study.extraBanner')}</p>}
         {error && <div className="pt-3"><ErrorMessage error={error} /></div>}
         {entry.kind === 'recall' ? (
           <>

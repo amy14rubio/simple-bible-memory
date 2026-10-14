@@ -1,6 +1,5 @@
 /** Recall rating, using FSRS's four grades. The scheduler (Phase 5) maps these to its own enum. */
 export type Rating = 1 | 2 | 3 | 4;
-export const RATING_LABELS: Record<Rating, string> = { 1: 'Again', 2: 'Hard', 3: 'Good', 4: 'Easy' };
 
 /**
  * Deliberate, simple mapping from an automatic score to a SUGGESTED rating.

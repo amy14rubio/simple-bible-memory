@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { openAppDatabase, type Database } from '../data/database';
+import { currentLanguage, translate } from '../i18n';
 
 const DatabaseContext = createContext<Database | null>(null);
 
@@ -16,8 +17,10 @@ export function DatabaseProvider({ children }: { children: (db: Database) => Rea
     return () => { cancelled = true; };
   }, []);
 
-  if (error) return <p role="alert" className="p-6 text-danger">Could not open the local database: {error.message}</p>;
-  if (!db) return <p className="p-6 text-muted">Opening your library…</p>;
+  // Outside the language provider (it needs the database), so this reads the saved language choice directly.
+  const language = currentLanguage();
+  if (error) return <p role="alert" className="p-6 text-danger">{translate(language, 'db.failed', { message: error.message })}</p>;
+  if (!db) return <p className="p-6 text-muted">{translate(language, 'db.opening')}</p>;
   return <DatabaseContext value={db}>{children(db)}</DatabaseContext>;
 }
 

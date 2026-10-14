@@ -4,6 +4,7 @@ import { Check } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, ErrorMessage, FormRow, IconButton, Page, rowInput } from '../../components/ui';
+import { useI18n } from '../../i18n/I18nProvider';
 
 /** One form for both "New deck" (/decks/new) and "Rename deck" (/decks/:id/edit). */
 export function DeckFormPage() {
@@ -15,33 +16,34 @@ export function DeckFormPage() {
 }
 
 function DeckForm({ id, initialTitle, initialDescription, notFound }: { id?: string; initialTitle: string; initialDescription: string; notFound: boolean }) {
+  const { t, describeError } = useI18n();
   const { decks } = useRepositories();
   const navigate = useNavigate();
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(initialDescription);
   const [error, setError] = useState<string>();
 
-  if (notFound) return <><AppBar back={<BackButton to="/" label="Back to decks" />} /><Page><ErrorMessage error="This deck no longer exists." /></Page></>;
+  if (notFound) return <><AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     try {
       if (id) { await decks.update(id, { title, description }); navigate(`/decks/${id}`, { replace: true }); }
       else { const d = await decks.create({ title, description }); navigate(`/decks/${d.id}`, { replace: true }); }
-    } catch (err) { setError(err instanceof Error ? err.message : String(err)); }
+    } catch (err) { setError(describeError(err)); }
   };
 
   return (
     <form id="deck-form" onSubmit={submit}>
       <AppBar
-        title={id ? 'Rename deck' : 'New deck'}
-        back={<BackButton label="Cancel" />}
-        actions={<IconButton type="submit" label="Save"><Check size={22} aria-hidden /></IconButton>}
+        title={id ? t('deckForm.rename') : t('deckForm.new')}
+        back={<BackButton label={t('common.cancel')} />}
+        actions={<IconButton type="submit" label={t('common.save')}><Check size={22} aria-hidden /></IconButton>}
       />
       <Page className="space-y-4 pt-2">
         {error && <ErrorMessage error={error} />}
-        <FormRow label="Title">{(fid) => <input id={fid} className={rowInput} value={title} onChange={(e) => setTitle(e.target.value)} autoFocus placeholder="For example, Commute verses" />}</FormRow>
-        <FormRow label="Description">{(fid) => <input id={fid} className={rowInput} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional" />}</FormRow>
+        <FormRow label={t('deckForm.title')}>{(fid) => <input id={fid} className={rowInput} value={title} onChange={(e) => setTitle(e.target.value)} autoFocus placeholder={t('deckForm.titlePlaceholder')} />}</FormRow>
+        <FormRow label={t('deckForm.description')}>{(fid) => <input id={fid} className={rowInput} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('common.optional')} />}</FormRow>
       </Page>
     </form>
   );

@@ -3,6 +3,7 @@ import type { Card } from '../../domain/types';
 import { buildWordBank, checkCloze, generateCloze, hashSeed, isCorrectWord, wordsOf, type BankWord, type Difficulty } from '../../domain/study/cloze';
 import type { Rating } from '../../domain/study/rating';
 import { ActionBar, RatingBar } from './RatingBar';
+import { useI18n } from '../../i18n/I18nProvider';
 
 /**
  * Fill in the blanks with a word bank. Blanks are filled one at a time, in order: the current blank is highlighted
@@ -13,6 +14,7 @@ import { ActionBar, RatingBar } from './RatingBar';
 export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, intervals, onRate }: {
   card: Card; sessionSeed: string; difficulty: Difficulty; deckPassages: string[]; intervals?: Record<Rating, string>; onRate: (r: Rating) => void;
 }) {
+  const { t } = useI18n();
   // Blanks and bank are generated on the fly: same card + difficulty + session => same exercise, nothing stored.
   const seed = `${sessionSeed}:${card.id}:${difficulty}`;
   const segments = useMemo(() => generateCloze(card.verseText, difficulty, hashSeed(seed)), [card.verseText, difficulty, seed]);
@@ -29,7 +31,7 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
   const tap = (word: BankWord) => {
     const answer = blanks[step]!.answer;
     setPicked((p) => [...p, word.text]);
-    setAnnouncement(isCorrectWord(word.text, answer) ? `Correct: ${answer}` : `Not quite: the word was ${answer}`);
+    setAnnouncement(isCorrectWord(word.text, answer) ? t('blanks.correct', { answer }) : t('blanks.wrong', { answer }));
   };
 
   const result = done ? checkCloze(segments, picked) : null;
@@ -47,22 +49,22 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
                 <span key={i}>{s.answer}</span>
               ) : (
                 <span key={i} className="font-semibold text-again underline decoration-2 underline-offset-4">
-                  {s.answer}<span className="sr-only"> (you chose {picked[s.id]})</span>
+                  {s.answer}<span className="sr-only">{t('blanks.youChose', { word: picked[s.id] ?? '' })}</span>
                 </span>
               );
             }
             return s.id === step ? (
               <span key={i} aria-current="step" style={width} className="mx-0.5 inline-block rounded-md border-2 border-foreground bg-surface align-baseline">
-                &nbsp;<span className="sr-only">Blank {s.id + 1}, the one to fill in now</span>
+                &nbsp;<span className="sr-only">{t('blanks.current', { n: s.id + 1 })}</span>
               </span>
             ) : (
               <span key={i} style={width} className="mx-0.5 inline-block border-b-2 border-dashed border-muted align-baseline">
-                &nbsp;<span className="sr-only">Blank {s.id + 1}</span>
+                &nbsp;<span className="sr-only">{t('blanks.blank', { n: s.id + 1 })}</span>
               </span>
             );
           })}
         </p>
-        {result && <p className="text-center text-sm text-muted">{result.correctCount} of {result.total} correct.</p>}
+        {result && <p className="text-center text-sm text-muted">{t('blanks.score', { correct: result.correctCount, total: result.total })}</p>}
         <p role="status" className="sr-only">{announcement}</p>
       </div>
 
@@ -71,8 +73,8 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
           <RatingBar suggested={result.suggestedRating} intervals={intervals} onRate={onRate} />
         ) : (
           <>
-            <p className="text-center text-sm text-muted">Tap the word that goes in the highlighted blank.</p>
-            <div role="group" aria-label="Word bank" className="flex max-h-[40dvh] flex-wrap justify-center gap-2 overflow-y-auto">
+            <p className="text-center text-sm text-muted">{t('blanks.prompt')}</p>
+            <div role="group" aria-label={t('blanks.bank')} className="flex max-h-[40dvh] flex-wrap justify-center gap-2 overflow-y-auto">
               {bank.map((w) => (
                 <button
                   key={w.id}

@@ -7,8 +7,10 @@ import { AppBar, ButtonLink, EmptyState, ErrorMessage, IconButton, IconLink } fr
 import { DeckMenu } from './DeckMenu';
 import { loadCardKinds } from '../study/cardKinds';
 import { loadNewPerDay } from '../study/newPerDay';
+import { useI18n } from '../../i18n/I18nProvider';
 
 export function DecksPage() {
+  const { t } = useI18n();
   const { decks, reviews, settings } = useRepositories();
   const { data, error, loading, reload } = useAsync(async () => {
     const list = await decks.list();
@@ -25,36 +27,36 @@ export function DecksPage() {
   return (
     <>
       <AppBar
-        title="Simple Bible Memory"
+        title={t('app.name')}
         actions={
           <>
-            <IconButton label={searching ? 'Close search' : 'Search decks'} aria-pressed={searching} onClick={() => { setSearching((s) => !s); setQuery(''); }}>
+            <IconButton label={searching ? t('decks.searchClose') : t('decks.search')} aria-pressed={searching} onClick={() => { setSearching((s) => !s); setQuery(''); }}>
               {searching ? <X size={20} aria-hidden /> : <Search size={20} aria-hidden />}
             </IconButton>
-            <IconLink to="/settings" label="Settings"><Settings size={20} aria-hidden /></IconLink>
+            <IconLink to="/settings" label={t('common.settings')}><Settings size={20} aria-hidden /></IconLink>
           </>
         }
       />
       {searching && (
         <div className="border-b border-border px-5 py-2">
           <input
-            aria-label="Search decks"
+            aria-label={t('decks.search')}
             type="search"
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search decks"
+            placeholder={t('decks.search')}
             className="w-full bg-transparent py-2 text-base placeholder:text-muted"
           />
         </div>
       )}
       {error && <div className="p-5"><ErrorMessage error={error} /></div>}
       {!loading && data?.length === 0 && (
-        <EmptyState title="No decks yet" action={<ButtonLink to="/decks/new">Create your first deck</ButtonLink>}>
-          A deck holds the verses you want to memorize.
+        <EmptyState title={t('decks.emptyTitle')} action={<ButtonLink to="/decks/new">{t('decks.emptyAction')}</ButtonLink>}>
+          {t('decks.emptyBody')}
         </EmptyState>
       )}
-      {shown && data && data.length > 0 && shown.length === 0 && <p className="px-5 py-10 text-center text-muted">No decks match "{query}".</p>}
+      {shown && data && data.length > 0 && shown.length === 0 && <p className="px-5 py-10 text-center text-muted">{t('decks.noMatch', { query })}</p>}
       <ul>
         {shown?.map((d) => (
           <li key={d.id} className="flex items-center border-b border-border pr-2">
@@ -62,10 +64,10 @@ export function DecksPage() {
               <span className="truncate font-serif text-lg">{d.title}</span>
               <span className={`shrink-0 text-sm tabular-nums ${d.due > 0 ? 'font-semibold' : 'text-muted'}`}>
                 {d.due}
-                <span className="sr-only"> due</span>{/* the screen shows just the number; screen readers also hear what it counts */}
+                <span className="sr-only"> {t('decks.dueSuffix')}</span>{/* the screen shows just the number; screen readers also hear what it counts */}
               </span>
             </Link>
-            <IconButton label={`Actions for ${d.title}`} onClick={() => setMenuFor(d)}><Ellipsis size={20} aria-hidden /></IconButton>
+            <IconButton label={t('decks.actionsFor', { title: d.title })} onClick={() => setMenuFor(d)}><Ellipsis size={20} aria-hidden /></IconButton>
           </li>
         ))}
       </ul>

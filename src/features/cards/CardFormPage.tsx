@@ -7,11 +7,13 @@ import { AppBar, BackButton, Button, ButtonLink, ConfirmDialog, EmptyState, Erro
 import type { Card, DeckSummary } from '../../domain/types';
 import { canSplit, splitPassage, type SplitResult } from '../../domain/bible/split';
 import { loadCardKinds } from '../study/cardKinds';
+import { useI18n } from '../../i18n/I18nProvider';
 import { BibleGatewayHelper } from './BibleGatewayHelper';
 import { SplitDialog } from './SplitDialog';
 
 /** "Add card" (/cards/new?deck=ID) and "Edit card" (/cards/:id/edit). */
 export function CardFormPage() {
+  const { t } = useI18n();
   const { id } = useParams();
   const [params] = useSearchParams();
   const { decks, cards, settings } = useRepositories();
@@ -20,13 +22,13 @@ export function CardFormPage() {
     [id, decks, cards, settings],
   );
   if (loading || !data) return null;
-  const back = <BackButton label="Back" />;
-  if (id && !data.card) return <><AppBar back={back} /><Page><ErrorMessage error="This card no longer exists." /></Page></>;
+  const back = <BackButton label={t('common.back')} />;
+  if (id && !data.card) return <><AppBar back={back} /><Page><ErrorMessage error={t('error.cardGone')} /></Page></>;
   if (!id && data.decks.length === 0) {
     return (
       <>
-        <AppBar title="Add card" back={back} />
-        <EmptyState title="Create a deck first" action={<ButtonLink to="/decks/new">New deck</ButtonLink>}>Cards live inside decks.</EmptyState>
+        <AppBar title={t('cardForm.add')} back={back} />
+        <EmptyState title={t('cardForm.createDeckFirst')} action={<ButtonLink to="/decks/new">{t('common.newDeck')}</ButtonLink>}>{t('cardForm.cardsLiveInDecks')}</EmptyState>
       </>
     );
   }
@@ -34,6 +36,7 @@ export function CardFormPage() {
 }
 
 function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: { card?: Card; decks: DeckSummary[]; initialDeckId: string; studyCardsPerVerse: number }) {
+  const { t, describeError } = useI18n();
   const { cards } = useRepositories();
   const navigate = useNavigate();
   const [deckId, setDeckId] = useState(deckList.some((d) => d.id === initialDeckId) ? initialDeckId : deckList[0]!.id);
@@ -55,7 +58,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
       else await cards.create(deckId, { reference, verseText, note });
       if (card) navigate(-1);
       else navigate(`/decks/${deckId}/cards`, { replace: true });
-    } catch (err) { setError(err instanceof Error ? err.message : String(err)); }
+    } catch (err) { setError(describeError(err)); }
   };
 
   /** Saves this card, then clears the verse and passage so the next one can be typed straight away. */
@@ -63,11 +66,11 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
     try {
       const saved = await cards.create(deckId, { reference, verseText, note });
       setError(undefined);
-      setStatus(`Saved ${saved.reference}. Add the next one.`);
+      setStatus(t('cardForm.saved', { reference: saved.reference }));
       setReference('');
       setVerseText('');
       referenceInput.current?.focus();
-    } catch (err) { setStatus(undefined); setError(err instanceof Error ? err.message : String(err)); }
+    } catch (err) { setStatus(undefined); setError(describeError(err)); }
   };
 
   const confirmSplit = async () => {
@@ -78,29 +81,29 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
       await cards.createMany(deckId, split.verses.map((v) => ({ reference: v.reference, verseText: v.text, note })));
       navigate(`/decks/${deckId}/cards`, { replace: true });
     } catch (err) {
-      setSplitError(err instanceof Error ? err.message : String(err));
+      setSplitError(describeError(err));
       setSplitBusy(false);
     }
   };
 
   const remove = async () => {
     try { await cards.delete(card!.id); navigate(-1); }
-    catch (err) { setConfirming(false); setError(err instanceof Error ? err.message : String(err)); }
+    catch (err) { setConfirming(false); setError(describeError(err)); }
   };
 
   return (
     <form id="card-form" onSubmit={submit}>
       <AppBar
-        title={card ? 'Edit card' : 'Add card'}
-        back={<BackButton label="Cancel" />}
-        actions={<IconButton type="submit" label="Save"><Check size={22} aria-hidden /></IconButton>}
+        title={card ? t('cardForm.edit') : t('cardForm.add')}
+        back={<BackButton label={t('common.cancel')} />}
+        actions={<IconButton type="submit" label={t('common.save')}><Check size={22} aria-hidden /></IconButton>}
       />
       <Page className="space-y-5 pt-2">
         {error && <ErrorMessage error={error} />}
         {status && <p role="status" className="text-sm font-medium">{status}</p>}
         <div>
           {!card && (
-            <FormRow label="Deck">
+            <FormRow label={t('cardForm.deck')}>
               {(fid) => (
                 <select id={fid} className={`${rowInput} font-medium`} value={deckId} onChange={(e) => setDeckId(e.target.value)}>
                   {deckList.map((d) => <option key={d.id} value={d.id}>{d.title}</option>)}
@@ -108,13 +111,13 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
               )}
             </FormRow>
           )}
-          <FormRow label="Verse(s)">{(fid) => <input id={fid} ref={referenceInput} className={rowInput} value={reference} onChange={(e) => { setReference(e.target.value); setStatus(undefined); }} placeholder="John 3:16" autoFocus={!card} />}</FormRow>
-          <FormRow label="Source">{(fid) => <input id={fid} className={rowInput} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional, such as the translation" />}</FormRow>
+          <FormRow label={t('cardForm.verses')}>{(fid) => <input id={fid} ref={referenceInput} className={rowInput} value={reference} onChange={(e) => { setReference(e.target.value); setStatus(undefined); }} placeholder={t('cardForm.versesPlaceholder')} autoFocus={!card} />}</FormRow>
+          <FormRow label={t('cardForm.source')}>{(fid) => <input id={fid} className={rowInput} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('cardForm.sourcePlaceholder')} />}</FormRow>
         </div>
 
         <div className="space-y-2">
           <div className="flex min-h-11 items-center justify-between gap-3">
-            <label htmlFor="passage" className="text-[0.9375rem] font-medium">Passage</label>
+            <label htmlFor="passage" className="text-[0.9375rem] font-medium">{t('cardForm.passage')}</label>
             <BibleGatewayHelper reference={reference} />
           </div>
           <textarea
@@ -122,35 +125,33 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
             className="scripture min-h-56 w-full rounded-lg border border-border bg-surface px-4 py-3.5 text-lg placeholder:text-muted"
             value={verseText}
             onChange={(e) => setVerseText(e.target.value)}
-            placeholder="Type or paste the passage"
+            placeholder={t('cardForm.passagePlaceholder')}
           />
           {!card && (
             <>
               <div className="flex flex-wrap gap-3 pt-1">
-                <Button variant="secondary" onClick={addAnother}>Add another card</Button>
+                <Button variant="secondary" onClick={addAnother}>{t('cardForm.addAnother')}</Button>
                 <Button variant="secondary" onClick={() => { setSplitError(undefined); setSplit(splitPassage(reference, verseText)); }} disabled={!canSplit(reference) || !verseText.trim()}>
-                  Split into separate verses
+                  {t('cardForm.split')}
                 </Button>
               </div>
-              <p className="text-sm text-muted">
-                To split, enter a chapter or several verses, such as Psalm 130 or Psalm 130:1-2, and paste the passage with its verse numbers.
-              </p>
+              <p className="text-sm text-muted">{t('cardForm.splitHint')}</p>
             </>
           )}
         </div>
 
         {card && (
           <div className="border-t border-border pt-5">
-            <Button variant="danger" onClick={() => setConfirming(true)}>Delete card</Button>
+            <Button variant="danger" onClick={() => setConfirming(true)}>{t('cardForm.delete')}</Button>
           </div>
         )}
       </Page>
       <SplitDialog result={split} studyCardsPerVerse={studyCardsPerVerse} busy={splitBusy} error={splitError} onCancel={() => setSplit(null)} onConfirm={confirmSplit} />
       <ConfirmDialog
         open={confirming}
-        title="Delete this card?"
-        message={`${card?.reference ?? 'This card'} and its review history will be permanently deleted.`}
-        confirmLabel="Delete card"
+        title={t('cardForm.deleteTitle')}
+        message={t('cardForm.deleteBody', { reference: card?.reference ?? t('cardForm.thisCard') })}
+        confirmLabel={t('cardForm.delete')}
         onConfirm={remove}
         onCancel={() => setConfirming(false)}
       />

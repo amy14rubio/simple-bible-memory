@@ -15,6 +15,20 @@ src/
 
 Rules: screens call repositories; only `data/repositories` writes SQL; only `data/database` imports a SQLite driver; only `domain/scheduling/scheduler.ts` imports ts-fsrs.
 
+## Interface language (i18n)
+
+The interface language is separate from the Bible text: a deck's verses are whatever translation the learner typed or pasted, and are never translated. Only text the app itself writes is.
+
+- `src/i18n/messages.en.ts` is the source of truth: flat keys, `{placeholders}`, and `{ one, other }` for words that change with a number. `messages.es.ts` is typed `Dictionary`, so the compiler fails if a key is missing, and `i18n.test.ts` checks the placeholders and plural shapes match and that nothing was left untranslated.
+- No library: `translate()` fills placeholders, picks singular/plural with `Intl.PluralRules`, and writes numbers the way the language does (`1,1 años`). `I18nProvider` / `useI18n()` give screens `t()`, `formatInterval()`, `bookName()` and `describeError()`.
+- The setting is `language` in the `settings` table: `system` (default: the browser's first supported language, else English), `en` or `es`. A small localStorage cache (and an inline script in `index.html`) applies it before first paint, like the theme. `<html lang>` and the page title follow it.
+- Things that are not plain text were made language-aware: interval labels (`10m` / `10 min`, `6mo` / `6 meses`), book names in Statistics (Psalm / Salmos), rating labels, and error messages. Validation errors and split failures carry a **code** (`ValidationError.code`, `SplitResult.code`), and the screen turns the code into text, so the domain and data layers stay language-free.
+- Outside the provider (the crash screen and the database loading screen) text is read with `currentLanguage()`.
+
+**To add a language** (say French): copy `messages.es.ts` to `messages.fr.ts` and translate it; add `{ code: 'fr', name: 'Français' }` to `LANGUAGES` and the dictionary to `dictionaries` in `src/i18n/index.ts` (and `"fr"` to the `supported` list in `index.html`); optionally add book names like `books.es.ts`. Type-checking and the tests list anything missing.
+
+Not translated on purpose: verse text, references, deck names, the Bible Gateway link (it always searches with the English book name), and technical database error messages.
+
 ## Screens and design
 
 Routes (HashRouter): `/` decks home (only screen with the bottom bar; shows how many cards are due per deck) · `/decks/new` · `/decks/:id` open-deck view (study tiles + card counts) · `/decks/:id/cards` card browse · `/decks/:id/edit` · `/decks/:id/study/:mode` · `/cards/new` · `/cards/:id/edit` · `/stats` · `/settings`.
