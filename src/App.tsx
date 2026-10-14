@@ -2,6 +2,7 @@ import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom
 import { DatabaseProvider } from './app/DatabaseProvider';
 import { RepositoriesProvider } from './app/repositories';
 import { ThemeProvider } from './app/theme';
+import { I18nProvider, useI18n } from './i18n/I18nProvider';
 import { AppShell } from './app/AppShell';
 import { DecksPage } from './features/decks/DecksPage';
 import { DeckHomePage } from './features/decks/DeckHomePage';
@@ -11,6 +12,11 @@ import { CardFormPage } from './features/cards/CardFormPage';
 import { StatisticsPage } from './features/stats/StatisticsPage';
 import { StudySessionPage } from './features/study/StudySessionPage';
 import { SettingsPage } from './features/settings/SettingsPage';
+
+function NotFound() {
+  const { t } = useI18n();
+  return <p className="px-5 py-10 text-muted">{t('error.pageNotFound')}</p>;
+}
 
 /** Old links to /decks/:id/study now land on the open-deck screen. */
 function StudyRedirect() {
@@ -25,6 +31,7 @@ export default function App() {
       {(db) => (
         <RepositoriesProvider db={db}>
           {({ settings }) => (
+            <I18nProvider settings={settings}>
             <ThemeProvider settings={settings}>
               <HashRouter>
                 <Routes>
@@ -40,11 +47,12 @@ export default function App() {
                     <Route path="cards/:id/edit" element={<CardFormPage />} />
                     <Route path="stats" element={<StatisticsPage />} />
                     <Route path="settings" element={<SettingsPage />} />
-                    <Route path="*" element={<p className="px-5 py-10 text-muted">Page not found.</p>} />
+                    <Route path="*" element={<NotFound />} />
                   </Route>
                 </Routes>
               </HashRouter>
             </ThemeProvider>
+            </I18nProvider>
           )}
         </RepositoriesProvider>
       )}

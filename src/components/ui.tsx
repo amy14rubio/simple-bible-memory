@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronLeft } from 'lucide-react';
+import { useI18n } from '../i18n/I18nProvider';
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
 const variants: Record<Variant, string> = {
@@ -44,12 +45,14 @@ export function IconLink({ to, label, children }: { to: string; label: string; c
 }
 
 /** Back arrow. With no `to` it goes back one step in history. */
-export function BackButton({ to, label = 'Back' }: { to?: string; label?: string }) {
+export function BackButton({ to, label }: { to?: string; label?: string }) {
   const navigate = useNavigate();
+  const { t } = useI18n();
+  const text = label ?? t('common.back');
   return to ? (
-    <IconLink to={to} label={label}><ChevronLeft size={22} aria-hidden /></IconLink>
+    <IconLink to={to} label={text}><ChevronLeft size={22} aria-hidden /></IconLink>
   ) : (
-    <IconButton label={label} onClick={() => navigate(-1)}><ChevronLeft size={22} aria-hidden /></IconButton>
+    <IconButton label={text} onClick={() => navigate(-1)}><ChevronLeft size={22} aria-hidden /></IconButton>
   );
 }
 
@@ -125,9 +128,10 @@ export function EmptyState({ title, children, action }: { title: string; childre
 }
 
 export function ErrorMessage({ error }: { error: Error | string }) {
+  const { describeError } = useI18n();
   return (
     <p role="alert" className="rounded-lg border border-danger p-3.5 text-danger">
-      {typeof error === 'string' ? error : error.message}
+      {typeof error === 'string' ? error : describeError(error)}
     </p>
   );
 }
@@ -158,11 +162,12 @@ export function Dialog({ open, onClose, title, children }: { open: boolean; onCl
 export function ConfirmDialog({ open, title, message, confirmLabel, onConfirm, onCancel }: {
   open: boolean; title: string; message: string; confirmLabel: string; onConfirm: () => void; onCancel: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <Dialog open={open} onClose={onCancel} title={title}>
       <p className="mb-6 text-muted">{message}</p>
       <div className="flex justify-end gap-3">
-        <Button variant="secondary" onClick={onCancel}>Cancel</Button>
+        <Button variant="secondary" onClick={onCancel}>{t('common.cancel')}</Button>
         <Button variant="danger" onClick={onConfirm}>{confirmLabel}</Button>
       </div>
     </Dialog>

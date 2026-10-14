@@ -111,6 +111,17 @@ describe('splitPassage: other ways verse numbers appear', () => {
   });
 });
 
+describe('splitPassage: problems come with a code, so they can be shown in any language', () => {
+  const code = (ref: string, text: string) => { const r = splitPassage(ref, text); return r.ok ? 'ok' : { code: r.code, verse: r.verse }; };
+  it('names the kind of problem', () => {
+    expect(code('Psalm 130', 'No numbers here.')).toEqual({ code: 'no-markers', verse: undefined });
+    expect(code('Psalm 130:1-3', '1 One. 3 Three.')).toEqual({ code: 'missing-verse', verse: 2 });
+    expect(code('John 3:16', '16 text')).toEqual({ code: 'single-verse', verse: undefined });
+    expect(code('Genesis 1:1-2:3', '1 a 2 b')).toEqual({ code: 'not-splittable', verse: undefined });
+    expect(code('Psalm 130:1-2', '1 2 Two.')).toEqual({ code: 'empty-verse', verse: 1 });
+  });
+});
+
 describe('splitPassage: problems are explained', () => {
   it('says so when the numbers are missing', () => {
     const r = splitPassage('Psalm 130', 'Just a paragraph without any verse numbers in it.');

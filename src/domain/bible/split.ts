@@ -7,9 +7,12 @@ export interface SplitVerse {
   text: string;
 }
 
+/** Why a passage could not be split. The screen turns the code (and `verse`, if any) into text in the user's language. */
+export type SplitErrorCode = 'not-splittable' | 'single-verse' | 'no-markers' | 'missing-verse' | 'empty-verse' | 'cannot-split';
+
 export type SplitResult =
   | { ok: true; verses: SplitVerse[]; ignored: string }
-  | { ok: false; message: string };
+  | { ok: false; code: SplitErrorCode; verse?: number; message: string };
 
 const SUPERSCRIPT = '⁰¹²³⁴⁵⁶⁷⁸⁹';
 const MAX_VERSE = 176;
@@ -46,9 +49,9 @@ const tidy = (t: string) => t.replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').t
  */
 export function splitPassage(reference: string, passage: string): SplitResult {
   const parsed = parseReference(reference);
-  if (!parsed?.span) return { ok: false, message: 'Splitting works for one chapter or several verses of one chapter, for example Psalm 130 or Psalm 130:1-2.' };
+  if (!parsed?.span) return { ok: false, code: 'not-splittable', message: 'Splitting works for one chapter or several verses of one chapter, for example Psalm 130 or Psalm 130:1-2.' };
   const { chapter, verses: named } = parsed.span;
-  if (named !== null && named.length < 2) return { ok: false, message: 'This is a single verse, so there is nothing to split.' };
+  if (named !== null && named.length < 2) return { ok: false, code: 'single-verse', message: 'This is a single verse, so there is nothing to split.' };
 
   const text = [...passage.replace(/\r/g, '')].map((c) => (SUPERSCRIPT.includes(c) ? String(SUPERSCRIPT.indexOf(c)) : c)).join('');
   // Jude 3-5 style: a one-chapter book written without a chapter number.
@@ -62,23 +65,23 @@ export function splitPassage(reference: string, passage: string): SplitResult {
     const m = findMarker(text, verse, cursor);
     if (!m) {
       if (i === 0) { found.push({ verse, markerStart: 0, textStart: 0 }); continue; } // the first number may have been left out when copying
-      if (named !== null) return { ok: false, message: `We couldn't find verse ${verse} in the text. Each verse should start with its number, for example "${verse} In the beginning...".` };
+      if (named !== null) return { ok: false, code: 'missing-verse', verse, message: `We couldn't find verse ${verse} in the text. Each verse should start with its number, for example "${verse} In the beginning...".` };
       break; // whole chapter: the verses simply ended
     }
     found.push({ verse, markerStart: m.start, textStart: m.textStart });
     cursor = m.numberEnd;
   }
   if (found.length < 2) {
-    return { ok: false, message: `We couldn't find the verse numbers in the text. Each verse should start with its number, for example "1 In the beginning... 2 And the earth...".` };
+    return { ok: false, code: 'no-markers', message: `We couldn't find the verse numbers in the text. Each verse should start with its number, for example "1 In the beginning... 2 And the earth...".` };
   }
 
   const out: SplitVerse[] = [];
   for (const [i, f] of found.entries()) {
     const end = i + 1 < found.length ? found[i + 1]!.markerStart : text.length;
     const body = tidy(text.slice(f.textStart, end));
-    if (!body) return { ok: false, message: `Verse ${f.verse} has no text after its number.` };
+    if (!body) return { ok: false, code: 'empty-verse', verse: f.verse, message: `Verse ${f.verse} has no text after its number.` };
     const ref = withPassage(reference, singleChapterBook ? String(f.verse) : `${chapter}:${f.verse}`);
-    if (!ref) return { ok: false, message: 'This reference could not be split.' };
+    if (!ref) return { ok: false, code: 'cannot-split', message: 'This reference could not be split.' };
     out.push({ verse: f.verse, reference: ref, text: body });
   }
   return { ok: true, verses: out, ignored: tidy(text.slice(0, found[0]!.markerStart)) };

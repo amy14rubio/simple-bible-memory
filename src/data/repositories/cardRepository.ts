@@ -43,9 +43,9 @@ export function createCardRepository(db: Database, now: Clock = Date.now): CardR
       const t = now();
       const card: Card = {
         id: crypto.randomUUID(),
-        reference: requireText(input.reference, 'Reference'),
+        reference: requireText(input.reference, 'Reference', 'reference-required'),
         // Verse text is stored exactly as typed (only outer whitespace trimmed).
-        verseText: requireText(input.verseText, 'Verse text'),
+        verseText: requireText(input.verseText, 'Verse text', 'verse-text-required'),
         note: optionalText(input.note),
         createdAt: t,
         updatedAt: t,
@@ -67,8 +67,8 @@ export function createCardRepository(db: Database, now: Clock = Date.now): CardR
       // Each card is stamped one millisecond later than the last so they keep their order in the deck.
       const cards: Card[] = inputs.map((input, i) => ({
         id: crypto.randomUUID(),
-        reference: requireText(input.reference, 'Reference'),
-        verseText: requireText(input.verseText, 'Verse text'),
+        reference: requireText(input.reference, 'Reference', 'reference-required'),
+        verseText: requireText(input.verseText, 'Verse text', 'verse-text-required'),
         note: optionalText(input.note),
         createdAt: t + i,
         updatedAt: t + i,
@@ -87,8 +87,8 @@ export function createCardRepository(db: Database, now: Clock = Date.now): CardR
 
     async update(id, input) {
       await db.run('UPDATE cards SET reference = ?, verse_text = ?, note = ?, updated_at = ? WHERE id = ?', [
-        requireText(input.reference, 'Reference'),
-        requireText(input.verseText, 'Verse text'),
+        requireText(input.reference, 'Reference', 'reference-required'),
+        requireText(input.verseText, 'Verse text', 'verse-text-required'),
         optionalText(input.note),
         now(),
         id,

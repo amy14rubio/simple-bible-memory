@@ -9,12 +9,6 @@ export const CARD_KINDS: CardKind[] = ['recall', 'identify'];
 /** What the learner picks in Settings. */
 export type CardKindSetting = 'both' | CardKind;
 
-export const CARD_KIND_SETTING_LABELS: Record<CardKindSetting, { title: string; description: string }> = {
-  both: { title: 'Both', description: 'Recall the passage from its verse, and name the verse from its passage.' },
-  recall: { title: 'Recall the passage', description: 'You see the verse reference and recall the passage.' },
-  identify: { title: 'Identify the verse', description: 'You see the passage and name the verse.' },
-};
-
 export function kindsFor(setting: CardKindSetting): CardKind[] {
   return setting === 'both' ? ['recall', 'identify'] : [setting];
 }

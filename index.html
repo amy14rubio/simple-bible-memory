@@ -10,6 +10,21 @@
         var dark = p === "dark" || (p === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
         document.documentElement.dataset.theme = dark ? "dark" : "light";
       } catch (e) {}
+      // Same idea for the language: the saved choice, else the browser's first supported language, else English.
+      // (Keep the list in sync with LANGUAGES in src/i18n/index.ts.)
+      try {
+        var supported = ["en", "es"];
+        var saved = localStorage.getItem("language-pref");
+        var lang = supported.indexOf(saved) >= 0 ? saved : null;
+        if (!lang) {
+          var prefs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language];
+          for (var i = 0; i < prefs.length && !lang; i++) {
+            var base = String(prefs[i] || "").toLowerCase().split("-")[0];
+            if (supported.indexOf(base) >= 0) lang = base;
+          }
+        }
+        document.documentElement.lang = lang || "en";
+      } catch (e) {}
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Simple Bible Memory</title>

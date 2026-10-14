@@ -6,6 +6,7 @@ import { buildCitationChoices } from '../../domain/study/choices';
 import type { Rating } from '../../domain/study/rating';
 import { Button } from '../../components/ui';
 import { ActionBar, RatingBar } from './RatingBar';
+import { useI18n } from '../../i18n/I18nProvider';
 
 interface ModeProps {
   card: Card;
@@ -19,11 +20,12 @@ const Passage = ({ text }: { text: string }) => (
 
 /** Identify card, Flashcard mode: see the passage, recall the verse, reveal, rate. */
 export function IdentifyFlashcard({ card, intervals, onRate }: ModeProps) {
+  const { t } = useI18n();
   const [revealed, setRevealed] = useState(false);
   return (
     <>
       <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
-        <p className="text-sm text-muted">Which verse is this?</p>
+        <p className="text-sm text-muted">{t('identify.which')}</p>
         <Passage text={card.verseText} />
         {revealed && (
           <div className="space-y-1">
@@ -33,7 +35,7 @@ export function IdentifyFlashcard({ card, intervals, onRate }: ModeProps) {
         )}
       </div>
       <ActionBar>
-        {revealed ? <RatingBar intervals={intervals} onRate={onRate} /> : <Button className="w-full" onClick={() => setRevealed(true)} autoFocus>Show answer</Button>}
+        {revealed ? <RatingBar intervals={intervals} onRate={onRate} /> : <Button className="w-full" onClick={() => setRevealed(true)} autoFocus>{t('study.showAnswer')}</Button>}
       </ActionBar>
     </>
   );
@@ -43,6 +45,7 @@ type TypeResult = { typed: string; correct: boolean; suggestedRating: Rating } |
 
 /** Identify card, Type mode: see the passage and type which verse it is. One "Show answer" button. */
 export function IdentifyType({ card, intervals, onRate }: ModeProps) {
+  const { t } = useI18n();
   const [typed, setTyped] = useState('');
   const [result, setResult] = useState<TypeResult>();
 
@@ -51,17 +54,17 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
   return (
     <>
       <div className="flex flex-1 flex-col gap-6 pt-6">
-        <p className="text-center text-sm text-muted">Which verse is this?</p>
+        <p className="text-center text-sm text-muted">{t('identify.which')}</p>
         <Passage text={card.verseText} />
         {!result ? (
           <div className="space-y-2">
-            <label htmlFor="typed-reference" className="sr-only">Type the verse, for example John 3:16</label>
+            <label htmlFor="typed-reference" className="sr-only">{t('identify.inputLabel')}</label>
             <input
               id="typed-reference"
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && check()}
-              placeholder="Type the verse, such as John 3:16"
+              placeholder={t('identify.placeholder')}
               autoFocus
               autoCapitalize="words"
               autoCorrect="off"
@@ -70,11 +73,11 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
             />
           </div>
         ) : (
-          <section aria-label="Answer" className="space-y-2 text-center">
+          <section aria-label={t('identify.answer')} className="space-y-2 text-center">
             {'correct' in result && (
               <p className={`flex items-center justify-center gap-2 font-medium ${result.correct ? '' : 'text-accent'}`}>
                 {result.correct ? <Check size={18} aria-hidden /> : <X size={18} aria-hidden />}
-                {result.correct ? 'Correct' : `Not quite: you typed ${result.typed}`}
+                {result.correct ? t('common.correct') : t('identify.wrong', { typed: result.typed })}
               </p>
             )}
             <p className="font-serif text-3xl font-medium tracking-tight">{card.reference}</p>
@@ -84,7 +87,7 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
       </div>
       <ActionBar>
         {!result ? (
-          <Button className="w-full" onClick={check}>Show answer</Button>
+          <Button className="w-full" onClick={check}>{t('study.showAnswer')}</Button>
         ) : (
           <RatingBar suggested={'correct' in result ? result.suggestedRating : 1} intervals={intervals} onRate={onRate} />
         )}
@@ -98,6 +101,7 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
  * Falls back to typing when there are not enough options to make a fair choice.
  */
 export function IdentifyChoice({ card, references, sessionSeed, intervals, onRate }: ModeProps & { references: string[]; sessionSeed: string }) {
+  const { t } = useI18n();
   const choices = useMemo(
     () => buildCitationChoices({ correct: card.reference, others: references.filter((r) => r !== card.reference), seed: `${sessionSeed}:${card.id}` }),
     [card, references, sessionSeed],
@@ -109,9 +113,9 @@ export function IdentifyChoice({ card, references, sessionSeed, intervals, onRat
   return (
     <>
       <div className="flex flex-1 flex-col gap-6 pt-6">
-        <p className="text-center text-sm text-muted">Which verse is this?</p>
+        <p className="text-center text-sm text-muted">{t('identify.which')}</p>
         <Passage text={card.verseText} />
-        <div role="group" aria-label="Choose the verse" className="grid gap-2.5">
+        <div role="group" aria-label={t('identify.choose')} className="grid gap-2.5">
           {choices.map((c) => {
             const isRight = c === card.reference;
             const state = picked === undefined ? 'idle' : isRight ? 'right' : c === picked ? 'wrong' : 'other';
@@ -127,8 +131,8 @@ export function IdentifyChoice({ card, references, sessionSeed, intervals, onRat
                 } ${state === 'idle' ? 'hover:bg-surface' : ''} ${state === 'other' ? 'text-muted' : ''}`}
               >
                 <span>{c}</span>
-                {state === 'right' && <span className="flex items-center gap-1 font-sans text-sm"><Check size={16} aria-hidden />Correct</span>}
-                {state === 'wrong' && <span className="flex items-center gap-1 font-sans text-sm"><X size={16} aria-hidden />Your answer</span>}
+                {state === 'right' && <span className="flex items-center gap-1 font-sans text-sm"><Check size={16} aria-hidden />{t('common.correct')}</span>}
+                {state === 'wrong' && <span className="flex items-center gap-1 font-sans text-sm"><X size={16} aria-hidden />{t('identify.yourAnswer')}</span>}
               </button>
             );
           })}

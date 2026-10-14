@@ -1,7 +1,10 @@
 import { useEffect, type ReactNode } from 'react';
-import { RATING_LABELS, type Rating } from '../../domain/study/rating';
+import type { Rating } from '../../domain/study/rating';
+import { useI18n } from '../../i18n/I18nProvider';
+import type { MessageKey } from '../../i18n';
 
 const RATINGS: Rating[] = [1, 2, 3, 4];
+const LABEL_KEYS: Record<Rating, MessageKey> = { 1: 'rating.again', 2: 'rating.hard', 3: 'rating.good', 4: 'rating.easy' };
 
 /** Again red, Hard orange, Good green, Easy light blue, as in Anki. Only the text is colored; buttons stay plain. */
 export const RATING_TEXT: Record<Rating, string> = { 1: 'text-again', 2: 'text-hard', 3: 'text-good', 4: 'text-easy' };
@@ -20,6 +23,7 @@ export function ActionBar({ children }: { children: ReactNode }) {
  * The suggested rating gets a ring but is never selected for the learner.
  */
 export function RatingBar({ suggested, intervals, onRate }: { suggested?: Rating; intervals?: Record<Rating, string>; onRate: (r: Rating) => void }) {
+  const { t } = useI18n();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
@@ -32,7 +36,7 @@ export function RatingBar({ suggested, intervals, onRate }: { suggested?: Rating
   }, [onRate]);
 
   return (
-    <div role="group" aria-label="How well did you remember it?" className="grid grid-cols-4 gap-2">
+    <div role="group" aria-label={t('rating.question')} className="grid grid-cols-4 gap-2">
       {RATINGS.map((r) => (
         <button
           key={r}
@@ -43,9 +47,9 @@ export function RatingBar({ suggested, intervals, onRate }: { suggested?: Rating
           }`}
         >
           {/* DOM order is label, then interval (screen readers say "Good, 10m"); flex-col-reverse shows the interval above. */}
-          <span className={`text-[0.9375rem] font-semibold ${RATING_TEXT[r]}`}>{RATING_LABELS[r]}</span>
+          <span className={`text-[0.9375rem] font-semibold ${RATING_TEXT[r]}`}>{t(LABEL_KEYS[r])}</span>
           {intervals && <span className="text-xs text-muted">{intervals[r]}</span>}
-          {r === suggested && <span className="sr-only">suggested</span>}
+          {r === suggested && <span className="sr-only">{t('rating.suggested')}</span>}
         </button>
       ))}
     </div>

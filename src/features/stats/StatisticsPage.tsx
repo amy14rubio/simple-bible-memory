@@ -4,10 +4,12 @@ import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, Page, TitleSelect } from '../../components/ui';
 import { Donut } from './Donut';
 import { loadCardKinds } from '../study/cardKinds';
+import { useI18n } from '../../i18n/I18nProvider';
 
 const ALL = 'all';
 
 export function StatisticsPage() {
+  const { t, bookName } = useI18n();
   const { decks, stats, settings } = useRepositories();
   const [scope, setScope] = useState(ALL);
   const { data, error, loading } = useAsync(
@@ -18,44 +20,44 @@ export function StatisticsPage() {
     [scope, decks, stats, settings],
   );
 
-  const back = <BackButton to="/" label="Back to decks" />;
+  const back = <BackButton to="/" label={t('common.backToDecks')} />;
   const title = (
     <>
-      <h1 className="sr-only">Statistics</h1>
+      <h1 className="sr-only">{t('stats.title')}</h1>
       <TitleSelect
-        label="Show statistics for"
+        label={t('stats.scope')}
         value={scope}
-        options={[{ value: ALL, label: 'All decks' }, ...(data?.list.map((d) => ({ value: d.id, label: d.title })) ?? [])]}
+        options={[{ value: ALL, label: t('stats.allDecks') }, ...(data?.list.map((d) => ({ value: d.id, label: d.title })) ?? [])]}
         onChange={setScope}
       />
     </>
   );
 
-  if (error) return <><AppBar back={back} title="Statistics" /><Page><ErrorMessage error={error} /></Page></>;
-  if (loading && !data) return <AppBar back={back} title="Statistics" />;
+  if (error) return <><AppBar back={back} title={t('stats.title')} /><Page><ErrorMessage error={error} /></Page></>;
+  if (loading && !data) return <AppBar back={back} title={t('stats.title')} />;
   if (!data) return null;
   const { list, kinds, overview: o } = data;
   if (list.length === 0) {
     return (
       <>
-        <AppBar back={back} title="Statistics" />
-        <EmptyState title="Nothing to show yet" action={<ButtonLink to="/decks/new">Create a deck</ButtonLink>}>Your progress appears here once you add and study verses.</EmptyState>
+        <AppBar back={back} title={t('stats.title')} />
+        <EmptyState title={t('stats.emptyTitle')} action={<ButtonLink to="/decks/new">{t('stats.createDeck')}</ButtonLink>}>{t('stats.emptyBody')}</EmptyState>
       </>
     );
   }
 
   const headline: [string, number][] = [
-    ['Total cards added', o.totalCards],
-    ['Verses memorized', o.memorized],
-    ['Verses mastered', o.mastered],
-    ['Days since starting', o.daysSinceStarting],
+    [t('stats.totalCards'), o.totalCards],
+    [t('stats.memorized'), o.memorized],
+    [t('stats.mastered'), o.mastered],
+    [t('stats.days'), o.daysSinceStarting],
   ];
 
   return (
     <>
       <AppBar back={back} titleSlot={title} />
       <Page className="space-y-12">
-        <dl aria-label="Progress summary" className="grid grid-cols-2 gap-x-6 gap-y-8 text-center">
+        <dl aria-label={t('stats.summary')} className="grid grid-cols-2 gap-x-6 gap-y-8 text-center">
           {headline.map(([label, n]) => (
             <div key={label}>
               <dd className="font-serif text-5xl font-medium tracking-tight">{n}</dd>
@@ -65,15 +67,15 @@ export function StatisticsPage() {
         </dl>
 
         <section aria-labelledby="books" className="space-y-4">
-          <h2 id="books" className="text-center font-serif text-xl">Books progress</h2>
+          <h2 id="books" className="text-center font-serif text-xl">{t('stats.books')}</h2>
           {o.books.length === 0 ? (
-            <p className="text-center text-muted">Cards with references like "John 3:16" show up here, book by book.</p>
+            <p className="text-center text-muted">{t('stats.booksEmpty')}</p>
           ) : (
             <ul className="space-y-3">
               {o.books.map((b) => (
                 <li key={b.book} className="grid grid-cols-[7.5rem_1fr_3rem] items-center gap-3">
-                  <span className="truncate font-serif">{b.book}</span>
-                  <div role="img" aria-label={`${b.memorized} of ${b.total} memorized`} className="h-2 overflow-hidden rounded-full bg-surface">
+                  <span className="truncate font-serif">{bookName(b.book)}</span>
+                  <div role="img" aria-label={t('stats.bookProgress', { memorized: b.memorized, total: b.total })} className="h-2 overflow-hidden rounded-full bg-surface">
                     <div className="h-full rounded-full bg-accent transition-[width] duration-500" style={{ width: `${(b.memorized / b.total) * 100}%` }} />
                   </div>
                   <span className="text-right text-sm text-muted">{b.memorized}/{b.total}</span>
@@ -81,19 +83,19 @@ export function StatisticsPage() {
               ))}
             </ul>
           )}
-          <p className="text-center text-sm text-muted">A verse counts as memorized once it graduates from learning.</p>
+          <p className="text-center text-sm text-muted">{t('stats.memorizedNote')}</p>
         </section>
 
         <section aria-labelledby="counts" className="space-y-6">
-          <h2 id="counts" className="text-center font-serif text-xl">Card counts</h2>
-          {kinds.length > 1 && <p className="text-center text-sm text-muted">Each verse has two cards, so these count both.</p>}
+          <h2 id="counts" className="text-center font-serif text-xl">{t('stats.counts')}</h2>
+          {kinds.length > 1 && <p className="text-center text-sm text-muted">{t('stats.bothNote')}</p>}
           <Donut
-            caption={`Cards by stage: ${o.counts.new} new, ${o.counts.learning} learning, ${o.counts.young} young, ${o.counts.mature} mature`}
+            caption={t('stats.donut', { new: o.counts.new, learning: o.counts.learning, young: o.counts.young, mature: o.counts.mature })}
             slices={[
-              { label: 'New', value: o.counts.new, color: 'var(--muted)' },
-              { label: 'Learning', value: o.counts.learning, color: 'var(--accent)' },
-              { label: 'Young', value: o.counts.young, color: 'color-mix(in srgb, var(--foreground) 55%, var(--background))' },
-              { label: 'Mature', value: o.counts.mature, color: 'var(--foreground)' },
+              { label: t('stage.new'), value: o.counts.new, color: 'var(--muted)' },
+              { label: t('stage.learning'), value: o.counts.learning, color: 'var(--accent)' },
+              { label: t('stage.young'), value: o.counts.young, color: 'color-mix(in srgb, var(--foreground) 55%, var(--background))' },
+              { label: t('stage.mature'), value: o.counts.mature, color: 'var(--foreground)' },
             ]}
           />
         </section>

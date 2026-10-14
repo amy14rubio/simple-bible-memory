@@ -44,7 +44,7 @@ export function createDeckRepository(db: Database, now: Clock = Date.now): DeckR
       const t = now();
       const deck: Deck = {
         id: crypto.randomUUID(),
-        title: requireText(input.title, 'Deck title'),
+        title: requireText(input.title, 'Deck title', 'deck-title-required'),
         description: optionalText(input.description),
         bibleLanguage: null,
         translationCode: null,
@@ -60,7 +60,7 @@ export function createDeckRepository(db: Database, now: Clock = Date.now): DeckR
 
     async update(id, input) {
       await db.run('UPDATE decks SET title = ?, description = ?, updated_at = ? WHERE id = ?', [
-        requireText(input.title, 'Deck title'),
+        requireText(input.title, 'Deck title', 'deck-title-required'),
         optionalText(input.description),
         now(),
         id,
