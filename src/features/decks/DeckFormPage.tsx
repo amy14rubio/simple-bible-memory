@@ -1,0 +1,48 @@
+import { useState, type FormEvent } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Check } from 'lucide-react';
+import { useRepositories } from '../../app/repositories';
+import { useAsync } from '../../app/useAsync';
+import { AppBar, BackButton, ErrorMessage, FormRow, IconButton, Page, rowInput } from '../../components/ui';
+
+/** One form for both "New deck" (/decks/new) and "Rename deck" (/decks/:id/edit). */
+export function DeckFormPage() {
+  const { id } = useParams();
+  const { decks } = useRepositories();
+  const { data: existing, loading } = useAsync(async () => (id ? decks.get(id) : undefined), [id, decks]);
+  if (id && loading) return null;
+  return <DeckForm key={existing?.id ?? 'new'} id={id} initialTitle={existing?.title ?? ''} initialDescription={existing?.description ?? ''} notFound={!!id && !existing} />;
+}
+
+function DeckForm({ id, initialTitle, initialDescription, notFound }: { id?: string; initialTitle: string; initialDescription: string; notFound: boolean }) {
+  const { decks } = useRepositories();
+  const navigate = useNavigate();
+  const [title, setTitle] = useState(initialTitle);
+  const [description, setDescription] = useState(initialDescription);
+  const [error, setError] = useState<string>();
+
+  if (notFound) return <><AppBar back={<BackButton to="/" label="Back to decks" />} /><Page><ErrorMessage error="This deck no longer exists." /></Page></>;
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    try {
+      if (id) { await decks.update(id, { title, description }); navigate(`/decks/${id}`, { replace: true }); }
+      else { const d = await decks.create({ title, description }); navigate(`/decks/${d.id}`, { replace: true }); }
+    } catch (err) { setError(err instanceof Error ? err.message : String(err)); }
+  };
+
+  return (
+    <form id="deck-form" onSubmit={submit}>
+      <AppBar
+        title={id ? 'Rename deck' : 'New deck'}
+        back={<BackButton label="Cancel" />}
+        actions={<IconButton type="submit" label="Save"><Check size={22} aria-hidden /></IconButton>}
+      />
+      <Page className="space-y-4 pt-2">
+        {error && <ErrorMessage error={error} />}
+        <FormRow label="Title">{(fid) => <input id={fid} className={rowInput} value={title} onChange={(e) => setTitle(e.target.value)} autoFocus placeholder="For example, Commute verses" />}</FormRow>
+        <FormRow label="Description">{(fid) => <input id={fid} className={rowInput} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional" />}</FormRow>
+      </Page>
+    </form>
+  );
+}

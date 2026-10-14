@@ -1,0 +1,84 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/instrument-sans';
+@import '@fontsource-variable/literata';
+
+/*
+  Design tokens. Components use only these names (bg-surface, text-muted, text-accent...), so light and dark
+  are just different values, never different components.
+
+  Palette: ink on cool paper with ONE accent, a deep oxblood.
+  Type: Literata (made for reading on screens) carries scripture; Instrument Sans carries the interface.
+  Contrast (WCAG): muted on background >= 6:1, accent on background >= 8:1, in both themes.
+*/
+:root {
+  --background: #f8f8f6; /* paper */
+  --foreground: #17171a; /* ink */
+  --muted: #5e5e5a;
+  --surface: #eeeeea; /* tiles, rows, inputs */
+  --border: #d9d8d3; /* hairlines */
+  --primary: #17171a;
+  --primary-foreground: #f8f8f6;
+  --accent: #8a1f30; /* ribbon */
+  --danger: #8a1f30;
+  --ring: #17171a;
+  --radius: 0.625rem;
+  /* Anki-style rating colors, used for TEXT only (never as fills). Each is 4.7:1 or better on the page in this theme. */
+  --rating-again: #c62828;
+  --rating-hard: #b45309;
+  --rating-good: #15803d;
+  --rating-easy: #0369a1; /* a deeper blue: true light blue is unreadable as text on a light page */
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  --background: #131312;
+  --foreground: #f1f0ec;
+  --muted: #a4a29b;
+  --surface: #1d1d1b;
+  --border: #333330;
+  --primary: #f1f0ec;
+  --primary-foreground: #131312;
+  --accent: #e8909c;
+  --danger: #e8909c;
+  --ring: #f1f0ec;
+  --rating-again: #f2837d;
+  --rating-hard: #f5a03a;
+  --rating-good: #5bc48a;
+  --rating-easy: #7cc6f2; /* true light blue: it reads well on the dark page */
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+  --color-ring: var(--ring);
+  --color-again: var(--rating-again);
+  --color-hard: var(--rating-hard);
+  --color-good: var(--rating-good);
+  --color-easy: var(--rating-easy);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 0.25rem);
+  --font-sans: 'Instrument Sans Variable', system-ui, sans-serif;
+  --font-serif: 'Literata Variable', Georgia, 'Times New Roman', serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+/* Scripture is always set in the serif, with the extra leading serif text needs. */
+.scripture { font-family: var(--font-serif); line-height: 1.7; font-optical-sizing: auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
