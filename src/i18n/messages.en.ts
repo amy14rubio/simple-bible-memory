@@ -50,6 +50,7 @@ export const en = {
   // decks home
   'decks.search': 'Search decks',
   'decks.searchClose': 'Close search',
+  'search.clear': 'Clear search',
   'decks.emptyTitle': 'No decks yet',
   'decks.emptyBody': 'A deck holds the verses you want to memorize.',
   'decks.emptyAction': 'Create your first deck',

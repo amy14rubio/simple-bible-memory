@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Ellipsis, Search, Settings, X } from 'lucide-react';
+import { Ellipsis, Search, Settings } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
-import { AppBar, ButtonLink, EmptyState, ErrorMessage, IconButton, IconLink } from '../../components/ui';
+import { AppBar, ButtonLink, EmptyState, ErrorMessage, IconButton, IconLink, SearchBar } from '../../components/ui';
 import { DeckMenu } from './DeckMenu';
 import { loadCardKinds } from '../study/cardKinds';
 import { loadNewPerDay } from '../study/newPerDay';
@@ -26,29 +26,18 @@ export function DecksPage() {
 
   return (
     <>
-      <AppBar
-        title={t('app.name')}
-        actions={
-          <>
-            <IconButton label={searching ? t('decks.searchClose') : t('decks.search')} aria-pressed={searching} onClick={() => { setSearching((s) => !s); setQuery(''); }}>
-              {searching ? <X size={20} aria-hidden /> : <Search size={20} aria-hidden />}
-            </IconButton>
-            <IconLink to="/settings" label={t('common.settings')}><Settings size={20} aria-hidden /></IconLink>
-          </>
-        }
-      />
-      {searching && (
-        <div className="border-b border-border px-5 py-2">
-          <input
-            aria-label={t('decks.search')}
-            type="search"
-            autoFocus
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('decks.search')}
-            className="w-full bg-transparent py-2 text-base placeholder:text-muted"
-          />
-        </div>
+      {searching ? (
+        <SearchBar label={t('decks.search')} placeholder={t('decks.search')} value={query} onChange={setQuery} backLabel={t('decks.searchClose')} onClose={() => { setSearching(false); setQuery(''); }} actions={<IconLink to="/settings" label={t('common.settings')}><Settings size={20} aria-hidden /></IconLink>} />
+      ) : (
+        <AppBar
+          title={t('app.name')}
+          actions={
+            <>
+              <IconButton label={t('decks.search')} onClick={() => setSearching(true)}><Search size={20} aria-hidden /></IconButton>
+              <IconLink to="/settings" label={t('common.settings')}><Settings size={20} aria-hidden /></IconLink>
+            </>
+          }
+        />
       )}
       {error && <div className="p-5"><ErrorMessage error={error} /></div>}
       {!loading && data?.length === 0 && (

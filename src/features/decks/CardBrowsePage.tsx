@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Plus, Search, X } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
-import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, IconButton, IconLink, Page, TitleSelect } from '../../components/ui';
+import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, IconButton, IconLink, Page, SearchBar, TitleSelect } from '../../components/ui';
 import { useI18n } from '../../i18n/I18nProvider';
 
 /** "Card browse": a two-column table of verse references and passages. */
@@ -25,27 +25,24 @@ export function CardBrowsePage() {
 
   return (
     <>
-      <AppBar
-        back={<BackButton to="/" label={t('common.backToDecks')} />}
-        titleSlot={
-          <>
-            <h1 className="sr-only">{t('browse.heading', { deck: deck.title })}</h1>
-            <TitleSelect label={t('browse.deck')} value={id} options={data.all.map((d) => ({ value: d.id, label: d.title }))} onChange={(v) => navigate(`/decks/${v}/cards`)} />
-          </>
-        }
-        actions={
-          <>
-            <IconLink to={`/cards/new?deck=${id}`} label={t('common.newCard')}><Plus size={22} aria-hidden /></IconLink>
-            <IconButton label={searching ? t('browse.searchClose') : t('browse.search')} aria-pressed={searching} onClick={() => { setSearching((s) => !s); setQuery(''); }}>
-              {searching ? <X size={20} aria-hidden /> : <Search size={20} aria-hidden />}
-            </IconButton>
-          </>
-        }
-      />
-      {searching && (
-        <div className="border-b border-border px-5 py-2">
-          <input aria-label={t('browse.search')} type="search" autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('browse.searchPlaceholder')} className="w-full bg-transparent py-2 text-base placeholder:text-muted" />
-        </div>
+      {searching ? (
+        <SearchBar label={t('browse.search')} placeholder={t('browse.searchPlaceholder')} value={query} onChange={setQuery} backLabel={t('browse.searchClose')} onClose={() => { setSearching(false); setQuery(''); }} actions={<IconLink to={`/cards/new?deck=${id}`} label={t('common.newCard')}><Plus size={22} aria-hidden /></IconLink>} />
+      ) : (
+        <AppBar
+          back={<BackButton to="/" label={t('common.backToDecks')} />}
+          titleSlot={
+            <>
+              <h1 className="sr-only">{t('browse.heading', { deck: deck.title })}</h1>
+              <TitleSelect label={t('browse.deck')} value={id} options={data.all.map((d) => ({ value: d.id, label: d.title }))} onChange={(v) => navigate(`/decks/${v}/cards`)} />
+            </>
+          }
+          actions={
+            <>
+              <IconButton label={t('browse.search')} onClick={() => setSearching(true)}><Search size={20} aria-hidden /></IconButton>
+              <IconLink to={`/cards/new?deck=${id}`} label={t('common.newCard')}><Plus size={22} aria-hidden /></IconLink>
+            </>
+          }
+        />
       )}
       {data.list.length === 0 ? (
         <EmptyState title={t('browse.emptyTitle')} action={<ButtonLink to={`/cards/new?deck=${id}`}>{t('common.newCard')}</ButtonLink>}>

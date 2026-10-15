@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronDown, ChevronLeft } from 'lucide-react';
+import { ChevronDown, ChevronLeft, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
@@ -62,6 +62,40 @@ export function AppBar({ title, titleSlot, back, actions, serif = true }: { titl
     <header className="sticky top-0 z-20 flex h-14 items-center gap-1 border-b border-border bg-background px-2">
       {back}
       {titleSlot ?? <h1 className={`min-w-0 flex-1 truncate px-2 text-lg ${serif ? 'font-serif font-medium tracking-tight' : 'font-semibold'}`}>{title}</h1>}
+      <div className="flex items-center">{actions}</div>
+    </header>
+  );
+}
+
+/**
+ * Search mode, like Anki: the top bar becomes the search field. A back arrow on the far left leaves search
+ * (and clears the filter), the keyboard opens straight away, and an X clears the text once there is some.
+ */
+export function SearchBar({ label, placeholder, value, onChange, backLabel, onClose, actions }: {
+  label: string; placeholder: string; value: string; onChange: (value: string) => void; backLabel: string; onClose: () => void;
+  /** The screen's other icons stay where they were (only the search icon is replaced by the back arrow). */
+  actions?: ReactNode;
+}) {
+  const { t } = useI18n();
+  const input = useRef<HTMLInputElement>(null);
+  return (
+    <header className="sticky top-0 z-20 flex h-14 items-center gap-1 border-b border-border bg-background px-2">
+      <IconButton label={backLabel} onClick={onClose}><ChevronLeft size={22} aria-hidden /></IconButton>
+      <input
+        ref={input}
+        aria-label={label}
+        type="search"
+        autoFocus
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+        // no outline box (the caret shows where you are, as in Anki); the browser's own clear button is hidden so ours looks the same everywhere
+        className="min-w-0 flex-1 bg-transparent px-2 text-base outline-none placeholder:text-muted [&::-webkit-search-cancel-button]:appearance-none"
+      />
+      {value && (
+        <IconButton label={t('search.clear')} onClick={() => { onChange(''); input.current?.focus(); }}><X size={20} aria-hidden /></IconButton>
+      )}
       <div className="flex items-center">{actions}</div>
     </header>
   );

@@ -137,3 +137,39 @@ test('adding a card with no decks prompts to create one', async ({ page }) => {
   await page.goto('/#/cards/new');
   await expect(page.getByText('Create a deck first')).toBeVisible();
 });
+
+test('search works like Anki: the top bar becomes the search field, with a back arrow on the left', async ({ page }) => {
+  await createDeck(page, 'Psalms');
+  await createDeck(page, 'Romans');
+  await page.goto('/');
+  await expect(page.getByText('Psalms')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Search decks' }).click();
+  const input = page.getByLabel('Search decks', { exact: true });
+  await expect(input).toBeFocused(); // the keyboard opens straight away
+  await expect(page.getByRole('button', { name: 'Search decks' })).toHaveCount(0); // the search icon is gone
+  await expect(page.getByRole('link', { name: 'Settings' })).toBeVisible(); // the other icons stay, like Anki
+  const back = page.getByRole('button', { name: 'Close search' });
+  await expect(back).toBeVisible();
+  const bar = (await page.locator('header').first().boundingBox())!;
+  expect((await back.boundingBox())!.x - bar.x).toBeLessThan(20); // far left of the bar
+  await expect(page.getByRole('button', { name: 'Clear search' })).toHaveCount(0); // nothing to clear yet
+
+  await input.fill('rom');
+  await expect(page.getByText('Psalms')).toHaveCount(0);
+  await expect(page.getByText('Romans')).toBeVisible();
+  await page.getByRole('button', { name: 'Clear search' }).click();
+  await expect(input).toHaveValue('');
+  await expect(input).toBeFocused(); // keeps the keyboard open
+  await expect(page.getByText('Psalms')).toBeVisible();
+
+  await input.fill('psa');
+  await back.click(); // leaves search and clears the filter
+  await expect(page.getByRole('button', { name: 'Search decks' })).toBeVisible();
+  await expect(page.getByText('Romans')).toBeVisible();
+  await expect(page.getByText('Psalms')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Search decks' }).click();
+  await page.keyboard.press('Escape'); // Escape leaves search too
+  await expect(page.getByRole('button', { name: 'Search decks' })).toBeVisible();
+});
