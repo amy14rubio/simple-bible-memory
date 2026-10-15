@@ -81,13 +81,13 @@ export default function CardCountsChart({ slices, caption, legendLabel, describe
       >
         <ChartContainer config={config} className="mx-auto aspect-square max-h-[260px]">
           <PieChart accessibilityLayer={false}>
-            {empty && <Pie data={[{ name: 'empty', value: 1 }]} dataKey="value" outerRadius="85%" fill="var(--surface)" legendType="none" isAnimationActive={false} />}
+            {empty && <Pie data={[{ name: 'empty', value: 1 }]} dataKey="value" outerRadius="85%" fill="var(--border)" legendType="none" isAnimationActive={false} />}
             <Pie
               data={data}
               dataKey="value"
               nameKey="name"
               outerRadius="85%"
-              stroke="var(--background)"
+              stroke="var(--panel)"
               strokeWidth={slices.filter((s) => s.value > 0).length > 1 ? 2 : 0} // a lone slice would show its seam as a stray line
               isAnimationActive={false}
               shape={shape}
