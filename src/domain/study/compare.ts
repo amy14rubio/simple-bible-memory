@@ -58,3 +58,53 @@ export function compareVerse(expected: string, typed: string): Comparison {
   const accuracy = a.length === 0 ? (exact ? 1 : 0) : matchedCount / a.length;
   return { ops, expectedCount: a.length, matchedCount, accuracy, exact, suggestedRating: suggestRating(accuracy, exact) };
 }
+
+/**
+ * A piece of text for display: a word that matched, a word that is wrong, the spaces/punctuation between words,
+ * or (typed side only) a `gap` marking where you skipped words, so a partly-right answer doesn't look fully right.
+ */
+export interface Segment {
+  text: string;
+  state: 'match' | 'wrong' | 'plain' | 'gap';
+}
+
+/**
+ * Splits both texts back into displayable pieces, keeping punctuation and line breaks as written.
+ * On the expected side, `wrong` words are the ones that were missed. On the typed side, they are the extra or wrong ones.
+ */
+export function paintComparison(expected: string, typed: string): { expected: Segment[]; typed: Segment[]; exact: boolean } {
+  const c = compareVerse(expected, typed);
+  // Where the typed text skipped words: before which typed word. A skipped run next to a wrong typed word is a
+  // replacement (that word is already red), so it gets no gap.
+  const gapsBefore = new Set<number>();
+  let typedIndex = 0;
+  for (let i = 0; i < c.ops.length; ) {
+    if (c.ops[i]!.type === 'match') { typedIndex++; i++; continue; }
+    let missing = false;
+    let extras = 0;
+    for (; i < c.ops.length && c.ops[i]!.type !== 'match'; i++) {
+      if (c.ops[i]!.type === 'missing') missing = true; else extras++;
+    }
+    if (missing && extras === 0) gapsBefore.add(typedIndex);
+    typedIndex += extras;
+  }
+
+  const paint = (source: string, skip: DiffOp['type'], gaps?: Set<number>): Segment[] => {
+    const states = c.ops.filter((o) => o.type !== skip).map((o) => (o.type === 'match' ? 'match' : 'wrong') as Segment['state']);
+    const text = source.normalize('NFC');
+    const out: Segment[] = [];
+    let pos = 0;
+    const tokens = tokenize(source);
+    const gap = (): Segment[] => [{ text: ' ', state: 'plain' }, { text: '_', state: 'gap' }, { text: ' ', state: 'plain' }];
+    tokens.forEach((tok, i) => {
+      if (gaps?.has(i)) out.push(...gap());
+      if (tok.start > pos) out.push({ text: text.slice(pos, tok.start), state: 'plain' });
+      out.push({ text: tok.text, state: states[i] ?? 'wrong' });
+      pos = tok.start + tok.text.length;
+    });
+    if (pos < text.length) out.push({ text: text.slice(pos), state: 'plain' });
+    if (gaps?.has(tokens.length)) out.push(...gap());
+    return out;
+  };
+  return { expected: paint(expected, 'extra'), typed: paint(typed, 'missing', gapsBefore), exact: c.exact };
+}

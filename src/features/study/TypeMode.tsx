@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import type { Card } from '../../domain/types';
-import { compareVerse, type Comparison } from '../../domain/study/compare';
+import { compareVerse, paintComparison, type Comparison, type Segment } from '../../domain/study/compare';
 import type { Rating } from '../../domain/study/rating';
 import { Button } from '../../components/ui';
 import { ActionBar, RatingBar } from './RatingBar';
 import { useI18n } from '../../i18n/I18nProvider';
+import { PaintedText } from './PaintedText';
 
-type Result = { comparison: Comparison } | { revealedOnly: true };
+type Result = { comparison: Comparison; painted: ReturnType<typeof paintComparison> } | { revealedOnly: true };
 
 export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: Record<Rating, string>; onRate: (r: Rating) => void }) {
   const { t } = useI18n();
@@ -14,7 +15,7 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
   const [result, setResult] = useState<Result>();
 
   // One button for everything: if you typed something it is checked against the verse, if not it just reveals it.
-  const check = () => setResult(typed.trim() ? { comparison: compareVerse(card.verseText, typed) } : { revealedOnly: true });
+  const check = () => setResult(typed.trim() ? { comparison: compareVerse(card.verseText, typed), painted: paintComparison(card.verseText, typed) } : { revealedOnly: true });
 
   return (
     <>
@@ -36,13 +37,22 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
               onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) check(); }}
             />
           </>
+        ) : 'comparison' in result && result.comparison.exact ? (
+          // Everything right: just the verse, in green.
+          <section aria-label={t('type.exact')}>
+            <p className="scripture whitespace-pre-line text-lg"><PaintedText segments={result.painted.expected} side="expected" /></p>
+          </section>
         ) : (
           <div className="space-y-6">
-            {'comparison' in result && <Feedback comparison={result.comparison} />}
-            <section aria-label={t('type.correctVerse')} className="space-y-1">
-              <h2 className="text-sm font-medium text-muted">{t('type.correctVerse')}</h2>
-              <p className="scripture whitespace-pre-line text-lg">{card.verseText}</p>
-            </section>
+            {'comparison' in result && <Words label={t('type.yourAnswer')} segments={result.painted.typed} side="typed" />}
+            {'comparison' in result ? (
+              <Words label={t('type.correctVerse')} segments={result.painted.expected} side="expected" />
+            ) : (
+              <section aria-label={t('type.correctVerse')} className="space-y-1">
+                <h2 className="text-sm font-medium text-muted">{t('type.correctVerse')}</h2>
+                <p className="scripture whitespace-pre-line text-lg">{card.verseText}</p>
+              </section>
+            )}
           </div>
         )}
       </div>
@@ -57,25 +67,11 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
   );
 }
 
-function Feedback({ comparison: c }: { comparison: Comparison }) {
-  const { t } = useI18n();
+function Words({ label, segments, side }: { label: string; segments: Segment[]; side: 'typed' | 'expected' }) {
   return (
-    <section aria-label={t('type.yourAnswer')} className="space-y-2">
-      <h2 className="text-sm font-medium text-muted">
-        {c.exact ? t('type.exact') : t('type.matched', { matched: c.matchedCount, count: c.expectedCount })}
-      </h2>
-      <p className="scripture text-lg">
-        {c.ops.map((op, i) =>
-          op.type === 'match' ? (
-            <span key={i}>{op.word} </span>
-          ) : op.type === 'missing' ? (
-            <mark key={i} className="bg-transparent px-0.5 font-medium text-accent underline decoration-2 underline-offset-4" title={t('type.missed')}>{op.word} </mark>
-          ) : (
-            <del key={i} className="text-muted" title={t('type.extra')}>{op.word} </del>
-          ),
-        )}
-      </p>
-      {!c.exact && <p className="text-sm text-muted">{t('type.legend')}</p>}
+    <section aria-label={label} className="space-y-1">
+      <h2 className="text-sm font-medium text-muted">{label}</h2>
+      <p className="scripture whitespace-pre-line text-lg"><PaintedText segments={segments} side={side} /></p>
     </section>
   );
 }

@@ -26,7 +26,6 @@ test('identify card, Flashcard: shows the passage first, then the verse', async 
   await addCard(page, id, 'John 3:16', 'Example passage text typed by the user.');
   await setCardKinds(page, 'Identify the verse');
   await study(page, id, 'flashcard');
-  await expect(page.getByText('Which verse is this?')).toBeVisible();
   await expect(page.getByText('Example passage text typed by the user.')).toBeVisible();
   await expect(page.getByText('John 3:16', { exact: true })).toHaveCount(0); // hidden until reveal
   await page.getByRole('button', { name: 'Show answer' }).click();
@@ -57,13 +56,17 @@ test('identify card, Type: abbreviations are accepted; wrong and empty answers a
   await expect(page.getByRole('button', { name: 'Show answer' })).toHaveCount(1);
   await page.getByLabel(/Type the verse/).fill('jn 3:16');
   await page.getByRole('button', { name: 'Show answer' }).click();
-  await expect(page.getByText('Correct', { exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Answer' })).toHaveText('John 3:16'); // right: just the reference, in green
+  await expect(page.getByRole('region', { name: 'Answer' }).locator('span')).toHaveCSS('color', 'rgb(21, 128, 61)');
   await expect(page.getByRole('button', { name: /^Good.*suggested/ })).toBeVisible();
   await page.getByRole('button', { name: /^Good/ }).click();
 
   await page.getByLabel(/Type the verse/).fill('Psalm 24:1');
   await page.getByRole('button', { name: 'Show answer' }).click();
-  await expect(page.getByText('Not quite: you typed Psalm 24:1')).toBeVisible();
+  const mine = page.getByRole('region', { name: 'Answer' }).locator('div').filter({ hasText: 'Your answer' });
+  await expect(mine).toContainText('Psalm 24:1'); // what I typed, with the wrong number in red
+  await expect(mine.locator('del')).toHaveText('24');
+  await expect(page.getByRole('region', { name: 'Answer' }).locator('mark')).toHaveText('23');
   await expect(page.getByText('Psalm 23:1', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Again.*suggested/ })).toBeVisible();
   await page.getByRole('button', { name: /^Again/ }).click();
@@ -86,7 +89,13 @@ test('identify card, Blanks: choose the verse from several options', async ({ pa
   await expect(group.getByRole('button', { name: /John 3:16/ })).toHaveCount(1); // the right one is among the options
   await expect(page.getByRole('button', { name: /^Good/ })).toHaveCount(0); // no rating until you answer
 
+  await expect(page.getByText(/which verse/i)).toHaveCount(0);
+  await expect(page.getByRole('status')).toHaveCount(0); // no empty box: the blank is obvious
   await group.getByRole('button', { name: /John 3:16/ }).click();
+  const right = group.getByRole('button', { name: /John 3:16/ });
+  await expect(right).toHaveCSS('border-top-color', 'rgb(21, 128, 61)'); // green when right (no white, no icons)
+  await expect(right).toHaveCSS('color', 'rgb(21, 128, 61)');
+  await expect(group.locator('svg')).toHaveCount(0);
   await expect(group.getByText('Correct')).toBeVisible();
   await expect(page.getByRole('button', { name: /^Good.*suggested/ })).toBeVisible();
   await page.getByRole('button', { name: /^Good/ }).click();
@@ -95,6 +104,8 @@ test('identify card, Blanks: choose the verse from several options', async ({ pa
   const options = await group.getByRole('button').allInnerTexts();
   const wrong = options.map((o) => o.split('\n')[0]!).find((o) => o !== 'Psalm 23:1')!;
   await group.getByRole('button', { name: wrong }).first().click();
+  await expect(group.getByRole('button', { name: wrong }).first()).toHaveCSS('border-top-color', 'rgb(198, 40, 40)'); // my wrong pick is red
+  await expect(group.getByRole('button', { name: /Psalm 23:1/ })).toHaveCSS('border-top-color', 'rgb(21, 128, 61)'); // the right one is green
   await expect(group.getByText('Your answer')).toBeVisible();
   await expect(group.getByText('Correct')).toBeVisible(); // the right one is revealed too
   await expect(page.getByRole('button', { name: /^Again.*suggested/ })).toBeVisible();
@@ -117,10 +128,10 @@ test('both kinds: a verse\'s two cards can come up in the same session, recall f
   await expect(page.getByText('4 cards to study today.')).toBeVisible(); // 2 verses x 2 cards
   await study(page, id, 'flashcard');
   await expect(page.getByText('John 3:16', { exact: true })).toBeVisible(); // recall shows the verse first
-  await expect(page.getByText('Which verse is this?')).toHaveCount(0);
+  await expect(page.getByText('First example passage.')).toHaveCount(0); // the passage is hidden on the recall card
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click();
-  await expect(page.getByText('Which verse is this?')).toBeVisible(); // the same verse's identify card, same day
+  await expect(page.getByText('First example passage.')).toBeVisible(); // the same verse's identify card, same day
 });
 
 test('extra practice: from the deck menu, covers every card, and changes nothing', async ({ page }) => {

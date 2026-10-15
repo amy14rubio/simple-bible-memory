@@ -62,18 +62,42 @@ test('type: one "Show answer" button; a forgiving match suggests Good; mistakes 
 
   await page.getByLabel('Type the verse from memory').fill('FOR EXAMPLE its a test typed by you');
   await page.getByRole('button', { name: 'Show answer' }).click();
-  await expect(page.getByText('Every word matched.')).toBeVisible();
+  // everything right: only the verse, in green. No second copy, no word counts, no legend
+  await expect(page.getByRole('region', { name: 'Every word matched.' })).toContainText("For example, it's a test; typed by you.");
+  await expect(page.getByRole('region', { name: 'Your answer' })).toHaveCount(0);
+  await expect(page.getByText(/words matched|Underlined/)).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^Good.*suggested/ })).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Correct verse' })).toContainText("For example, it's a test; typed by you.");
   await page.getByRole('button', { name: /^Good/ }).click();
 
   // second card
   await page.getByLabel('Type the verse from memory').fill('for example its a quiz typed by you');
   await page.getByRole('button', { name: 'Show answer' }).click();
-  await expect(page.getByText('7 of 8 words matched.')).toBeVisible();
-  await expect(page.locator('mark')).toHaveText(/test/);
-  await expect(page.locator('del')).toHaveText(/quiz/);
+  const mine = page.getByRole('region', { name: 'Your answer' });
+  const correct = page.getByRole('region', { name: 'Correct verse' });
+  await expect(mine.locator('del')).toHaveText(/quiz/); // my wrong word, red, only in my answer
+  await expect(mine.locator('mark')).toHaveCount(0);
+  await expect(correct.locator('mark')).toHaveText(/test/); // the word I should have typed, red, only in the correct verse
+  await expect(correct.locator('del')).toHaveCount(0);
+  // right words are green and wrong ones red: text color only, no background
+  await expect(mine.locator('span').first()).toHaveCSS('color', 'rgb(21, 128, 61)');
+  await expect(mine.locator('del')).toHaveCSS('color', 'rgb(198, 40, 40)');
+  await expect(mine.locator('del')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(correct.locator('mark')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   await expect(page.getByRole('button', { name: /^Again.*suggested/ })).toBeVisible(); // 7/8 = 87.5%, below the 90% line for Hard
+});
+
+test('type: skipped words leave a red gap so a partly-right answer does not look right', async ({ page }) => {
+  const id = await createDeck(page);
+  await addCard(page, id, 'Example 1:3', 'Blessed are the poor in spirit.');
+  await setCardKinds(page, 'Recall the passage');
+  await study(page, id, 'type');
+  await page.getByLabel('Type the verse from memory').fill('blessed are in spirit');
+  await page.getByRole('button', { name: 'Show answer' }).click();
+  const mine = page.getByRole('region', { name: 'Your answer' });
+  await expect(mine.locator('mark')).toHaveCount(1); // one gap, where "the poor" was skipped
+  await expect(mine.locator('mark')).toContainText('missing words');
+  await expect(mine.locator('mark')).toHaveCSS('color', 'rgb(198, 40, 40)');
+  await expect(page.getByRole('region', { name: 'Correct verse' }).locator('mark')).toHaveText(['the', 'poor']);
 });
 
 test('type: Show answer with nothing typed reveals the verse and suggests Again', async ({ page }) => {
@@ -206,7 +230,9 @@ test('regular study never mentions practice', async ({ page }) => {
   const id = await createDeck(page);
   await addCard(page, id, 'Example 1:1', 'One.');
   await openDeck(page, id);
-  await expect(page.getByText(/practice/i)).toHaveCount(0);
+  // only what is visible: the closed deck menu keeps its "Extra practice" link in the page, hidden
+  const visiblePractice = () => page.getByText(/practice/i).filter({ visible: true });
+  await expect(visiblePractice()).toHaveCount(0);
   await study(page, id, 'flashcard');
-  await expect(page.getByText(/practice/i)).toHaveCount(0);
+  await expect(visiblePractice()).toHaveCount(0);
 });

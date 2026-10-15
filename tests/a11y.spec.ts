@@ -96,7 +96,7 @@ for (const scheme of ['light', 'dark'] as const) {
     await audit(page, 'settings with card kinds');
     await page.getByRole('radio', { name: /^Identify the verse/ }).check();
     await page.goto(`/#/decks/${id}/study/flashcard`);
-    await expect(page.getByText('Which verse is this?')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Show answer' })).toBeVisible();
     await audit(page, 'identify flashcard front');
     await page.getByRole('button', { name: 'Show answer' }).click();
     await audit(page, 'identify flashcard back');

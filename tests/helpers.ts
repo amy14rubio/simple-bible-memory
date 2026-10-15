@@ -42,8 +42,13 @@ export const openDeck = (page: Page, deckId: string) => page.goto(`/#/decks/${de
 /** Chooses which study cards each verse gets (Settings > Cards for each verse). */
 export async function setCardKinds(page: Page, kinds: 'Both' | 'Recall the passage' | 'Identify the verse') {
   await page.goto('/#/settings');
-  await page.getByRole('radio', { name: new RegExp(`^${kinds}`) }).check();
-  await expect(page.getByRole('radio', { name: new RegExp(`^${kinds}`) })).toBeChecked();
+  const radio = page.getByRole('radio', { name: new RegExp(`^${kinds}`) });
+  // The page loads the saved choice after it appears, which can undo a click made too early: retry until it sticks.
+  await expect(async () => {
+    await radio.check();
+    await page.waitForTimeout(150);
+    await expect(radio).toBeChecked({ timeout: 1000 });
+  }).toPass({ timeout: 10_000 });
 }
 
 /** The fill-in-the-blanks difficulty lives only in Settings. */

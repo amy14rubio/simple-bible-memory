@@ -241,17 +241,14 @@ export const en = {
   'type.correctVerse': 'Correct verse',
   'type.yourAnswer': 'Your answer',
   'type.exact': 'Every word matched.',
-  'type.matched': { one: '{matched} of {count} word matched.', other: '{matched} of {count} words matched.' },
   'type.missed': 'Missed or wrong word',
+  'type.missingWords': 'missing words',
   'type.extra': 'Extra word',
-  'type.legend': 'Underlined words were missed or wrong. Struck-through words were extra.',
 
   // identify the verse
-  'identify.which': 'Which verse is this?',
   'identify.inputLabel': 'Type the verse, for example John 3:16',
   'identify.placeholder': 'Type the verse, such as John 3:16',
   'identify.answer': 'Answer',
-  'identify.wrong': 'Not quite: you typed {typed}',
   'identify.choose': 'Choose the verse',
   'identify.yourAnswer': 'Your answer',
 
@@ -262,7 +259,6 @@ export const en = {
   'blanks.current': 'Blank {n}, the one to fill in now',
   'blanks.blank': 'Blank {n}',
   'blanks.score': '{correct} of {total} correct.',
-  'blanks.prompt': 'Tap the word that goes in the highlighted blank.',
   'blanks.bank': 'Word bank',
 
   // how long until a card is due

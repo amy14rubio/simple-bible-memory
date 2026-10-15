@@ -223,16 +223,13 @@ export const es: Dictionary = {
   'type.correctVerse': 'Versículo correcto',
   'type.yourAnswer': 'Tu respuesta',
   'type.exact': 'Todas las palabras coinciden.',
-  'type.matched': { one: '{matched} de {count} palabra coincide.', other: '{matched} de {count} palabras coinciden.' },
   'type.missed': 'Palabra omitida o incorrecta',
+  'type.missingWords': 'palabras que faltan',
   'type.extra': 'Palabra de más',
-  'type.legend': 'Las palabras subrayadas se omitieron o son incorrectas. Las tachadas sobraban.',
 
-  'identify.which': '¿De qué versículo es?',
   'identify.inputLabel': 'Escribe el versículo, por ejemplo Juan 3:16',
   'identify.placeholder': 'Escribe el versículo, como Juan 3:16',
   'identify.answer': 'Respuesta',
-  'identify.wrong': 'Casi: escribiste {typed}',
   'identify.choose': 'Elige el versículo',
   'identify.yourAnswer': 'Tu respuesta',
 
@@ -242,7 +239,6 @@ export const es: Dictionary = {
   'blanks.current': 'Espacio en blanco {n}, el que toca llenar ahora',
   'blanks.blank': 'Espacio en blanco {n}',
   'blanks.score': '{correct} de {total} correctas.',
-  'blanks.prompt': 'Toca la palabra que va en el espacio en blanco resaltado.',
   'blanks.bank': 'Banco de palabras',
 
   'unit.minutes': '{count} min',
