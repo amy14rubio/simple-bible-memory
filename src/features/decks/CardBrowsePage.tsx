@@ -3,7 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Plus, Search } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
-import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, IconButton, IconLink, Page, SearchBar, TitleSelect } from '../../components/ui';
+import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, IconButton, IconLink, Page, SearchBar } from '../../components/ui';
+import { DeckPicker } from '../../components/DeckPicker';
 import { useI18n } from '../../i18n/I18nProvider';
 
 /** "Card browse": a two-column table of verse references and passages. */
@@ -33,7 +34,7 @@ export function CardBrowsePage() {
           titleSlot={
             <>
               <h1 className="sr-only">{t('browse.heading', { deck: deck.title })}</h1>
-              <TitleSelect label={t('browse.deck')} value={id} options={data.all.map((d) => ({ value: d.id, label: d.title }))} onChange={(v) => navigate(`/decks/${v}/cards`)} />
+              <DeckPicker label={t('browse.deck')} value={id} options={data.all.map((d) => ({ value: d.id, label: d.title }))} onChange={(v) => navigate(`/decks/${v}/cards`)} />
             </>
           }
           actions={

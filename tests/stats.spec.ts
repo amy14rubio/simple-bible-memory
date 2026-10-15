@@ -58,7 +58,8 @@ test('statistics: totals, books progress and card counts, and the deck scope swi
   await expect(page.getByRole('dialog')).toHaveCount(0);
 
   // scope to a single deck
-  await page.getByLabel('Show statistics for').selectOption({ label: 'Beta' });
+  await page.getByRole('button', { name: /^Show statistics for:/ }).click();
+  await page.getByRole('dialog', { name: 'Select a deck' }).getByRole('button', { name: 'Beta' }).click();
   await expect(number(page, 'Total cards added')).toHaveText('1');
   await expect(number(page, 'Verses memorized')).toHaveText('0');
 });

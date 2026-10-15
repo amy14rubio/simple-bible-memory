@@ -51,6 +51,7 @@ export const en = {
   'decks.search': 'Search decks',
   'decks.searchClose': 'Close search',
   'search.clear': 'Clear search',
+  'picker.title': 'Select a deck',
   'decks.emptyTitle': 'No decks yet',
   'decks.emptyBody': 'A deck holds the verses you want to memorize.',
   'decks.emptyAction': 'Create your first deck',

@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronDown, ChevronLeft, X } from 'lucide-react';
+import { ChevronLeft, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
@@ -209,20 +209,3 @@ export function ConfirmDialog({ open, title, message, confirmLabel, onConfirm, o
 }
 
 /** A deck/scope picker that looks like a title: "[Deck name v]" in the wireframes. Pair it with an sr-only <h1>. */
-export function TitleSelect({ label, value, options, onChange }: {
-  label: string; value: string; options: { value: string; label: string }[]; onChange: (value: string) => void;
-}) {
-  return (
-    <div className="relative min-w-0 flex-1">
-      <select
-        aria-label={label}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full appearance-none truncate bg-transparent py-2 pl-2 pr-9 font-serif text-lg font-medium tracking-tight"
-      >
-        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
-      <ChevronDown size={18} aria-hidden className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted" />
-    </div>
-  );
-}

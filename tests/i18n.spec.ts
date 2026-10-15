@@ -306,8 +306,13 @@ test.describe('the app in Spanish', () => {
     await esAddCard(page, id, 'Psalm 23:1', 'Texto dos.');
     await page.goto('/#/stats');
     await expect(page.getByRole('heading', { name: 'Estadísticas' })).toBeAttached();
-    await expect(page.getByLabel('Mostrar estadísticas de')).toBeVisible();
-    await expect(page.getByLabel('Mostrar estadísticas de').locator('option:checked')).toHaveText('Todas las barajas');
+    const picker = page.getByRole('button', { name: 'Mostrar estadísticas de: Todas las barajas' });
+    await expect(picker).toBeVisible();
+    await picker.click();
+    const popup = page.getByRole('dialog', { name: 'Selecciona una baraja' });
+    await expect(popup.getByRole('button', { name: 'Libros' })).toBeVisible();
+    await expect(popup.getByRole('button', { name: 'Cancelar' })).toBeVisible();
+    await popup.getByRole('button', { name: 'Cancelar' }).click();
     await expect(page.getByText('Tarjetas añadidas')).toBeVisible();
     await expect(page.getByText('Versículos memorizados')).toBeVisible();
     await expect(page.getByText('Días desde que empezaste')).toBeVisible();

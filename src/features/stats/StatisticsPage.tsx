@@ -1,7 +1,8 @@
 import { lazy, Suspense, useState } from 'react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
-import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, Page, TitleSelect } from '../../components/ui';
+import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, Page } from '../../components/ui';
+import { DeckPicker } from '../../components/DeckPicker';
 // The charting library is large, so it is loaded only when Statistics is opened.
 const CardCountsChart = lazy(() => import('./CardCountsChart'));
 import { SectionTitle } from './InfoDrawer';
@@ -26,7 +27,7 @@ export function StatisticsPage() {
   const title = (
     <>
       <h1 className="sr-only">{t('stats.title')}</h1>
-      <TitleSelect
+      <DeckPicker
         label={t('stats.scope')}
         value={scope}
         options={[{ value: ALL, label: t('stats.allDecks') }, ...(data?.list.map((d) => ({ value: d.id, label: d.title })) ?? [])]}

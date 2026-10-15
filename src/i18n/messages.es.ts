@@ -44,6 +44,7 @@ export const es: Dictionary = {
   'decks.search': 'Buscar barajas',
   'decks.searchClose': 'Cerrar búsqueda',
   'search.clear': 'Borrar búsqueda',
+  'picker.title': 'Selecciona una baraja',
   'decks.emptyTitle': 'Aún no hay barajas',
   'decks.emptyBody': 'Una baraja guarda los versículos que quieres memorizar.',
   'decks.emptyAction': 'Crea tu primera baraja',

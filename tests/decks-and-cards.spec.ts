@@ -56,7 +56,8 @@ test('deck menu: browse cards and the deck switcher', async ({ page }) => {
   await expect(page.getByRole('columnheader', { name: 'Verse' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Passage' })).toBeVisible();
 
-  await page.getByLabel('Deck', { exact: true }).selectOption({ label: 'Alpha' });
+  await page.getByRole('button', { name: /^Deck:/ }).click();
+  await page.getByRole('dialog', { name: 'Select a deck' }).getByRole('button', { name: 'Alpha' }).click();
   await expect(page.getByRole('link', { name: /John 3:16/ })).toBeVisible();
   await expect(page.getByRole('link', { name: /Psalm 23:1/ })).toHaveCount(0);
 });
@@ -172,4 +173,45 @@ test('search works like Anki: the top bar becomes the search field, with a back 
   await page.getByRole('button', { name: 'Search decks' }).click();
   await page.keyboard.press('Escape'); // Escape leaves search too
   await expect(page.getByRole('button', { name: 'Search decks' })).toBeVisible();
+});
+
+test('the deck picker is a popup: title, search and + on top, the deck list, and Cancel', async ({ page }) => {
+  const a = await createDeck(page, 'Alpha');
+  await createDeck(page, 'Beta');
+  await createDeck(page, 'Gamma');
+  await page.goto(`/#/decks/${a}/cards`);
+  await expect(page.locator('select')).toHaveCount(0); // no plain dropdown any more
+
+  await page.getByRole('button', { name: /^Deck:/ }).click();
+  const popup = page.getByRole('dialog', { name: 'Select a deck' });
+  await expect(popup.getByRole('heading', { name: 'Select a deck' })).toBeVisible();
+  await expect(popup.getByRole('button', { name: 'Search decks' })).toBeVisible();
+  await expect(popup.getByRole('button', { name: 'New deck' })).toBeVisible();
+  await expect(popup.getByRole('button', { name: /^(Alpha|Beta|Gamma)$/ })).toHaveCount(3);
+
+  // search turns the popup's header into a search field, with a back arrow; + stays
+  await popup.getByRole('button', { name: 'Search decks' }).click();
+  const input = popup.getByLabel('Search decks', { exact: true });
+  await expect(input).toBeFocused();
+  await expect(popup.getByRole('heading', { name: 'Select a deck' })).toHaveCount(0);
+  await expect(popup.getByRole('button', { name: 'New deck' })).toBeVisible();
+  await input.fill('gam');
+  await expect(popup.getByRole('button', { name: /^(Alpha|Beta|Gamma)$/ })).toHaveText(['Gamma']);
+  await input.fill('zzz');
+  await expect(popup.getByText('No decks match "zzz".')).toBeVisible();
+  await popup.getByRole('button', { name: 'Close search' }).click();
+  await expect(popup.getByRole('heading', { name: 'Select a deck' })).toBeVisible();
+
+  // Cancel closes it without changing anything
+  await popup.getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Deck: Alpha' })).toBeVisible();
+
+  // choosing a deck goes to its cards; + goes to the New deck form
+  await page.getByRole('button', { name: /^Deck:/ }).click();
+  await page.getByRole('dialog', { name: 'Select a deck' }).getByRole('button', { name: 'Beta' }).click();
+  await expect(page.getByRole('button', { name: 'Deck: Beta' })).toBeVisible();
+  await page.getByRole('button', { name: /^Deck:/ }).click();
+  await page.getByRole('dialog', { name: 'Select a deck' }).getByRole('button', { name: 'New deck' }).click();
+  await expect(page).toHaveURL(/#\/decks\/new$/);
 });
