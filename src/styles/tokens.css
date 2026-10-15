@@ -58,6 +58,10 @@
   --color-accent: var(--accent);
   --color-danger: var(--danger);
   --color-ring: var(--ring);
+  /* Names shadcn components expect, mapped onto our own tokens. (Our `muted` is gray TEXT, so `muted-foreground` is the same gray.) */
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted);
   --color-again: var(--rating-again);
   --color-hard: var(--rating-hard);
   --color-good: var(--rating-good);

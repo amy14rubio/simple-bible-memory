@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { addCard, createDeck, openDeck, setBlankDifficulty, setCardKinds } from './helpers';
+import { addCard, createDeck, openDeck, setBlankDifficulty, setCardKinds, tapFirstBankWord, wordBankOpen } from './helpers';
 
 const study = (page: import('@playwright/test').Page, deckId: string, mode: 'flashcard' | 'type' | 'blanks') => page.goto(`/#/decks/${deckId}/study/${mode}`);
 
@@ -129,14 +129,13 @@ test.describe('blanks with a word bank', () => {
     const bank = page.getByRole('group', { name: 'Word bank' });
     await expect(bank).toBeVisible();
     const banks: string[][] = [];
-    while ((await bank.count()) > 0) {
+    while (await wordBankOpen(page)) {
       await expect(page.locator('[aria-current="step"]')).toHaveCount(1); // always exactly one highlighted blank
       const words = await bank.getByRole('button').allInnerTexts();
       expect(words).toHaveLength(8); // never shrinks: nothing is used up
       expect(new Set(words).size).toBe(8); // all different
       banks.push(words);
-      await bank.getByRole('button').first().click();
-      await page.waitForTimeout(50);
+      await tapFirstBankWord(page);
     }
     expect(banks.length).toBeGreaterThanOrEqual(3);
     // reshuffled: the arrangement changes between blanks
@@ -172,7 +171,7 @@ test.describe('blanks with a word bank', () => {
       await expect(bank).toBeVisible();
       expect(await bank.getByRole('button').count()).toBe(8); // the same at every difficulty
       let taps = 0;
-      while ((await bank.count()) > 0) { await bank.getByRole('button').first().click(); taps++; await page.waitForTimeout(30); }
+      while (await wordBankOpen(page)) { await tapFirstBankWord(page); taps++; }
       return taps;
     };
     const easy = await blanksAt('Easy');
@@ -184,7 +183,7 @@ test.describe('blanks with a word bank', () => {
     const bank = page.getByRole('group', { name: 'Word bank' });
     await expect(bank).toBeVisible();
     let hard = 0;
-    while ((await bank.count()) > 0) { await bank.getByRole('button').first().click(); hard++; await page.waitForTimeout(30); }
+    while (await wordBankOpen(page)) { await tapFirstBankWord(page); hard++; }
     expect(hard).toBeGreaterThan(easy);
   });
 });

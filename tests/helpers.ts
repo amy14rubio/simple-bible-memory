@@ -20,6 +20,23 @@ export async function addCard(page: Page, deckId: string, reference: string, pas
   await expect(page.getByText(reference, { exact: true })).toBeVisible();
 }
 
+const WORD_BANK = /^(Word bank|Banco de palabras)$/;
+
+/** Is the word bank on screen? (False once every blank has been filled in.) */
+export const wordBankOpen = (page: Page) => page.getByRole('group', { name: WORD_BANK }).isVisible();
+
+/**
+ * Taps the first word in the word bank, then waits until the screen has really moved on: the next blank is highlighted,
+ * or the exercise is finished. (A fixed sleep here made tests flaky when the machine was busy.)
+ */
+export async function tapFirstBankWord(page: Page): Promise<void> {
+  const bank = page.getByRole('group', { name: WORD_BANK });
+  const current = page.locator('[aria-current="step"]');
+  const before = await current.textContent();
+  await bank.getByRole('button').first().click();
+  await expect.poll(async () => ((await bank.isVisible()) ? await current.textContent() : 'finished')).not.toBe(before);
+}
+
 export const openDeck = (page: Page, deckId: string) => page.goto(`/#/decks/${deckId}`);
 
 /** Chooses which study cards each verse gets (Settings > Cards for each verse). */

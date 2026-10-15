@@ -90,19 +90,14 @@ test('searching decks and cards filters the lists', async ({ page }) => {
   await expect(page.getByRole('link', { name: /John 3:16/ })).toHaveCount(0);
 });
 
-test('the + button fans out New deck and New card; Escape closes it', async ({ page }) => {
+test('the + button opens the create drawer, and choosing New deck goes to the new deck form', async ({ page }) => {
   await page.goto('/');
-  const add = page.getByRole('button', { name: 'Add' });
-  await add.click();
-  await expect(add).toHaveAttribute('aria-expanded', 'true');
-  await expect(page.getByRole('button', { name: 'New deck' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'New card' })).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('button', { name: 'New deck' })).toHaveCount(0);
-
-  await add.click();
-  await page.getByRole('button', { name: 'New deck' }).click();
+  await page.getByRole('button', { name: 'Add' }).click();
+  const drawer = page.getByRole('dialog', { name: 'Create new' });
+  await expect(drawer).toBeVisible();
+  await drawer.getByRole('button', { name: /New deck/ }).click();
   await expect(page.getByRole('heading', { name: 'New deck' })).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
 test('delete card and delete deck both ask for confirmation', async ({ page }) => {

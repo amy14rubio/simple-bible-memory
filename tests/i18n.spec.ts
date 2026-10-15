@@ -1,6 +1,6 @@
 import { test, expect, type Browser, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { createDeck } from './helpers';
+import { createDeck, tapFirstBankWord, wordBankOpen } from './helpers';
 
 const spanishPage = async (browser: Browser, colorScheme: 'light' | 'dark' = 'light') => {
   const ctx = await browser.newContext({ locale: 'es-ES', colorScheme });
@@ -284,7 +284,7 @@ test.describe('the app in Spanish', () => {
     const bank = page.getByRole('group', { name: 'Banco de palabras' });
     await expect(bank).toBeVisible();
     expect(await bank.getByRole('button').count()).toBeGreaterThan(1);
-    while ((await bank.count()) > 0) { await bank.getByRole('button').first().click(); await page.waitForTimeout(40); }
+    while (await wordBankOpen(page)) await tapFirstBankWord(page);
     await expect(page.getByText(/\d+ de \d+ correctas\./)).toBeVisible();
 
     await page.goto('/#/settings');

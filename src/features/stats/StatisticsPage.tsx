@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, Page, TitleSelect } from '../../components/ui';
-import { Donut } from './Donut';
+// The charting library is large, so it is loaded only when Statistics is opened.
+const CardCountsChart = lazy(() => import('./CardCountsChart'));
 import { loadCardKinds } from '../study/cardKinds';
 import { useI18n } from '../../i18n/I18nProvider';
 
 const ALL = 'all';
 
 export function StatisticsPage() {
-  const { t, bookName } = useI18n();
+  const { t, bookName, language } = useI18n();
   const { decks, stats, settings } = useRepositories();
   const [scope, setScope] = useState(ALL);
   const { data, error, loading } = useAsync(
@@ -89,15 +90,21 @@ export function StatisticsPage() {
         <section aria-labelledby="counts" className="space-y-6">
           <h2 id="counts" className="text-center font-serif text-xl">{t('stats.counts')}</h2>
           {kinds.length > 1 && <p className="text-center text-sm text-muted">{t('stats.bothNote')}</p>}
-          <Donut
+          <Suspense fallback={<div aria-hidden className="mx-auto h-[300px]" />}>
+          <CardCountsChart
+            legendLabel={t('stats.legendLabel')}
+            describe={(slice, fraction) =>
+              t('stats.slice', { label: slice.label, count: slice.value, percent: new Intl.NumberFormat(language, { style: 'percent', maximumFractionDigits: 0 }).format(fraction) })
+            }
             caption={t('stats.donut', { new: o.counts.new, learning: o.counts.learning, young: o.counts.young, mature: o.counts.mature })}
             slices={[
-              { label: t('stage.new'), value: o.counts.new, color: 'var(--muted)' },
-              { label: t('stage.learning'), value: o.counts.learning, color: 'var(--accent)' },
-              { label: t('stage.young'), value: o.counts.young, color: 'color-mix(in srgb, var(--foreground) 55%, var(--background))' },
-              { label: t('stage.mature'), value: o.counts.mature, color: 'var(--foreground)' },
+              { key: 'new', label: t('stage.new'), value: o.counts.new, color: 'color-mix(in srgb, var(--foreground) 22%, var(--background))' },
+              { key: 'learning', label: t('stage.learning'), value: o.counts.learning, color: 'var(--accent)' },
+              { key: 'young', label: t('stage.young'), value: o.counts.young, color: 'color-mix(in srgb, var(--foreground) 55%, var(--background))' },
+              { key: 'mature', label: t('stage.mature'), value: o.counts.mature, color: 'var(--foreground)' },
             ]}
           />
+          </Suspense>
         </section>
       </Page>
     </>

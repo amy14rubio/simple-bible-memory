@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { addCard } from './helpers';
+import { addCard, tapFirstBankWord, wordBankOpen } from './helpers';
 
 async function audit(page: Page, label: string) {
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
@@ -71,10 +71,9 @@ for (const scheme of ['light', 'dark'] as const) {
     await page.goto(`/#/decks/${id}`);
     await page.getByRole('link', { name: /Blanks/ }).click();
     await audit(page, 'blanks word bank');
-    const bank = page.getByRole('group', { name: 'Word bank' });
-    await bank.getByRole('button').first().click();
+    await tapFirstBankWord(page);
     await audit(page, 'blanks partly filled');
-    while ((await bank.count()) > 0) await bank.getByRole('button').first().click();
+    while (await wordBankOpen(page)) await tapFirstBankWord(page);
     await audit(page, 'blanks result');
 
     // split into separate verses: the preview, and the explanation when it can't split

@@ -20,13 +20,14 @@ Requires Node 20+.
 ## What it does
 
 - Decks and verse cards: create, rename, edit, delete with confirmation, browse as a Verse / Passage table, search.
-- Statistics: totals, memorized and mastered verses, days since starting, progress per book, and card counts by stage.
+- Statistics: totals, memorized and mastered verses, days since starting, progress per book, and a pie chart of card counts by stage (tap a slice or legend item to pop it out and see its count and share).
 - Two study cards per verse, each scheduled separately: **recall** (you see the verse, recall the passage) and **identify** (you see the passage, name the verse). Choose both or just one in Settings.
 - Three study modes: **Flashcard** (flips both ways), **Type** (type the passage, or type the verse; word-level feedback), **Blanks** (recall: fill in the missing words by tapping them from an 8-word bank that reshuffles after every tap; identify: pick the right verse from several options).
 - FSRS scheduling (ts-fsrs) with a six-month cap on review gaps, review history, due queue, new-cards-per-day limit; every study session is recorded. **Extra practice** (deck menu) lets you go through every card without affecting your schedule or statistics.
 - Add cards one at a time ("Add another card") or paste a chapter or verse range and **split it into one card per verse** (with a preview first).
 - Rating labels are colored like Anki (Again red, Hard orange, Good green, Easy blue) and so are the new / learning / to-review counters. Only the text is colored, and light mode uses deeper shades so it stays readable.
 - **English and Spanish** interface (Settings > Language; "System" follows your browser). Only the app's own text is translated: verses, passages, references, sources and deck names stay exactly as you typed them.
+- The round **+** button opens a bottom **drawer** (swipe it down, tap outside, press Escape or tap Cancel to close) to create a deck or a card.
 - Light/dark/system theme, keyboard shortcuts (1-4 to rate), accessible (every screen is axe-checked in both themes).
 - Design: scripture is set in Literata, the interface in Instrument Sans, with one accent (a deep oxblood).
 - Optional "Find passage on Bible Gateway" link that opens the site in your browser. The app never fetches or copies Bible text.

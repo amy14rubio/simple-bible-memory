@@ -25,6 +25,8 @@ export const es: Dictionary = {
   'nav.statistics': 'Estadísticas',
   'nav.add': 'Añadir',
   'nav.closeMenu': 'Cerrar menú',
+  'create.title': 'Crear nuevo',
+  'create.description': 'Elige qué quieres crear.',
 
   'error.deckGone': 'Esta baraja ya no existe.',
   'error.cardGone': 'Esta tarjeta ya no existe.',
@@ -184,6 +186,8 @@ export const es: Dictionary = {
   'stats.memorizedNote': 'Un versículo cuenta como memorizado cuando termina la fase de aprendizaje.',
   'stats.counts': 'Tarjetas por etapa',
   'stats.bothNote': 'Cada versículo tiene dos tarjetas, así que aquí se cuentan ambas.',
+  'stats.legendLabel': 'Resalta una etapa en el gráfico',
+  'stats.slice': { one: '{label}: {count} tarjeta ({percent})', other: '{label}: {count} tarjetas ({percent})' },
   'stats.donut': 'Tarjetas por etapa: {new} nuevas, {learning} en aprendizaje, {young} jóvenes, {mature} maduras',
   'stage.new': 'Nuevas',
   'stage.learning': 'En aprendizaje',
