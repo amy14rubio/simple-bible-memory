@@ -90,8 +90,8 @@ export function SearchBar({ label, placeholder, value, onChange, backLabel, onCl
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
-        // no outline box (the caret shows where you are, as in Anki); the browser's own clear button is hidden so ours looks the same everywhere
-        className="min-w-0 flex-1 bg-transparent px-2 text-base outline-none placeholder:text-muted [&::-webkit-search-cancel-button]:appearance-none"
+        // the browser's own clear button is hidden so ours looks the same everywhere
+        className="min-w-0 flex-1 bg-transparent px-2 text-base placeholder:text-muted [&::-webkit-search-cancel-button]:appearance-none"
       />
       {value && (
         <IconButton label={t('search.clear')} onClick={() => { onChange(''); input.current?.focus(); }}><X size={20} aria-hidden /></IconButton>

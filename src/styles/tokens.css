@@ -83,7 +83,12 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
+/* Keyboard focus ring for buttons, links, radios and checkboxes (it never shows for taps or clicks). */
 :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+/* Text fields and dropdowns have no box, Notion-style: the caret shows where you are. */
+input:not([type='radio'], [type='checkbox']):focus-visible,
+textarea:focus-visible,
+select:focus-visible { outline: none; }
 
 /* Scripture is always set in the serif, with the extra leading serif text needs. */
 .scripture { font-family: var(--font-serif); line-height: 1.7; font-optical-sizing: auto; }
