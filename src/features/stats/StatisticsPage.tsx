@@ -70,7 +70,7 @@ export function StatisticsPage() {
           {headline.map(([label, n]) => (
             <div key={label}>
               <dd className="font-serif text-5xl font-medium tracking-tight">{n}</dd>
-              <dt className="mt-1 text-sm text-muted">{label}</dt>
+              <dt className="mt-2.5 text-sm text-muted">{label}</dt>
             </div>
           ))}
         </dl>
@@ -114,7 +114,7 @@ export function StatisticsPage() {
               </dl>
             }
           />
-          <Suspense fallback={<div aria-hidden className="mx-auto h-[300px]" />}>
+          <Suspense fallback={<div aria-hidden className="mx-auto h-[260px]" />}>
           <CardCountsChart
             legendLabel={t('stats.legendLabel')}
             describe={(slice, fraction) =>

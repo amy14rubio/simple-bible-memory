@@ -79,13 +79,14 @@ export default function CardCountsChart({ slices, caption, legendLabel, describe
         className="w-full"
         onClick={(e) => { if (!(e.target as Element).closest('.recharts-pie-sector')) setSelected(null); }}
       >
-        <ChartContainer config={config} className="mx-auto aspect-square max-h-[300px]">
+        <ChartContainer config={config} className="mx-auto aspect-square max-h-[260px]">
           <PieChart accessibilityLayer={false}>
-            {empty && <Pie data={[{ name: 'empty', value: 1 }]} dataKey="value" fill="var(--surface)" legendType="none" isAnimationActive={false} />}
+            {empty && <Pie data={[{ name: 'empty', value: 1 }]} dataKey="value" outerRadius="85%" fill="var(--surface)" legendType="none" isAnimationActive={false} />}
             <Pie
               data={data}
               dataKey="value"
               nameKey="name"
+              outerRadius="85%"
               stroke="var(--background)"
               strokeWidth={slices.filter((s) => s.value > 0).length > 1 ? 2 : 0} // a lone slice would show its seam as a stray line
               isAnimationActive={false}
@@ -101,14 +102,14 @@ export default function CardCountsChart({ slices, caption, legendLabel, describe
         {current ? describe(current, empty ? 0 : current.value / total) : ''}
       </p>
 
-      <div role="group" aria-label={legendLabel} className="flex flex-wrap justify-center gap-x-1 gap-y-1">
+      <div role="group" aria-label={legendLabel} className="grid w-fit grid-cols-2 gap-x-6 gap-y-1">
         {slices.map((s) => (
           <button
             key={s.key}
             type="button"
             aria-pressed={selected === s.key}
             onClick={() => toggle(s.key)}
-            className="flex min-h-9 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap hover:bg-foreground/10 aria-pressed:bg-foreground/10 aria-pressed:font-medium"
+            className="flex min-h-9 items-center gap-1.5 justify-self-start rounded-md px-2.5 text-xs whitespace-nowrap hover:bg-foreground/10 aria-pressed:bg-foreground/10 aria-pressed:font-medium"
           >
             <span aria-hidden className="size-2 shrink-0 rounded-[2px]" style={{ backgroundColor: s.color }} />
             {s.label} {s.value}

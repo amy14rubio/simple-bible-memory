@@ -25,7 +25,7 @@ export function SectionTitle({ id, title, info }: { id: string; title: string; i
             onClick={() => setOpen(true)}
             className="-my-2 flex size-10 items-center justify-center rounded-full text-muted hover:text-foreground"
           >
-            <Info size={18} aria-hidden />
+            <Info size={18} aria-hidden className="translate-y-0.5" />
           </button>
           <Drawer open={open} onOpenChange={setOpen} showSwipeHandle>
             <DrawerContent className="mx-auto max-w-2xl pb-[env(safe-area-inset-bottom)]">
