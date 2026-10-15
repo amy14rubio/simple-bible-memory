@@ -34,8 +34,7 @@ test('flashcard: reveal, rate Easy, finish; the review is recorded', async ({ pa
   await expect(page.getByText('Example verse text typed by the user.')).toBeVisible();
   await page.getByRole('button', { name: /^Easy/ }).click();
   await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
-  await expect(page.getByText(/1 Easy/)).toBeVisible();
-  await expect(page.getByText('Your reviews were saved and your schedule updated.')).toBeVisible();
+  await expect(page.getByText('1 card reviewed')).toBeVisible();
 });
 
 test('flashcard: keyboard rating with key 1 records Again and the card comes back', async ({ page }) => {
@@ -130,7 +129,6 @@ test.describe('blanks with a word bank', () => {
     const verse = page.locator('p.scripture');
     await expect(verse.getByText('Amen')).toHaveCSS('color', INK_LIGHT); // plain: no green, no highlight
     await expect(verse.getByText('Amen')).not.toHaveCSS('text-decoration-line', 'underline');
-    await expect(page.getByText('1 of 1 correct.')).toBeVisible();
     await expect(bank).toHaveCount(0); // finished: the bank gives way to the rating buttons
     await expect(page.getByRole('button', { name: /^Good.*suggested/ })).toBeVisible();
     await page.getByRole('button', { name: /^Good/ }).click();
@@ -139,7 +137,6 @@ test.describe('blanks with a word bank', () => {
     await page.getByRole('group', { name: 'Word bank' }).getByRole('button', { name: 'Amen' }).click();
     await expect(verse.getByText('Alleluia')).toHaveCSS('color', RED_LIGHT); // the CORRECT word, in red
     await expect(verse.getByText('Alleluia')).toHaveCSS('text-decoration-line', 'underline'); // not colour alone
-    await expect(page.getByText('0 of 1 correct.')).toBeVisible();
     await expect(page.getByRole('button', { name: /^Again.*suggested/ })).toBeVisible();
   });
 
@@ -167,7 +164,6 @@ test.describe('blanks with a word bank', () => {
     // and words from earlier banks come back (the same few verse words keep appearing)
     const first = new Set(banks[0]);
     expect(banks[1]!.some((w) => first.has(w))).toBe(true);
-    await expect(page.getByText(new RegExp(`of ${banks.length} correct`))).toBeVisible();
     await expect(page.getByRole('button', { name: /^Again/ })).toBeVisible(); // rating buttons appear once every blank is done
   });
 

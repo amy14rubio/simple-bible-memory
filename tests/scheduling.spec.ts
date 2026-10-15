@@ -21,7 +21,7 @@ test('new card shows interval hints; Good brings it back soon (learning); Easy g
   await page.getByRole('button', { name: /^Easy/ }).click();
 
   await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
-  await expect(page.getByText('Your reviews were saved and your schedule updated.')).toBeVisible();
+  await expect(page.getByText('1 card reviewed')).toBeVisible();
 
   // open-deck view: nothing due now, and it says when the next review is
   await page.getByRole('link', { name: 'Back to deck' }).click();

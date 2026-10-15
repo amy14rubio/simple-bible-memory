@@ -30,7 +30,6 @@ export function IdentifyFlashcard({ card, intervals, onRate }: ModeProps) {
         {revealed && (
           <div className="space-y-1">
             <p className="font-serif text-3xl font-medium tracking-tight">{card.reference}</p>
-            {card.note && <p className="text-sm text-muted">{card.note}</p>}
           </div>
         )}
       </div>
@@ -87,7 +86,6 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
                 ) : card.reference}
               </p>
             </div>
-            {card.note && <p className="text-sm text-muted">{card.note}</p>}
           </section>
         )}
       </div>
@@ -143,7 +141,6 @@ export function IdentifyChoice({ card, references, sessionSeed, intervals, onRat
             );
           })}
         </div>
-        {picked !== undefined && card.note && <p className="text-center text-sm text-muted">{card.note}</p>}
       </div>
       {picked !== undefined && (
         <ActionBar>

@@ -64,7 +64,6 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
             );
           })}
         </p>
-        {result && <p className="text-center text-sm text-muted">{t('blanks.score', { correct: result.correctCount, total: result.total })}</p>}
         <p role="status" className="sr-only">{announcement}</p>
       </div>
 

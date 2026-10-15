@@ -146,7 +146,8 @@ test('extra practice: from the deck menu, covers every card, and changes nothing
   await expect(page.getByText(/Nothing you do here counts toward your schedule or statistics/)).toBeVisible();
   await expect(page.getByRole('dialog')).toHaveCount(0); // the menu closed
   await page.getByRole('link', { name: /Flashcard/ }).click();
-  await expect(page.getByText("Extra practice: your schedule and statistics won't change.")).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Extra practice' })).toBeVisible(); // the title next to the back arrow, no small print
+  await expect(page.getByText(/schedule and statistics/)).toHaveCount(0);
   // both card types are included (recall and identify), in some order
   await page.getByRole('button', { name: 'Show answer' }).click();
   await expect(page.getByRole('button', { name: /^Easy/ })).toBeVisible();
@@ -154,7 +155,15 @@ test('extra practice: from the deck menu, covers every card, and changes nothing
   await page.getByRole('button', { name: /^Easy/ }).click();
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click();
-  await expect(page.getByText('Extra practice only: your schedule and statistics were not changed.')).toBeVisible();
+  // the finished screen: just the title, the count and two stacked buttons
+  await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
+  await expect(page.getByText('2 cards reviewed')).toBeVisible();
+  await expect(page.getByText(/schedule and statistics/)).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Browse cards' })).toHaveCount(0);
+  const again = page.getByRole('button', { name: 'Practice again' });
+  const back = page.getByRole('link', { name: 'Back to deck' });
+  const [a, b] = [await again.boundingBox(), await back.boundingBox()];
+  expect(b!.y).toBeGreaterThan(a!.y + a!.height - 1); // stacked, not side by side
 
   await page.getByRole('link', { name: 'Back to deck' }).click();
   await expect(page.getByText('2 cards to study today.')).toBeVisible(); // nothing was recorded, so both cards are still waiting

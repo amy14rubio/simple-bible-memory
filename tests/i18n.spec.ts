@@ -243,8 +243,7 @@ test.describe('the app in Spanish', () => {
     await page.getByRole('button', { name: /^Fácil/ }).click();
 
     await expect(page.getByRole('heading', { name: 'Sesión completada' })).toBeVisible();
-    await expect(page.getByText(/2 repasos: 0 Otra vez, 0 Difícil, 0 Bien, 2 Fácil\./)).toBeVisible();
-    await expect(page.getByText('Tus repasos se guardaron y tu calendario se actualizó.')).toBeVisible();
+    await expect(page.getByText('2 tarjetas repasadas')).toBeVisible();
     await page.getByRole('link', { name: 'Volver a la baraja' }).click();
     await expect(page.getByRole('heading', { name: 'Estás al día' })).toBeVisible();
     await expect(page.getByText(/Tu próximo repaso es en \d+ (min|h|d|mes|meses)/)).toBeVisible();
@@ -288,7 +287,7 @@ test.describe('the app in Spanish', () => {
     await expect(bank).toBeVisible();
     expect(await bank.getByRole('button').count()).toBeGreaterThan(1);
     while (await wordBankOpen(page)) await tapFirstBankWord(page);
-    await expect(page.getByText(/\d+ de \d+ correctas\./)).toBeVisible();
+    await expect(page.getByRole('button', { name: /^(Otra vez|Difícil|Bien|Fácil)/ }).first()).toBeVisible(); // every blank is done
 
     await page.goto('/#/settings');
     await page.getByRole('radio', { name: /^Identificar el versículo/ }).check();
