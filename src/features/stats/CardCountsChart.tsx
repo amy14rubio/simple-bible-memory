@@ -87,7 +87,7 @@ export default function CardCountsChart({ slices, caption, legendLabel, describe
               dataKey="value"
               nameKey="name"
               stroke="var(--background)"
-              strokeWidth={2}
+              strokeWidth={slices.filter((s) => s.value > 0).length > 1 ? 2 : 0} // a lone slice would show its seam as a stray line
               isAnimationActive={false}
               shape={shape}
               onClick={(_, index) => { const s = slices[index]; if (s) toggle(s.key); }}

@@ -4,6 +4,7 @@ import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, Page, TitleSelect } from '../../components/ui';
 // The charting library is large, so it is loaded only when Statistics is opened.
 const CardCountsChart = lazy(() => import('./CardCountsChart'));
+import { SectionTitle } from './InfoDrawer';
 import { loadCardKinds } from '../study/cardKinds';
 import { useI18n } from '../../i18n/I18nProvider';
 
@@ -37,7 +38,7 @@ export function StatisticsPage() {
   if (error) return <><AppBar back={back} title={t('stats.title')} /><Page><ErrorMessage error={error} /></Page></>;
   if (loading && !data) return <AppBar back={back} title={t('stats.title')} />;
   if (!data) return null;
-  const { list, kinds, overview: o } = data;
+  const { list, overview: o } = data;
   if (list.length === 0) {
     return (
       <>
@@ -54,6 +55,13 @@ export function StatisticsPage() {
     [t('stats.days'), o.daysSinceStarting],
   ];
 
+  const stages = [
+    { key: 'new', label: t('stage.new'), info: t('stage.newInfo'), value: o.counts.new, color: 'color-mix(in srgb, var(--foreground) 22%, var(--background))' },
+    { key: 'learning', label: t('stage.learning'), info: t('stage.learningInfo'), value: o.counts.learning, color: 'var(--accent)' },
+    { key: 'young', label: t('stage.young'), info: t('stage.youngInfo'), value: o.counts.young, color: 'color-mix(in srgb, var(--foreground) 55%, var(--background))' },
+    { key: 'mature', label: t('stage.mature'), info: t('stage.matureInfo'), value: o.counts.mature, color: 'var(--foreground)' },
+  ];
+
   return (
     <>
       <AppBar back={back} titleSlot={title} />
@@ -68,7 +76,7 @@ export function StatisticsPage() {
         </dl>
 
         <section aria-labelledby="books" className="space-y-4">
-          <h2 id="books" className="text-center font-serif text-xl">{t('stats.books')}</h2>
+          <SectionTitle id="books" title={t('stats.books')} info={t('stats.memorizedNote')} />
           {o.books.length === 0 ? (
             <p className="text-center text-muted">{t('stats.booksEmpty')}</p>
           ) : (
@@ -84,12 +92,24 @@ export function StatisticsPage() {
               ))}
             </ul>
           )}
-          <p className="text-center text-sm text-muted">{t('stats.memorizedNote')}</p>
         </section>
 
         <section aria-labelledby="counts" className="space-y-6">
-          <h2 id="counts" className="text-center font-serif text-xl">{t('stats.counts')}</h2>
-          {kinds.length > 1 && <p className="text-center text-sm text-muted">{t('stats.bothNote')}</p>}
+          <SectionTitle
+            id="counts"
+            title={t('stats.counts')}
+            info={
+              <dl className="grid gap-4">
+                {stages.map((st) => (
+                  <div key={st.key} className="grid grid-cols-[1rem_1fr] items-baseline gap-x-3">
+                    <span aria-hidden className="size-3 translate-y-0.5 rounded-full border border-border" style={{ background: st.color }} />
+                    <dt className="font-semibold">{st.label}</dt>
+                    <dd className="col-start-2 text-muted">{st.info}</dd>
+                  </div>
+                ))}
+              </dl>
+            }
+          />
           <Suspense fallback={<div aria-hidden className="mx-auto h-[300px]" />}>
           <CardCountsChart
             legendLabel={t('stats.legendLabel')}
@@ -97,12 +117,7 @@ export function StatisticsPage() {
               t('stats.slice', { label: slice.label, count: slice.value, percent: new Intl.NumberFormat(language, { style: 'percent', maximumFractionDigits: 0 }).format(fraction) })
             }
             caption={t('stats.donut', { new: o.counts.new, learning: o.counts.learning, young: o.counts.young, mature: o.counts.mature })}
-            slices={[
-              { key: 'new', label: t('stage.new'), value: o.counts.new, color: 'color-mix(in srgb, var(--foreground) 22%, var(--background))' },
-              { key: 'learning', label: t('stage.learning'), value: o.counts.learning, color: 'var(--accent)' },
-              { key: 'young', label: t('stage.young'), value: o.counts.young, color: 'color-mix(in srgb, var(--foreground) 55%, var(--background))' },
-              { key: 'mature', label: t('stage.mature'), value: o.counts.mature, color: 'var(--foreground)' },
-            ]}
+            slices={stages}
           />
           </Suspense>
         </section>

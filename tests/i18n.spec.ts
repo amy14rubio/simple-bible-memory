@@ -315,7 +315,9 @@ test.describe('the app in Spanish', () => {
     await expect(books.getByText('Juan')).toBeVisible(); // "John" in the app, "Juan" in the Spanish interface
     await expect(books.getByText('Salmos')).toBeVisible();
     await expect(page.getByRole('img', { name: /^Tarjetas por etapa: \d+ nuevas, 0 en aprendizaje/ })).toBeVisible();
-    await expect(page.getByText('Cada versículo tiene dos tarjetas, así que aquí se cuentan ambas.')).toBeVisible();
+    await page.getByRole('button', { name: 'Acerca de Tarjetas por etapa' }).click();
+    await expect(page.getByRole('dialog').getByText('Aún no se han estudiado.')).toBeVisible();
+    await expect(page.getByRole('dialog').getByRole('button', { name: 'Cerrar' })).toBeVisible();
     await ctx.close();
   });
 
