@@ -80,14 +80,18 @@ export function StatisticsPage() {
           {o.books.length === 0 ? (
             <p className="text-center text-muted">{t('stats.booksEmpty')}</p>
           ) : (
-            <ul className="space-y-3">
+            // Name and count share a line, the bar sits underneath at full width: every bar is the same length
+            // whatever the name. Capped and centred so it never becomes a very long stripe on a wide screen.
+            <ul className="mx-auto max-w-sm space-y-5 px-4">
               {o.books.map((b) => (
-                <li key={b.book} className="grid grid-cols-[7.5rem_1fr_3rem] items-center gap-3">
-                  <span className="truncate font-serif">{bookName(b.book)}</span>
+                <li key={b.book} className="space-y-2">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <span className="min-w-0 truncate font-serif">{bookName(b.book)}</span>
+                    <span className="shrink-0 text-sm text-muted">{b.memorized}/{b.total}</span>
+                  </div>
                   <div role="img" aria-label={t('stats.bookProgress', { memorized: b.memorized, total: b.total })} className="h-2 overflow-hidden rounded-full bg-surface">
                     <div className="h-full rounded-full bg-accent transition-[width] duration-500" style={{ width: `${(b.memorized / b.total) * 100}%` }} />
                   </div>
-                  <span className="text-right text-sm text-muted">{b.memorized}/{b.total}</span>
                 </li>
               ))}
             </ul>
