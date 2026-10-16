@@ -20,6 +20,7 @@ export function DiscoverDeckPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [reporting, setReporting] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   const { data, loading, error: loadError } = useAsync(async () => {
     const { discover } = await loadBackends();
@@ -60,13 +61,17 @@ export function DiscoverDeckPage() {
         </div>
 
         <section aria-label={t('discover.preview')} className="space-y-3 rounded-3xl bg-panel px-5 py-5">
-          {cards.slice(0, PREVIEW).map((c) => (
+          {(showAll ? cards : cards.slice(0, PREVIEW)).map((c) => (
             <div key={c.id}>
               <p className="font-serif font-medium">{c.reference}</p>
-              <p className="scripture line-clamp-2 text-[0.9375rem] leading-normal text-muted">{c.verseText}</p>
+              <p className={`scripture text-[0.9375rem] leading-normal text-muted ${showAll ? '' : 'line-clamp-2'}`}>{c.verseText}</p>
             </div>
           ))}
-          {cards.length > PREVIEW && <p className="text-sm text-muted">{t('discover.moreCards', { count: cards.length - PREVIEW })}</p>}
+          {cards.length > PREVIEW && (
+            <Button variant="ghost" className="w-full" aria-expanded={showAll} onClick={() => setShowAll((v) => !v)}>
+              {showAll ? t('discover.showLess') : t('discover.showMore', { count: cards.length - PREVIEW })}
+            </Button>
+          )}
         </section>
 
         {have && (
@@ -77,7 +82,7 @@ export function DiscoverDeckPage() {
         {error && <ErrorMessage error={error} />}
         <div className="space-y-2">
           <Button className="w-full" disabled={busy || cards.length === 0} onClick={() => void importDeck()}>{have ? t('discover.importAgain') : t('discover.import')}</Button>
-          <Button variant="ghost" className="w-full text-muted" onClick={() => setReporting(true)}>{t('discover.report')}</Button>
+          <Button variant="danger" className="w-full" onClick={() => setReporting(true)}>{t('discover.report')}</Button>
         </div>
       </Page>
       <ReportDrawer deckId={deck.id} open={reporting} onClose={() => setReporting(false)} />

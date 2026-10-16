@@ -111,3 +111,14 @@ test.describe('Spanish', () => {
   expect(results.violations.map((v) => v.id)).toEqual([]);
 });
 });
+
+test('a long deck previews 5 cards and Show more reveals the rest', async ({ page }) => {
+  await seed(page, { long: deck('Long', 'KJV', 'en', 1000, 8) });
+  await openDiscover(page);
+  await page.locator('a[href*="/discover/"]').first().click();
+  await expect(page.getByText(/^John 3:\d+$/)).toHaveCount(5);
+  await page.getByRole('button', { name: 'Show 3 more cards' }).click();
+  await expect(page.getByText(/^John 3:\d+$/)).toHaveCount(8);
+  await page.getByRole('button', { name: 'Show less' }).click();
+  await expect(page.getByText(/^John 3:\d+$/)).toHaveCount(5);
+});
