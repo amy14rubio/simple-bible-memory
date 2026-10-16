@@ -123,7 +123,6 @@ export const en = {
   'cardForm.verses': 'Verse(s)',
   'cardForm.versesPlaceholder': 'John 3:16',
   'cardForm.source': 'Source',
-  'cardForm.sourcePlaceholder': 'Optional, such as the translation',
   'cardForm.passage': 'Passage',
   'cardForm.passagePlaceholder': 'Type or paste the passage',
   'toast.cardAdded': '{reference} added',

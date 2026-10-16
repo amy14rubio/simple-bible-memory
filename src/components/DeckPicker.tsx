@@ -9,8 +9,11 @@ import { usePopupHistory } from '../lib/usePopupHistory';
  * The deck name in the top bar, which opens a popup (like Anki's "Select a deck"): a title with search and + on the
  * right, then the deck list, and Cancel. Search turns the popup's header into a search field.
  */
-export function DeckPicker({ label, value, options, onChange }: {
+export function DeckPicker({ label, value, options, onChange, variant = 'title', id }: {
   label: string; value: string; options: { value: string; label: string }[]; onChange: (value: string) => void;
+  /** 'title': the big serif deck name in a top bar. 'field': a form row's value, with the chevron at the far right. */
+  variant?: 'title' | 'field';
+  id?: string;
 }) {
   const { t } = useI18n();
   const navigate = useNavigate();
@@ -35,12 +38,17 @@ export function DeckPicker({ label, value, options, onChange }: {
   return (
     <div className="min-w-0 flex-1">
       <button
+        id={id}
         type="button"
         aria-label={`${label}: ${current}`}
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className="relative flex w-full min-w-0 items-center gap-1.5 py-2 pl-2 pr-2 text-left font-serif text-lg font-medium tracking-tight"
+        className={
+          variant === 'field'
+            ? 'flex w-full min-w-0 items-center justify-between gap-2 py-2.5 text-left text-base font-medium'
+            : 'relative flex w-full min-w-0 items-center gap-1.5 py-2 pl-2 pr-2 text-left font-serif text-lg font-medium tracking-tight'
+        }
       >
         <span className="truncate">{current}</span>
         <ChevronDown size={18} aria-hidden className="shrink-0 text-muted" />

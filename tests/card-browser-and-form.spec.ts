@@ -317,3 +317,27 @@ test('the Passage field starts as one line, grows as you type, and has no box', 
   await field.fill('');
   expect(await height()).toBeLessThan(60); // and shrinks back
 });
+
+test('the Deck row in the card form opens the same popup as the other deck pickers', async ({ page }) => {
+  const a = await createDeck(page, 'Alpha');
+  await createDeck(page, 'Beta');
+  await page.goto(`/#/cards/new?deck=${a}`);
+  await expect(page.locator('select')).toHaveCount(0); // no system dropdown
+  await expect(page.getByLabel('Source')).toHaveAttribute('placeholder', 'Optional');
+
+  const row = page.getByRole('button', { name: 'Deck: Alpha' });
+  await expect(row).toBeVisible();
+  await row.click();
+  const popup = page.getByRole('dialog', { name: 'Select a deck' });
+  await expect(popup.getByRole('button', { name: /^(Alpha|Beta)$/ })).toHaveText(['Alpha', 'Beta']); // just decks: no "All decks" here
+  await popup.getByRole('button', { name: 'Beta' }).click();
+  await expect(page.getByRole('button', { name: 'Deck: Beta' })).toBeVisible();
+
+  // the card goes into the chosen deck
+  await reference(page).fill('John 3:16');
+  await passage(page).fill('Example.');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByText('John 3:16 added')).toBeVisible();
+  await page.goto(`/#/decks/${a}/cards`);
+  await expect(page.getByText('No cards yet')).toBeVisible();
+});

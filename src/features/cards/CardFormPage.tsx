@@ -5,6 +5,7 @@ import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, Button, ButtonLink, ConfirmDialog, EmptyState, ErrorMessage, FormRow, GrowingTextarea, IconButton, Page, rowInput } from '../../components/ui';
 import type { Card, DeckSummary } from '../../domain/types';
+import { DeckPicker } from '../../components/DeckPicker';
 import { toast } from '../../components/shadcn/toast';
 import { canSplit, splitPassage, type SplitResult } from '../../domain/bible/split';
 import { loadCardKinds } from '../study/cardKinds';
@@ -108,14 +109,12 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
           {!card && (
             <FormRow label={t('cardForm.deck')}>
               {(fid) => (
-                <select id={fid} className={`${rowInput} font-medium`} value={deckId} onChange={(e) => setDeckId(e.target.value)}>
-                  {deckList.map((d) => <option key={d.id} value={d.id}>{d.title}</option>)}
-                </select>
+                <DeckPicker id={fid} variant="field" label={t('cardForm.deck')} value={deckId} options={deckList.map((d) => ({ value: d.id, label: d.title }))} onChange={setDeckId} />
               )}
             </FormRow>
           )}
           <FormRow label={t('cardForm.verses')}>{(fid) => <input id={fid} ref={referenceInput} className={rowInput} value={reference} onChange={(e) => setReference(e.target.value)} placeholder={t('cardForm.versesPlaceholder')} autoFocus={!card} />}</FormRow>
-          <FormRow label={t('cardForm.source')}>{(fid) => <input id={fid} className={rowInput} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('cardForm.sourcePlaceholder')} />}</FormRow>
+          <FormRow label={t('cardForm.source')}>{(fid) => <input id={fid} className={rowInput} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('common.optional')} />}</FormRow>
         </div>
 
         <div className="space-y-2">

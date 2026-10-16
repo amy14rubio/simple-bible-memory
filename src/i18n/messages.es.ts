@@ -111,7 +111,6 @@ export const es: Dictionary = {
   'cardForm.verses': 'Versículo(s)',
   'cardForm.versesPlaceholder': 'Juan 3:16',
   'cardForm.source': 'Fuente',
-  'cardForm.sourcePlaceholder': 'Opcional, por ejemplo la versión',
   'cardForm.passage': 'Pasaje',
   'cardForm.passagePlaceholder': 'Escribe o pega el pasaje',
   'toast.cardAdded': '{reference} agregado',
