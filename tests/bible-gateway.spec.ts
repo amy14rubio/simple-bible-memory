@@ -36,7 +36,7 @@ test('Cancel closes the dialog and opens nothing', async ({ page, context }) => 
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText("Bible Gateway will open in your device's web browser.");
   await expect(dialog).toContainText("This app doesn't automatically retrieve or copy Bible text from Bible Gateway.");
-  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await dialog.getByRole('button', { name: 'Cancel' }).dispatchEvent('click');
   await expect(dialog).toBeHidden();
   await page.waitForTimeout(300);
   expect(opened).toEqual([]);
@@ -62,7 +62,7 @@ test('the form stays fully usable offline, with or without a valid reference', a
   await reference(page).fill('John 3:16');
   await helper(page).click();
   await expect(page.getByRole('dialog').getByText(/appear to be offline/)).toBeVisible(); // honest heads-up
-  await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).dispatchEvent('click');
   await passage(page).fill('Typed by the user while offline.');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('link', { name: /John 3:16/ })).toBeVisible(); // saved locally

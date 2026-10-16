@@ -178,7 +178,7 @@ test.describe('split into separate verses', () => {
     await reference(page).fill('Psalm 130:1-2');
     await passage(page).fill('1 Example one first. 2 Example two second.');
     await splitButton(page).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).dispatchEvent('click');
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(reference(page)).toHaveValue('Psalm 130:1-2');
     await expect(passage(page)).toHaveValue('1 Example one first. 2 Example two second.');
@@ -195,7 +195,7 @@ test.describe('split into separate verses', () => {
     const dialog = page.getByRole('dialog', { name: 'Split into separate verses' });
     await expect(dialog).toContainText("couldn't find the verse numbers");
     await expect(dialog.getByRole('button', { name: /Create/ })).toHaveCount(0);
-    await dialog.getByRole('button', { name: 'Close' }).click();
+    await dialog.getByRole('button', { name: 'Close' }).dispatchEvent('click');
     await expect(passage(page)).toHaveValue('A paragraph with no verse numbers at all.');
   });
 

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronLeft, Plus, Search, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
-import { IconButton } from './ui';
+import { HiddenClose, IconButton } from './ui';
+import { usePopupHistory } from '../lib/usePopupHistory';
 
 /**
  * The deck name in the top bar, which opens a popup (like Anki's "Select a deck"): a title with search and + on the
@@ -26,6 +27,7 @@ export function DeckPicker({ label, value, options, onChange }: {
   }, [open]);
 
   const close = () => { setOpen(false); setSearching(false); setQuery(''); };
+  usePopupHistory(open, close);
   const q = query.trim().toLowerCase();
   const shown = options.filter((o) => o.label.toLowerCase().includes(q));
   const current = options.find((o) => o.value === value)?.label ?? '';
@@ -73,7 +75,7 @@ export function DeckPicker({ label, value, options, onChange }: {
                 <IconButton label={t('decks.search')} onClick={() => setSearching(true)}><Search size={20} aria-hidden /></IconButton>
               </>
             )}
-            <IconButton label={t('common.newDeck')} onClick={() => { close(); navigate('/decks/new'); }}><Plus size={22} aria-hidden /></IconButton>
+            <IconButton label={t('common.newDeck')} onClick={() => { close(); navigate('/decks/new', { replace: true }); }}><Plus size={22} aria-hidden /></IconButton>
           </div>
 
           <ul className="min-h-0 flex-1 overflow-y-auto border-t border-border">
@@ -91,9 +93,7 @@ export function DeckPicker({ label, value, options, onChange }: {
             {shown.length === 0 && <li className="px-5 py-6 text-center text-muted">{t('decks.noMatch', { query })}</li>}
           </ul>
 
-          <div className="flex shrink-0 justify-center border-t border-border px-3 py-1">
-            <button type="button" onClick={close} className="min-h-12 rounded-lg px-4 text-[0.9375rem] font-medium text-accent hover:bg-surface">{t('common.cancel')}</button>
-          </div>
+          <HiddenClose label={t('common.cancel')} onClick={close} />
         </div>
       </dialog>
     </div>

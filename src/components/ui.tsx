@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, type ButtonHTMLAttributes, type ReactNode } f
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
+import { usePopupHistory } from '../lib/usePopupHistory';
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
 const variants: Record<Variant, string> = {
@@ -101,6 +102,14 @@ export function SearchBar({ label, placeholder, value, onChange, backLabel, onCl
   );
 }
 
+/**
+ * A close button that is not drawn but is still there for screen readers, voice control and switch devices
+ * (sighted users close popups by tapping outside, swiping down, pressing Escape or Back).
+ */
+export function HiddenClose({ label, ...props }: { label: string } & ButtonHTMLAttributes<HTMLButtonElement>) {
+  return <button type="button" className="sr-only" {...props}>{label}</button>;
+}
+
 export function Page({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`px-5 py-6 ${className}`}>{children}</div>;
 }
@@ -171,8 +180,13 @@ export function ErrorMessage({ error }: { error: Error | string }) {
 }
 
 /** Native <dialog>: focus trapping, Escape-to-close and a backdrop for free. */
-export function Dialog({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
+export function Dialog({ open, onClose, title, children, closeOnBack = false, closeLabel }: {
+  open: boolean; onClose: () => void; title: string; children: ReactNode;
+  /** Back (phone or browser) closes it, and an invisible Close button named `closeLabel` is added for assistive tech. */
+  closeOnBack?: boolean; closeLabel?: string;
+}) {
   const ref = useRef<HTMLDialogElement>(null);
+  usePopupHistory(open && closeOnBack, onClose);
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
@@ -185,10 +199,11 @@ export function Dialog({ open, onClose, title, children }: { open: boolean; onCl
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
       aria-label={title}
-      className="m-auto w-[min(26rem,calc(100%-2rem))] rounded-lg border border-border bg-background p-6 text-foreground backdrop:bg-black/50"
+      className="m-auto w-[min(26rem,calc(100%-2rem))] overflow-hidden rounded-lg border border-border bg-background p-6 text-foreground backdrop:bg-black/50"
     >
       <h2 className="mb-3 font-serif text-xl font-medium">{title}</h2>
       {children}
+      {closeLabel && <HiddenClose label={closeLabel} onClick={onClose} />}
     </dialog>
   );
 }

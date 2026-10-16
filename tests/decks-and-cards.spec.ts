@@ -203,7 +203,7 @@ test('the deck picker is a popup: title, search and + on top, the deck list, and
   await expect(popup.getByRole('heading', { name: 'Select a deck' })).toBeVisible();
 
   // Cancel closes it without changing anything
-  await popup.getByRole('button', { name: 'Cancel' }).click();
+  await popup.getByRole('button', { name: 'Cancel' }).dispatchEvent('click');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Deck: Alpha' })).toBeVisible();
 

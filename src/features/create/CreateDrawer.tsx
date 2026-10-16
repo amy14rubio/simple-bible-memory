@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, FilePlus, Layers } from 'lucide-react';
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
+import { HiddenClose } from '../../components/ui';
+import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useI18n } from '../../i18n/I18nProvider';
 
 const row = 'flex min-h-16 w-full items-center gap-4 rounded-2xl bg-foreground/[0.06] px-3.5 py-2.5 text-left hover:bg-foreground/10';
@@ -13,7 +15,8 @@ const row = 'flex min-h-16 w-full items-center gap-4 rounded-2xl bg-foreground/[
 export function CreateDrawer({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const go = (to: string) => { onOpenChange(false); navigate(to); };
+  usePopupHistory(open, () => onOpenChange(false));
+  const go = (to: string) => { onOpenChange(false); navigate(to, { replace: true }); };
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
@@ -28,15 +31,8 @@ export function CreateDrawer({ open, onOpenChange }: { open: boolean; onOpenChan
           <Choice icon={<FilePlus size={22} aria-hidden />} title={t('common.newCard')} onClick={() => go('/cards/new')} />
         </div>
 
-        <div className="px-4 pb-5 pt-4">
-          <DrawerClose
-            render={
-              <button type="button" className="flex min-h-14 w-full items-center justify-center rounded-full bg-foreground/[0.06] text-[0.9375rem] font-medium hover:bg-foreground/10">
-                {t('common.cancel')}
-              </button>
-            }
-          />
-        </div>
+        <div className="h-6" />
+        <DrawerClose render={<HiddenClose label={t('common.cancel')} />} />
       </DrawerContent>
     </Drawer>
   );

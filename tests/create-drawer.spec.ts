@@ -20,7 +20,7 @@ test.describe('the create drawer', () => {
     expect(box.y).toBeGreaterThan(844 * 0.4); // a drawer, not a full screen
   });
 
-  test('shows a swipe handle, the title, the two choices (with no extra explanation text), and Cancel', async ({ page }) => {
+  test('shows a swipe handle, the title, the two choices (with no extra explanation text), and an invisible Cancel for assistive tech', async ({ page }) => {
     await page.goto('/');
     await plus(page).click();
     const d = drawer(page);
@@ -31,7 +31,7 @@ test.describe('the create drawer', () => {
     // the choices are just their names: no description text under them
     await expect(d.getByText('Organize your verses')).toHaveCount(0);
     await expect(d.getByText(/Type or paste/)).toHaveCount(0);
-    await expect(d.getByRole('button', { name: 'Cancel' })).toBeVisible();
+    await expect(d.getByRole('button', { name: 'Cancel' })).toBeAttached(); // invisible, but there for screen readers and voice control
   });
 
   test('its typography matches the rest of the app: the title is the serif used by other dialogs and headings', async ({ page }) => {
@@ -51,7 +51,7 @@ test.describe('the create drawer', () => {
     await plus(page).click();
     await expect(drawer(page)).toBeVisible();
     await expect(page.getByRole('link', { name: 'Statistics' })).toHaveCount(0); // hidden from assistive tech and out of reach
-    await page.getByRole('button', { name: 'Cancel' }).click();
+    await page.getByRole('button', { name: 'Cancel' }).dispatchEvent('click');
     await expect(drawer(page)).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Statistics' })).toBeVisible();
   });
@@ -59,7 +59,7 @@ test.describe('the create drawer', () => {
   test('Cancel closes it, and focus goes back to the + button', async ({ page }) => {
     await page.goto('/');
     await plus(page).click();
-    await drawer(page).getByRole('button', { name: 'Cancel' }).click();
+    await drawer(page).getByRole('button', { name: 'Cancel' }).dispatchEvent('click');
     await expect(drawer(page)).toHaveCount(0);
     await expect(plus(page)).toBeFocused();
     await expect(plus(page)).toHaveAttribute('aria-expanded', 'false');
@@ -149,7 +149,7 @@ test.describe('the create drawer', () => {
     await expect(d).toBeVisible();
     await expect(d.getByRole('button', { name: 'Nueva baraja', exact: true })).toBeVisible();
     await expect(d.getByRole('button', { name: 'Nueva tarjeta', exact: true })).toBeVisible();
-    await d.getByRole('button', { name: 'Cancelar' }).click();
+    await d.getByRole('button', { name: 'Cancelar' }).dispatchEvent('click');
     await expect(d).toHaveCount(0);
     await ctx.close();
   });
@@ -179,4 +179,49 @@ test('on a wide screen the drawer is centered and not stretched across the whole
   const box = (await drawer(page).boundingBox())!;
   expect(box.width).toBeLessThanOrEqual(672 + 2);
   expect(Math.abs(box.x + box.width / 2 - 640)).toBeLessThanOrEqual(2); // centered
+});
+
+test.describe('closing popups without a Cancel button', () => {
+  test('Back closes the drawer instead of leaving the page, and leaves no extra history behind', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('button', { name: 'Add' })).toBeVisible();
+    await page.getByRole('button', { name: 'Add' }).click();
+    await expect(drawer(page)).toBeVisible();
+    await page.goBack(); // the phone's Back button
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(page).toHaveURL(/\/#?\/?$/); // still on the home screen
+  });
+
+  test('closing with Escape removes the extra history entry, so Back still goes where it should', async ({ page }) => {
+    await page.goto('/#/settings');
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Add' }).click();
+    await expect(drawer(page)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await page.waitForTimeout(100);
+    await page.goBack(); // one Back from the home screen goes to Settings, not to a leftover popup entry
+    await expect(page).toHaveURL(/#\/settings$/);
+  });
+
+  test('choosing New deck from the drawer leaves a clean history: Back returns to the home screen', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Add' }).click();
+    await drawer(page).getByRole('button', { name: 'New deck' }).click();
+    await expect(page).toHaveURL(/#\/decks\/new$/);
+    await page.goBack();
+    await expect(page).toHaveURL(/\/#?\/?$/);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  });
+
+  test('a popup has a named Close for screen readers and voice control, though nothing is drawn', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Add' }).click();
+    const close = drawer(page).getByRole('button', { name: 'Cancel' });
+    await expect(close).toBeAttached();
+    const box = await close.boundingBox();
+    expect(box!.width).toBeLessThanOrEqual(2); // not visible on screen
+    await close.dispatchEvent('click');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  });
 });

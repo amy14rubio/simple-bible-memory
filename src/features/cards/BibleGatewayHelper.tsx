@@ -30,17 +30,14 @@ export function BibleGatewayHelper({ reference }: { reference: string }) {
       >
         {t('gateway.button')} <ExternalLink size={15} aria-hidden />
       </button>
-      <Dialog open={open} onClose={() => setOpen(false)} title={t('gateway.title')}>
+      <Dialog open={open} onClose={() => setOpen(false)} title={t('gateway.title')} closeOnBack closeLabel={t('common.cancel')}>
         <div className="space-y-3 text-muted">
           <p>{t('gateway.p1')}</p>
           <p>{t('gateway.p2')}</p>
           <p>{t('gateway.p3')}</p>
           {offline && <p role="status">{t('gateway.offline')}</p>}
         </div>
-        <div className="mt-6 flex flex-wrap justify-end gap-3">
-          <Button variant="secondary" onClick={() => setOpen(false)}>{t('common.cancel')}</Button>
-          <Button onClick={proceed}>{t('gateway.continue')} <ExternalLink size={16} aria-hidden /></Button>
-        </div>
+        <Button className="mt-6 w-full" onClick={proceed}>{t('gateway.continue')} <ExternalLink size={16} aria-hidden /></Button>
       </Dialog>
     </>
   );

@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { addCard, tapFirstBankWord, wordBankOpen } from './helpers';
+import { addCard, setCardKinds, tapFirstBankWord, wordBankOpen } from './helpers';
 
 async function audit(page: Page, label: string) {
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
@@ -35,7 +35,7 @@ for (const scheme of ['light', 'dark'] as const) {
     await page.getByRole('button', { name: /Find on Bible Gateway/ }).click();
     await expect(page.getByRole('dialog', { name: 'Find a Bible passage' })).toBeVisible();
     await audit(page, 'Bible Gateway dialog');
-    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).dispatchEvent('click');
     await page.getByRole('button', { name: 'Save' }).click();
     await page.waitForURL(/\/cards$/);
     await addCard(page, id, 'Psalm 130:1', 'Another example passage.');
@@ -84,17 +84,17 @@ for (const scheme of ['light', 'dark'] as const) {
     await page.getByRole('button', { name: 'Split into separate verses' }).click();
     await expect(page.getByRole('dialog', { name: 'Split into separate verses' })).toContainText('This creates 2 cards');
     await audit(page, 'split preview dialog');
-    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).dispatchEvent('click');
     await page.getByLabel('Passage', { exact: true }).fill('No verse numbers here.');
     await page.getByRole('button', { name: 'Split into separate verses' }).click();
     await expect(page.getByRole('dialog')).toContainText("couldn't find verse 2");
     await audit(page, 'split explanation dialog');
-    await page.getByRole('dialog').getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Close' }).dispatchEvent('click');
 
     // the identify cards (see the passage, name the verse)
     await page.goto('/#/settings');
     await audit(page, 'settings with card kinds');
-    await page.getByRole('radio', { name: /^Identify the verse/ }).check();
+    await setCardKinds(page, 'Identify the verse');
     await page.goto(`/#/decks/${id}/study/flashcard`);
     await expect(page.getByRole('button', { name: 'Show answer' })).toBeVisible();
     await audit(page, 'identify flashcard front');

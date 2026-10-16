@@ -50,7 +50,7 @@ test('statistics: totals, books progress and card counts, and the deck scope swi
     await expect(drawer.getByRole('term').filter({ hasText: new RegExp(`^${stage}$`) })).toBeVisible();
     await expect(drawer.getByText(text!)).toBeVisible();
   }
-  await drawer.getByRole('button', { name: 'Close' }).click();
+  await drawer.getByRole('button', { name: 'Close' }).dispatchEvent('click');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.getByRole('button', { name: 'About Books progress' }).click();
   await expect(page.getByRole('dialog', { name: 'Books progress' }).getByText('A verse counts as memorized once it graduates from learning.')).toBeVisible();

@@ -24,15 +24,16 @@ async function esAddCard(page: Page, deckId: string, reference: string, passage:
   await page.getByRole('button', { name: 'Guardar' }).click();
   await page.waitForURL(/\/cards$/);
 }
-async function esRecallOnly(page: Page) {
+async function esSetKinds(page: Page, name: RegExp) {
   await page.goto('/#/settings');
   // The page loads the saved choice after it appears, which can undo a click made too early: retry until it sticks.
   await expect(async () => {
-    await page.getByRole('radio', { name: /^Recordar el pasaje/ }).check();
+    await page.getByRole('radio', { name }).check();
     await page.waitForTimeout(150);
-    await expect(page.getByRole('radio', { name: /^Recordar el pasaje/ })).toBeChecked({ timeout: 1000 });
+    await expect(page.getByRole('radio', { name })).toBeChecked({ timeout: 1000 });
   }).toPass({ timeout: 10_000 });
 }
+const esRecallOnly = (page: Page) => esSetKinds(page, /^Recordar el pasaje/);
 
 test.describe('which language the app starts in', () => {
   test('a Spanish browser gets Spanish by default, with the page language and title to match', async ({ browser }) => {
@@ -197,7 +198,7 @@ test.describe('the app in Spanish', () => {
     await expect(page.getByRole('link', { name: 'Renombrar baraja' })).toBeVisible();
     await page.getByRole('button', { name: 'Eliminar baraja' }).click();
     await expect(page.getByRole('dialog')).toContainText('se eliminarán de forma permanente');
-    await page.getByRole('dialog').getByRole('button', { name: 'Cancelar' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancelar' }).dispatchEvent('click');
     await ctx.close();
   });
 
@@ -264,8 +265,7 @@ test.describe('the app in Spanish', () => {
     await expect(page.getByRole('button', { name: /^Otra vez.*sugerido/ })).toBeVisible();
 
     // identify card: type the verse
-    await page.goto('/#/settings');
-    await page.getByRole('radio', { name: /^Identificar el versículo/ }).check();
+    await esSetKinds(page, /^Identificar el versículo/);
     await page.goto(`/#/decks/${id}/study/type`);
     await expect(page.getByText('Uno dos tres cuatro.')).toBeVisible();
     await page.getByLabel(/Escribe el versículo, por ejemplo/).fill('Juan 3:17');
@@ -289,8 +289,7 @@ test.describe('the app in Spanish', () => {
     while (await wordBankOpen(page)) await tapFirstBankWord(page);
     await expect(page.getByRole('button', { name: /^(Otra vez|Difícil|Bien|Fácil)/ }).first()).toBeVisible(); // every blank is done
 
-    await page.goto('/#/settings');
-    await page.getByRole('radio', { name: /^Identificar el versículo/ }).check();
+    await esSetKinds(page, /^Identificar el versículo/);
     await page.goto(`/#/decks/${id}/study/blanks`);
     const choices = page.getByRole('group', { name: 'Elige el versículo' });
     await expect(choices).toBeVisible();
@@ -311,8 +310,8 @@ test.describe('the app in Spanish', () => {
     await picker.click();
     const popup = page.getByRole('dialog', { name: 'Selecciona una baraja' });
     await expect(popup.getByRole('button', { name: 'Libros' })).toBeVisible();
-    await expect(popup.getByRole('button', { name: 'Cancelar' })).toBeVisible();
-    await popup.getByRole('button', { name: 'Cancelar' }).click();
+    await expect(popup.getByRole('button', { name: 'Cancelar' })).toBeAttached();
+    await popup.getByRole('button', { name: 'Cancelar' }).dispatchEvent('click');
     await expect(page.getByText('Tarjetas añadidas')).toBeVisible();
     await expect(page.getByText('Versículos memorizados')).toBeVisible();
     await expect(page.getByText('Días desde que empezaste')).toBeVisible();
@@ -322,7 +321,7 @@ test.describe('the app in Spanish', () => {
     await expect(page.getByRole('img', { name: /^Tarjetas por etapa: \d+ nuevas, 0 en aprendizaje/ })).toBeVisible();
     await page.getByRole('button', { name: 'Acerca de Tarjetas por etapa' }).click();
     await expect(page.getByRole('dialog').getByText('Aún no se han estudiado.')).toBeVisible();
-    await expect(page.getByRole('dialog').getByRole('button', { name: 'Cerrar' })).toBeVisible();
+    await expect(page.getByRole('dialog').getByRole('button', { name: 'Cerrar' })).toBeAttached();
     await ctx.close();
   });
 
@@ -402,7 +401,7 @@ test.describe('accessibility in Spanish', () => {
       await audit('formulario de tarjeta');
       await page.getByRole('button', { name: 'Separar en versículos' }).click();
       await audit('separar en versículos');
-      await page.getByRole('dialog').getByRole('button', { name: 'Cancelar' }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Cancelar' }).dispatchEvent('click');
       await page.goto(`/#/decks/${id}/study/flashcard`);
       await page.getByRole('button', { name: 'Mostrar respuesta' }).click();
       await audit('estudio con valoraciones');
