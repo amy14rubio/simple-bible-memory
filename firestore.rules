@@ -1,11 +1,70 @@
 rules_version = '2';
 
-// Locked down for now: nobody can read or write anything.
-// Phase 3 (public decks) adds the real rules: anyone can read public decks, only a signed-in author can write their own.
+// Public decks: anyone can read them, only the signed-in person who published a deck can change or remove it.
+// Everything else is closed. Private decks and study progress never reach Firestore: they stay on the phone.
+//
+// The list of allowed translations below must match src/domain/sharing/translations.ts (a test checks this).
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+
+    function signedIn() { return request.auth != null; }
+    function isText(v, min, max) { return v is string && v.size() >= min && v.size() <= max; }
+    function isTextOrNull(v, max) { return v == null || (v is string && v.size() <= max); }
+    function languageOf(translation) {
+      return {
+        'KJV': 'en', 'WEB': 'en', 'ASV': 'en', 'YLT': 'en', 'DARBY': 'en', 'RV1909': 'es'
+      }.get(translation, null);
+    }
+    // An open translation must match its own language; "my own words" (OWN) may be either.
+    function translationOk(d) {
+      return (d.translation == 'OWN' && d.language in ['en', 'es'])
+          || (d.translation != 'OWN' && languageOf(d.translation) != null && languageOf(d.translation) == d.language);
+    }
+    function validDeck(d) {
+      return d.keys().hasOnly(['ownerId', 'title', 'titleLower', 'description', 'translation', 'language', 'cardCount', 'createdAt', 'updatedAt'])
+        && d.keys().hasAll(['ownerId', 'title', 'titleLower', 'translation', 'language', 'cardCount', 'createdAt', 'updatedAt'])
+        && isText(d.title, 1, 200)
+        && d.titleLower == d.title.lower()
+        && isTextOrNull(d.get('description', null), 2000)
+        && translationOk(d)
+        && d.cardCount is int && d.cardCount >= 0 && d.cardCount <= 1000;
+    }
+    function validCard(c) {
+      return c.keys().hasOnly(['reference', 'verseText', 'note', 'position'])
+        && c.keys().hasAll(['reference', 'verseText', 'position'])
+        && isText(c.reference, 1, 200)
+        && isText(c.verseText, 1, 20000)
+        && isTextOrNull(c.get('note', null), 500)
+        && c.position is int && c.position >= 0 && c.position < 1000;
+    }
+    function ownsDeck(deckId) {
+      return signedIn() && get(/databases/$(database)/documents/publicDecks/$(deckId)).data.ownerId == request.auth.uid;
+    }
+
+    match /publicDecks/{deckId} {
+      allow get, list: if true;
+
+      allow create: if signedIn()
+        && validDeck(request.resource.data)
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if signedIn()
+        && resource.data.ownerId == request.auth.uid
+        && validDeck(request.resource.data)
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+
+      // Cards must be deleted before their deck (afterwards nobody could prove who owned them).
+      match /cards/{cardId} {
+        allow get, list: if true;
+        allow create, update: if ownsDeck(deckId) && validCard(request.resource.data);
+        allow delete: if ownsDeck(deckId);
+      }
     }
   }
 }
