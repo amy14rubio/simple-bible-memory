@@ -21,6 +21,7 @@ export const en = {
   'common.backToDeck': 'Back to deck',
   'common.newCard': 'New card',
   'common.newDeck': 'New deck',
+  'common.allDecks': 'All decks',
   'common.optional': 'Optional',
   'common.correct': 'Correct',
 
@@ -102,6 +103,8 @@ export const en = {
 
   // card browser
   'browse.heading': 'Cards in {deck}',
+  'browse.headingAll': 'Cards in all decks',
+  'browse.emptyBodyAll': 'Add a verse to start building your collection.',
   'browse.deck': 'Deck',
   'browse.search': 'Search cards',
   'browse.searchClose': 'Close search',
@@ -189,7 +192,6 @@ export const en = {
   // statistics
   'stats.title': 'Statistics',
   'stats.scope': 'Show statistics for',
-  'stats.allDecks': 'All decks',
   'stats.emptyTitle': 'Nothing to show yet',
   'stats.emptyBody': 'Your progress appears here once you add and study verses.',
   'stats.createDeck': 'Create a deck',

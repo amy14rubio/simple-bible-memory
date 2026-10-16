@@ -75,6 +75,16 @@ describe('decks', () => {
 });
 
 describe('cards', () => {
+  it('lists every card from every deck once, even when a card is in several decks', async () => {
+    const d1 = await decks.create({ title: 'One' });
+    const d2 = await decks.create({ title: 'Two' });
+    const a = await cards.create(d1.id, { reference: 'A 1:1', verseText: 'a' });
+    const b = await cards.create(d2.id, { reference: 'B 1:1', verseText: 'b' });
+    await db.run('INSERT INTO deck_cards (deck_id, card_id, added_at) VALUES (?, ?, 0)', [d2.id, a.id]); // a is in both decks
+    expect((await cards.listAll()).map((c) => c.id).sort()).toEqual([a.id, b.id].sort());
+  });
+
+
   it('creates a card in a deck and lists it', async () => {
     const d = await decks.create({ title: 'D' });
     const c = await cards.create(d.id, { ...card, note: ' my note ' });

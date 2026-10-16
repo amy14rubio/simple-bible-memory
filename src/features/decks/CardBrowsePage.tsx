@@ -7,7 +7,10 @@ import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, IconButton, I
 import { DeckPicker } from '../../components/DeckPicker';
 import { useI18n } from '../../i18n/I18nProvider';
 
-/** "Card browse": a two-column table of verse references and passages. */
+/** The id used in the address for "All decks": /decks/all/cards. */
+export const ALL_DECKS = 'all';
+
+/** "Card browse": a two-column table of verse references and passages, for one deck or for all decks. */
 export function CardBrowsePage() {
   const { t } = useI18n();
   const { id = '' } = useParams();
@@ -15,43 +18,46 @@ export function CardBrowsePage() {
   const navigate = useNavigate();
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
-  const { data, loading } = useAsync(async () => ({ all: await decks.list(), list: await cards.listByDeck(id) }), [id, decks, cards]);
+  const isAll = id === ALL_DECKS;
+  const { data, loading } = useAsync(async () => ({ all: await decks.list(), list: isAll ? await cards.listAll() : await cards.listByDeck(id) }), [id, isAll, decks, cards]);
 
   if (loading) return null;
   const deck = data?.all.find((d) => d.id === id);
-  if (!data || !deck) return <><AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;
+  if (!data || (!isAll && !deck)) return <><AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;
 
+  const heading = isAll ? t('browse.headingAll') : t('browse.heading', { deck: deck!.title });
+  const newCardTo = isAll ? '/cards/new' : `/cards/new?deck=${id}`; // in All decks you choose the deck inside the form
   const q = query.trim().toLowerCase();
   const shown = data.list.filter((c) => c.reference.toLowerCase().includes(q) || c.verseText.toLowerCase().includes(q));
 
   return (
     <>
       {searching ? (
-        <SearchBar label={t('browse.search')} placeholder={t('browse.searchPlaceholder')} value={query} onChange={setQuery} backLabel={t('browse.searchClose')} onClose={() => { setSearching(false); setQuery(''); }} actions={<IconLink to={`/cards/new?deck=${id}`} label={t('common.newCard')}><Plus size={22} aria-hidden /></IconLink>} />
+        <SearchBar label={t('browse.search')} placeholder={t('browse.searchPlaceholder')} value={query} onChange={setQuery} backLabel={t('browse.searchClose')} onClose={() => { setSearching(false); setQuery(''); }} actions={<IconLink to={newCardTo} label={t('common.newCard')}><Plus size={22} aria-hidden /></IconLink>} />
       ) : (
         <AppBar
           back={<BackButton to="/" label={t('common.backToDecks')} />}
           titleSlot={
             <>
-              <h1 className="sr-only">{t('browse.heading', { deck: deck.title })}</h1>
-              <DeckPicker label={t('browse.deck')} value={id} options={data.all.map((d) => ({ value: d.id, label: d.title }))} onChange={(v) => navigate(`/decks/${v}/cards`)} />
+              <h1 className="sr-only">{heading}</h1>
+              <DeckPicker label={t('browse.deck')} value={id} options={[{ value: ALL_DECKS, label: t('common.allDecks') }, ...data.all.map((d) => ({ value: d.id, label: d.title }))]} onChange={(v) => navigate(`/decks/${v}/cards`, { replace: true })} />
             </>
           }
           actions={
             <>
               <IconButton label={t('browse.search')} onClick={() => setSearching(true)}><Search size={20} aria-hidden /></IconButton>
-              <IconLink to={`/cards/new?deck=${id}`} label={t('common.newCard')}><Plus size={22} aria-hidden /></IconLink>
+              <IconLink to={newCardTo} label={t('common.newCard')}><Plus size={22} aria-hidden /></IconLink>
             </>
           }
         />
       )}
       {data.list.length === 0 ? (
-        <EmptyState title={t('browse.emptyTitle')} action={<ButtonLink to={`/cards/new?deck=${id}`}>{t('common.newCard')}</ButtonLink>}>
-          {t('browse.emptyBody')}
+        <EmptyState title={t('browse.emptyTitle')} action={<ButtonLink to={newCardTo}>{t('common.newCard')}</ButtonLink>}>
+          {isAll ? t('browse.emptyBodyAll') : t('browse.emptyBody')}
         </EmptyState>
       ) : (
         <table className="w-full table-fixed border-collapse text-left">
-          <caption className="sr-only">{t('browse.heading', { deck: deck.title })}</caption>
+          <caption className="sr-only">{heading}</caption>
           <thead>
             <tr className="border-b border-border text-sm text-muted">
               <th scope="col" className="w-2/5 px-5 py-3 font-medium">{t('browse.verse')}</th>

@@ -215,3 +215,51 @@ test('the deck picker is a popup: title, search and + on top, the deck list, and
   await page.getByRole('dialog', { name: 'Select a deck' }).getByRole('button', { name: 'New deck' }).click();
   await expect(page).toHaveURL(/#\/decks\/new$/);
 });
+
+test('the card browser has an All decks view that lists every card', async ({ page }) => {
+  const a = await createDeck(page, 'Alpha');
+  const b = await createDeck(page, 'Beta');
+  await addCard(page, a, 'John 3:16', 'Alpha passage.');
+  await addCard(page, b, 'Psalm 23:1', 'Beta passage.');
+  await page.goto(`/#/decks/${a}/cards`);
+  await expect(page.getByRole('link', { name: /Psalm 23:1/ })).toHaveCount(0); // one deck: only its cards
+
+  await page.getByRole('button', { name: /^Deck:/ }).click();
+  const popup = page.getByRole('dialog', { name: 'Select a deck' });
+  await expect(popup.getByRole('button').filter({ hasText: /^(All decks|Alpha|Beta)$/ })).toHaveText(['All decks', 'Alpha', 'Beta']); // All decks first
+  await popup.getByRole('button', { name: 'All decks', exact: true }).click();
+
+  await expect(page).toHaveURL(/#\/decks\/all\/cards$/);
+  await expect(page.getByRole('button', { name: 'Deck: All decks' })).toBeVisible();
+  await expect(page.getByRole('table', { name: 'Cards in all decks' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /John 3:16/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Psalm 23:1/ })).toBeVisible();
+
+  // search works across all decks, and + opens the New card form with no deck chosen
+  await page.getByRole('button', { name: 'Search cards' }).click();
+  await page.getByLabel('Search cards', { exact: true }).fill('beta');
+  await expect(page.getByRole('link', { name: /John 3:16/ })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: /Psalm 23:1/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Close search' }).click();
+  await page.getByRole('link', { name: 'New card' }).click();
+  await expect(page).toHaveURL(/#\/cards\/new$/);
+
+  // opening a card from All decks works, and Back returns to All decks
+  await page.goto('/#/decks/all/cards');
+  await page.getByRole('link', { name: /Psalm 23:1/ }).click();
+  await expect(page).toHaveURL(/#\/cards\/.+\/edit$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/#\/decks\/all\/cards$/);
+});
+
+test('switching deck in the card browser keeps Back simple: one Back returns to the previous deck view', async ({ page }) => {
+  const a = await createDeck(page, 'Alpha');
+  const b = await createDeck(page, 'Beta');
+  await addCard(page, a, 'John 3:16', 'Alpha passage.');
+  await page.goto(`/#/decks/${a}/cards`);
+  await page.getByRole('button', { name: /^Deck:/ }).click();
+  await page.getByRole('dialog', { name: 'Select a deck' }).getByRole('button', { name: 'Beta' }).click();
+  await expect(page).toHaveURL(new RegExp(`#/decks/${b}/cards$`));
+  await page.goBack();
+  await expect(page).toHaveURL(new RegExp(`#/decks/${a}/cards$`)); // not a leftover popup entry
+});

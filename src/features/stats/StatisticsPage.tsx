@@ -30,7 +30,7 @@ export function StatisticsPage() {
       <DeckPicker
         label={t('stats.scope')}
         value={scope}
-        options={[{ value: ALL, label: t('stats.allDecks') }, ...(data?.list.map((d) => ({ value: d.id, label: d.title })) ?? [])]}
+        options={[{ value: ALL, label: t('common.allDecks') }, ...(data?.list.map((d) => ({ value: d.id, label: d.title })) ?? [])]}
         onChange={setScope}
       />
     </>

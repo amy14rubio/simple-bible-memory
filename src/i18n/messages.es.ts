@@ -17,6 +17,7 @@ export const es: Dictionary = {
   'common.backToDeck': 'Volver a la baraja',
   'common.newCard': 'Nueva tarjeta',
   'common.newDeck': 'Nueva baraja',
+  'common.allDecks': 'Todas las barajas',
   'common.optional': 'Opcional',
   'common.correct': 'Correcto',
 
@@ -91,6 +92,8 @@ export const es: Dictionary = {
   'mode.speakHint': 'Próximamente',
 
   'browse.heading': 'Tarjetas de {deck}',
+  'browse.headingAll': 'Tarjetas de todas las barajas',
+  'browse.emptyBodyAll': 'Agrega un versículo para empezar tu colección.',
   'browse.deck': 'Baraja',
   'browse.search': 'Buscar tarjetas',
   'browse.searchClose': 'Cerrar búsqueda',
@@ -173,7 +176,6 @@ export const es: Dictionary = {
 
   'stats.title': 'Estadísticas',
   'stats.scope': 'Mostrar estadísticas de',
-  'stats.allDecks': 'Todas las barajas',
   'stats.emptyTitle': 'Aún no hay nada que mostrar',
   'stats.emptyBody': 'Tu progreso aparecerá aquí cuando añadas y estudies versículos.',
   'stats.createDeck': 'Crear una baraja',
