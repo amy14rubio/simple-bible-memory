@@ -1,22 +1,26 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
-import { useTheme, type ThemePreference } from '../../app/theme';
+import { useTheme } from '../../app/theme';
 import { AppBar, BackButton, Page, Segmented } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
 import type { CardKindSetting } from '../../domain/study/cardKind';
-import { LANGUAGES, type LanguagePreference, type MessageKey } from '../../i18n';
+import { LANGUAGES, type MessageKey } from '../../i18n';
 import { useI18n } from '../../i18n/I18nProvider';
 import { loadCardKindSetting } from '../study/cardKinds';
 import { MAX_NEW_PER_DAY, loadNewPerDay } from '../study/newPerDay';
 
 const KIND_ORDER: CardKindSetting[] = ['both', 'recall', 'identify'];
 
+const THEME_LABEL = { system: 'settings.themeSystem', light: 'settings.themeLight', dark: 'settings.themeDark', custom: 'settings.themeCustom' } as const;
+
 const row = 'flex min-h-14 items-center justify-between gap-4 border-b border-border py-2';
 
 export function SettingsPage() {
-  const { t, preference: languagePreference, setPreference: setLanguagePreference } = useI18n();
-  const { preference, setPreference } = useTheme();
+  const { t, preference: languagePreference } = useI18n();
+  const { preference } = useTheme();
   const { settings } = useRepositories();
   const [newPerDay, setNewPerDay] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
@@ -42,24 +46,20 @@ export function SettingsPage() {
       <Page className="space-y-10">
         <section aria-labelledby="general">
           <h2 id="general" className="mb-1 font-serif text-xl">{t('settings.general')}</h2>
-          <div className={row}>
-            <InfoLabel title={t('settings.language')} info={t('settings.languageHint')} />
-            <Segmented<LanguagePreference>
-              label={t('settings.language')}
-              value={languagePreference}
-              options={[{ value: 'system', label: t('settings.languageSystem') }, ...LANGUAGES.map((l) => ({ value: l.code, label: l.name }))]}
-              onChange={(l) => void setLanguagePreference(l)}
-            />
-          </div>
-          <div className={row}>
-            <span id="theme-label">{t('settings.theme')}</span>
-            <Segmented<ThemePreference>
-              label={t('settings.theme')}
-              value={preference}
-              options={[{ value: 'system', label: t('settings.themeSystem') }, { value: 'light', label: t('settings.themeLight') }, { value: 'dark', label: t('settings.themeDark') }]}
-              onChange={(p) => void setPreference(p)}
-            />
-          </div>
+          <Link to="/settings/language" className={`${row} hover:bg-surface`}>
+            <span>{t('settings.language')}</span>
+            <span className="flex items-center gap-1 text-muted">
+              {languagePreference === 'system' ? t('settings.languageSystem') : LANGUAGES.find((l) => l.code === languagePreference)?.name}
+              <ChevronRight size={20} aria-hidden />
+            </span>
+          </Link>
+          <Link to="/settings/theme" className={`${row} hover:bg-surface`}>
+            <span>{t('settings.theme')}</span>
+            <span className="flex items-center gap-1 text-muted">
+              {t(THEME_LABEL[preference])}
+              <ChevronRight size={20} aria-hidden />
+            </span>
+          </Link>
           <div className={row}>
             <InfoLabel title={t('settings.newPerDay')} info={t('settings.newPerDayHint')} />
             <input

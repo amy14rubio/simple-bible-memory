@@ -1,6 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, type ButtonHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, X } from 'lucide-react';
+import { Check, ChevronLeft, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
 import { usePopupHistory } from '../lib/usePopupHistory';
 
@@ -159,6 +159,32 @@ export function GrowingTextarea({ className = '', value, ...props }: TextareaHTM
       {...props}
       className={`block w-full resize-none overflow-hidden border-0 border-b border-border bg-transparent px-0 py-2 text-lg placeholder:text-muted focus:border-accent focus:shadow-[0_1px_0_0_var(--accent)] ${className}`}
     />
+  );
+}
+
+/**
+ * A list of choices: full-width rows with dividers, tap a row to choose it, a check mark on the right of the chosen one.
+ * Built on real radio buttons, invisible and stretched across each row, so a tap anywhere on the row is a tap on the
+ * real control, and keyboards and screen readers get the proper radio-group behaviour.
+ */
+export function CheckList<T extends string>({ label, name, value, options, onChange }: {
+  label: string; name: string; value: T; onChange: (v: T) => void;
+  options: { value: T; label: string; /** drawn before the label, e.g. a colour dot */ leading?: ReactNode }[];
+}) {
+  return (
+    <fieldset aria-label={label}>
+      {options.map((o) => (
+        <label
+          key={o.value}
+          className="relative flex min-h-14 cursor-pointer items-center gap-3 border-b border-border px-1 hover:bg-surface has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-inset has-[:focus-visible]:ring-ring"
+        >
+          <input type="radio" name={name} value={o.value} checked={value === o.value} onChange={() => onChange(o.value)} className="peer absolute inset-0 size-full cursor-pointer opacity-0" />
+          {o.leading}
+          <span className="min-w-0 flex-1 text-[1.0625rem] font-medium">{o.label}</span>
+          <Check size={20} aria-hidden className="shrink-0 opacity-0 peer-checked:opacity-100" />
+        </label>
+      ))}
+    </fieldset>
   );
 }
 

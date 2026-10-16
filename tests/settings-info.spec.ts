@@ -4,7 +4,6 @@ import { closeWithEscape } from './helpers';
 test('settings explanations live behind an "i" with a drawer, not as small print', async ({ page }) => {
   await page.goto('/#/settings');
   const explanations: [string, string][] = [
-    ['Language', 'Changes the text of the app only.'],
     ['New cards per day', 'Counted across all decks.'],
     ['Cards for each verse', 'Recall the passage from its verse, and name the verse from its passage.'],
     ['Fill-in-the-blanks difficulty', 'Sets how many words are hidden in each verse.'],
@@ -36,4 +35,11 @@ test('Notifications and Backup keep their text visible', async ({ page }) => {
   await page.goto('/#/settings');
   await expect(page.getByText("Study reminders aren't available yet.")).toBeVisible();
   await expect(page.getByText(/You don't need an account/)).toBeVisible();
+});
+
+test('the Language explanation is behind the "i" in the Language page title', async ({ page }) => {
+  await page.goto('/#/settings/language');
+  await expect(page.getByText('Changes the text of the app only.')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Language', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Language' })).toContainText('Changes the text of the app only.');
 });

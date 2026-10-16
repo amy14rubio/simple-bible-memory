@@ -7,7 +7,7 @@ const spanishPage = async (browser: Browser, colorScheme: 'light' | 'dark' = 'li
   return { ctx, page: await ctx.newPage() };
 };
 
-const language = (page: Page, name: string) => page.getByRole('group', { name: /^(Language|Idioma)$/ }).getByRole('button', { name, exact: true });
+const language = (page: Page, name: string) => page.getByRole('group', { name: /^(Language|Idioma)$/ }).getByRole('radio', { name, exact: true });
 
 // Spanish-interface helpers: create things through the Spanish screens.
 async function esCreateDeck(page: Page, title: string): Promise<string> {
@@ -68,58 +68,62 @@ test.describe('which language the app starts in', () => {
 
 test.describe('the language setting', () => {
   test('switching to Español changes the app text right away, and back again', async ({ page }) => {
-    await page.goto('/#/settings');
-    await expect(page.getByRole('heading', { name: 'General' })).toBeVisible();
+    await page.goto('/#/settings/language');
+    await expect(page.getByRole('heading', { name: 'Language' })).toBeVisible();
     await language(page, 'Español').click();
+    await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible(); // the page itself changes at once
+    await expect(page.locator('html')).toHaveAttribute('lang', 'es');
+    await expect(page).toHaveTitle('Memoria Bíblica Simple');
+    await page.goto('/#/settings');
     await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Notificaciones' })).toBeVisible();
     await expect(page.getByLabel('Tarjetas nuevas por día', { exact: true })).toBeVisible();
-    await expect(page.locator('html')).toHaveAttribute('lang', 'es');
-    await expect(page).toHaveTitle('Memoria Bíblica Simple');
+    await expect(page.getByRole('link', { name: /^Idioma/ })).toContainText('Español'); // the row shows the choice
+    await page.goto('/#/settings/language');
     await language(page, 'English').click();
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Language' })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   });
 
   test('the choice survives a reload, and is also stored in the database (not only the page)', async ({ page }) => {
-    await page.goto('/#/settings');
+    await page.goto('/#/settings/language');
     await language(page, 'Español').click();
-    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible();
     await page.waitForTimeout(400); // let the database write finish
     await page.reload();
-    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible();
 
     await page.evaluate(() => localStorage.removeItem('language-pref')); // forget the quick cache: the database must remember
     await page.reload();
-    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible();
   });
 
   test('"System" follows the browser, and a chosen language overrides it', async ({ browser }) => {
     const { ctx, page } = await spanishPage(browser);
-    await page.goto('/#/settings');
-    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible(); // system -> Spanish browser
-    await expect(language(page, 'Sistema')).toHaveAttribute('aria-pressed', 'true');
+    await page.goto('/#/settings/language');
+    await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible(); // system -> Spanish browser
+    await expect(language(page, 'Sistema')).toBeChecked();
     await language(page, 'English').click();
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible(); // chosen English beats the Spanish browser
+    await expect(page.getByRole('heading', { name: 'Language' })).toBeVisible(); // chosen English beats the Spanish browser
     await language(page, 'System').click();
-    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible();
     await ctx.close();
   });
 
   test('says that only the app text changes', async ({ page }) => {
-    await page.goto('/#/settings');
+    await page.goto('/#/settings/language');
     // the explanation is behind the "i" next to Language, not small print on the page
     await expect(page.getByText('Changes the text of the app only.')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Language', exact: true }).click();
+    await page.getByRole('button', { name: 'Language', exact: true }).click(); // the title in the top bar has the "i"
     await expect(page.getByRole('dialog', { name: 'Language' })).toContainText('Changes the text of the app only. Your verses and passages stay exactly as you typed them.');
     await closeWithEscape(page);
     await language(page, 'Español').click();
     await page.getByRole('button', { name: 'Idioma', exact: true }).click();
-    await expect(page.getByRole('dialog')).toContainText('Cambia solo el texto de la aplicación.');
+    await expect(page.getByRole('dialog', { name: 'Idioma' })).toContainText('Cambia solo el texto de la aplicación.');
   });
 
   test('the language names are always written in their own language', async ({ page }) => {
-    await page.goto('/#/settings');
+    await page.goto('/#/settings/language');
     await expect(language(page, 'English')).toBeVisible();
     await expect(language(page, 'Español')).toBeVisible();
     await language(page, 'Español').click();
@@ -139,9 +143,9 @@ test.describe('verses are not translated', () => {
     await expect(page.getByText('John 3:16 added')).toBeVisible();
     await page.reload(); // clears the toast
 
-    await page.goto('/#/settings');
+    await page.goto('/#/settings/language');
     await language(page, 'Español').click();
-    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible();
 
     await page.goto(`/#/decks/${id}/cards`);
     await expect(page.getByRole('columnheader', { name: 'Versículo' })).toBeVisible(); // interface: translated
@@ -155,7 +159,7 @@ test.describe('verses are not translated', () => {
 
   test('the deck name is yours too', async ({ page }) => {
     await createDeck(page, 'Commute verses');
-    await page.goto('/#/settings');
+    await page.goto('/#/settings/language');
     await language(page, 'Español').click();
     await page.goto('/');
     await expect(page.getByRole('link', { name: /Commute verses/ })).toBeVisible();
@@ -423,4 +427,17 @@ test.describe('accessibility in Spanish', () => {
       await ctx.close();
     });
   }
+});
+
+test('Settings has one Language row showing the current choice; it opens a list of System, English and Español', async ({ page }) => {
+  await page.goto('/#/settings');
+  await expect(page.getByRole('group', { name: 'Language' })).toHaveCount(0); // no cramped options in Settings
+  const row = page.getByRole('link', { name: /^Language/ });
+  await expect(row).toContainText('System');
+  await row.click();
+  await expect(page).toHaveURL(/#\/settings\/language$/);
+  const group = page.getByRole('group', { name: 'Language' });
+  await expect(group.getByRole('radio')).toHaveCount(3);
+  for (const name of ['System', 'English', 'Español']) await expect(group.getByRole('radio', { name, exact: true })).toBeVisible();
+  await expect(group.getByRole('radio', { name: 'System', exact: true })).toBeChecked();
 });

@@ -12,6 +12,8 @@ import { CardFormPage } from './features/cards/CardFormPage';
 import { StatisticsPage } from './features/stats/StatisticsPage';
 import { StudySessionPage } from './features/study/StudySessionPage';
 import { SettingsPage } from './features/settings/SettingsPage';
+import { ThemePage } from './features/settings/ThemePage';
+import { LanguagePage } from './features/settings/LanguagePage';
 import { Toaster } from './components/shadcn/toast';
 
 /** Toasts live above the routes, so one can appear on a screen you navigate to (e.g. after saving an edit). */
@@ -56,6 +58,8 @@ export default function App() {
                     <Route path="cards/:id/edit" element={<CardFormPage />} />
                     <Route path="stats" element={<StatisticsPage />} />
                     <Route path="settings" element={<SettingsPage />} />
+                    <Route path="settings/theme" element={<ThemePage />} />
+                    <Route path="settings/language" element={<LanguagePage />} />
                     <Route path="*" element={<NotFound />} />
                   </Route>
                 </Routes>
