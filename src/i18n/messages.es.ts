@@ -66,7 +66,7 @@ export const es: Dictionary = {
   'deckForm.new': 'Nueva baraja',
   'deckForm.rename': 'Renombrar baraja',
   'deckForm.title': 'Título',
-  'deckForm.titlePlaceholder': 'Por ejemplo, Versículos del camino',
+  'deckForm.titlePlaceholder': 'Ej. Versículos del camino',
   'deckForm.description': 'Descripción',
 
   'deckHome.actions': 'Acciones de la baraja',

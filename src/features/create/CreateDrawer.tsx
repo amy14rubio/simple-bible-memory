@@ -27,8 +27,8 @@ export function CreateDrawer({ open, onOpenChange }: { open: boolean; onOpenChan
         </DrawerHeader>
 
         <div className="grid gap-3 px-4">
-          <Choice icon={<Layers size={22} aria-hidden />} title={t('common.newDeck')} onClick={() => go('/decks/new')} />
-          <Choice icon={<FilePlus size={22} aria-hidden />} title={t('common.newCard')} onClick={() => go('/cards/new')} />
+          <Choice icon={<Layers size={24} aria-hidden />} title={t('common.newDeck')} onClick={() => go('/decks/new')} />
+          <Choice icon={<FilePlus size={24} aria-hidden />} title={t('common.newCard')} onClick={() => go('/cards/new')} />
         </div>
 
         <div className="h-6" />
@@ -41,7 +41,7 @@ export function CreateDrawer({ open, onOpenChange }: { open: boolean; onOpenChan
 function Choice({ icon, title, onClick }: { icon: ReactNode; title: string; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} className={row}>
-      <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-foreground/10">{icon}</span>
+      <span className="flex size-8 shrink-0 items-center justify-center">{icon}</span>
       <span className="min-w-0 flex-1 text-[1.0625rem] font-medium">{title}</span>
       <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
     </button>

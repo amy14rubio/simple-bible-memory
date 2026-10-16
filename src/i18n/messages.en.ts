@@ -75,7 +75,7 @@ export const en = {
   'deckForm.new': 'New deck',
   'deckForm.rename': 'Rename deck',
   'deckForm.title': 'Title',
-  'deckForm.titlePlaceholder': 'For example, Commute verses',
+  'deckForm.titlePlaceholder': 'Ex. Commute verses',
   'deckForm.description': 'Description',
 
   // open deck
