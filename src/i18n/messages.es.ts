@@ -58,7 +58,6 @@ export const es: Dictionary = {
   'deckMenu.addCard': 'Añadir tarjeta',
   'deckMenu.browse': 'Ver tarjetas',
   'deckMenu.extraPractice': 'Práctica extra',
-  'deckMenu.extraPracticeHint': 'No cuenta para tu progreso',
   'deckMenu.rename': 'Renombrar baraja',
   'deckMenu.delete': 'Eliminar baraja',
   'deckMenu.deleteTitle': '¿Eliminar esta baraja?',

@@ -66,7 +66,6 @@ export const en = {
   'deckMenu.addCard': 'Add card',
   'deckMenu.browse': 'Browse cards',
   'deckMenu.extraPractice': 'Extra practice',
-  'deckMenu.extraPracticeHint': "Doesn't count toward your progress",
   'deckMenu.rename': 'Rename deck',
   'deckMenu.delete': 'Delete deck',
   'deckMenu.deleteTitle': 'Delete this deck?',

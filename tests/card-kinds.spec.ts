@@ -139,7 +139,8 @@ test('extra practice: from the deck menu, covers every card, and changes nothing
   await addCard(page, id, 'John 3:16', 'First example passage.');
   await openDeck(page, id);
   await page.getByRole('button', { name: 'Deck actions' }).click();
-  await expect(page.getByRole('link', { name: /Extra practice/ })).toContainText("Doesn't count toward your progress");
+  await expect(page.getByRole('link', { name: 'Extra practice', exact: true })).toBeVisible(); // just the label, no small print under it
+  await expect(page.getByText("Doesn't count toward your progress")).toHaveCount(0);
   await page.getByRole('link', { name: /Extra practice/ }).click();
 
   await expect(page.getByRole('heading', { name: 'Extra practice' })).toBeVisible();

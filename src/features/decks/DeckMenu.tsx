@@ -36,10 +36,7 @@ export function DeckMenu({ deck, onClose, onDeleted }: {
         <nav aria-label={t('deckMenu.actions')} className="flex flex-col border-t border-border">
           <Link to={`/cards/new?deck=${deck?.id}`} onClick={onClose} className={item}>{t('deckMenu.addCard')}</Link>
           <Link to={`/decks/${deck?.id}/cards`} onClick={onClose} className={item}>{t('deckMenu.browse')}</Link>
-          <Link to={`/decks/${deck?.id}?practice=1`} onClick={onClose} className={`${item} flex-col items-start justify-center py-2`}>
-            <span>{t('deckMenu.extraPractice')}</span>
-            <span className="text-sm text-muted">{t('deckMenu.extraPracticeHint')}</span>
-          </Link>
+          <Link to={`/decks/${deck?.id}?practice=1`} onClick={onClose} className={item}>{t('deckMenu.extraPractice')}</Link>
           <Link to={`/decks/${deck?.id}/edit`} onClick={onClose} className={item}>{t('deckMenu.rename')}</Link>
           <button type="button" onClick={() => setConfirming(true)} className={`${item} text-danger`}>{t('deckMenu.delete')}</button>
         </nav>
