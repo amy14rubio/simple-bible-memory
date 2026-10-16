@@ -37,3 +37,14 @@ The app ships **no Bible text**. You type or paste your own verses.
 ## Licenses
 
 Third-party notices: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+
+## Fonts and the Google Fonts key (optional)
+
+Settings > Font lets you pick one font for the whole app. Without any setup it offers a short hand-picked list. For the full Google Fonts catalogue (about 1,700 families), add a key:
+
+1. Google Cloud Console: create a project, enable the **Web Fonts Developer API**, and create an **API key**.
+2. Restrict the key (it is bundled into the app, so these limits are what protect it): API restriction to *Web Fonts Developer API* only, and HTTP referrer restriction to your site's address plus `http://localhost:*` for development.
+3. Copy `.env.example` to `.env.local` (git ignores it) and set `VITE_GOOGLE_FONTS_API_KEY=your key`. Restart `npm run dev`.
+
+The list is kept on the device for a week. If the key is missing or Google can't be reached, the short list is used instead. Only the Latin characters of the chosen font are downloaded, and only that one font is kept on the device.

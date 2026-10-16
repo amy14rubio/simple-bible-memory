@@ -25,3 +25,8 @@ dist-ssr
 
 test-results
 playwright-report
+
+# Secrets: the Google Fonts API key lives in .env.local (see .env.example)
+.env
+.env.*
+!.env.example

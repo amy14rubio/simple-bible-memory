@@ -73,9 +73,20 @@
   --color-easy: var(--rating-easy);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 0.25rem);
+}
+
+/* The two typefaces. Not `inline`, so the utilities (font-sans, font-serif) read the variable at run time and the
+   Font settings can swap them without touching a component. */
+@theme {
+  /* Spacing in pixels, not rem, so the text-size setting (which scales rem) makes text bigger without stretching the layout. */
+  --spacing: 4px;
   --font-sans: 'Instrument Sans Variable', system-ui, sans-serif;
   --font-serif: 'Literata Variable', Georgia, 'Times New Roman', serif;
 }
+
+/* The Font page's text size: every rem (all the text) is multiplied by this, so every size grows by the same share and
+   headings stay bigger than labels. 1 is the normal size. */
+html { font-size: calc(100% * var(--text-scale, 1)); }
 
 body {
   background: var(--background);

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useTheme } from '../../app/theme';
+import { useFont } from '../../app/fonts';
 import { AppBar, BackButton, Page, Segmented } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
@@ -21,6 +22,7 @@ const row = 'flex min-h-14 items-center justify-between gap-4 border-b border-bo
 export function SettingsPage() {
   const { t, preference: languagePreference } = useI18n();
   const { preference } = useTheme();
+  const { family: fontFamily } = useFont();
   const { settings } = useRepositories();
   const [newPerDay, setNewPerDay] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
@@ -58,6 +60,13 @@ export function SettingsPage() {
             <span className="flex items-center gap-1 text-muted">
               {t(THEME_LABEL[preference])}
               <ChevronRight size={20} aria-hidden />
+            </span>
+          </Link>
+          <Link to="/settings/font" className={`${row} hover:bg-surface`}>
+            <span>{t('settings.font')}</span>
+            <span className="flex min-w-0 items-center gap-1 text-muted">
+              <span className="truncate">{fontFamily ?? t('fonts.default')}</span>
+              <ChevronRight size={20} aria-hidden className="shrink-0" />
             </span>
           </Link>
           <div className={row}>

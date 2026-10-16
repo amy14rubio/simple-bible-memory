@@ -2,6 +2,7 @@ import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom
 import { DatabaseProvider } from './app/DatabaseProvider';
 import { RepositoriesProvider } from './app/repositories';
 import { ThemeProvider } from './app/theme';
+import { FontProvider } from './app/fonts';
 import { I18nProvider, useI18n } from './i18n/I18nProvider';
 import { AppShell } from './app/AppShell';
 import { DecksPage } from './features/decks/DecksPage';
@@ -14,6 +15,7 @@ import { StudySessionPage } from './features/study/StudySessionPage';
 import { SettingsPage } from './features/settings/SettingsPage';
 import { ThemePage } from './features/settings/ThemePage';
 import { LanguagePage } from './features/settings/LanguagePage';
+import { FontPage } from './features/settings/FontPage';
 import { Toaster } from './components/shadcn/toast';
 
 /** Toasts live above the routes, so one can appear on a screen you navigate to (e.g. after saving an edit). */
@@ -43,6 +45,7 @@ export default function App() {
           {({ settings }) => (
             <I18nProvider settings={settings}>
             <ThemeProvider settings={settings}>
+            <FontProvider settings={settings}>
               <Toasts>
               <HashRouter>
                 <Routes>
@@ -60,11 +63,13 @@ export default function App() {
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="settings/theme" element={<ThemePage />} />
                     <Route path="settings/language" element={<LanguagePage />} />
+                    <Route path="settings/font" element={<FontPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Route>
                 </Routes>
               </HashRouter>
               </Toasts>
+            </FontProvider>
             </ThemeProvider>
             </I18nProvider>
           )}
