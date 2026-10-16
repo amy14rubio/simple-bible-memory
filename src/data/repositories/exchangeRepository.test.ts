@@ -140,3 +140,23 @@ describe('importing plain cards (Anki)', () => {
     expect(await decks.list()).toHaveLength(0);
   });
 });
+
+describe('importing a public deck', () => {
+  it('keeps its translation and language, and remembers where it came from', async () => {
+    const result = await exchange.importCards(
+      { title: 'Psalm 23', description: 'The shepherd psalm', translationCode: 'KJV', bibleLanguage: 'en', importedFrom: 'public-1' },
+      [{ reference: 'Psalm 23:1', verseText: 'The Lord is my shepherd.' }],
+    );
+    const [deck] = await decks.list();
+    expect(deck).toMatchObject({ id: result.deckIds[0], title: 'Psalm 23', description: 'The shepherd psalm', translationCode: 'KJV', bibleLanguage: 'en' });
+    expect(await exchange.findImported('public-1')).toEqual({ id: result.deckIds[0], title: 'Psalm 23' });
+    expect(await exchange.findImported('something-else')).toBeUndefined();
+  });
+
+  it('is an independent, unpublished copy: editing it does not touch anything public', async () => {
+    const result = await exchange.importCards({ title: 'Copy', importedFrom: 'public-2' }, [{ reference: 'A 1:1', verseText: 'a' }]);
+    const [row] = await db.query<{ publish_id: string | null }>('SELECT publish_id FROM decks WHERE id = ?', [result.deckIds[0]!]);
+    expect(row!.publish_id).toBeNull();
+  });
+});
+

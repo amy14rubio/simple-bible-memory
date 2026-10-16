@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, FilePlus, Layers, Upload } from 'lucide-react';
+import { ChevronRight, Compass, FilePlus, Layers, Upload } from 'lucide-react';
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
 import { HiddenClose } from '../../components/ui';
 import { usePopupHistory } from '../../lib/usePopupHistory';
+import { useSharing } from '../../app/sharing';
 import { useI18n } from '../../i18n/I18nProvider';
 
 const row = 'flex min-h-16 w-full items-center gap-4 rounded-2xl bg-foreground/[0.06] px-3.5 py-2.5 text-left hover:bg-foreground/10';
@@ -15,6 +16,7 @@ const row = 'flex min-h-16 w-full items-center gap-4 rounded-2xl bg-foreground/[
 export function CreateDrawer({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { available } = useSharing();
   usePopupHistory(open, () => onOpenChange(false));
   const go = (to: string) => { onOpenChange(false); navigate(to, { replace: true }); };
 
@@ -30,6 +32,7 @@ export function CreateDrawer({ open, onOpenChange }: { open: boolean; onOpenChan
           <Choice icon={<Layers size={24} aria-hidden />} title={t('common.newDeck')} onClick={() => go('/decks/new')} />
           <Choice icon={<FilePlus size={24} aria-hidden />} title={t('common.newCard')} onClick={() => go('/cards/new')} />
           <Choice icon={<Upload size={24} aria-hidden />} title={t('create.import')} onClick={() => go('/import')} />
+          {available && <Choice icon={<Compass size={24} aria-hidden />} title={t('create.discover')} onClick={() => go('/discover')} />}
         </div>
 
         <div className="h-6" />

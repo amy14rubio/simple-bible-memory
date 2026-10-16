@@ -18,6 +18,8 @@ import { ThemePage } from './features/settings/ThemePage';
 import { LanguagePage } from './features/settings/LanguagePage';
 import { FontPage } from './features/settings/FontPage';
 import { ImportPage } from './features/exchange/ImportPage';
+import { DiscoverPage } from './features/discover/DiscoverPage';
+import { DiscoverDeckPage } from './features/discover/DiscoverDeckPage';
 import { Toaster } from './components/shadcn/toast';
 
 /** Toasts live above the routes, so one can appear on a screen you navigate to (e.g. after saving an edit). */
@@ -65,6 +67,8 @@ export default function App() {
                     <Route path="stats" element={<StatisticsPage />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="import" element={<ImportPage />} />
+                    <Route path="discover" element={<DiscoverPage />} />
+                    <Route path="discover/:id" element={<DiscoverDeckPage />} />
                     <Route path="settings/theme" element={<ThemePage />} />
                     <Route path="settings/language" element={<LanguagePage />} />
                     <Route path="settings/font" element={<FontPage />} />

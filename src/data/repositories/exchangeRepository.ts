@@ -17,8 +17,16 @@ export interface ExchangeRepository {
   exportDecks(deckIds: string[] | null, options: { progress: boolean }): Promise<ExportFile>;
   /** Adds every deck in the file as a NEW deck, in one all-or-nothing step. Progress is copied only when asked for and present. */
   importFile(file: ExportFile, options: { progress: boolean }): Promise<ImportResult>;
-  /** Adds one new deck holding these cards (used by the Anki import). */
-  importCards(deck: { title: string; description?: string | null }, cards: CardInput[]): Promise<ImportResult>;
+  /**
+   * Adds one new deck holding these cards (used by the Anki import and by importing a public deck).
+   * `importedFrom` is the id of the public deck it came from, if any.
+   */
+  importCards(
+    deck: { title: string; description?: string | null; translationCode?: string | null; bibleLanguage?: string | null; importedFrom?: string },
+    cards: CardInput[],
+  ): Promise<ImportResult>;
+  /** The local deck (if any) that was imported from this public deck. */
+  findImported(publicDeckId: string): Promise<{ id: string; title: string } | undefined>;
 }
 
 const kindOf = (v: SqlValue | undefined) => (v === 'identify' ? 'identify' : 'recall');
@@ -75,11 +83,11 @@ export function createExchangeRepository(db: Database, now: Clock = Date.now): E
   }
 
   /** Inserts one deck with its cards inside a transaction; returns the new deck's id. */
-  async function insertDeck(tx: Database, deck: ExportedDeck, withProgress: boolean, t: number): Promise<string> {
+  async function insertDeck(tx: Database, deck: ExportedDeck, withProgress: boolean, t: number, importedFrom: string | null = null): Promise<string> {
     const deckId = crypto.randomUUID();
     await tx.run(
-      'INSERT INTO decks (id, title, description, bible_language, translation_code, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [deckId, deck.title, deck.description, deck.bibleLanguage, deck.translationCode, t, t],
+      'INSERT INTO decks (id, title, description, bible_language, translation_code, imported_from, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [deckId, deck.title, deck.description, deck.bibleLanguage, deck.translationCode, importedFrom, t, t],
     );
     for (const [i, card] of deck.cards.entries()) {
       const cardId = crypto.randomUUID();
@@ -133,16 +141,21 @@ export function createExchangeRepository(db: Database, now: Clock = Date.now): E
       const exported: ExportedDeck = {
         title: requireText(deck.title, 'Deck title', 'deck-title-required'),
         description: optionalText(deck.description),
-        bibleLanguage: null,
-        translationCode: null,
+        bibleLanguage: optionalText(deck.bibleLanguage),
+        translationCode: optionalText(deck.translationCode),
         cards: cards.map((c) => ({
           reference: requireText(c.reference, 'Reference', 'reference-required'),
           verseText: requireText(c.verseText, 'Verse text', 'verse-text-required'),
           note: optionalText(c.note),
         })),
       };
-      const id = await db.transaction((tx) => insertDeck(tx, exported, false, now()));
+      const id = await db.transaction((tx) => insertDeck(tx, exported, false, now(), deck.importedFrom ?? null));
       return { deckIds: [id], decks: 1, cards: exported.cards.length };
+    },
+
+    async findImported(publicDeckId) {
+      const [r] = await db.query<Row>('SELECT id, title FROM decks WHERE imported_from = ? ORDER BY created_at LIMIT 1', [publicDeckId]);
+      return r ? { id: r.id as string, title: r.title as string } : undefined;
     },
   };
 }

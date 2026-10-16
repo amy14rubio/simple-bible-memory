@@ -1,4 +1,5 @@
 import type { AuthBackend, AuthUser, CloudBackend, CloudCard, CloudDeckMeta } from './types';
+import { PAGE_SIZE, type DiscoverBackend, type PublicDeck } from '../discover/types';
 
 /**
  * A stand-in for Google sign-in and Firestore, kept in the browser's localStorage, used by the browser tests
@@ -6,12 +7,17 @@ import type { AuthBackend, AuthUser, CloudBackend, CloudCard, CloudDeckMeta } fr
  * look at what has been "published".
  */
 const KEY = 'sbm-fake-cloud';
-interface State { user: AuthUser | null; decks: Record<string, { meta: CloudDeckMeta; cards: Record<string, CloudCard> }>; offline: boolean }
+interface State {
+  user: AuthUser | null;
+  decks: Record<string, { ownerId?: string; createdAt?: number; meta: CloudDeckMeta; cards: Record<string, CloudCard> }>;
+  reports?: { deckId: string; reason: string; details: string }[];
+  offline: boolean;
+}
 
 const load = (): State => { try { return { user: null, decks: {}, offline: false, ...(JSON.parse(localStorage.getItem(KEY) ?? '{}') as Partial<State>) }; } catch { return { user: null, decks: {}, offline: false }; } };
 const save = (s: State) => localStorage.setItem(KEY, JSON.stringify(s));
 
-export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend } {
+export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; discover: DiscoverBackend } {
   const listeners = new Set<(u: AuthUser | null) => void>();
   const emit = (u: AuthUser | null) => listeners.forEach((l) => l(u));
   const edit = <T>(fn: (s: State) => T): T => {
@@ -39,12 +45,41 @@ export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend }
   };
 
   const cloud: CloudBackend = {
-    async createDeck(id, meta) { edit((s) => { s.decks[id] = { meta, cards: {} }; }); },
+    async createDeck(id, meta) { edit((s) => { s.decks[id] = { ownerId: s.user!.uid, createdAt: Date.now(), meta, cards: {} }; }); },
     async updateDeck(id, meta) { edit((s) => { const d = s.decks[id]; if (!d) throw new Error('no such deck'); d.meta = meta; }); },
     async putCards(id, cards) { edit((s) => { const d = s.decks[id]; if (!d) throw new Error('no such deck'); for (const c of cards) d.cards[c.id] = c; }); },
     async removeCards(id, ids) { edit((s) => { const d = s.decks[id]; if (d) for (const i of ids) delete d.cards[i]; }); },
     async removeDeck(id) { edit((s) => { delete s.decks[id]; }); },
     async removeAllMine() { edit((s) => { s.decks = {}; }); },
   };
-  return { auth, cloud };
+
+  const publicDeck = (id: string, d: State['decks'][string]): PublicDeck => ({
+    id, title: d.meta.title, description: d.meta.description, translation: d.meta.translation, language: d.meta.language, cardCount: d.meta.cardCount, createdAt: d.createdAt ?? 0,
+  });
+  const discover: DiscoverBackend = {
+    async listDecks(filters, cursor) {
+      const s = load();
+      if (s.offline) throw new Error('offline');
+      const q = filters.query.trim().toLowerCase();
+      const all = Object.entries(s.decks)
+        .filter(([, d]) => (filters.language === 'all' || d.meta.language === filters.language) && (filters.translation === 'all' || d.meta.translation === filters.translation) && (!q || d.meta.title.toLowerCase().startsWith(q)))
+        .sort(([, a], [, b]) => (q ? a.meta.title.toLowerCase().localeCompare(b.meta.title.toLowerCase()) : (b.createdAt ?? 0) - (a.createdAt ?? 0)));
+      const start = typeof cursor === 'number' ? cursor : 0;
+      const page = all.slice(start, start + PAGE_SIZE);
+      return { decks: page.map(([id, d]) => publicDeck(id, d)), cursor: start + PAGE_SIZE < all.length ? start + PAGE_SIZE : null };
+    },
+    async getDeck(id) { const s = load(); if (s.offline) throw new Error('offline'); const d = s.decks[id]; return d ? publicDeck(id, d) : null; },
+    async getCards(id) {
+      const s = load();
+      if (s.offline) throw new Error('offline');
+      return Object.values(s.decks[id]?.cards ?? {}).sort((a, b) => a.position - b.position).map((c) => ({ id: c.id, reference: c.reference, verseText: c.verseText, position: c.position }));
+    },
+    async report(deckId, reason, details) {
+      const s = load();
+      if (s.offline) throw new Error('offline');
+      s.reports = [...(s.reports ?? []), { deckId, reason, details }];
+      save(s);
+    },
+  };
+  return { auth, cloud, discover };
 }
