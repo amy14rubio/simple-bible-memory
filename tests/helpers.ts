@@ -13,7 +13,7 @@ export async function createDeck(page: Page, title = 'Test deck'): Promise<strin
 export async function addCard(page: Page, deckId: string, reference: string, passage: string, source?: string) {
   await page.goto(`/#/cards/new?deck=${deckId}`);
   await page.getByLabel('Verse(s)').fill(reference);
-  if (source) await page.getByLabel('Source').fill(source);
+  if (source) await page.getByLabel('Note', { exact: true }).fill(source);
   await page.getByLabel('Passage', { exact: true }).fill(passage);
   await page.getByRole('button', { name: 'Save' }).click();
   // Saving shows a toast and leaves a cleared form open. Then open the deck's card list, and reload so the

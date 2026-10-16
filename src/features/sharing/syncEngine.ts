@@ -67,7 +67,7 @@ export function createSyncEngine({ sharing, cloud, ready, delayMs = 1500 }: {
 
     const meta: CloudDeckMeta = { title: deck.title, description: deck.description, translation: deck.translationCode!, language: languageOf(deck)!, cardCount: rows.length };
     const cards: (CloudCard & { hash: string; syncedHash: string | null })[] = rows.map((r, position) => {
-      const card = { id: r.id, reference: r.reference, verseText: r.verseText, note: r.note, position };
+      const card = { id: r.id, reference: r.reference, verseText: r.verseText, position };
       return { ...card, hash: cardFingerprint(card), syncedHash: r.syncedHash };
     });
     const changed = cards.filter((c) => c.hash !== c.syncedHash);
@@ -77,7 +77,7 @@ export function createSyncEngine({ sharing, cloud, ready, delayMs = 1500 }: {
 
     if (firstTime) await cloud.createDeck(publishId, meta);
     for (let i = 0; i < changed.length; i += CHUNK) {
-      await cloud.putCards(publishId, changed.slice(i, i + CHUNK).map(({ id, reference, verseText, note, position }) => ({ id, reference, verseText, note, position })));
+      await cloud.putCards(publishId, changed.slice(i, i + CHUNK).map(({ id, reference, verseText, position }) => ({ id, reference, verseText, position })));
     }
     for (let i = 0; i < removals.length; i += CHUNK) await cloud.removeCards(publishId, removals.slice(i, i + CHUNK));
     if (!firstTime && deck.syncedMeta !== metaStamp) await cloud.updateDeck(publishId, meta);

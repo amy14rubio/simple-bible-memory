@@ -14,7 +14,7 @@ export function fingerprint(text: string): string {
   return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
 }
 
-export const cardFingerprint = (c: Pick<CloudCard, 'reference' | 'verseText' | 'note' | 'position'>) =>
-  fingerprint(JSON.stringify([c.reference, c.verseText, c.note, c.position]));
+export const cardFingerprint = (c: Pick<CloudCard, 'reference' | 'verseText' | 'position'>) =>
+  fingerprint(JSON.stringify([c.reference, c.verseText, c.position]));
 
 export const metaFingerprint = (m: CloudDeckMeta) => fingerprint(JSON.stringify([m.title, m.description, m.translation, m.language, m.cardCount]));

@@ -47,7 +47,7 @@ export function createFirestoreCloud(db: Firestore, uid: () => string): CloudBac
       for (let i = 0; i < cards.length; i += CHUNK) {
         const batch = writeBatch(db);
         for (const c of cards.slice(i, i + CHUNK)) {
-          batch.set(doc(db, 'publicDecks', id, 'cards', c.id), { reference: c.reference, verseText: c.verseText, note: c.note, position: c.position });
+          batch.set(doc(db, 'publicDecks', id, 'cards', c.id), { reference: c.reference, verseText: c.verseText, position: c.position });
         }
         await batch.commit();
       }

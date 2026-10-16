@@ -30,11 +30,10 @@ service cloud.firestore {
         && d.cardCount is int && d.cardCount >= 0 && d.cardCount <= 1000;
     }
     function validCard(c) {
-      return c.keys().hasOnly(['reference', 'verseText', 'note', 'position'])
+      return c.keys().hasOnly(['reference', 'verseText', 'position']) // a card's private note is never published
         && c.keys().hasAll(['reference', 'verseText', 'position'])
         && isText(c.reference, 1, 200)
         && isText(c.verseText, 1, 20000)
-        && isTextOrNull(c.get('note', null), 500)
         && c.position is int && c.position >= 0 && c.position < 1000;
     }
     function ownsDeck(deckId) {

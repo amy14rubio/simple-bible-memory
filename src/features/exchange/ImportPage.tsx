@@ -163,7 +163,7 @@ export function ImportPage() {
               </FormRow>
               {columnPicker(t('import.colVerse'), verse, setVerse)}
               {columnPicker(t('import.colPassage'), passage, setPassage)}
-              {columnPicker(t('import.colSource'), source, setSource, [{ value: NONE, label: t('import.colNone') }, ...columnOptions])}
+              {columnPicker(t('import.colNote'), source, setSource, [{ value: NONE, label: t('import.colNone') }, ...columnOptions])}
               <div className="flex items-center justify-between gap-4 border-b border-border">
                 <span id="import-header" className="py-3">{t('import.firstRow')}</span>
                 <Switch checked={skipFirst} onChange={setSkipFirst} labelledBy="import-header" />

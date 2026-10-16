@@ -36,6 +36,33 @@ async function openPublish(page: Page, deckId: string) {
 
 const signInInDrawer = async (page: Page) => { await drawer(page).getByRole('button', { name: 'Continue with Google' }).click(); await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeVisible(); };
 
+test.describe('a card\'s note stays private', () => {
+  test('the note field explains itself behind an "i", and a published deck never contains notes', async ({ page }) => {
+    const id = await createDeck(page, 'Psalm 23');
+    await page.goto(`/#/cards/new?deck=${id}`);
+    await expect(page.getByLabel('Source')).toHaveCount(0); // it used to be called Source
+    await page.getByRole('button', { name: 'Note', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: 'Note' })).toContainText('It stays private and is never published with a deck');
+    await closeWithEscape(page);
+    await expect(page.getByRole('dialog')).toHaveCount(0); // wait for the drawer to finish closing
+    await page.getByLabel('Verse(s)').fill('Psalm 23:1');
+    await page.getByRole('textbox', { name: 'Note' }).fill('from the AMP, memorize by Friday');
+    await page.getByLabel('Passage', { exact: true }).fill('The Lord is my shepherd; I shall not want.');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByText('Psalm 23:1 added')).toBeVisible();
+    await page.waitForTimeout(300);
+    await setTranslation(page, id, 'King James Version (KJV)');
+
+    await openPublish(page, id);
+    await signInInDrawer(page);
+    await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
+    await expect(page.getByText('Deck published')).toBeVisible();
+    const [deck] = await published(page);
+    expect(Object.values(deck!.cards)).toHaveLength(1);
+    expect(JSON.stringify(deck)).not.toMatch(/AMP|Friday|note/); // the private note never leaves the phone
+  });
+});
+
 test.describe('a deck\'s translation', () => {
   test('is chosen on the deck form, remembered, and "my own words" asks for a language', async ({ page }) => {
     const id = await createDeck(page, 'Verses');

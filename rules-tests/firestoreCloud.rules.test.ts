@@ -15,7 +15,7 @@ const as = (uid: string) => createFirestoreCloud(env.authenticatedContext(uid).f
 const reader = () => env.unauthenticatedContext().firestore() as unknown as Firestore;
 
 const meta = (over: Partial<CloudDeckMeta> = {}): CloudDeckMeta => ({ title: 'Psalm 23', description: 'The shepherd psalm', translation: 'KJV', language: 'en', cardCount: 2, ...over });
-const cards = (n: number): CloudCard[] => Array.from({ length: n }, (_, i) => ({ id: `c${i}`, reference: `Psalm 23:${i + 1}`, verseText: `Verse ${i + 1}.`, note: i === 0 ? 'KJV' : null, position: i }));
+const cards = (n: number): CloudCard[] => Array.from({ length: n }, (_, i) => ({ id: `c${i}`, reference: `Psalm 23:${i + 1}`, verseText: `Verse ${i + 1}.`, position: i }));
 const cardIds = async (id: string) => (await getDocs(collection(reader(), 'publicDecks', id, 'cards'))).docs.map((d) => d.id).sort();
 
 describe('the app\'s calls, under the real rules', () => {

@@ -1,11 +1,10 @@
 import type { SharingLanguage } from '../../domain/sharing/translations';
 
-/** A card as it appears in the public copy of a deck. */
+/** A card as it appears in the public copy of a deck. (A card's private note is never published.) */
 export interface CloudCard {
   id: string;
   reference: string;
   verseText: string;
-  note: string | null;
   position: number;
 }
 

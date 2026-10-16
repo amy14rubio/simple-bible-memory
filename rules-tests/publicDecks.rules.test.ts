@@ -20,7 +20,7 @@ const newDeck = (over: Record<string, unknown> = {}) => ({
   ownerId: 'alice', title: 'Psalm 23', titleLower: 'psalm 23', description: 'The shepherd psalm', translation: 'KJV', language: 'en',
   cardCount: 2, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), ...over,
 });
-const card = (over: Record<string, unknown> = {}) => ({ reference: 'Psalm 23:1', verseText: 'The Lord is my shepherd; I shall not want.', note: null, position: 0, ...over });
+const card = (over: Record<string, unknown> = {}) => ({ reference: 'Psalm 23:1', verseText: 'The Lord is my shepherd; I shall not want.', position: 0, ...over });
 
 /** A published deck owned by alice, written with the rules switched off. */
 const seed = (id = 'd1') => env.withSecurityRulesDisabled(async (ctx) => {
@@ -160,14 +160,14 @@ describe('cards in a published deck', () => {
     }
   });
 
-  it('cards need a reference and text, within the size limits, and nothing extra', async () => {
+  it('cards need a reference and text, within the size limits, and nothing extra (a private note is never accepted)', async () => {
     await seed();
     const cases: Record<string, unknown>[] = [
       { reference: '' }, { reference: 'x'.repeat(201) }, { verseText: '' }, { verseText: 'x'.repeat(20001) },
-      { note: 'x'.repeat(501) }, { note: 5 }, { position: -1 }, { position: 1000 }, { position: 1.5 }, { extra: 'nope' },
+      { note: 'my private reminder' }, { note: null }, { position: -1 }, { position: 1000 }, { position: 1.5 }, { extra: 'nope' },
     ];
     for (const [i, over] of cases.entries()) await assertFails(setDoc(doc(alice(), 'publicDecks', 'd1', 'cards', `bad${i}`), card(over)));
-    await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'd1', 'cards', 'big'), card({ verseText: 'x'.repeat(20000), reference: 'x'.repeat(200), note: 'x'.repeat(500), position: 999 })));
+    await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'd1', 'cards', 'big'), card({ verseText: 'x'.repeat(20000), reference: 'x'.repeat(200), position: 999 })));
   });
 
   it('cards cannot be added to a deck that does not exist', async () => {

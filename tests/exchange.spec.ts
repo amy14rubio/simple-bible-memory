@@ -221,7 +221,7 @@ test.describe('import from Anki', () => {
     await expect(page.getByLabel('Deck name')).toHaveValue('Memory verses');
     await expect(page.getByRole('button', { name: /^Verse:/ })).toContainText('Front');
     await expect(page.getByRole('button', { name: /^Passage:/ })).toContainText('Back');
-    await expect(page.getByRole('button', { name: /^Source:/ })).toContainText('None');
+    await expect(page.getByRole('button', { name: /^Note:/ })).toContainText('None');
     const preview = page.getByRole('region', { name: 'What will be added' });
     await expect(preview).toContainText('John 3:16');
     await expect(preview).toContainText('For God so loved the world'); // the HTML <br> became a line break, not text
@@ -229,7 +229,7 @@ test.describe('import from Anki', () => {
     await expect(preview).toContainText('2 rows left out (no verse or passage).');
 
     // choose the Tags column as the source
-    await page.getByRole('button', { name: /^Source:/ }).click();
+    await page.getByRole('button', { name: /^Note:/ }).click();
     await page.getByRole('dialog', { name: 'Select a column' }).getByRole('button', { name: /^Tags/ }).click();
 
     await page.getByRole('button', { name: 'Import', exact: true }).click();
@@ -241,7 +241,7 @@ test.describe('import from Anki', () => {
     await expect(page.getByRole('link', { name: 'John 3:16' })).toBeVisible();
     await expect(page.getByRole('row')).toHaveCount(4); // header + 3 cards
     await page.getByRole('link', { name: 'Psalm 1:1' }).click();
-    await expect(page.getByLabel('Source')).toHaveValue('kids');
+    await expect(page.getByLabel('Note', { exact: true })).toHaveValue('kids');
   });
 
   test('"First row is a header" skips the first row; the deck name can be changed', async ({ page }) => {
