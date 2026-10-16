@@ -1,6 +1,6 @@
 import { test, expect, type Browser, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { createDeck, tapFirstBankWord, wordBankOpen } from './helpers';
+import { createDeck, tapFirstBankWord, wordBankOpen, closeWithEscape } from './helpers';
 
 const spanishPage = async (browser: Browser, colorScheme: 'light' | 'dark' = 'light') => {
   const ctx = await browser.newContext({ locale: 'es-ES', colorScheme });
@@ -22,7 +22,9 @@ async function esAddCard(page: Page, deckId: string, reference: string, passage:
   await page.getByLabel('Versículo(s)').fill(reference);
   await page.getByLabel('Pasaje', { exact: true }).fill(passage);
   await page.getByRole('button', { name: 'Guardar' }).click();
-  await page.waitForURL(/\/cards$/);
+  await expect(page.getByText(`${reference} agregado`)).toBeVisible(); // the toast; the form stays open, cleared
+  await page.goto(`/#/decks/${deckId}/cards`);
+  await page.reload();
 }
 async function esSetKinds(page: Page, name: RegExp) {
   await page.goto('/#/settings');
@@ -129,7 +131,8 @@ test.describe('verses are not translated', () => {
     await page.getByLabel('Source').fill('Example translation');
     await page.getByLabel('Passage', { exact: true }).fill('Example passage text, typed exactly like this.');
     await page.getByRole('button', { name: 'Save' }).click();
-    await page.waitForURL(/\/cards$/);
+    await expect(page.getByText('John 3:16 added')).toBeVisible();
+    await page.reload(); // clears the toast
 
     await page.goto('/#/settings');
     await language(page, 'Español').click();
@@ -187,7 +190,8 @@ test.describe('the app in Spanish', () => {
     await expect(page.getByLabel('Versículo(s)')).toHaveValue('Juan 3:16'); // what you typed is kept
     await page.getByLabel('Pasaje', { exact: true }).fill('Texto de ejemplo escrito por la persona.');
     await page.getByRole('button', { name: 'Guardar' }).click();
-    await page.waitForURL(/\/cards$/);
+    await expect(page.getByText('Juan 3:16 agregado')).toBeVisible(); // the toast, in Spanish
+    await page.goto(`/#/decks/${new URL(page.url().split('#')[1]!, 'http://x').searchParams.get('deck')}/cards`);
     await expect(page.getByRole('columnheader', { name: 'Pasaje' })).toBeVisible();
 
     await page.goto('/');
@@ -208,7 +212,7 @@ test.describe('the app in Spanish', () => {
     await page.getByRole('button', { name: 'Añadir' }).click();
     await expect(page.getByRole('button', { name: 'Nueva baraja' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Nueva tarjeta' })).toBeVisible();
-    await page.keyboard.press('Escape');
+    await closeWithEscape(page);
     await esCreateDeck(page, 'Salmos');
     await page.goto('/');
     await page.getByRole('button', { name: 'Buscar barajas' }).click();
@@ -345,7 +349,8 @@ test.describe('the app in Spanish', () => {
     await expect(split).toContainText('Esto crea 2 tarjetas, una por versículo.');
     await expect(split).toContainText('tendrás 4 tarjetas de estudio');
     await split.getByRole('button', { name: 'Crear 2 tarjetas' }).click();
-    await page.waitForURL(/\/cards$/);
+    await expect(page.getByText('2 versículos agregados')).toBeVisible();
+    await page.goto(`/#/decks/${new URL(page.url().split('#')[1]!, 'http://x').searchParams.get('deck')}/cards`);
     await expect(page.getByRole('link', { name: 'Salmos 130:2', exact: true })).toBeVisible();
 
     // and the explanation when it cannot split
@@ -353,7 +358,7 @@ test.describe('the app in Spanish', () => {
     await page.getByLabel('Versículo(s)').fill('Salmos 130:1-3');
     await page.getByLabel('Pasaje', { exact: true }).fill('1 Uno. 3 Tres.');
     await page.getByRole('button', { name: 'Separar en versículos' }).click();
-    await expect(page.getByRole('dialog')).toContainText('No encontramos el versículo 2 en el texto.');
+    await expect(page.getByRole('dialog', { name: 'Separar en versículos' })).toContainText('No encontramos el versículo 2 en el texto.');
     await ctx.close();
   });
 
@@ -391,7 +396,7 @@ test.describe('accessibility in Spanish', () => {
       await audit('inicio');
       await page.getByRole('button', { name: 'Añadir' }).click();
       await audit('menú añadir');
-      await page.keyboard.press('Escape');
+      await closeWithEscape(page);
       await page.goto(`/#/decks/${id}`);
       await expect(page.getByText(/tarjetas? para estudiar hoy/)).toBeVisible();
       await audit('baraja');

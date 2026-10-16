@@ -5,6 +5,7 @@ import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, Button, ButtonLink, ConfirmDialog, EmptyState, ErrorMessage, FormRow, GrowingTextarea, IconButton, Page, rowInput } from '../../components/ui';
 import type { Card, DeckSummary } from '../../domain/types';
+import { toast } from '../../components/shadcn/toast';
 import { canSplit, splitPassage, type SplitResult } from '../../domain/bible/split';
 import { loadCardKinds } from '../study/cardKinds';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -45,32 +46,32 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
   const [note, setNote] = useState(card?.note ?? '');
   const [error, setError] = useState<string>();
   const [confirming, setConfirming] = useState(false);
-  const [status, setStatus] = useState<string>();
   const [split, setSplit] = useState<SplitResult | null>(null);
   const [splitBusy, setSplitBusy] = useState(false);
   const [splitError, setSplitError] = useState<string>();
   const referenceInput = useRef<HTMLInputElement>(null);
 
+  /** After adding, the form stays open with the verse and passage cleared (deck and source kept), ready for the next card. */
+  const readyForNext = () => {
+    setError(undefined);
+    setReference('');
+    setVerseText('');
+    referenceInput.current?.focus();
+  };
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      if (card) await cards.update(card.id, { reference, verseText, note });
-      else await cards.create(deckId, { reference, verseText, note });
-      if (card) navigate(-1);
-      else navigate(`/decks/${deckId}/cards`, { replace: true });
+      if (card) {
+        await cards.update(card.id, { reference, verseText, note });
+        navigate(-1);
+        toast.add({ title: t('toast.changesSaved'), type: 'success' });
+      } else {
+        const saved = await cards.create(deckId, { reference, verseText, note });
+        toast.add({ title: t('toast.cardAdded', { reference: saved.reference }), type: 'success' });
+        readyForNext();
+      }
     } catch (err) { setError(describeError(err)); }
-  };
-
-  /** Saves this card, then clears the verse and passage so the next one can be typed straight away. */
-  const addAnother = async () => {
-    try {
-      const saved = await cards.create(deckId, { reference, verseText, note });
-      setError(undefined);
-      setStatus(t('cardForm.saved', { reference: saved.reference }));
-      setReference('');
-      setVerseText('');
-      referenceInput.current?.focus();
-    } catch (err) { setStatus(undefined); setError(describeError(err)); }
   };
 
   const confirmSplit = async () => {
@@ -79,7 +80,10 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
     setSplitError(undefined);
     try {
       await cards.createMany(deckId, split.verses.map((v) => ({ reference: v.reference, verseText: v.text, note })));
-      navigate(`/decks/${deckId}/cards`, { replace: true });
+      toast.add({ title: t('toast.versesAdded', { count: split.verses.length }), type: 'success' });
+      setSplit(null);
+      setSplitBusy(false);
+      readyForNext();
     } catch (err) {
       setSplitError(describeError(err));
       setSplitBusy(false);
@@ -100,7 +104,6 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
       />
       <Page className="space-y-5 pt-2">
         {error && <ErrorMessage error={error} />}
-        {status && <p role="status" className="text-sm font-medium">{status}</p>}
         <div>
           {!card && (
             <FormRow label={t('cardForm.deck')}>
@@ -111,7 +114,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
               )}
             </FormRow>
           )}
-          <FormRow label={t('cardForm.verses')}>{(fid) => <input id={fid} ref={referenceInput} className={rowInput} value={reference} onChange={(e) => { setReference(e.target.value); setStatus(undefined); }} placeholder={t('cardForm.versesPlaceholder')} autoFocus={!card} />}</FormRow>
+          <FormRow label={t('cardForm.verses')}>{(fid) => <input id={fid} ref={referenceInput} className={rowInput} value={reference} onChange={(e) => setReference(e.target.value)} placeholder={t('cardForm.versesPlaceholder')} autoFocus={!card} />}</FormRow>
           <FormRow label={t('cardForm.source')}>{(fid) => <input id={fid} className={rowInput} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('cardForm.sourcePlaceholder')} />}</FormRow>
         </div>
 
@@ -130,7 +133,6 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
           {!card && (
             <>
               <div className="flex flex-wrap gap-3 pt-1">
-                <Button variant="secondary" onClick={addAnother}>{t('cardForm.addAnother')}</Button>
                 <Button variant="secondary" onClick={() => { setSplitError(undefined); setSplit(splitPassage(reference, verseText)); }} disabled={!canSplit(reference) || !verseText.trim()}>
                   {t('cardForm.split')}
                 </Button>

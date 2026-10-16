@@ -16,7 +16,11 @@ export async function addCard(page: Page, deckId: string, reference: string, pas
   if (source) await page.getByLabel('Source').fill(source);
   await page.getByLabel('Passage', { exact: true }).fill(passage);
   await page.getByRole('button', { name: 'Save' }).click();
-  await page.waitForURL(/\/cards$/);
+  // Saving shows a toast and leaves a cleared form open. Then open the deck's card list, and reload so the
+  // toast's text ("John 3:16 added") cannot be mistaken for the card itself by later checks.
+  await expect(page.getByText(`${reference} added`)).toBeVisible();
+  await page.goto(`/#/decks/${deckId}/cards`);
+  await page.reload();
   await expect(page.getByText(reference, { exact: true })).toBeVisible();
 }
 
@@ -57,4 +61,18 @@ export async function setBlankDifficulty(page: Page, level: 'Easy' | 'Medium' | 
   const button = page.getByRole('group', { name: 'Blanks difficulty' }).getByRole('button', { name: level, exact: true });
   await button.click();
   await expect(button).toHaveAttribute('aria-pressed', 'true');
+}
+
+/** The deck id in a "New card" address (/#/cards/new?deck=...). */
+export function deckIdFromUrl(page: Page): string {
+  return new URL(page.url().split('#')[1]!, 'http://x').searchParams.get('deck')!;
+}
+
+/**
+ * Presses Escape to close a popup, then lets its history clean-up finish. (Closing a popup removes the extra history
+ * entry it added; a test that navigates within a few milliseconds would race that, which a person never does.)
+ */
+export async function closeWithEscape(page: Page) {
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(200);
 }

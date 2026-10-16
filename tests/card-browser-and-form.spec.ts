@@ -49,44 +49,81 @@ test.describe('card browser', () => {
   });
 });
 
-test.describe('add another card', () => {
-  test('saves the card, clears verse and passage, keeps the source, and says what was saved', async ({ page }) => {
+test.describe('adding cards: save, toast, and a cleared form', () => {
+  test('the check mark saves the card, shows a toast, clears verse and passage, keeps the source, and stays on the form', async ({ page }) => {
     const id = await createDeck(page, 'Many');
     await page.goto(`/#/cards/new?deck=${id}`);
     await reference(page).fill('John 3:16');
     await page.getByLabel('Source').fill('Example translation');
     await passage(page).fill('First example passage.');
-    await page.getByRole('button', { name: 'Add another card' }).click();
+    await page.getByRole('button', { name: 'Save' }).click(); // the check mark in the header
 
-    await expect(page.getByRole('status')).toContainText('Saved John 3:16');
+    await expect(page.getByText('John 3:16 added')).toBeVisible(); // the toast
+    await expect(page).toHaveURL(new RegExp(`#/cards/new\\?deck=${id}$`)); // still the same form
     await expect(reference(page)).toHaveValue('');
     await expect(passage(page)).toHaveValue('');
     await expect(page.getByLabel('Source')).toHaveValue('Example translation');
     await expect(reference(page)).toBeFocused();
+    await expect(page.getByRole('button', { name: 'Add another card' })).toHaveCount(0); // the old button is gone
 
     await reference(page).fill('Psalm 23:1');
     await passage(page).fill('Second example passage.');
-    await page.getByRole('button', { name: 'Save' }).click(); // the check mark in the header
-    await page.waitForURL(/\/cards$/);
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByText('Psalm 23:1 added')).toBeVisible();
+
+    await page.goto(`/#/decks/${id}/cards`);
     await expect(page.getByRole('link', { name: /John 3:16/ })).toBeVisible();
     await expect(page.getByRole('link', { name: /Psalm 23:1/ })).toBeVisible();
   });
 
-  test('shows an error and keeps what you typed when the card is incomplete', async ({ page }) => {
+  test('the toast is a floating banner near the bottom, with margins, and goes away by itself', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 700 });
     const id = await createDeck(page, 'Many');
     await page.goto(`/#/cards/new?deck=${id}`);
     await reference(page).fill('John 3:16');
-    await page.getByRole('button', { name: 'Add another card' }).click();
-    await expect(page.getByRole('alert')).toContainText('Verse text is required');
-    await expect(reference(page)).toHaveValue('John 3:16');
+    await passage(page).fill('Example.');
+    await page.getByRole('button', { name: 'Save' }).click();
+    const toast = page.getByText('John 3:16 added');
+    await expect(toast).toBeVisible();
+    await page.waitForTimeout(700); // let it finish sliding in
+    const box = (await page.locator('[data-slot="toast"]').boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(12); // a margin on the left
+    expect(390 - (box.x + box.width)).toBeGreaterThanOrEqual(12); // and on the right
+    expect(700 - (box.y + box.height)).toBeGreaterThanOrEqual(12); // and below it
+    expect(box.y).toBeGreaterThan(450); // towards the bottom
+    await expect(toast).toHaveCount(0, { timeout: 12000 }); // gone by itself (after about 5 seconds)
   });
 
-  test('is not offered when editing an existing card', async ({ page }) => {
+  test('the toast is announced to screen readers without taking focus', async ({ page }) => {
+    const id = await createDeck(page, 'Many');
+    await page.goto(`/#/cards/new?deck=${id}`);
+    await reference(page).fill('John 3:16');
+    await passage(page).fill('Example.');
+    await page.getByRole('button', { name: 'Save' }).click();
+    // a polite live region carries the text, so it is read out without moving focus away from the form
+    await expect(page.locator('[aria-live="polite"]')).toContainText('John 3:16 added');
+    await expect(reference(page)).toBeFocused();
+  });
+
+  test('shows an error and keeps what you typed when the card is incomplete (no toast)', async ({ page }) => {
+    const id = await createDeck(page, 'Many');
+    await page.goto(`/#/cards/new?deck=${id}`);
+    await reference(page).fill('John 3:16');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByRole('alert')).toContainText('Verse text is required');
+    await expect(reference(page)).toHaveValue('John 3:16');
+    await expect(page.getByText('John 3:16 added')).toHaveCount(0);
+  });
+
+  test('editing an existing card: Save goes back and shows "Changes saved"; there is no Split button', async ({ page }) => {
     const id = await createDeck(page, 'Many');
     await addCard(page, id, 'John 3:16', 'Example.');
     await page.getByRole('link', { name: /John 3:16/ }).click();
-    await expect(page.getByRole('button', { name: 'Add another card' })).toHaveCount(0);
     await expect(splitButton(page)).toHaveCount(0);
+    await reference(page).fill('John 3:17');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByText('Changes saved')).toBeVisible();
+    await expect(page.getByRole('link', { name: /John 3:17/ })).toBeVisible(); // back on the card list
   });
 });
 
@@ -120,7 +157,12 @@ test.describe('split into separate verses', () => {
     await expect(dialog).toContainText('Psalm 130:8');
     await dialog.getByRole('button', { name: 'Create 8 cards' }).click();
 
-    await page.waitForURL(/\/cards$/);
+    // same as a normal add: a toast, and the form stays open with the verse and passage cleared
+    await expect(page.getByText('8 verses added')).toBeVisible();
+    await expect(reference(page)).toHaveValue('');
+    await expect(passage(page)).toHaveValue('');
+    await expect(page.getByLabel('Source')).toHaveValue('Example translation');
+    await page.goto(`/#/decks/${id}/cards`);
     await expect(page.getByRole('row')).toHaveCount(9); // header + 8
     await expect(page.getByRole('link', { name: 'Psalm 130:1', exact: true })).toBeVisible();
     await expect(page.getByText('Example eight eighth.')).toBeVisible();
@@ -141,7 +183,8 @@ test.describe('split into separate verses', () => {
     await expect(dialog).toContainText('This creates 2 cards');
     await expect(dialog).toContainText('so you will have 4 study cards');
     await dialog.getByRole('button', { name: 'Create 2 cards' }).click();
-    await page.waitForURL(/\/cards$/);
+    await expect(page.getByText('2 verses added')).toBeVisible();
+    await page.goto(`/#/decks/${id}/cards`);
     await expect(page.getByRole('row')).toHaveCount(3);
 
     // and the study queue really has 4 cards (2 verses x recall + identify)

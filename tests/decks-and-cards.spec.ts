@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { addCard, createDeck } from './helpers';
+import { addCard, createDeck, deckIdFromUrl, closeWithEscape } from './helpers';
 
 test('empty state, then the full deck and card workflow persists across reload', async ({ page }) => {
   await page.goto('/');
@@ -17,6 +17,9 @@ test('empty state, then the full deck and card workflow persists across reload',
   await page.getByLabel('Verse(s)').fill('Example 1:1');
   await page.getByLabel('Passage', { exact: true }).fill('Example verse text typed by the user.');
   await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByText('Example 1:1 added')).toBeVisible(); // the form stays open; open the card list
+  await page.goto(`/#/decks/${deckIdFromUrl(page)}/cards`);
+  await page.reload();
   await expect(page.getByRole('link', { name: /Example 1:1/ })).toBeVisible();
 
   // edit the card
@@ -171,7 +174,7 @@ test('search works like Anki: the top bar becomes the search field, with a back 
   await expect(page.getByText('Psalms')).toBeVisible();
 
   await page.getByRole('button', { name: 'Search decks' }).click();
-  await page.keyboard.press('Escape'); // Escape leaves search too
+  await closeWithEscape(page); // Escape leaves search too
   await expect(page.getByRole('button', { name: 'Search decks' })).toBeVisible();
 });
 

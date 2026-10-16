@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { addCard, setCardKinds, tapFirstBankWord, wordBankOpen } from './helpers';
+import { addCard, setCardKinds, tapFirstBankWord, wordBankOpen, closeWithEscape } from './helpers';
 
 async function audit(page: Page, label: string) {
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
@@ -37,7 +37,9 @@ for (const scheme of ['light', 'dark'] as const) {
     await audit(page, 'Bible Gateway dialog');
     await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).dispatchEvent('click');
     await page.getByRole('button', { name: 'Save' }).click();
-    await page.waitForURL(/\/cards$/);
+    await expect(page.getByText('John 3:16 added')).toBeVisible();
+    await page.waitForTimeout(800); // let the toast finish sliding in
+    await audit(page, 'card form with the toast');
     await addCard(page, id, 'Psalm 130:1', 'Another example passage.');
     await audit(page, 'card browse');
     await page.getByRole('button', { name: 'Search cards' }).click();
@@ -48,11 +50,11 @@ for (const scheme of ['light', 'dark'] as const) {
     await page.getByRole('button', { name: 'Add' }).click();
     await expect(page.getByRole('button', { name: 'New deck' })).toBeVisible();
     await audit(page, 'home with the add menu open');
-    await page.keyboard.press('Escape');
+    await closeWithEscape(page);
     await page.getByRole('button', { name: 'Actions for Audit deck' }).click();
     await expect(page.getByRole('dialog', { name: 'Audit deck' })).toBeVisible();
     await audit(page, 'deck menu dialog');
-    await page.keyboard.press('Escape');
+    await closeWithEscape(page);
 
     await page.goto(`/#/decks/${id}`);
     await expect(page.getByRole('link', { name: /Flashcard/ })).toBeVisible();

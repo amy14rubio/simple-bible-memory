@@ -12,6 +12,14 @@ import { CardFormPage } from './features/cards/CardFormPage';
 import { StatisticsPage } from './features/stats/StatisticsPage';
 import { StudySessionPage } from './features/study/StudySessionPage';
 import { SettingsPage } from './features/settings/SettingsPage';
+import { Toaster } from './components/shadcn/toast';
+
+/** Toasts live above the routes, so one can appear on a screen you navigate to (e.g. after saving an edit). */
+function Toasts({ children }: { children: React.ReactNode }) {
+  // Announced politely to screen readers (a live region), never takes focus, stays 5 seconds, pauses while hovered or
+  // focused, and can be swiped away. Nothing in it needs an answer, so there is no button to press.
+  return <Toaster timeout={5000} limit={1}>{children}</Toaster>;
+}
 
 function NotFound() {
   const { t } = useI18n();
@@ -33,6 +41,7 @@ export default function App() {
           {({ settings }) => (
             <I18nProvider settings={settings}>
             <ThemeProvider settings={settings}>
+              <Toasts>
               <HashRouter>
                 <Routes>
                   <Route element={<AppShell />}>
@@ -51,6 +60,7 @@ export default function App() {
                   </Route>
                 </Routes>
               </HashRouter>
+              </Toasts>
             </ThemeProvider>
             </I18nProvider>
           )}

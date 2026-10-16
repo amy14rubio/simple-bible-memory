@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { addCard, createDeck, setCardKinds } from './helpers';
+import { addCard, createDeck, setCardKinds, closeWithEscape } from './helpers';
 
 const number = (page: import('@playwright/test').Page, label: string) =>
   page.getByRole('term').filter({ hasText: new RegExp(`^${label}$`) }).locator('xpath=preceding-sibling::dd[1]');
@@ -54,7 +54,7 @@ test('statistics: totals, books progress and card counts, and the deck scope swi
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.getByRole('button', { name: 'About Books progress' }).click();
   await expect(page.getByRole('dialog', { name: 'Books progress' }).getByText('A verse counts as memorized once it graduates from learning.')).toBeVisible();
-  await page.keyboard.press('Escape');
+  await closeWithEscape(page);
   await expect(page.getByRole('dialog')).toHaveCount(0);
 
   // scope to a single deck

@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { createDeck } from './helpers';
+import { createDeck, deckIdFromUrl } from './helpers';
 
 async function newCardForm(page: Page) {
   const id = await createDeck(page, 'Gateway deck');
@@ -65,7 +65,7 @@ test('the form stays fully usable offline, with or without a valid reference', a
   await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).dispatchEvent('click');
   await passage(page).fill('Typed by the user while offline.');
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByRole('link', { name: /John 3:16/ })).toBeVisible(); // saved locally
+  await expect(page.getByText('John 3:16 added')).toBeVisible(); // saved locally
 });
 
 test('the helper also appears when editing an existing card', async ({ page }) => {
@@ -73,6 +73,8 @@ test('the helper also appears when editing an existing card', async ({ page }) =
   await reference(page).fill('John 3:16');
   await passage(page).fill('Typed by the user.');
   await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByText('John 3:16 added')).toBeVisible();
+  await page.goto(`/#/decks/${deckIdFromUrl(page)}/cards`);
   await page.getByRole('link', { name: /John 3:16/ }).click();
   await expect(helper(page)).toBeVisible();
 });
@@ -82,7 +84,7 @@ test('saving still works without the helper (free-text reference, manual entry)'
   await reference(page).fill('My own label');
   await passage(page).fill('Typed by the user.');
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByRole('link', { name: /My own label/ })).toBeVisible();
+  await expect(page.getByText('My own label added')).toBeVisible();
 });
 
 test('Spanish references work too, and always search with the English book name', async ({ page, context }) => {

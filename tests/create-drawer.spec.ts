@@ -1,3 +1,4 @@
+import { closeWithEscape } from './helpers';
 import { test, expect, type Page } from '@playwright/test';
 
 const plus = (page: Page) => page.locator('button[aria-haspopup="dialog"]');
@@ -69,7 +70,7 @@ test.describe('the create drawer', () => {
     await page.goto('/');
     await plus(page).click();
     await expect(drawer(page)).toBeVisible();
-    await page.keyboard.press('Escape');
+    await closeWithEscape(page);
     await expect(drawer(page)).toHaveCount(0);
     await expect(plus(page)).toBeFocused();
   });
@@ -197,7 +198,7 @@ test.describe('closing popups without a Cancel button', () => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Add' }).click();
     await expect(drawer(page)).toBeVisible();
-    await page.keyboard.press('Escape');
+    await closeWithEscape(page);
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await page.waitForTimeout(100);
     await page.goBack(); // one Back from the home screen goes to Settings, not to a leftover popup entry
