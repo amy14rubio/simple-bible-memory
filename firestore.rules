@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// Locked down for now: nobody can read or write anything.
+// Phase 3 (public decks) adds the real rules: anyone can read public decks, only a signed-in author can write their own.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
