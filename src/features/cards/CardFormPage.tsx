@@ -130,15 +130,13 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
             onChange={(e) => setVerseText(e.target.value)}
             placeholder={t('cardForm.passagePlaceholder')}
           />
-          {!card && (
-            <>
-              <div className="flex flex-wrap gap-3 pt-1">
-                <Button variant="secondary" onClick={() => { setSplitError(undefined); setSplit(splitPassage(reference, verseText)); }} disabled={!canSplit(reference) || !verseText.trim()}>
-                  {t('cardForm.split')}
-                </Button>
-              </div>
-              <p className="text-sm text-muted">{t('cardForm.splitHint')}</p>
-            </>
+          {/* Only offered when it can actually be used: a chapter or several verses, with a passage to split. */}
+          {!card && canSplit(reference) && verseText.trim() && (
+            <div className="flex justify-center pt-3">
+              <Button variant="secondary" onClick={() => { setSplitError(undefined); setSplit(splitPassage(reference, verseText)); }}>
+                {t('cardForm.split')}
+              </Button>
+            </div>
           )}
         </div>
 

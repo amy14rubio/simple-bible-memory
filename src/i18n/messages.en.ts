@@ -130,7 +130,6 @@ export const en = {
   'toast.versesAdded': { one: '{count} verse added', other: '{count} verses added' },
   'toast.changesSaved': 'Changes saved',
   'cardForm.split': 'Split into separate verses',
-  'cardForm.splitHint': 'To split, enter a chapter or several verses, such as Psalm 130 or Psalm 130:1-2, and paste the passage with its verse numbers.',
   'cardForm.delete': 'Delete card',
   'cardForm.deleteTitle': 'Delete this card?',
   'cardForm.deleteBody': '{reference} and its review history will be permanently deleted.',

@@ -118,7 +118,6 @@ export const es: Dictionary = {
   'toast.versesAdded': { one: '{count} versículo agregado', other: '{count} versículos agregados' },
   'toast.changesSaved': 'Cambios guardados',
   'cardForm.split': 'Separar en versículos',
-  'cardForm.splitHint': 'Para separar, escribe un capítulo o varios versículos, como Salmos 130 o Salmos 130:1-2, y pega el pasaje con sus números de versículo.',
   'cardForm.delete': 'Eliminar tarjeta',
   'cardForm.deleteTitle': '¿Eliminar esta tarjeta?',
   'cardForm.deleteBody': '{reference} y su historial de repasos se eliminarán de forma permanente.',

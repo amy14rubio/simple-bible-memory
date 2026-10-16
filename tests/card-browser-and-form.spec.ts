@@ -128,17 +128,22 @@ test.describe('adding cards: save, toast, and a cleared form', () => {
 });
 
 test.describe('split into separate verses', () => {
-  test('is disabled until the reference is a chapter or several verses and there is a passage', async ({ page }) => {
+  test('the button only appears when it can be used, and is centred, with no explanation under it', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
     const id = await createDeck(page, 'Split');
     await page.goto(`/#/cards/new?deck=${id}`);
-    await expect(splitButton(page)).toBeDisabled();
+    await expect(splitButton(page)).toHaveCount(0); // nothing typed
     await reference(page).fill('John 3:16'); // a single verse
     await passage(page).fill('16 Example sixteen.');
-    await expect(splitButton(page)).toBeDisabled();
+    await expect(splitButton(page)).toHaveCount(0);
     await reference(page).fill('Psalm 130:1-2');
-    await expect(splitButton(page)).toBeEnabled();
+    await expect(splitButton(page)).toBeVisible();
+    await expect(page.getByText(/To split, enter a chapter/)).toHaveCount(0); // no hint text
+    const form = (await page.locator('form').boundingBox())!;
+    const button = (await splitButton(page).boundingBox())!;
+    expect(Math.abs(button.x + button.width / 2 - (form.x + form.width / 2))).toBeLessThan(2); // centred
     await passage(page).fill('');
-    await expect(splitButton(page)).toBeDisabled();
+    await expect(splitButton(page)).toHaveCount(0); // nothing to split
   });
 
   test('a whole chapter (Psalm 130) becomes one card per verse: 8 cards, 16 study cards', async ({ page }) => {

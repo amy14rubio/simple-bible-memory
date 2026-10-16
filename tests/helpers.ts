@@ -59,8 +59,12 @@ export async function setCardKinds(page: Page, kinds: 'Both' | 'Recall the passa
 export async function setBlankDifficulty(page: Page, level: 'Easy' | 'Medium' | 'Hard') {
   await page.goto('/#/settings');
   const button = page.getByRole('group', { name: 'Blanks difficulty' }).getByRole('button', { name: level, exact: true });
-  await button.click();
-  await expect(button).toHaveAttribute('aria-pressed', 'true');
+  // The page loads the saved choice after it appears, which can undo a click made too early: retry until it sticks.
+  await expect(async () => {
+    await button.click();
+    await page.waitForTimeout(150);
+    await expect(button).toHaveAttribute('aria-pressed', 'true', { timeout: 1000 });
+  }).toPass({ timeout: 10_000 });
 }
 
 /** The deck id in a "New card" address (/#/cards/new?deck=...). */
