@@ -15,7 +15,6 @@ export function FlashcardMode({ card, intervals, onRate }: { card: Card; interva
         {revealed && (
           <div className="space-y-3">
             <p className="scripture whitespace-pre-line text-xl">{card.verseText}</p>
-            {card.note && <p className="text-sm text-muted">{card.note}</p>}
           </div>
         )}
       </div>

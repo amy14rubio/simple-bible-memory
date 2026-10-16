@@ -15,6 +15,14 @@ src/
 
 Rules: screens call repositories; only `data/repositories` writes SQL; only `data/database` imports a SQLite driver; only `domain/scheduling/scheduler.ts` imports ts-fsrs.
 
+## shadcn/ui
+
+The project is set up for shadcn (`components.json`), but only as a source of components: `npx shadcn@latest add <name>` copies a component into `src/components/shadcn/`, and we own and restyle that code. Run it with care: `shadcn init` rewrites `src/styles/tokens.css` with its own palette (it overwrote ours once and was reverted), so never accept that file's changes. Our token `muted` is gray *text*, unlike shadcn's `muted` (a background), so `tokens.css` maps the few names shadcn components use (`popover`, `popover-foreground`, `muted-foreground`) onto our own tokens. The `@/` import alias means `src/`.
+
+Currently used: **Drawer** (Base UI), for the create drawer in `src/features/create/CreateDrawer.tsx`; and **Chart** (Recharts), for the card-counts pie chart in `src/features/stats/CardCountsChart.tsx`. The chart is loaded on demand (`React.lazy`), so Recharts is not part of the app's first load. Recharts applies a legend's `className` from `ChartLegend`, not from `ChartLegendContent`. Its title uses the app's serif like every other dialog; action labels use the sans like the other buttons.
+
+The shadcn **skill** (guidance for AI assistants working in this repo) lives in `.claude/skills/shadcn` and is excluded from linting. It assumes shadcn's default color names and styling rules, so where it conflicts with this project's own design system (`docs/ARCHITECTURE.md` > Screens and design), the design system wins.
+
 ## Interface language (i18n)
 
 The interface language is separate from the Bible text: a deck's verses are whatever translation the learner typed or pasted, and are never translated. Only text the app itself writes is.
@@ -40,6 +48,8 @@ Wireframe items deliberately **not** built: Discover/community catalog, Speak mo
 Rating colors (Again red, Hard orange, Good green, Easy blue) are TEXT colors only, per theme, each at least 4.5:1 on the page (light mode uses a deeper blue for Easy; dark mode true light blue). Buttons are outlined, never filled.
 
 Design tokens live in `src/styles/tokens.css` (CSS variables; the dark theme only swaps values). Palette: ink on cool paper plus one oxblood accent. Fonts are self-hosted so they work offline: Literata for scripture and titles (`.scripture` class), Instrument Sans for the interface. Contrast targets: muted text 6:1+, accent 8:1+ on the background in both themes.
+
+Card counts are drawn as a filled pie with the legend underneath (stage colors: new light gray, learning the accent, young mid gray, mature ink); the legend carries the exact numbers and the whole chart has a text description for screen readers. The pie is interactive: tapping a slice (or its legend button, which is the keyboard route) slides it out a little, fades the others and shows a label such as "Young: 1 card (25%)" for three seconds in a `role="status"` line; tapping the slice again or empty space clears it. Selection is our own state rather than Recharts' tooltip, because hover tooltips don't work with a finger.
 
 Statistics definitions: *memorized* = every study card in use for the verse is in the Review state; *mastered* = every one is Review with a 21+ day interval; card counts are of study cards (a verse can have two); *days since starting* = calendar days since the first review; per-book progress groups cards by the book parsed from the reference (English or Spanish names).
 

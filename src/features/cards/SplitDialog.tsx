@@ -15,12 +15,9 @@ export function SplitDialog({ result, studyCardsPerVerse, busy, error, onCancel,
   const n = ok?.verses.length ?? 0;
 
   return (
-    <Dialog open={result !== null} onClose={onCancel} title={t('split.title')}>
+    <Dialog open={result !== null} onClose={onCancel} title={t('split.title')} closeOnBack closeLabel={result && !result.ok ? t('common.close') : t('common.cancel')}>
       {result && !result.ok && (
-        <>
-          <p className="mb-6 text-muted">{t(`split.error.${result.code}` as MessageKey, { verse: result.verse ?? 0 })}</p>
-          <div className="flex justify-end"><Button variant="secondary" onClick={onCancel}>{t('common.close')}</Button></div>
-        </>
+        <p className="text-muted">{t(`split.error.${result.code}` as MessageKey, { verse: result.verse ?? 0 })}</p>
       )}
       {ok && (
         <>
@@ -38,10 +35,7 @@ export function SplitDialog({ result, studyCardsPerVerse, busy, error, onCancel,
             ))}
           </ol>
           {error && <p role="alert" className="mb-3 text-danger">{error}</p>}
-          <div className="flex flex-wrap justify-end gap-3">
-            <Button variant="secondary" onClick={onCancel} disabled={busy}>{t('common.cancel')}</Button>
-            <Button onClick={onConfirm} disabled={busy}>{t('split.create', { count: n })}</Button>
-          </div>
+          <Button className="w-full" onClick={onConfirm} disabled={busy}>{t('split.create', { count: n })}</Button>
         </>
       )}
     </Dialog>

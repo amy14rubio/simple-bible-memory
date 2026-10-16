@@ -9,6 +9,19 @@
         var p = localStorage.getItem("theme-pref") || "system";
         var dark = p === "dark" || (p === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
         document.documentElement.dataset.theme = dark ? "dark" : "light";
+        // A custom theme: its computed colours were saved with it (see ThemeProvider), so apply them straight away too.
+        if (p === "custom") {
+          var c = JSON.parse(localStorage.getItem("theme-custom") || "null");
+          if (c && c.vars) {
+            document.documentElement.dataset.theme = c.dark ? "dark" : "light";
+            for (var k in c.vars) document.documentElement.style.setProperty(k, c.vars[k]);
+          }
+        }
+      } catch (e) {}
+      // And the text size, so the page does not jump when the saved size loads.
+      try {
+        var scale = parseFloat(localStorage.getItem("text-scale") || "");
+        if (scale >= 0.85 && scale <= 1.5) document.documentElement.style.setProperty("--text-scale", String(scale));
       } catch (e) {}
       // Same idea for the language: the saved choice, else the browser's first supported language, else English.
       // (Keep the list in sync with LANGUAGES in src/i18n/index.ts.)

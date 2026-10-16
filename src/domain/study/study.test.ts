@@ -156,3 +156,32 @@ describe('checkCloze', () => {
     expect(r.suggestedRating).toBe(1);
   });
 });
+
+describe('paintComparison', () => {
+  it('keeps punctuation and marks only the wrong words', async () => {
+    const { paintComparison } = await import('./compare');
+    const p = paintComparison('John 3:16', 'John 3:17');
+    expect(p.expected.map((x) => x.text).join('')).toBe('John 3:16');
+    expect(p.typed.map((x) => x.text).join('')).toBe('John 3:17');
+    expect(p.expected.filter((x) => x.state === 'wrong').map((x) => x.text)).toEqual(['16']);
+    expect(p.typed.filter((x) => x.state === 'wrong').map((x) => x.text)).toEqual(['17']);
+    expect(p.exact).toBe(false);
+  });
+  it('is all green when everything matches, ignoring case and punctuation', async () => {
+    const { paintComparison } = await import('./compare');
+    const p = paintComparison("For example, it's a test.", 'for example its a test');
+    expect(p.exact).toBe(true);
+    expect(p.expected.every((x) => x.state !== 'wrong')).toBe(true);
+  });
+  it('marks where words were skipped with a gap, but not where a word was replaced', async () => {
+    const { paintComparison } = await import('./compare');
+    const skipped = paintComparison('Blessed are the poor in spirit', 'Blessed are in spirit');
+    expect(skipped.typed.filter((x) => x.state === 'gap')).toHaveLength(1);
+    expect(skipped.typed.findIndex((x) => x.state === 'gap')).toBeGreaterThan(skipped.typed.findIndex((x) => x.text === 'are'));
+    expect(skipped.expected.filter((x) => x.state === 'wrong').map((x) => x.text)).toEqual(['the', 'poor']);
+    const trailing = paintComparison('one two three', 'one two');
+    expect(trailing.typed.at(-2)?.state).toBe('gap');
+    const replaced = paintComparison('one two three', 'one deux three');
+    expect(replaced.typed.some((x) => x.state === 'gap')).toBe(false);
+  });
+});

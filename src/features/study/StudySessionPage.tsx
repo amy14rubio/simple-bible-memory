@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, Button, ButtonLink, EmptyState, ErrorMessage, Page } from '../../components/ui';
@@ -19,8 +19,6 @@ type Mode = 'flashcard' | 'type' | 'blanks';
 
 /** A card rated Again/Hard in learning comes due within minutes: show it again later in this session. */
 const REQUEUE_WITHIN_MS = 20 * 60_000;
-
-const RATING_KEYS = { 1: 'rating.again', 2: 'rating.hard', 3: 'rating.good', 4: 'rating.easy' } as const;
 
 const shuffle = <T,>(items: T[]): T[] => {
   const a = [...items];
@@ -77,7 +75,8 @@ function Session({ deckId, mode, extraPractice, references, passages, initialQue
   const { reviews, scheduler } = useRepositories();
   const [queue, setQueue] = useState(initialQueue);
   const [index, setIndex] = useState(0);
-  const [tally, setTally] = useState<Record<Rating, number>>({ 1: 0, 2: 0, 3: 0, 4: 0 });
+  // Which cards were reviewed this session (a card seen twice in a learning step counts once).
+  const [reviewedCards, setReviewedCards] = useState<ReadonlySet<string>>(new Set());
   const [error, setError] = useState<string>();
   // The blanks difficulty is a setting (Settings page), not something you change mid-study.
   const difficulty: Difficulty = DIFFICULTIES.includes(initialDifficulty) ? initialDifficulty : 'medium';
@@ -112,7 +111,7 @@ function Session({ deckId, mode, extraPractice, references, passages, initialQue
         const schedule = await reviews.record({ cardId: entry.card.id, kind: entry.kind, rating: r, mode });
         if (schedule.due - Date.now() < REQUEUE_WITHIN_MS) setQueue((q) => [...q, { card: entry.card, kind: entry.kind, schedule }]);
       }
-      setTally((t) => ({ ...t, [r]: t[r] + 1 }));
+      setReviewedCards((seen) => new Set(seen).add(`${entry.card.id}:${entry.kind}`));
       setIndex((i) => i + 1);
     } catch (e) {
       setError(t('study.saveFailed', { message: describeError(e) }));
@@ -124,19 +123,17 @@ function Session({ deckId, mode, extraPractice, references, passages, initialQue
   const exit = <BackButton to={`/decks/${deckId}`} label={t('study.exit')} />;
 
   if (!entry) {
-    const reviewed = tally[1] + tally[2] + tally[3] + tally[4];
+    const reviewed = reviewedCards.size;
     return (
       <div className="relative">
-        <AppBar back={exit} />
-        <div className="space-y-6 px-5 py-20 text-center">
-          <h1 className="font-serif text-3xl font-medium tracking-tight">{t('study.complete')}</h1>
-          <p className="text-muted">
-            {t('study.summary', { count: reviewed, detail: ([1, 2, 3, 4] as Rating[]).map((r) => `${tally[r]} ${t(RATING_KEYS[r])}`).join(', ') })}
-          </p>
-          <p className="text-sm text-muted">{extraPractice ? t('study.extraDone') : t('study.saved')}</p>
-          <div className="flex flex-wrap justify-center gap-3 pt-2">
-            <Link to={`/decks/${deckId}/cards`} className="inline-flex min-h-12 items-center rounded-lg border border-border px-5 text-[0.9375rem] font-medium hover:bg-surface">{t('study.browse')}</Link>
-            {extraPractice && <Button variant="secondary" onClick={() => { setIndex(0); setTally({ 1: 0, 2: 0, 3: 0, 4: 0 }); setQueue(shuffle(initialQueue)); }}>{t('study.practiceAgain')}</Button>}
+        <AppBar back={exit} title={extraPractice ? t('study.extraTitle') : undefined} />
+        <div className="space-y-8 px-5 py-20 text-center">
+          <div className="space-y-2">
+            <h1 className="font-serif text-3xl font-medium tracking-tight">{t('study.complete')}</h1>
+            <p className="text-muted">{t('study.summary', { count: reviewed })}</p>
+          </div>
+          <div className="mx-auto flex max-w-xs flex-col gap-3">
+            {extraPractice && <Button variant="secondary" onClick={() => { setIndex(0); setReviewedCards(new Set()); setQueue(shuffle(initialQueue)); }}>{t('study.practiceAgain')}</Button>}
             <ButtonLink to={`/decks/${deckId}`}>{t('common.backToDeck')}</ButtonLink>
           </div>
         </div>
@@ -156,14 +153,13 @@ function Session({ deckId, mode, extraPractice, references, passages, initialQue
     <div className="relative flex min-h-dvh flex-col">
       {/* Not drawn, but screen readers can still read how far through the session you are. */}
       <progress className="sr-only" max={queue.length} value={index} aria-label={t('study.progress')} />
-      <AppBar back={exit} />
+      <AppBar back={exit} title={extraPractice ? t('study.extraTitle') : undefined} />
       <div className="flex flex-1 flex-col px-5">
         <ul aria-label={t('study.remaining')} className="flex gap-3 pt-3 text-sm font-normal">
           {counter('new', t('study.counterNew'))}
           {counter('learning', t('study.counterLearning'))}
           {counter('review', t('study.counterReview'))}
         </ul>
-        {extraPractice && <p className="pt-2 text-sm text-muted">{t('study.extraBanner')}</p>}
         {error && <div className="pt-3"><ErrorMessage error={error} /></div>}
         {entry.kind === 'recall' ? (
           <>

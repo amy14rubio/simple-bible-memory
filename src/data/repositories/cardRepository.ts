@@ -15,6 +15,8 @@ export const toCard = (r: Row): Card => ({
 
 export interface CardRepository {
   listByDeck(deckId: string): Promise<Card[]>;
+  /** Every card in every deck, each once (a card that lives in several decks is not repeated), oldest first. */
+  listAll(): Promise<Card[]>;
   get(id: string): Promise<Card | undefined>;
   create(deckId: string, input: CardInput): Promise<Card>;
   /** Creates several cards in one go, in order. All of them are saved or none are. */
@@ -30,6 +32,13 @@ export function createCardRepository(db: Database, now: Clock = Date.now): CardR
         `SELECT c.* FROM cards c JOIN deck_cards dc ON dc.card_id = c.id
           WHERE dc.deck_id = ? ORDER BY dc.added_at, c.created_at`,
         [deckId],
+      );
+      return rows.map(toCard);
+    },
+
+    async listAll() {
+      const rows = await db.query<Row>(
+        `SELECT c.* FROM cards c WHERE EXISTS (SELECT 1 FROM deck_cards dc WHERE dc.card_id = c.id) ORDER BY c.created_at, c.id`,
       );
       return rows.map(toCard);
     },

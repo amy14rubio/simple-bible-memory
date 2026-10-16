@@ -1,7 +1,8 @@
-import { useEffect, useId, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, type ButtonHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronDown, ChevronLeft } from 'lucide-react';
+import { Check, ChevronLeft, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
+import { usePopupHistory } from '../lib/usePopupHistory';
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
 const variants: Record<Variant, string> = {
@@ -67,6 +68,48 @@ export function AppBar({ title, titleSlot, back, actions, serif = true }: { titl
   );
 }
 
+/**
+ * Search mode, like Anki: the top bar becomes the search field. A back arrow on the far left leaves search
+ * (and clears the filter), the keyboard opens straight away, and an X clears the text once there is some.
+ */
+export function SearchBar({ label, placeholder, value, onChange, backLabel, onClose, actions }: {
+  label: string; placeholder: string; value: string; onChange: (value: string) => void; backLabel: string; onClose: () => void;
+  /** The screen's other icons stay where they were (only the search icon is replaced by the back arrow). */
+  actions?: ReactNode;
+}) {
+  const { t } = useI18n();
+  const input = useRef<HTMLInputElement>(null);
+  return (
+    <header className="sticky top-0 z-20 flex h-14 items-center gap-1 border-b border-border bg-background px-2">
+      <IconButton label={backLabel} onClick={onClose}><ChevronLeft size={22} aria-hidden /></IconButton>
+      <input
+        ref={input}
+        aria-label={label}
+        type="search"
+        autoFocus
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+        // the browser's own clear button is hidden so ours looks the same everywhere
+        className="min-w-0 flex-1 bg-transparent px-2 text-base placeholder:text-muted [&::-webkit-search-cancel-button]:appearance-none"
+      />
+      {value && (
+        <IconButton label={t('search.clear')} onClick={() => { onChange(''); input.current?.focus(); }}><X size={20} aria-hidden /></IconButton>
+      )}
+      <div className="flex items-center">{actions}</div>
+    </header>
+  );
+}
+
+/**
+ * A close button that is not drawn but is still there for screen readers, voice control and switch devices
+ * (sighted users close popups by tapping outside, swiping down, pressing Escape or Back).
+ */
+export function HiddenClose({ label, ...props }: { label: string } & ButtonHTMLAttributes<HTMLButtonElement>) {
+  return <button type="button" className="sr-only" {...props}>{label}</button>;
+}
+
 export function Page({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`px-5 py-6 ${className}`}>{children}</div>;
 }
@@ -95,6 +138,56 @@ export function FormRow({ label, children }: { label: string; children: (id: str
     </div>
   );
 }
+/**
+ * A text field for longer text: it starts as one line and grows as you type (no box, no scrollbar, no resize handle),
+ * with a thin line underneath that turns accent-coloured while you are typing, like Anki's fields.
+ */
+export function GrowingTextarea({ className = '', value, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement> & { value: string }) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  // Fit the height to the text after every change (works in every browser, unlike CSS field-sizing).
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
+  return (
+    <textarea
+      ref={ref}
+      rows={1}
+      value={value}
+      {...props}
+      className={`block w-full resize-none overflow-hidden border-0 border-b border-border bg-transparent px-0 py-2 text-lg placeholder:text-muted focus:border-accent focus:shadow-[0_1px_0_0_var(--accent)] ${className}`}
+    />
+  );
+}
+
+/**
+ * A list of choices: full-width rows with dividers, tap a row to choose it, a check mark on the right of the chosen one.
+ * Built on real radio buttons, invisible and stretched across each row, so a tap anywhere on the row is a tap on the
+ * real control, and keyboards and screen readers get the proper radio-group behaviour.
+ */
+export function CheckList<T extends string>({ label, name, value, options, onChange }: {
+  label: string; name: string; value: T; onChange: (v: T) => void;
+  options: { value: T; label: string; /** drawn before the label, e.g. a colour dot */ leading?: ReactNode }[];
+}) {
+  return (
+    <fieldset aria-label={label}>
+      {options.map((o) => (
+        <label
+          key={o.value}
+          className="relative flex min-h-14 cursor-pointer items-center gap-3 border-b border-border px-1 hover:bg-surface has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-inset has-[:focus-visible]:ring-ring"
+        >
+          <input type="radio" name={name} value={o.value} checked={value === o.value} onChange={() => onChange(o.value)} className="peer absolute inset-0 size-full cursor-pointer opacity-0" />
+          {o.leading}
+          <span className="min-w-0 flex-1 text-[1.0625rem] font-medium">{o.label}</span>
+          <Check size={20} aria-hidden className="shrink-0 opacity-0 peer-checked:opacity-100" />
+        </label>
+      ))}
+    </fieldset>
+  );
+}
+
 export const rowInput = 'w-full bg-transparent py-2.5 text-base placeholder:text-muted focus-visible:outline-offset-4';
 
 export function Segmented<T extends string>({ label, value, options, onChange }: {
@@ -137,8 +230,13 @@ export function ErrorMessage({ error }: { error: Error | string }) {
 }
 
 /** Native <dialog>: focus trapping, Escape-to-close and a backdrop for free. */
-export function Dialog({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
+export function Dialog({ open, onClose, title, children, closeOnBack = false, closeLabel }: {
+  open: boolean; onClose: () => void; title: string; children: ReactNode;
+  /** Back (phone or browser) closes it, and an invisible Close button named `closeLabel` is added for assistive tech. */
+  closeOnBack?: boolean; closeLabel?: string;
+}) {
   const ref = useRef<HTMLDialogElement>(null);
+  usePopupHistory(open && closeOnBack, onClose);
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
@@ -151,10 +249,11 @@ export function Dialog({ open, onClose, title, children }: { open: boolean; onCl
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
       aria-label={title}
-      className="m-auto w-[min(26rem,calc(100%-2rem))] rounded-lg border border-border bg-background p-6 text-foreground backdrop:bg-black/50"
+      className="m-auto w-[min(26rem,calc(100%-2rem))] overflow-hidden rounded-lg border border-border bg-background p-6 text-foreground backdrop:bg-black/50"
     >
       <h2 className="mb-3 font-serif text-xl font-medium">{title}</h2>
       {children}
+      {closeLabel && <HiddenClose label={closeLabel} onClick={onClose} />}
     </dialog>
   );
 }
@@ -175,20 +274,3 @@ export function ConfirmDialog({ open, title, message, confirmLabel, onConfirm, o
 }
 
 /** A deck/scope picker that looks like a title: "[Deck name v]" in the wireframes. Pair it with an sr-only <h1>. */
-export function TitleSelect({ label, value, options, onChange }: {
-  label: string; value: string; options: { value: string; label: string }[]; onChange: (value: string) => void;
-}) {
-  return (
-    <div className="relative min-w-0 flex-1">
-      <select
-        aria-label={label}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full appearance-none truncate bg-transparent py-2 pl-2 pr-9 font-serif text-lg font-medium tracking-tight"
-      >
-        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
-      <ChevronDown size={18} aria-hidden className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted" />
-    </div>
-  );
-}

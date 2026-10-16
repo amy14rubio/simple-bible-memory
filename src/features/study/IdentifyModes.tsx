@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
-import { Check, X } from 'lucide-react';
 import type { Card } from '../../domain/types';
 import { checkReference } from '../../domain/study/identify';
+import { paintComparison } from '../../domain/study/compare';
 import { buildCitationChoices } from '../../domain/study/choices';
 import type { Rating } from '../../domain/study/rating';
 import { Button } from '../../components/ui';
 import { ActionBar, RatingBar } from './RatingBar';
 import { useI18n } from '../../i18n/I18nProvider';
+import { PaintedText } from './PaintedText';
 
 interface ModeProps {
   card: Card;
@@ -25,12 +26,10 @@ export function IdentifyFlashcard({ card, intervals, onRate }: ModeProps) {
   return (
     <>
       <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
-        <p className="text-sm text-muted">{t('identify.which')}</p>
         <Passage text={card.verseText} />
         {revealed && (
           <div className="space-y-1">
             <p className="font-serif text-3xl font-medium tracking-tight">{card.reference}</p>
-            {card.note && <p className="text-sm text-muted">{card.note}</p>}
           </div>
         )}
       </div>
@@ -41,7 +40,7 @@ export function IdentifyFlashcard({ card, intervals, onRate }: ModeProps) {
   );
 }
 
-type TypeResult = { typed: string; correct: boolean; suggestedRating: Rating } | { revealedOnly: true };
+type TypeResult = { typed: string; correct: boolean; suggestedRating: Rating; painted: ReturnType<typeof paintComparison> } | { revealedOnly: true };
 
 /** Identify card, Type mode: see the passage and type which verse it is. One "Show answer" button. */
 export function IdentifyType({ card, intervals, onRate }: ModeProps) {
@@ -49,12 +48,11 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
   const [typed, setTyped] = useState('');
   const [result, setResult] = useState<TypeResult>();
 
-  const check = () => setResult(typed.trim() ? { typed: typed.trim(), ...checkReference(card.reference, typed) } : { revealedOnly: true });
+  const check = () => setResult(typed.trim() ? { typed: typed.trim(), ...checkReference(card.reference, typed), painted: paintComparison(card.reference, typed) } : { revealedOnly: true });
 
   return (
     <>
       <div className="flex flex-1 flex-col gap-6 pt-6">
-        <p className="text-center text-sm text-muted">{t('identify.which')}</p>
         <Passage text={card.verseText} />
         {!result ? (
           <div className="space-y-2">
@@ -73,15 +71,21 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
             />
           </div>
         ) : (
-          <section aria-label={t('identify.answer')} className="space-y-2 text-center">
-            {'correct' in result && (
-              <p className={`flex items-center justify-center gap-2 font-medium ${result.correct ? '' : 'text-accent'}`}>
-                {result.correct ? <Check size={18} aria-hidden /> : <X size={18} aria-hidden />}
-                {result.correct ? t('common.correct') : t('identify.wrong', { typed: result.typed })}
-              </p>
+          <section aria-label={t('identify.answer')} className="space-y-5 text-center">
+            {'correct' in result && !result.correct && (
+              <div className="space-y-1">
+                <h2 className="text-sm font-medium text-muted">{t('identify.yourAnswer')}</h2>
+                <p className="font-serif text-3xl font-medium tracking-tight"><PaintedText segments={result.painted.typed} side="typed" /></p>
+              </div>
             )}
-            <p className="font-serif text-3xl font-medium tracking-tight">{card.reference}</p>
-            {card.note && <p className="text-sm text-muted">{card.note}</p>}
+            <div className="space-y-1">
+              {'correct' in result && !result.correct && <h2 className="text-sm font-medium text-muted">{t('type.correctVerse')}</h2>}
+              <p className="font-serif text-3xl font-medium tracking-tight">
+                {'correct' in result ? (
+                  result.correct ? <span className="text-good">{card.reference}</span> : <PaintedText segments={result.painted.expected} side="expected" />
+                ) : card.reference}
+              </p>
+            </div>
           </section>
         )}
       </div>
@@ -113,7 +117,6 @@ export function IdentifyChoice({ card, references, sessionSeed, intervals, onRat
   return (
     <>
       <div className="flex flex-1 flex-col gap-6 pt-6">
-        <p className="text-center text-sm text-muted">{t('identify.which')}</p>
         <Passage text={card.verseText} />
         <div role="group" aria-label={t('identify.choose')} className="grid gap-2.5">
           {choices.map((c) => {
@@ -127,17 +130,17 @@ export function IdentifyChoice({ card, references, sessionSeed, intervals, onRat
                 aria-pressed={c === picked}
                 onClick={() => setPicked(c)}
                 className={`flex min-h-14 items-center justify-between gap-3 rounded-lg border px-4 text-left font-serif text-lg disabled:opacity-100 ${
-                  state === 'right' ? 'border-2 border-foreground bg-surface font-semibold' : state === 'wrong' ? 'border-2 border-accent text-accent' : 'border-border'
+                  state === 'right' ? 'border-2 border-good text-good' : state === 'wrong' ? 'border-2 border-again text-again' : 'border-border'
                 } ${state === 'idle' ? 'hover:bg-surface' : ''} ${state === 'other' ? 'text-muted' : ''}`}
               >
                 <span>{c}</span>
-                {state === 'right' && <span className="flex items-center gap-1 font-sans text-sm"><Check size={16} aria-hidden />{t('common.correct')}</span>}
-                {state === 'wrong' && <span className="flex items-center gap-1 font-sans text-sm"><X size={16} aria-hidden />{t('identify.yourAnswer')}</span>}
+                {/* color is the visible signal; screen readers get the words */}
+                {state === 'right' && <span className="sr-only">{t('common.correct')}</span>}
+                {state === 'wrong' && <span className="sr-only">{t('identify.yourAnswer')}</span>}
               </button>
             );
           })}
         </div>
-        {picked !== undefined && card.note && <p className="text-center text-sm text-muted">{card.note}</p>}
       </div>
       {picked !== undefined && (
         <ActionBar>

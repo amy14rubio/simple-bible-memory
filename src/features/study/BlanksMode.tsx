@@ -64,7 +64,6 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
             );
           })}
         </p>
-        {result && <p className="text-center text-sm text-muted">{t('blanks.score', { correct: result.correctCount, total: result.total })}</p>}
         <p role="status" className="sr-only">{announcement}</p>
       </div>
 
@@ -73,7 +72,6 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
           <RatingBar suggested={result.suggestedRating} intervals={intervals} onRate={onRate} />
         ) : (
           <>
-            <p className="text-center text-sm text-muted">{t('blanks.prompt')}</p>
             <div role="group" aria-label={t('blanks.bank')} className="flex max-h-[40dvh] flex-wrap justify-center gap-2 overflow-y-auto">
               {bank.map((w) => (
                 <button

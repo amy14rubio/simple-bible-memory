@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { addCard, createDeck, openDeck, setBlankDifficulty, setCardKinds } from './helpers';
+import { addCard, createDeck, openDeck, setBlankDifficulty, setCardKinds, tapFirstBankWord, wordBankOpen } from './helpers';
 
 const study = (page: import('@playwright/test').Page, deckId: string, mode: 'flashcard' | 'type' | 'blanks') => page.goto(`/#/decks/${deckId}/study/${mode}`);
 
@@ -34,8 +34,7 @@ test('flashcard: reveal, rate Easy, finish; the review is recorded', async ({ pa
   await expect(page.getByText('Example verse text typed by the user.')).toBeVisible();
   await page.getByRole('button', { name: /^Easy/ }).click();
   await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
-  await expect(page.getByText(/1 Easy/)).toBeVisible();
-  await expect(page.getByText('Your reviews were saved and your schedule updated.')).toBeVisible();
+  await expect(page.getByText('1 card reviewed')).toBeVisible();
 });
 
 test('flashcard: keyboard rating with key 1 records Again and the card comes back', async ({ page }) => {
@@ -62,18 +61,42 @@ test('type: one "Show answer" button; a forgiving match suggests Good; mistakes 
 
   await page.getByLabel('Type the verse from memory').fill('FOR EXAMPLE its a test typed by you');
   await page.getByRole('button', { name: 'Show answer' }).click();
-  await expect(page.getByText('Every word matched.')).toBeVisible();
+  // everything right: only the verse, in green. No second copy, no word counts, no legend
+  await expect(page.getByRole('region', { name: 'Every word matched.' })).toContainText("For example, it's a test; typed by you.");
+  await expect(page.getByRole('region', { name: 'Your answer' })).toHaveCount(0);
+  await expect(page.getByText(/words matched|Underlined/)).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^Good.*suggested/ })).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Correct verse' })).toContainText("For example, it's a test; typed by you.");
   await page.getByRole('button', { name: /^Good/ }).click();
 
   // second card
   await page.getByLabel('Type the verse from memory').fill('for example its a quiz typed by you');
   await page.getByRole('button', { name: 'Show answer' }).click();
-  await expect(page.getByText('7 of 8 words matched.')).toBeVisible();
-  await expect(page.locator('mark')).toHaveText(/test/);
-  await expect(page.locator('del')).toHaveText(/quiz/);
+  const mine = page.getByRole('region', { name: 'Your answer' });
+  const correct = page.getByRole('region', { name: 'Correct verse' });
+  await expect(mine.locator('del')).toHaveText(/quiz/); // my wrong word, red, only in my answer
+  await expect(mine.locator('mark')).toHaveCount(0);
+  await expect(correct.locator('mark')).toHaveText(/test/); // the word I should have typed, red, only in the correct verse
+  await expect(correct.locator('del')).toHaveCount(0);
+  // right words are green and wrong ones red: text color only, no background
+  await expect(mine.locator('span').first()).toHaveCSS('color', 'rgb(21, 128, 61)');
+  await expect(mine.locator('del')).toHaveCSS('color', 'rgb(198, 40, 40)');
+  await expect(mine.locator('del')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(correct.locator('mark')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   await expect(page.getByRole('button', { name: /^Again.*suggested/ })).toBeVisible(); // 7/8 = 87.5%, below the 90% line for Hard
+});
+
+test('type: skipped words leave a red gap so a partly-right answer does not look right', async ({ page }) => {
+  const id = await createDeck(page);
+  await addCard(page, id, 'Example 1:3', 'Blessed are the poor in spirit.');
+  await setCardKinds(page, 'Recall the passage');
+  await study(page, id, 'type');
+  await page.getByLabel('Type the verse from memory').fill('blessed are in spirit');
+  await page.getByRole('button', { name: 'Show answer' }).click();
+  const mine = page.getByRole('region', { name: 'Your answer' });
+  await expect(mine.locator('mark')).toHaveCount(1); // one gap, where "the poor" was skipped
+  await expect(mine.locator('mark')).toContainText('missing words');
+  await expect(mine.locator('mark')).toHaveCSS('color', 'rgb(198, 40, 40)');
+  await expect(page.getByRole('region', { name: 'Correct verse' }).locator('mark')).toHaveText(['the', 'poor']);
 });
 
 test('type: Show answer with nothing typed reveals the verse and suggests Again', async ({ page }) => {
@@ -106,7 +129,6 @@ test.describe('blanks with a word bank', () => {
     const verse = page.locator('p.scripture');
     await expect(verse.getByText('Amen')).toHaveCSS('color', INK_LIGHT); // plain: no green, no highlight
     await expect(verse.getByText('Amen')).not.toHaveCSS('text-decoration-line', 'underline');
-    await expect(page.getByText('1 of 1 correct.')).toBeVisible();
     await expect(bank).toHaveCount(0); // finished: the bank gives way to the rating buttons
     await expect(page.getByRole('button', { name: /^Good.*suggested/ })).toBeVisible();
     await page.getByRole('button', { name: /^Good/ }).click();
@@ -115,7 +137,6 @@ test.describe('blanks with a word bank', () => {
     await page.getByRole('group', { name: 'Word bank' }).getByRole('button', { name: 'Amen' }).click();
     await expect(verse.getByText('Alleluia')).toHaveCSS('color', RED_LIGHT); // the CORRECT word, in red
     await expect(verse.getByText('Alleluia')).toHaveCSS('text-decoration-line', 'underline'); // not colour alone
-    await expect(page.getByText('0 of 1 correct.')).toBeVisible();
     await expect(page.getByRole('button', { name: /^Again.*suggested/ })).toBeVisible();
   });
 
@@ -129,14 +150,13 @@ test.describe('blanks with a word bank', () => {
     const bank = page.getByRole('group', { name: 'Word bank' });
     await expect(bank).toBeVisible();
     const banks: string[][] = [];
-    while ((await bank.count()) > 0) {
+    while (await wordBankOpen(page)) {
       await expect(page.locator('[aria-current="step"]')).toHaveCount(1); // always exactly one highlighted blank
       const words = await bank.getByRole('button').allInnerTexts();
       expect(words).toHaveLength(8); // never shrinks: nothing is used up
       expect(new Set(words).size).toBe(8); // all different
       banks.push(words);
-      await bank.getByRole('button').first().click();
-      await page.waitForTimeout(50);
+      await tapFirstBankWord(page);
     }
     expect(banks.length).toBeGreaterThanOrEqual(3);
     // reshuffled: the arrangement changes between blanks
@@ -144,7 +164,6 @@ test.describe('blanks with a word bank', () => {
     // and words from earlier banks come back (the same few verse words keep appearing)
     const first = new Set(banks[0]);
     expect(banks[1]!.some((w) => first.has(w))).toBe(true);
-    await expect(page.getByText(new RegExp(`of ${banks.length} correct`))).toBeVisible();
     await expect(page.getByRole('button', { name: /^Again/ })).toBeVisible(); // rating buttons appear once every blank is done
   });
 
@@ -172,7 +191,7 @@ test.describe('blanks with a word bank', () => {
       await expect(bank).toBeVisible();
       expect(await bank.getByRole('button').count()).toBe(8); // the same at every difficulty
       let taps = 0;
-      while ((await bank.count()) > 0) { await bank.getByRole('button').first().click(); taps++; await page.waitForTimeout(30); }
+      while (await wordBankOpen(page)) { await tapFirstBankWord(page); taps++; }
       return taps;
     };
     const easy = await blanksAt('Easy');
@@ -184,7 +203,7 @@ test.describe('blanks with a word bank', () => {
     const bank = page.getByRole('group', { name: 'Word bank' });
     await expect(bank).toBeVisible();
     let hard = 0;
-    while ((await bank.count()) > 0) { await bank.getByRole('button').first().click(); hard++; await page.waitForTimeout(30); }
+    while (await wordBankOpen(page)) { await tapFirstBankWord(page); hard++; }
     expect(hard).toBeGreaterThan(easy);
   });
 });
@@ -207,7 +226,9 @@ test('regular study never mentions practice', async ({ page }) => {
   const id = await createDeck(page);
   await addCard(page, id, 'Example 1:1', 'One.');
   await openDeck(page, id);
-  await expect(page.getByText(/practice/i)).toHaveCount(0);
+  // only what is visible: the closed deck menu keeps its "Extra practice" link in the page, hidden
+  const visiblePractice = () => page.getByText(/practice/i).filter({ visible: true });
+  await expect(visiblePractice()).toHaveCount(0);
   await study(page, id, 'flashcard');
-  await expect(page.getByText(/practice/i)).toHaveCount(0);
+  await expect(visiblePractice()).toHaveCount(0);
 });

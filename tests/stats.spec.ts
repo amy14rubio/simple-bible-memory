@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { addCard, createDeck, setCardKinds } from './helpers';
+import { addCard, createDeck, setCardKinds, closeWithEscape } from './helpers';
 
 const number = (page: import('@playwright/test').Page, label: string) =>
   page.getByRole('term').filter({ hasText: new RegExp(`^${label}$`) }).locator('xpath=preceding-sibling::dd[1]');
@@ -40,10 +40,26 @@ test('statistics: totals, books progress and card counts, and the deck scope swi
   // 3 verses x 2 cards = 6 study cards; one recall card was studied
   const counts = page.getByRole('img', { name: /Cards by stage: 5 new, 0 learning, 1 young, 0 mature/ });
   await expect(counts).toBeVisible();
-  await expect(page.getByText('Each verse has two cards, so these count both.')).toBeVisible();
+
+  // the explanations live behind a small "i" next to the titles, in a drawer, not as small print on the page
+  await expect(page.getByText('Not studied yet.')).toHaveCount(0);
+  await expect(page.getByText('A verse counts as memorized once it graduates from learning.')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Card counts', exact: true }).click();
+  const drawer = page.getByRole('dialog', { name: 'Card counts' });
+  for (const [stage, text] of [['New', 'Not studied yet.'], ['Learning', 'Still being learned, or forgotten and being learned again.'], ['Young', 'Remembered, and the next review is less than 3 weeks away.'], ['Mature', 'Remembered well, and the next review is 3 weeks or more away.']]) {
+    await expect(drawer.getByRole('term').filter({ hasText: new RegExp(`^${stage}$`) })).toBeVisible();
+    await expect(drawer.getByText(text!)).toBeVisible();
+  }
+  await drawer.getByRole('button', { name: 'Close' }).dispatchEvent('click');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Books progress', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Books progress' }).getByText('A verse counts as memorized once it graduates from learning.')).toBeVisible();
+  await closeWithEscape(page);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 
   // scope to a single deck
-  await page.getByLabel('Show statistics for').selectOption({ label: 'Beta' });
+  await page.getByRole('button', { name: /^Show statistics for:/ }).click();
+  await page.getByRole('dialog', { name: 'Select a deck' }).getByRole('button', { name: 'Beta' }).click();
   await expect(number(page, 'Total cards added')).toHaveText('1');
   await expect(number(page, 'Verses memorized')).toHaveText('0');
 });
@@ -58,5 +74,6 @@ test('statistics: with only recall cards in use, one studied card makes a verse 
   await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
   await page.goto('/#/stats');
   await expect(number(page, 'Verses memorized')).toHaveText('1');
-  await expect(page.getByText('Each verse has two cards')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Card counts', exact: true })).toBeVisible(); // the stage explanations apply whichever cards you study
+  await expect(page.getByRole('button', { name: 'Books progress', exact: true })).toBeVisible();
 });

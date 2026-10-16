@@ -16,8 +16,29 @@ export async function addCard(page: Page, deckId: string, reference: string, pas
   if (source) await page.getByLabel('Source').fill(source);
   await page.getByLabel('Passage', { exact: true }).fill(passage);
   await page.getByRole('button', { name: 'Save' }).click();
-  await page.waitForURL(/\/cards$/);
+  // Saving shows a toast and leaves a cleared form open. Then open the deck's card list, and reload so the
+  // toast's text ("John 3:16 added") cannot be mistaken for the card itself by later checks.
+  await expect(page.getByText(`${reference} added`)).toBeVisible();
+  await page.goto(`/#/decks/${deckId}/cards`);
+  await page.reload();
   await expect(page.getByText(reference, { exact: true })).toBeVisible();
+}
+
+const WORD_BANK = /^(Word bank|Banco de palabras)$/;
+
+/** Is the word bank on screen? (False once every blank has been filled in.) */
+export const wordBankOpen = (page: Page) => page.getByRole('group', { name: WORD_BANK }).isVisible();
+
+/**
+ * Taps the first word in the word bank, then waits until the screen has really moved on: the next blank is highlighted,
+ * or the exercise is finished. (A fixed sleep here made tests flaky when the machine was busy.)
+ */
+export async function tapFirstBankWord(page: Page): Promise<void> {
+  const bank = page.getByRole('group', { name: WORD_BANK });
+  const current = page.locator('[aria-current="step"]');
+  const before = await current.textContent();
+  await bank.getByRole('button').first().click();
+  await expect.poll(async () => ((await bank.isVisible()) ? await current.textContent() : 'finished')).not.toBe(before);
 }
 
 export const openDeck = (page: Page, deckId: string) => page.goto(`/#/decks/${deckId}`);
@@ -25,14 +46,37 @@ export const openDeck = (page: Page, deckId: string) => page.goto(`/#/decks/${de
 /** Chooses which study cards each verse gets (Settings > Cards for each verse). */
 export async function setCardKinds(page: Page, kinds: 'Both' | 'Recall the passage' | 'Identify the verse') {
   await page.goto('/#/settings');
-  await page.getByRole('radio', { name: new RegExp(`^${kinds}`) }).check();
-  await expect(page.getByRole('radio', { name: new RegExp(`^${kinds}`) })).toBeChecked();
+  const radio = page.getByRole('radio', { name: new RegExp(`^${kinds}`) });
+  // The page loads the saved choice after it appears, which can undo a click made too early: retry until it sticks.
+  await expect(async () => {
+    await radio.check();
+    await page.waitForTimeout(150);
+    await expect(radio).toBeChecked({ timeout: 1000 });
+  }).toPass({ timeout: 10_000 });
 }
 
 /** The fill-in-the-blanks difficulty lives only in Settings. */
 export async function setBlankDifficulty(page: Page, level: 'Easy' | 'Medium' | 'Hard') {
   await page.goto('/#/settings');
   const button = page.getByRole('group', { name: 'Blanks difficulty' }).getByRole('button', { name: level, exact: true });
-  await button.click();
-  await expect(button).toHaveAttribute('aria-pressed', 'true');
+  // The page loads the saved choice after it appears, which can undo a click made too early: retry until it sticks.
+  await expect(async () => {
+    await button.click();
+    await page.waitForTimeout(150);
+    await expect(button).toHaveAttribute('aria-pressed', 'true', { timeout: 1000 });
+  }).toPass({ timeout: 10_000 });
+}
+
+/** The deck id in a "New card" address (/#/cards/new?deck=...). */
+export function deckIdFromUrl(page: Page): string {
+  return new URL(page.url().split('#')[1]!, 'http://x').searchParams.get('deck')!;
+}
+
+/**
+ * Presses Escape to close a popup, then lets its history clean-up finish. (Closing a popup removes the extra history
+ * entry it added; a test that navigates within a few milliseconds would race that, which a person never does.)
+ */
+export async function closeWithEscape(page: Page) {
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(200);
 }

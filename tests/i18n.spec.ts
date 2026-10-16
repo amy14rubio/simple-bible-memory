@@ -1,13 +1,13 @@
 import { test, expect, type Browser, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { createDeck } from './helpers';
+import { createDeck, tapFirstBankWord, wordBankOpen, closeWithEscape } from './helpers';
 
 const spanishPage = async (browser: Browser, colorScheme: 'light' | 'dark' = 'light') => {
   const ctx = await browser.newContext({ locale: 'es-ES', colorScheme });
   return { ctx, page: await ctx.newPage() };
 };
 
-const language = (page: Page, name: string) => page.getByRole('group', { name: /^(Language|Idioma)$/ }).getByRole('button', { name, exact: true });
+const language = (page: Page, name: string) => page.getByRole('group', { name: /^(Language|Idioma)$/ }).getByRole('radio', { name, exact: true });
 
 // Spanish-interface helpers: create things through the Spanish screens.
 async function esCreateDeck(page: Page, title: string): Promise<string> {
@@ -22,13 +22,20 @@ async function esAddCard(page: Page, deckId: string, reference: string, passage:
   await page.getByLabel('Versículo(s)').fill(reference);
   await page.getByLabel('Pasaje', { exact: true }).fill(passage);
   await page.getByRole('button', { name: 'Guardar' }).click();
-  await page.waitForURL(/\/cards$/);
+  await expect(page.getByText(`${reference} agregado`)).toBeVisible(); // the toast; the form stays open, cleared
+  await page.goto(`/#/decks/${deckId}/cards`);
+  await page.reload();
 }
-async function esRecallOnly(page: Page) {
+async function esSetKinds(page: Page, name: RegExp) {
   await page.goto('/#/settings');
-  await page.getByRole('radio', { name: /^Recordar el pasaje/ }).check();
-  await expect(page.getByRole('radio', { name: /^Recordar el pasaje/ })).toBeChecked();
+  // The page loads the saved choice after it appears, which can undo a click made too early: retry until it sticks.
+  await expect(async () => {
+    await page.getByRole('radio', { name }).check();
+    await page.waitForTimeout(150);
+    await expect(page.getByRole('radio', { name })).toBeChecked({ timeout: 1000 });
+  }).toPass({ timeout: 10_000 });
 }
+const esRecallOnly = (page: Page) => esSetKinds(page, /^Recordar el pasaje/);
 
 test.describe('which language the app starts in', () => {
   test('a Spanish browser gets Spanish by default, with the page language and title to match', async ({ browser }) => {
@@ -61,53 +68,62 @@ test.describe('which language the app starts in', () => {
 
 test.describe('the language setting', () => {
   test('switching to Español changes the app text right away, and back again', async ({ page }) => {
-    await page.goto('/#/settings');
-    await expect(page.getByRole('heading', { name: 'General' })).toBeVisible();
+    await page.goto('/#/settings/language');
+    await expect(page.getByRole('heading', { name: 'Language' })).toBeVisible();
     await language(page, 'Español').click();
-    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Notificaciones' })).toBeVisible();
-    await expect(page.getByLabel('Tarjetas nuevas por día')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible(); // the page itself changes at once
     await expect(page.locator('html')).toHaveAttribute('lang', 'es');
     await expect(page).toHaveTitle('Memoria Bíblica Simple');
+    await page.goto('/#/settings');
+    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Notificaciones' })).toBeVisible();
+    await expect(page.getByLabel('Tarjetas nuevas por día', { exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: /^Idioma/ })).toContainText('Español'); // the row shows the choice
+    await page.goto('/#/settings/language');
     await language(page, 'English').click();
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Language' })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   });
 
   test('the choice survives a reload, and is also stored in the database (not only the page)', async ({ page }) => {
-    await page.goto('/#/settings');
+    await page.goto('/#/settings/language');
     await language(page, 'Español').click();
-    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible();
     await page.waitForTimeout(400); // let the database write finish
     await page.reload();
-    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible();
 
     await page.evaluate(() => localStorage.removeItem('language-pref')); // forget the quick cache: the database must remember
     await page.reload();
-    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible();
   });
 
   test('"System" follows the browser, and a chosen language overrides it', async ({ browser }) => {
     const { ctx, page } = await spanishPage(browser);
-    await page.goto('/#/settings');
-    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible(); // system -> Spanish browser
-    await expect(language(page, 'Sistema')).toHaveAttribute('aria-pressed', 'true');
+    await page.goto('/#/settings/language');
+    await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible(); // system -> Spanish browser
+    await expect(language(page, 'Sistema')).toBeChecked();
     await language(page, 'English').click();
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible(); // chosen English beats the Spanish browser
+    await expect(page.getByRole('heading', { name: 'Language' })).toBeVisible(); // chosen English beats the Spanish browser
     await language(page, 'System').click();
-    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible();
     await ctx.close();
   });
 
   test('says that only the app text changes', async ({ page }) => {
-    await page.goto('/#/settings');
-    await expect(page.getByText('Changes the text of the app only. Your verses and passages stay exactly as you typed them.')).toBeVisible();
+    await page.goto('/#/settings/language');
+    // the explanation is behind the "i" next to Language, not small print on the page
+    await expect(page.getByText('Changes the text of the app only.')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Language', exact: true }).click(); // the title in the top bar has the "i"
+    await expect(page.getByRole('dialog', { name: 'Language' })).toContainText('Changes the text of the app only. Your verses and passages stay exactly as you typed them.');
+    await closeWithEscape(page);
     await language(page, 'Español').click();
-    await expect(page.getByText('Cambia solo el texto de la aplicación.')).toBeVisible();
+    await page.getByRole('button', { name: 'Idioma', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: 'Idioma' })).toContainText('Cambia solo el texto de la aplicación.');
   });
 
   test('the language names are always written in their own language', async ({ page }) => {
-    await page.goto('/#/settings');
+    await page.goto('/#/settings/language');
     await expect(language(page, 'English')).toBeVisible();
     await expect(language(page, 'Español')).toBeVisible();
     await language(page, 'Español').click();
@@ -124,11 +140,12 @@ test.describe('verses are not translated', () => {
     await page.getByLabel('Source').fill('Example translation');
     await page.getByLabel('Passage', { exact: true }).fill('Example passage text, typed exactly like this.');
     await page.getByRole('button', { name: 'Save' }).click();
-    await page.waitForURL(/\/cards$/);
+    await expect(page.getByText('John 3:16 added')).toBeVisible();
+    await page.reload(); // clears the toast
 
-    await page.goto('/#/settings');
+    await page.goto('/#/settings/language');
     await language(page, 'Español').click();
-    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible();
 
     await page.goto(`/#/decks/${id}/cards`);
     await expect(page.getByRole('columnheader', { name: 'Versículo' })).toBeVisible(); // interface: translated
@@ -142,7 +159,7 @@ test.describe('verses are not translated', () => {
 
   test('the deck name is yours too', async ({ page }) => {
     await createDeck(page, 'Commute verses');
-    await page.goto('/#/settings');
+    await page.goto('/#/settings/language');
     await language(page, 'Español').click();
     await page.goto('/');
     await expect(page.getByRole('link', { name: /Commute verses/ })).toBeVisible();
@@ -182,18 +199,19 @@ test.describe('the app in Spanish', () => {
     await expect(page.getByLabel('Versículo(s)')).toHaveValue('Juan 3:16'); // what you typed is kept
     await page.getByLabel('Pasaje', { exact: true }).fill('Texto de ejemplo escrito por la persona.');
     await page.getByRole('button', { name: 'Guardar' }).click();
-    await page.waitForURL(/\/cards$/);
+    await expect(page.getByText('Juan 3:16 agregado')).toBeVisible(); // the toast, in Spanish
+    await page.goto(`/#/decks/${new URL(page.url().split('#')[1]!, 'http://x').searchParams.get('deck')}/cards`);
     await expect(page.getByRole('columnheader', { name: 'Pasaje' })).toBeVisible();
 
     await page.goto('/');
     await page.getByRole('button', { name: 'Acciones de Versículos del camino' }).click();
     await expect(page.getByRole('link', { name: 'Añadir tarjeta' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Ver tarjetas' })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Práctica extra/ })).toContainText('No cuenta para tu progreso');
+    await expect(page.getByRole('link', { name: 'Práctica extra', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Renombrar baraja' })).toBeVisible();
     await page.getByRole('button', { name: 'Eliminar baraja' }).click();
     await expect(page.getByRole('dialog')).toContainText('se eliminarán de forma permanente');
-    await page.getByRole('dialog').getByRole('button', { name: 'Cancelar' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancelar' }).dispatchEvent('click');
     await ctx.close();
   });
 
@@ -203,7 +221,7 @@ test.describe('the app in Spanish', () => {
     await page.getByRole('button', { name: 'Añadir' }).click();
     await expect(page.getByRole('button', { name: 'Nueva baraja' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Nueva tarjeta' })).toBeVisible();
-    await page.keyboard.press('Escape');
+    await closeWithEscape(page);
     await esCreateDeck(page, 'Salmos');
     await page.goto('/');
     await page.getByRole('button', { name: 'Buscar barajas' }).click();
@@ -239,8 +257,7 @@ test.describe('the app in Spanish', () => {
     await page.getByRole('button', { name: /^Fácil/ }).click();
 
     await expect(page.getByRole('heading', { name: 'Sesión completada' })).toBeVisible();
-    await expect(page.getByText(/2 repasos: 0 Otra vez, 0 Difícil, 0 Bien, 2 Fácil\./)).toBeVisible();
-    await expect(page.getByText('Tus repasos se guardaron y tu calendario se actualizó.')).toBeVisible();
+    await expect(page.getByText('2 tarjetas repasadas')).toBeVisible();
     await page.getByRole('link', { name: 'Volver a la baraja' }).click();
     await expect(page.getByRole('heading', { name: 'Estás al día' })).toBeVisible();
     await expect(page.getByText(/Tu próximo repaso es en \d+ (min|h|d|mes|meses)/)).toBeVisible();
@@ -256,19 +273,18 @@ test.describe('the app in Spanish', () => {
     await expect(page.getByRole('button', { name: 'Mostrar respuesta' })).toHaveCount(1);
     await page.getByLabel('Escribe el versículo de memoria').fill('uno dos cinco cuatro');
     await page.getByRole('button', { name: 'Mostrar respuesta' }).click();
-    await expect(page.getByText('3 de 4 palabras coinciden.')).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Tu respuesta' })).toContainText('uno dos cinco cuatro');
     await expect(page.getByRole('region', { name: 'Versículo correcto' })).toContainText('Uno dos tres cuatro.');
-    await expect(page.getByText('Las palabras subrayadas se omitieron o son incorrectas.')).toBeVisible();
     await expect(page.getByRole('button', { name: /^Otra vez.*sugerido/ })).toBeVisible();
 
     // identify card: type the verse
-    await page.goto('/#/settings');
-    await page.getByRole('radio', { name: /^Identificar el versículo/ }).check();
+    await esSetKinds(page, /^Identificar el versículo/);
     await page.goto(`/#/decks/${id}/study/type`);
-    await expect(page.getByText('¿De qué versículo es?')).toBeVisible();
+    await expect(page.getByText('Uno dos tres cuatro.')).toBeVisible();
     await page.getByLabel(/Escribe el versículo, por ejemplo/).fill('Juan 3:17');
     await page.getByRole('button', { name: 'Mostrar respuesta' }).click();
-    await expect(page.getByText('Casi: escribiste Juan 3:17')).toBeVisible();
+    await expect(page.getByText('Tu respuesta')).toBeVisible();
+    await expect(page.getByText('Juan 3:17')).toBeVisible();
     await ctx.close();
   });
 
@@ -280,15 +296,13 @@ test.describe('the app in Spanish', () => {
     await esAddCard(page, id, 'Romanos 8:28', 'Texto de ejemplo tres.');
     await esRecallOnly(page);
     await page.goto(`/#/decks/${id}/study/blanks`);
-    await expect(page.getByText('Toca la palabra que va en el espacio en blanco resaltado.')).toBeVisible();
     const bank = page.getByRole('group', { name: 'Banco de palabras' });
     await expect(bank).toBeVisible();
     expect(await bank.getByRole('button').count()).toBeGreaterThan(1);
-    while ((await bank.count()) > 0) { await bank.getByRole('button').first().click(); await page.waitForTimeout(40); }
-    await expect(page.getByText(/\d+ de \d+ correctas\./)).toBeVisible();
+    while (await wordBankOpen(page)) await tapFirstBankWord(page);
+    await expect(page.getByRole('button', { name: /^(Otra vez|Difícil|Bien|Fácil)/ }).first()).toBeVisible(); // every blank is done
 
-    await page.goto('/#/settings');
-    await page.getByRole('radio', { name: /^Identificar el versículo/ }).check();
+    await esSetKinds(page, /^Identificar el versículo/);
     await page.goto(`/#/decks/${id}/study/blanks`);
     const choices = page.getByRole('group', { name: 'Elige el versículo' });
     await expect(choices).toBeVisible();
@@ -304,8 +318,13 @@ test.describe('the app in Spanish', () => {
     await esAddCard(page, id, 'Psalm 23:1', 'Texto dos.');
     await page.goto('/#/stats');
     await expect(page.getByRole('heading', { name: 'Estadísticas' })).toBeAttached();
-    await expect(page.getByLabel('Mostrar estadísticas de')).toBeVisible();
-    await expect(page.getByLabel('Mostrar estadísticas de').locator('option:checked')).toHaveText('Todas las barajas');
+    const picker = page.getByRole('button', { name: 'Mostrar estadísticas de: Todas las barajas' });
+    await expect(picker).toBeVisible();
+    await picker.click();
+    const popup = page.getByRole('dialog', { name: 'Selecciona una baraja' });
+    await expect(popup.getByRole('button', { name: 'Libros' })).toBeVisible();
+    await expect(popup.getByRole('button', { name: 'Cancelar' })).toBeAttached();
+    await popup.getByRole('button', { name: 'Cancelar' }).dispatchEvent('click');
     await expect(page.getByText('Tarjetas añadidas')).toBeVisible();
     await expect(page.getByText('Versículos memorizados')).toBeVisible();
     await expect(page.getByText('Días desde que empezaste')).toBeVisible();
@@ -313,7 +332,9 @@ test.describe('the app in Spanish', () => {
     await expect(books.getByText('Juan')).toBeVisible(); // "John" in the app, "Juan" in the Spanish interface
     await expect(books.getByText('Salmos')).toBeVisible();
     await expect(page.getByRole('img', { name: /^Tarjetas por etapa: \d+ nuevas, 0 en aprendizaje/ })).toBeVisible();
-    await expect(page.getByText('Cada versículo tiene dos tarjetas, así que aquí se cuentan ambas.')).toBeVisible();
+    await page.getByRole('button', { name: 'Tarjetas por etapa', exact: true }).click();
+    await expect(page.getByRole('dialog').getByText('Aún no se han estudiado.')).toBeVisible();
+    await expect(page.getByRole('dialog').getByRole('button', { name: 'Cerrar' })).toBeAttached();
     await ctx.close();
   });
 
@@ -337,7 +358,8 @@ test.describe('the app in Spanish', () => {
     await expect(split).toContainText('Esto crea 2 tarjetas, una por versículo.');
     await expect(split).toContainText('tendrás 4 tarjetas de estudio');
     await split.getByRole('button', { name: 'Crear 2 tarjetas' }).click();
-    await page.waitForURL(/\/cards$/);
+    await expect(page.getByText('2 versículos agregados')).toBeVisible();
+    await page.goto(`/#/decks/${new URL(page.url().split('#')[1]!, 'http://x').searchParams.get('deck')}/cards`);
     await expect(page.getByRole('link', { name: 'Salmos 130:2', exact: true })).toBeVisible();
 
     // and the explanation when it cannot split
@@ -345,7 +367,7 @@ test.describe('the app in Spanish', () => {
     await page.getByLabel('Versículo(s)').fill('Salmos 130:1-3');
     await page.getByLabel('Pasaje', { exact: true }).fill('1 Uno. 3 Tres.');
     await page.getByRole('button', { name: 'Separar en versículos' }).click();
-    await expect(page.getByRole('dialog')).toContainText('No encontramos el versículo 2 en el texto.');
+    await expect(page.getByRole('dialog', { name: 'Separar en versículos' })).toContainText('No encontramos el versículo 2 en el texto.');
     await ctx.close();
   });
 
@@ -383,7 +405,7 @@ test.describe('accessibility in Spanish', () => {
       await audit('inicio');
       await page.getByRole('button', { name: 'Añadir' }).click();
       await audit('menú añadir');
-      await page.keyboard.press('Escape');
+      await closeWithEscape(page);
       await page.goto(`/#/decks/${id}`);
       await expect(page.getByText(/tarjetas? para estudiar hoy/)).toBeVisible();
       await audit('baraja');
@@ -393,7 +415,7 @@ test.describe('accessibility in Spanish', () => {
       await audit('formulario de tarjeta');
       await page.getByRole('button', { name: 'Separar en versículos' }).click();
       await audit('separar en versículos');
-      await page.getByRole('dialog').getByRole('button', { name: 'Cancelar' }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Cancelar' }).dispatchEvent('click');
       await page.goto(`/#/decks/${id}/study/flashcard`);
       await page.getByRole('button', { name: 'Mostrar respuesta' }).click();
       await audit('estudio con valoraciones');
@@ -405,4 +427,17 @@ test.describe('accessibility in Spanish', () => {
       await ctx.close();
     });
   }
+});
+
+test('Settings has one Language row showing the current choice; it opens a list of System, English and Español', async ({ page }) => {
+  await page.goto('/#/settings');
+  await expect(page.getByRole('group', { name: 'Language' })).toHaveCount(0); // no cramped options in Settings
+  const row = page.getByRole('link', { name: /^Language/ });
+  await expect(row).toContainText('System');
+  await row.click();
+  await expect(page).toHaveURL(/#\/settings\/language$/);
+  const group = page.getByRole('group', { name: 'Language' });
+  await expect(group.getByRole('radio')).toHaveCount(3);
+  for (const name of ['System', 'English', 'Español']) await expect(group.getByRole('radio', { name, exact: true })).toBeVisible();
+  await expect(group.getByRole('radio', { name: 'System', exact: true })).toBeChecked();
 });
