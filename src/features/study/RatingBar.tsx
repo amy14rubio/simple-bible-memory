@@ -12,7 +12,7 @@ export const RATING_TEXT: Record<Rating, string> = { 1: 'text-again', 2: 'text-h
 /** Pinned to the bottom of the screen so the thumb never has to reach, whatever the keyboard is doing. */
 export function ActionBar({ children }: { children: ReactNode }) {
   return (
-    <div className="sticky bottom-0 -mx-5 mt-6 space-y-3 border-t border-border bg-background px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+    <div className="sticky bottom-0 -mx-5 mt-6 space-y-3 bg-background px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
       {children}
     </div>
   );

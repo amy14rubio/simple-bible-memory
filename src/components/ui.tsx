@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, type ButtonHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
@@ -138,6 +138,30 @@ export function FormRow({ label, children }: { label: string; children: (id: str
     </div>
   );
 }
+/**
+ * A text field for longer text: it starts as one line and grows as you type (no box, no scrollbar, no resize handle),
+ * with a thin line underneath that turns accent-coloured while you are typing, like Anki's fields.
+ */
+export function GrowingTextarea({ className = '', value, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement> & { value: string }) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  // Fit the height to the text after every change (works in every browser, unlike CSS field-sizing).
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
+  return (
+    <textarea
+      ref={ref}
+      rows={1}
+      value={value}
+      {...props}
+      className={`block w-full resize-none overflow-hidden border-0 border-b border-border bg-transparent px-0 py-2 text-lg placeholder:text-muted focus:border-accent focus:shadow-[0_1px_0_0_var(--accent)] ${className}`}
+    />
+  );
+}
+
 export const rowInput = 'w-full bg-transparent py-2.5 text-base placeholder:text-muted focus-visible:outline-offset-4';
 
 export function Segmented<T extends string>({ label, value, options, onChange }: {

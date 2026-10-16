@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
-import { AppBar, BackButton, Button, ButtonLink, ConfirmDialog, EmptyState, ErrorMessage, FormRow, IconButton, Page, rowInput } from '../../components/ui';
+import { AppBar, BackButton, Button, ButtonLink, ConfirmDialog, EmptyState, ErrorMessage, FormRow, GrowingTextarea, IconButton, Page, rowInput } from '../../components/ui';
 import type { Card, DeckSummary } from '../../domain/types';
 import { canSplit, splitPassage, type SplitResult } from '../../domain/bible/split';
 import { loadCardKinds } from '../study/cardKinds';
@@ -120,9 +120,9 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
             <label htmlFor="passage" className="text-[0.9375rem] font-medium">{t('cardForm.passage')}</label>
             <BibleGatewayHelper reference={reference} />
           </div>
-          <textarea
+          <GrowingTextarea
             id="passage"
-            className="scripture min-h-56 w-full rounded-lg border border-border bg-surface px-4 py-3.5 text-lg placeholder:text-muted"
+            className="scripture"
             value={verseText}
             onChange={(e) => setVerseText(e.target.value)}
             placeholder={t('cardForm.passagePlaceholder')}

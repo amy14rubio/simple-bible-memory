@@ -251,3 +251,21 @@ test.describe('rating colors: only the text is colored', () => {
     });
   }
 });
+
+test('the Passage field starts as one line, grows as you type, and has no box', async ({ page }) => {
+  const id = await createDeck(page, 'Grow');
+  await page.goto(`/#/cards/new?deck=${id}`);
+  const field = page.getByLabel('Passage', { exact: true });
+  const height = async () => (await field.boundingBox())!.height;
+  const start = await height();
+  expect(start).toBeLessThan(60); // one line, not a tall box
+  await expect(field).toHaveCSS('border-top-width', '0px'); // underline only
+  await expect(field).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+
+  await field.fill(Array.from({ length: 12 }, (_, i) => `${i + 1} A fairly long line of verse text number ${i + 1} that wraps.`).join('\n'));
+  const grown = await height();
+  expect(grown).toBeGreaterThan(start * 4); // it expanded to fit, instead of scrolling inside a box
+
+  await field.fill('');
+  expect(await height()).toBeLessThan(60); // and shrinks back
+});

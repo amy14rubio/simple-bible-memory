@@ -100,7 +100,9 @@ test('identify card, Blanks: choose the verse from several options', async ({ pa
   await expect(page.getByRole('button', { name: /^Good.*suggested/ })).toBeVisible();
   await page.getByRole('button', { name: /^Good/ }).click();
 
-  // second card: pick a wrong option on purpose
+  // second card: pick a wrong option on purpose (wait until the next card has replaced the answered one)
+  await expect(page.getByRole('button', { name: /^Good/ })).toHaveCount(0);
+  await expect(group.getByText('Correct')).toHaveCount(0);
   const options = await group.getByRole('button').allInnerTexts();
   const wrong = options.map((o) => o.split('\n')[0]!).find((o) => o !== 'Psalm 23:1')!;
   await group.getByRole('button', { name: wrong }).first().click();

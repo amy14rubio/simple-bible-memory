@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Card } from '../../domain/types';
 import { compareVerse, paintComparison, type Comparison, type Segment } from '../../domain/study/compare';
 import type { Rating } from '../../domain/study/rating';
-import { Button } from '../../components/ui';
+import { Button, GrowingTextarea } from '../../components/ui';
 import { ActionBar, RatingBar } from './RatingBar';
 import { useI18n } from '../../i18n/I18nProvider';
 import { PaintedText } from './PaintedText';
@@ -24,9 +24,9 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
         {!result ? (
           <>
             <label className="sr-only" htmlFor="typed">{t('type.label')}</label>
-            <textarea
+            <GrowingTextarea
               id="typed"
-              className="scripture min-h-56 w-full flex-1 resize-none rounded-lg border border-border bg-surface px-4 py-3.5 text-lg placeholder:text-muted"
+              className="scripture"
               value={typed}
               placeholder={t('type.placeholder')}
               autoFocus
