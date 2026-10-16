@@ -1,6 +1,7 @@
 import type { Database } from './Database';
 import init from '../migrations/0001_init.sql?raw';
 import cardKinds from '../migrations/0002_card_kinds.sql?raw';
+import sharing from '../migrations/0003_sharing.sql?raw';
 
 /**
  * Migrations run in order, once each. SQLite keeps a built-in integer called
@@ -10,6 +11,7 @@ import cardKinds from '../migrations/0002_card_kinds.sql?raw';
 export const MIGRATIONS: { version: number; sql: string }[] = [
   { version: 1, sql: init },
   { version: 2, sql: cardKinds },
+  { version: 3, sql: sharing },
 ];
 
 export async function migrate(db: Database, migrations = MIGRATIONS): Promise<number> {

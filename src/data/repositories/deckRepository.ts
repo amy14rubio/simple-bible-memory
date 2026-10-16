@@ -46,8 +46,8 @@ export function createDeckRepository(db: Database, now: Clock = Date.now): DeckR
         id: crypto.randomUUID(),
         title: requireText(input.title, 'Deck title', 'deck-title-required'),
         description: optionalText(input.description),
-        bibleLanguage: null,
-        translationCode: null,
+        bibleLanguage: optionalText(input.bibleLanguage),
+        translationCode: optionalText(input.translationCode),
         createdAt: t,
         updatedAt: t,
       };
@@ -59,12 +59,12 @@ export function createDeckRepository(db: Database, now: Clock = Date.now): DeckR
     },
 
     async update(id, input) {
-      await db.run('UPDATE decks SET title = ?, description = ?, updated_at = ? WHERE id = ?', [
-        requireText(input.title, 'Deck title', 'deck-title-required'),
-        optionalText(input.description),
-        now(),
-        id,
-      ]);
+      const sets = ['title = ?', 'description = ?', 'updated_at = ?'];
+      const params: SqlValue[] = [requireText(input.title, 'Deck title', 'deck-title-required'), optionalText(input.description), now()];
+      // Translation and language are only touched when they are given (null clears them).
+      if (input.translationCode !== undefined) { sets.push('translation_code = ?'); params.push(optionalText(input.translationCode)); }
+      if (input.bibleLanguage !== undefined) { sets.push('bible_language = ?'); params.push(optionalText(input.bibleLanguage)); }
+      await db.run(`UPDATE decks SET ${sets.join(', ')} WHERE id = ?`, [...params, id]);
     },
 
     async delete(id) {

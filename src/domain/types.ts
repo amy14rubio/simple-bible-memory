@@ -25,6 +25,10 @@ export interface Card {
 export interface DeckInput {
   title: string;
   description?: string | null;
+  /** Which Bible translation the deck's text is from (a code like KJV, or OWN for your own words). Left alone when omitted. */
+  translationCode?: string | null;
+  /** The language of the text ('en' or 'es'). Left alone when omitted. */
+  bibleLanguage?: string | null;
 }
 
 export interface CardInput {
