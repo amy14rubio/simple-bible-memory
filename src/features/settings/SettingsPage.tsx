@@ -4,8 +4,9 @@ import { ChevronRight } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useTheme } from '../../app/theme';
 import { useFont } from '../../app/fonts';
+import { useSharing } from '../../app/sharing';
 import { ExportDrawer, type ExportTarget } from '../exchange/ExportDrawer';
-import { AppBar, BackButton, Page, Segmented } from '../../components/ui';
+import { AppBar, BackButton, ConfirmDialog, Page, Segmented } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
 import type { CardKindSetting } from '../../domain/study/cardKind';
@@ -25,10 +26,15 @@ export function SettingsPage() {
   const { preference } = useTheme();
   const { family: fontFamily } = useFont();
   const [exporting, setExporting] = useState<ExportTarget | null>(null);
+  const share = useSharing();
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [accountError, setAccountError] = useState<string>();
   const { settings } = useRepositories();
   const [newPerDay, setNewPerDay] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [kinds, setKinds] = useState<CardKindSetting>('both');
+
+  useEffect(() => { share.ensureLoaded(); }, [share]);
 
   useEffect(() => {
     loadNewPerDay(settings).then((n) => setNewPerDay(String(n)));
@@ -129,6 +135,27 @@ export function SettingsPage() {
         <section aria-labelledby="backup">
           <h2 id="backup" className="mb-1 font-serif text-xl">{t('settings.backup')}</h2>
           <p className="py-2 text-muted">{t('settings.backupBody')}</p>
+          {share.available && (
+            <>
+              {accountError && <p role="alert" className="py-2 text-danger">{accountError}</p>}
+              {share.user ? (
+                <>
+                  <div className={row}><span className="min-w-0 truncate">{t('account.signedInAs', { name: share.user.displayName ?? share.user.email ?? '' })}</span></div>
+                  <button type="button" onClick={() => void share.signOut()} className={`${row} w-full text-left hover:bg-surface`}>
+                    <span>{t('account.signOut')}</span>
+                  </button>
+                  <button type="button" onClick={() => setConfirmingDelete(true)} className={`${row} w-full text-left text-danger hover:bg-surface`}>
+                    <span>{t('account.delete')}</span>
+                  </button>
+                </>
+              ) : (
+                <button type="button" disabled={!share.authLoaded} onClick={() => { setAccountError(undefined); share.signIn().catch(() => setAccountError(t('publish.signInFailed'))); }} className={`${row} w-full text-left hover:bg-surface disabled:opacity-60`}>
+                  <span>{t('account.signIn')}</span>
+                  <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
+                </button>
+              )}
+            </>
+          )}
           <button type="button" onClick={() => setExporting({ ids: null, title: t('export.everything') })} className={`${row} w-full text-left hover:bg-surface`}>
             <span>{t('export.titleAll')}</span>
             <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
@@ -139,6 +166,14 @@ export function SettingsPage() {
           </Link>
         </section>
         <ExportDrawer target={exporting} onClose={() => setExporting(null)} />
+        <ConfirmDialog
+          open={confirmingDelete}
+          title={t('account.deleteTitle')}
+          message={t('account.deleteBody')}
+          confirmLabel={t('account.delete')}
+          onConfirm={() => { setConfirmingDelete(false); share.deleteAccount().catch(() => setAccountError(t('account.deleteFailed'))); }}
+          onCancel={() => setConfirmingDelete(false)}
+        />
       </Page>
     </>
   );

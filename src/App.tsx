@@ -3,6 +3,7 @@ import { DatabaseProvider } from './app/DatabaseProvider';
 import { RepositoriesProvider } from './app/repositories';
 import { ThemeProvider } from './app/theme';
 import { FontProvider } from './app/fonts';
+import { SharingProvider } from './app/sharing';
 import { I18nProvider, useI18n } from './i18n/I18nProvider';
 import { AppShell } from './app/AppShell';
 import { DecksPage } from './features/decks/DecksPage';
@@ -44,6 +45,7 @@ export default function App() {
       {(db) => (
         <RepositoriesProvider db={db}>
           {({ settings }) => (
+            <SharingProvider>
             <I18nProvider settings={settings}>
             <ThemeProvider settings={settings}>
             <FontProvider settings={settings}>
@@ -74,6 +76,7 @@ export default function App() {
             </FontProvider>
             </ThemeProvider>
             </I18nProvider>
+            </SharingProvider>
           )}
         </RepositoriesProvider>
       )}
