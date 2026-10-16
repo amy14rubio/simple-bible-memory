@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useTheme } from '../../app/theme';
 import { useFont } from '../../app/fonts';
+import { ExportDrawer, type ExportTarget } from '../exchange/ExportDrawer';
 import { AppBar, BackButton, Page, Segmented } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
@@ -23,6 +24,7 @@ export function SettingsPage() {
   const { t, preference: languagePreference } = useI18n();
   const { preference } = useTheme();
   const { family: fontFamily } = useFont();
+  const [exporting, setExporting] = useState<ExportTarget | null>(null);
   const { settings } = useRepositories();
   const [newPerDay, setNewPerDay] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
@@ -127,7 +129,16 @@ export function SettingsPage() {
         <section aria-labelledby="backup">
           <h2 id="backup" className="mb-1 font-serif text-xl">{t('settings.backup')}</h2>
           <p className="py-2 text-muted">{t('settings.backupBody')}</p>
+          <button type="button" onClick={() => setExporting({ ids: null, title: t('export.everything') })} className={`${row} w-full text-left hover:bg-surface`}>
+            <span>{t('export.titleAll')}</span>
+            <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
+          </button>
+          <Link to="/import" className={`${row} hover:bg-surface`}>
+            <span>{t('settings.import')}</span>
+            <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
+          </Link>
         </section>
+        <ExportDrawer target={exporting} onClose={() => setExporting(null)} />
       </Page>
     </>
   );

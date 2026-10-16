@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useRepositories } from '../../app/repositories';
 import { ConfirmDialog, Dialog } from '../../components/ui';
 import { useI18n } from '../../i18n/I18nProvider';
+import { ExportDrawer, type ExportTarget } from '../exchange/ExportDrawer';
 
 const item = 'flex min-h-12 w-full items-center border-b border-border text-left text-base hover:bg-surface';
 
@@ -13,6 +14,7 @@ export function DeckMenu({ deck, onClose, onDeleted }: {
   const { t, describeError } = useI18n();
   const { decks } = useRepositories();
   const [confirming, setConfirming] = useState(false);
+  const [exporting, setExporting] = useState<ExportTarget | null>(null);
   const [error, setError] = useState<string>();
 
   const remove = async () => {
@@ -38,9 +40,11 @@ export function DeckMenu({ deck, onClose, onDeleted }: {
           <Link to={`/decks/${deck?.id}/cards`} onClick={onClose} className={item}>{t('deckMenu.browse')}</Link>
           <Link to={`/decks/${deck?.id}?practice=1`} onClick={onClose} className={item}>{t('deckMenu.extraPractice')}</Link>
           <Link to={`/decks/${deck?.id}/edit`} onClick={onClose} className={item}>{t('deckMenu.rename')}</Link>
+          <button type="button" onClick={() => { if (deck) setExporting({ ids: [deck.id], title: deck.title }); onClose(); }} className={item}>{t('deckMenu.export')}</button>
           <button type="button" onClick={() => setConfirming(true)} className={`${item} text-danger`}>{t('deckMenu.delete')}</button>
         </nav>
       </Dialog>
+      <ExportDrawer target={exporting} onClose={() => setExporting(null)} />
       <ConfirmDialog
         open={confirming}
         title={t('deckMenu.deleteTitle')}

@@ -5,6 +5,7 @@ import { createCardRepository, type CardRepository } from '../data/repositories/
 import { createSettingsRepository, type SettingsRepository } from '../data/repositories/settingsRepository';
 import { createReviewRepository, type ReviewRepository } from '../data/repositories/reviewRepository';
 import { createStatsRepository, type StatsRepository } from '../data/repositories/statsRepository';
+import { createExchangeRepository, type ExchangeRepository } from '../data/repositories/exchangeRepository';
 import { createScheduler, type Scheduler } from '../domain/scheduling/scheduler';
 
 export interface Repositories {
@@ -13,6 +14,7 @@ export interface Repositories {
   settings: SettingsRepository;
   reviews: ReviewRepository;
   stats: StatsRepository;
+  exchange: ExchangeRepository;
   scheduler: Scheduler;
 }
 const Ctx = createContext<Repositories | null>(null);
@@ -27,6 +29,7 @@ export function RepositoriesProvider({ db, children }: { db: Database; children:
         settings: createSettingsRepository(db),
         reviews: createReviewRepository(db, scheduler),
         stats: createStatsRepository(db),
+        exchange: createExchangeRepository(db),
         scheduler,
       };
     },

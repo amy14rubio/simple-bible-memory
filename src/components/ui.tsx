@@ -110,6 +110,22 @@ export function HiddenClose({ label, ...props }: { label: string } & ButtonHTMLA
   return <button type="button" className="sr-only" {...props}>{label}</button>;
 }
 
+/** An on/off switch. Give it the id of the text that labels it. */
+export function Switch({ checked, onChange, labelledBy }: { checked: boolean; onChange: (checked: boolean) => void; labelledBy: string }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-labelledby={labelledBy}
+      onClick={() => onChange(!checked)}
+      className={`relative h-8 w-14 shrink-0 rounded-full border border-border transition-colors ${checked ? 'bg-primary' : 'bg-surface'}`}
+    >
+      <span aria-hidden className={`absolute top-1 size-6 rounded-full transition-all ${checked ? 'left-7 bg-primary-foreground' : 'left-1 bg-muted'}`} />
+    </button>
+  );
+}
+
 export function Page({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`px-5 py-6 ${className}`}>{children}</div>;
 }

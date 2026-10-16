@@ -48,3 +48,10 @@ Settings > Font lets you pick one font for the whole app. Without any setup it o
 3. Copy `.env.example` to `.env.local` (git ignores it) and set `VITE_GOOGLE_FONTS_API_KEY=your key`. Restart `npm run dev`.
 
 The list is kept on the device for a week. If the key is missing or Google can't be reached, the short list is used instead. Only the Latin characters of the chosen font are downloaded, and only that one font is kept on the device.
+
+
+## Exporting and importing decks
+
+- **Export deck** (deck ⋯ menu) saves one deck as a `.json` file. The "Include my progress" switch also saves your study schedule and history; leave it off when sharing.
+- **Settings > Account and backup > Export everything** saves every deck, with progress by default, as a backup.
+- **Import** (the + drawer, or Settings) reads a deck file from this app, or an Anki deck exported as "Notes in Plain Text" (you choose which column is the verse, the passage and the source). Imports always become new decks; nothing already in the app is changed.

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, FilePlus, Layers } from 'lucide-react';
+import { ChevronRight, FilePlus, Layers, Upload } from 'lucide-react';
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
 import { HiddenClose } from '../../components/ui';
 import { usePopupHistory } from '../../lib/usePopupHistory';
@@ -29,6 +29,7 @@ export function CreateDrawer({ open, onOpenChange }: { open: boolean; onOpenChan
         <div className="grid gap-3 px-4">
           <Choice icon={<Layers size={24} aria-hidden />} title={t('common.newDeck')} onClick={() => go('/decks/new')} />
           <Choice icon={<FilePlus size={24} aria-hidden />} title={t('common.newCard')} onClick={() => go('/cards/new')} />
+          <Choice icon={<Upload size={24} aria-hidden />} title={t('create.import')} onClick={() => go('/import')} />
         </div>
 
         <div className="h-6" />
