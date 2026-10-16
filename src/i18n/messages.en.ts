@@ -203,7 +203,6 @@ export const en = {
   'stats.bookProgress': '{memorized} of {total} memorized',
   'stats.memorizedNote': 'A verse counts as memorized once it graduates from learning.',
   'stats.counts': 'Card counts',
-  'stats.about': 'About {title}',
   'stats.legendLabel': 'Highlight a stage in the chart',
   'stats.slice': { one: '{label}: {count} card ({percent})', other: '{label}: {count} cards ({percent})' },
   'stats.donut': 'Cards by stage: {new} new, {learning} learning, {young} young, {mature} mature',

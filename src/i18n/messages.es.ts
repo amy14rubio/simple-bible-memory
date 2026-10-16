@@ -187,7 +187,6 @@ export const es: Dictionary = {
   'stats.bookProgress': '{memorized} de {total} memorizados',
   'stats.memorizedNote': 'Un versículo cuenta como memorizado cuando termina la fase de aprendizaje.',
   'stats.counts': 'Tarjetas por etapa',
-  'stats.about': 'Acerca de {title}',
   'stats.legendLabel': 'Resalta una etapa en el gráfico',
   'stats.slice': { one: '{label}: {count} tarjeta ({percent})', other: '{label}: {count} tarjetas ({percent})' },
   'stats.donut': 'Tarjetas por etapa: {new} nuevas, {learning} en aprendizaje, {young} jóvenes, {mature} maduras',

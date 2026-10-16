@@ -5,7 +5,7 @@ import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, Page } from '
 import { DeckPicker } from '../../components/DeckPicker';
 // The charting library is large, so it is loaded only when Statistics is opened.
 const CardCountsChart = lazy(() => import('./CardCountsChart'));
-import { SectionTitle } from './InfoDrawer';
+import { SectionTitle } from '../../components/InfoDrawer';
 import { loadCardKinds } from '../study/cardKinds';
 import { useI18n } from '../../i18n/I18nProvider';
 

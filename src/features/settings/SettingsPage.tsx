@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRepositories } from '../../app/repositories';
 import { useTheme, type ThemePreference } from '../../app/theme';
 import { AppBar, BackButton, Page, Segmented } from '../../components/ui';
+import { InfoLabel } from '../../components/InfoDrawer';
 import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
 import type { CardKindSetting } from '../../domain/study/cardKind';
 import { LANGUAGES, type LanguagePreference, type MessageKey } from '../../i18n';
@@ -42,7 +43,7 @@ export function SettingsPage() {
         <section aria-labelledby="general">
           <h2 id="general" className="mb-1 font-serif text-xl">{t('settings.general')}</h2>
           <div className={row}>
-            <span>{t('settings.language')}</span>
+            <InfoLabel title={t('settings.language')} info={t('settings.languageHint')} />
             <Segmented<LanguagePreference>
               label={t('settings.language')}
               value={languagePreference}
@@ -50,7 +51,6 @@ export function SettingsPage() {
               onChange={(l) => void setLanguagePreference(l)}
             />
           </div>
-          <p className="py-2 text-sm text-muted">{t('settings.languageHint')}</p>
           <div className={row}>
             <span id="theme-label">{t('settings.theme')}</span>
             <Segmented<ThemePreference>
@@ -61,9 +61,10 @@ export function SettingsPage() {
             />
           </div>
           <div className={row}>
-            <label htmlFor="new-per-day">{t('settings.newPerDay')}</label>
+            <InfoLabel title={t('settings.newPerDay')} info={t('settings.newPerDayHint')} />
             <input
               id="new-per-day"
+              aria-label={t('settings.newPerDay')}
               type="number"
               inputMode="numeric"
               min={0}
@@ -73,23 +74,33 @@ export function SettingsPage() {
               className="w-20 rounded-lg border border-border bg-surface px-3 py-2 text-center text-base"
             />
           </div>
-          <p className="py-2 text-sm text-muted">{t('settings.newPerDayHint')}</p>
-          <fieldset className="border-b border-border py-3">
-            <legend className="mb-1 py-1">{t('settings.kindsLegend')}</legend>
-            <div className="space-y-1">
+          <fieldset aria-label={t('settings.kindsLegend')} className="border-b border-border pb-2 pt-1">
+            <legend className="-mb-1">
+              <InfoLabel
+                title={t('settings.kindsLegend')}
+                info={
+                  <dl className="grid gap-4">
+                    {KIND_ORDER.map((k) => (
+                      <div key={k}>
+                        <dt className="font-semibold">{t(`kinds.${k}.title` as MessageKey)}</dt>
+                        <dd className="text-muted">{t(`kinds.${k}.description` as MessageKey)}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                }
+              />
+            </legend>
+            <div>
               {KIND_ORDER.map((k) => (
-                <label key={k} className="flex min-h-12 cursor-pointer items-start gap-3 rounded-lg px-1 py-2 hover:bg-surface">
-                  <input type="radio" name="card-kinds" value={k} checked={kinds === k} onChange={() => changeKinds(k)} className="mt-1 size-4 accent-[var(--foreground)]" />
-                  <span>
-                    <span className="block font-medium">{t(`kinds.${k}.title` as MessageKey)}</span>
-                    <span className="block text-sm text-muted">{t(`kinds.${k}.description` as MessageKey)}</span>
-                  </span>
+                <label key={k} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-1 py-1.5 hover:bg-surface">
+                  <input type="radio" name="card-kinds" value={k} checked={kinds === k} onChange={() => changeKinds(k)} className="size-4 accent-[var(--foreground)]" />
+                  <span className="font-medium">{t(`kinds.${k}.title` as MessageKey)}</span>
                 </label>
               ))}
             </div>
           </fieldset>
           <div className={row}>
-            <span id="blanks-label">{t('settings.blanks')}</span>
+            <InfoLabel title={t('settings.blanks')} info={t('settings.blanksHint')} />
             <Segmented<Difficulty>
               label={t('settings.blanksGroup')}
               value={difficulty}
@@ -97,7 +108,6 @@ export function SettingsPage() {
               onChange={changeDifficulty}
             />
           </div>
-          <p className="py-2 text-sm text-muted">{t('settings.blanksHint')}</p>
         </section>
 
         <section aria-labelledby="notifications">

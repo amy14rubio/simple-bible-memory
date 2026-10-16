@@ -73,7 +73,7 @@ test.describe('the language setting', () => {
     await language(page, 'Español').click();
     await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Notificaciones' })).toBeVisible();
-    await expect(page.getByLabel('Tarjetas nuevas por día')).toBeVisible();
+    await expect(page.getByLabel('Tarjetas nuevas por día', { exact: true })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'es');
     await expect(page).toHaveTitle('Memoria Bíblica Simple');
     await language(page, 'English').click();
@@ -108,9 +108,14 @@ test.describe('the language setting', () => {
 
   test('says that only the app text changes', async ({ page }) => {
     await page.goto('/#/settings');
-    await expect(page.getByText('Changes the text of the app only. Your verses and passages stay exactly as you typed them.')).toBeVisible();
+    // the explanation is behind the "i" next to Language, not small print on the page
+    await expect(page.getByText('Changes the text of the app only.')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Language', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: 'Language' })).toContainText('Changes the text of the app only. Your verses and passages stay exactly as you typed them.');
+    await closeWithEscape(page);
     await language(page, 'Español').click();
-    await expect(page.getByText('Cambia solo el texto de la aplicación.')).toBeVisible();
+    await page.getByRole('button', { name: 'Idioma', exact: true }).click();
+    await expect(page.getByRole('dialog')).toContainText('Cambia solo el texto de la aplicación.');
   });
 
   test('the language names are always written in their own language', async ({ page }) => {
@@ -323,7 +328,7 @@ test.describe('the app in Spanish', () => {
     await expect(books.getByText('Juan')).toBeVisible(); // "John" in the app, "Juan" in the Spanish interface
     await expect(books.getByText('Salmos')).toBeVisible();
     await expect(page.getByRole('img', { name: /^Tarjetas por etapa: \d+ nuevas, 0 en aprendizaje/ })).toBeVisible();
-    await page.getByRole('button', { name: 'Acerca de Tarjetas por etapa' }).click();
+    await page.getByRole('button', { name: 'Tarjetas por etapa', exact: true }).click();
     await expect(page.getByRole('dialog').getByText('Aún no se han estudiado.')).toBeVisible();
     await expect(page.getByRole('dialog').getByRole('button', { name: 'Cerrar' })).toBeAttached();
     await ctx.close();

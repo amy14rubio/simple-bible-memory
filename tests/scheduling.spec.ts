@@ -69,13 +69,13 @@ test('"New cards per day" limits how many new cards are introduced', async ({ pa
   for (const [i, t] of ['One.', 'Two.', 'Three.'].entries()) await addCard(page, id, `Example ${i + 1}:1`, t);
 
   await page.goto('/#/settings');
-  await page.getByLabel('New cards per day').fill('2');
+  await page.getByLabel('New cards per day', { exact: true }).fill('2');
   await page.getByRole('link', { name: 'Back to decks' }).click();
   await page.getByRole('link', { name: /Scheduled deck/ }).click();
   await expect(page.getByText('2 cards to study today.')).toBeVisible();
 
   await page.goto('/#/settings');
-  await page.getByLabel('New cards per day').fill('0');
+  await page.getByLabel('New cards per day', { exact: true }).fill('0');
   await page.getByRole('link', { name: 'Back to decks' }).click();
   await page.getByRole('link', { name: /Scheduled deck/ }).click();
   await expect(page.getByText("You've reached today's limit for new cards.")).toBeVisible();

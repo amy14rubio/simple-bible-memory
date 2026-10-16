@@ -44,7 +44,7 @@ test('statistics: totals, books progress and card counts, and the deck scope swi
   // the explanations live behind a small "i" next to the titles, in a drawer, not as small print on the page
   await expect(page.getByText('Not studied yet.')).toHaveCount(0);
   await expect(page.getByText('A verse counts as memorized once it graduates from learning.')).toHaveCount(0);
-  await page.getByRole('button', { name: 'About Card counts' }).click();
+  await page.getByRole('button', { name: 'Card counts', exact: true }).click();
   const drawer = page.getByRole('dialog', { name: 'Card counts' });
   for (const [stage, text] of [['New', 'Not studied yet.'], ['Learning', 'Still being learned, or forgotten and being learned again.'], ['Young', 'Remembered, and the next review is less than 3 weeks away.'], ['Mature', 'Remembered well, and the next review is 3 weeks or more away.']]) {
     await expect(drawer.getByRole('term').filter({ hasText: new RegExp(`^${stage}$`) })).toBeVisible();
@@ -52,7 +52,7 @@ test('statistics: totals, books progress and card counts, and the deck scope swi
   }
   await drawer.getByRole('button', { name: 'Close' }).dispatchEvent('click');
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  await page.getByRole('button', { name: 'About Books progress' }).click();
+  await page.getByRole('button', { name: 'Books progress', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Books progress' }).getByText('A verse counts as memorized once it graduates from learning.')).toBeVisible();
   await closeWithEscape(page);
   await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -74,6 +74,6 @@ test('statistics: with only recall cards in use, one studied card makes a verse 
   await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
   await page.goto('/#/stats');
   await expect(number(page, 'Verses memorized')).toHaveText('1');
-  await expect(page.getByRole('button', { name: 'About Card counts' })).toBeVisible(); // the stage explanations apply whichever cards you study
-  await expect(page.getByRole('button', { name: 'About Books progress' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Card counts', exact: true })).toBeVisible(); // the stage explanations apply whichever cards you study
+  await expect(page.getByRole('button', { name: 'Books progress', exact: true })).toBeVisible();
 });
