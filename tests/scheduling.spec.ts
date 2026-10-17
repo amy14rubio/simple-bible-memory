@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { addCard, createDeck, openDeck, setCardKinds } from './helpers';
 
 test('new card shows interval hints; Good brings it back soon (learning); Easy graduates it', async ({ page }) => {
@@ -64,18 +64,28 @@ test('the home list shows only how many cards are due, and it updates after stud
   await expect(page.getByRole('link', { name: /Due list/ })).toContainText('0 due');
 });
 
+/** The page fills the box with the saved value a moment after it appears, which can undo typing: retry until it sticks. */
+async function setNewPerDay(page: Page, value: string) {
+  const box = page.getByLabel('New cards per day', { exact: true });
+  await expect(async () => {
+    await box.fill(value);
+    await page.waitForTimeout(250);
+    await expect(box).toHaveValue(value, { timeout: 1000 });
+  }).toPass({ timeout: 10_000 });
+}
+
 test('"New cards per day" limits how many new cards are introduced', async ({ page }) => {
   const id = await createDeck(page, 'Scheduled deck');
   for (const [i, t] of ['One.', 'Two.', 'Three.'].entries()) await addCard(page, id, `Example ${i + 1}:1`, t);
 
   await page.goto('/#/settings');
-  await page.getByLabel('New cards per day', { exact: true }).fill('2');
+  await setNewPerDay(page, '2');
   await page.getByRole('link', { name: 'Back to decks' }).click();
   await page.getByRole('link', { name: /Scheduled deck/ }).click();
   await expect(page.getByText('2 cards to study today.')).toBeVisible();
 
   await page.goto('/#/settings');
-  await page.getByLabel('New cards per day', { exact: true }).fill('0');
+  await setNewPerDay(page, '0');
   await page.getByRole('link', { name: 'Back to decks' }).click();
   await page.getByRole('link', { name: /Scheduled deck/ }).click();
   await expect(page.getByText("You've reached today's limit for new cards.")).toBeVisible();

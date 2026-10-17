@@ -27,7 +27,7 @@ import { Toaster } from './components/shadcn/toast';
 /** Toasts live above the routes, so one can appear on a screen you navigate to (e.g. after saving an edit). */
 function Toasts({ children }: { children: React.ReactNode }) {
   // Announced politely to screen readers (a live region), never takes focus, stays 5 seconds, pauses while hovered or
-  // focused, and can be swiped away. Nothing in it needs an answer, so there is no button to press.
+  // focused, and can be swiped away. Some (a deletion or a move) offer an Undo.
   return <Toaster timeout={5000} limit={1}>{children}</Toaster>;
 }
 
