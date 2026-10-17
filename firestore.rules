@@ -40,18 +40,6 @@ service cloud.firestore {
       return signedIn() && get(/databases/$(database)/documents/publicDecks/$(deckId)).data.ownerId == request.auth.uid;
     }
 
-    // Anyone can report a public deck (for copyright, inappropriate content or anything else). Nobody can read reports
-    // through the app: you read them in the Firebase console and remove the deck if needed.
-    match /reports/{reportId} {
-      allow create: if request.resource.data.keys().hasOnly(['deckId', 'reason', 'details', 'createdAt'])
-        && request.resource.data.keys().hasAll(['deckId', 'reason', 'createdAt'])
-        && isText(request.resource.data.deckId, 1, 100)
-        && request.resource.data.reason in ['copyright', 'inappropriate', 'other']
-        && isTextOrNull(request.resource.data.get('details', null), 500)
-        && request.resource.data.createdAt == request.time;
-      allow read, update, delete: if false;
-    }
-
     match /publicDecks/{deckId} {
       allow get, list: if true;
 

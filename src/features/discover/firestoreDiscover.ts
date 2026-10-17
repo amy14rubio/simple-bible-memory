@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, getDoc, getDocs, limit, orderBy, query, serverTimestamp, startAfter, where, type DocumentData, type DocumentSnapshot, type Firestore, type QueryConstraint } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, limit, orderBy, query, startAfter, where, type DocumentData, type DocumentSnapshot, type Firestore, type QueryConstraint } from 'firebase/firestore';
 import { PAGE_SIZE, type DiscoverBackend, type PublicDeck } from './types';
 
 /**
@@ -43,10 +43,6 @@ export function createFirestoreDiscover(db: Firestore): DiscoverBackend {
     async getCards(id) {
       const snap = await getDocs(query(collection(db, 'publicDecks', id, 'cards'), orderBy('position')));
       return snap.docs.map((d) => ({ id: d.id, reference: d.data().reference, verseText: d.data().verseText, position: d.data().position }));
-    },
-
-    async report(deckId, reason, details) {
-      await addDoc(collection(db, 'reports'), { deckId, reason, details: details.trim().slice(0, 500), createdAt: serverTimestamp() });
     },
   };
 }

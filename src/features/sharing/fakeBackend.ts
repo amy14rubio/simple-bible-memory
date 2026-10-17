@@ -10,7 +10,6 @@ const KEY = 'sbm-fake-cloud';
 interface State {
   user: AuthUser | null;
   decks: Record<string, { ownerId?: string; createdAt?: number; meta: CloudDeckMeta; cards: Record<string, CloudCard> }>;
-  reports?: { deckId: string; reason: string; details: string }[];
   offline: boolean;
 }
 
@@ -73,12 +72,6 @@ export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; 
       const s = load();
       if (s.offline) throw new Error('offline');
       return Object.values(s.decks[id]?.cards ?? {}).sort((a, b) => a.position - b.position).map((c) => ({ id: c.id, reference: c.reference, verseText: c.verseText, position: c.position }));
-    },
-    async report(deckId, reason, details) {
-      const s = load();
-      if (s.offline) throw new Error('offline');
-      s.reports = [...(s.reports ?? []), { deckId, reason, details }];
-      save(s);
     },
   };
   return { auth, cloud, discover };

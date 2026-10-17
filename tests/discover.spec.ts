@@ -68,18 +68,12 @@ test('browse newest first, search, filter, then import a public deck', async ({ 
   await expect(page.getByRole('button', { name: 'Import again' })).toBeVisible();
 });
 
-test('report a public deck without signing in', async ({ page }) => {
+test('a deck page has a contact link instead of a report button', async ({ page }) => {
   await seed(page, seeded);
   await openDiscover(page);
   await page.locator('a[href*="/discover/"]').first().click();
-  await page.getByRole('button', { name: 'Report', exact: true }).click();
-  const dialog = page.getByRole('dialog', { name: 'Report this deck' });
-  await dialog.getByRole('radio', { name: 'Inappropriate content' }).check();
-  await dialog.getByLabel('Details').fill('Not suitable.');
-  await dialog.getByRole('button', { name: 'Send report' }).click();
-  await expect(page.getByText("Thanks, we'll take a look.")).toBeVisible();
-  const reports = await page.evaluate(() => (window as unknown as { __fakeCloud: () => { reports: { reason: string; details: string }[] } }).__fakeCloud().reports);
-  expect(reports).toEqual([expect.objectContaining({ reason: 'inappropriate', details: 'Not suitable.' })]);
+  await expect(page.getByRole('link', { name: 'Contact us about this deck' })).toHaveAttribute('href', /^mailto:amyruth\.rubio@gmail\.com\?subject=Alpha/);
+  await expect(page.getByRole('button', { name: 'Report' })).toHaveCount(0);
 });
 
 test('empty and offline states, and Load more', async ({ page }) => {

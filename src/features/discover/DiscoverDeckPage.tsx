@@ -7,11 +7,11 @@ import { useRepositories } from '../../app/repositories';
 import { loadBackends } from '../sharing/backend';
 import { useI18n } from '../../i18n/I18nProvider';
 import { deckSummary } from './names';
-import { ReportDrawer } from './ReportDrawer';
+import { CONTACT_EMAIL } from './contact';
 
 const PREVIEW = 5;
 
-/** One public deck: what it is, a taste of its cards, and Import (a copy that is yours alone) or Report. */
+/** One public deck: what it is, a taste of its cards, and Import (a copy that is yours alone) or a way to contact us. */
 export function DiscoverDeckPage() {
   const { t, describeError } = useI18n();
   const { id = '' } = useParams();
@@ -19,7 +19,6 @@ export function DiscoverDeckPage() {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
-  const [reporting, setReporting] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
   const { data, loading, error: loadError } = useAsync(async () => {
@@ -82,10 +81,11 @@ export function DiscoverDeckPage() {
         {error && <ErrorMessage error={error} />}
         <div className="space-y-2">
           <Button className="w-full" disabled={busy || cards.length === 0} onClick={() => void importDeck()}>{have ? t('discover.importAgain') : t('discover.import')}</Button>
-          <Button variant="danger" className="w-full" onClick={() => setReporting(true)}>{t('discover.report')}</Button>
+          <p className="pt-2 text-center text-sm">
+            <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`${deck.title} (${deck.id})`)}`} className="text-muted underline underline-offset-4">{t('discover.contact')}</a>
+          </p>
         </div>
       </Page>
-      <ReportDrawer deckId={deck.id} open={reporting} onClose={() => setReporting(false)} />
     </>
   );
 }

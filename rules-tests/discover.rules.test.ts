@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestEnvironment } from '@firebase/rules-unit-testing';
-import { Timestamp, addDoc, collection, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc, deleteDoc, type Firestore } from 'firebase/firestore';
+import { assertFails, initializeTestEnvironment, type RulesTestEnvironment } from '@firebase/rules-unit-testing';
+import { Timestamp, doc, serverTimestamp, setDoc, updateDoc, deleteDoc, type Firestore } from 'firebase/firestore';
 import { createFirestoreDiscover } from '../src/features/discover/firestoreDiscover';
 import { NO_FILTERS, PAGE_SIZE } from '../src/features/discover/types';
 
-/** Browsing the public catalogue and reporting a deck, as a stranger who is not signed in. */
+/** Browsing the public catalogue, as a stranger who is not signed in. */
 let env: RulesTestEnvironment;
 beforeAll(async () => { env = await initializeTestEnvironment({ projectId: 'demo-simple-bible-memory', firestore: { rules: readFileSync('firestore.rules', 'utf8') } }); });
 afterAll(() => env.cleanup());
@@ -88,36 +88,5 @@ describe('browsing', () => {
     await assertFails(updateDoc(doc(db, 'publicDecks', '1'), { title: 'Hijacked', titleLower: 'hijacked', updatedAt: serverTimestamp() }));
     await assertFails(deleteDoc(doc(db, 'publicDecks', '1')));
     await assertFails(setDoc(doc(db, 'publicDecks', '1', 'cards', 'x'), { reference: 'a', verseText: 'b', position: 0 }));
-  });
-});
-
-describe('reporting', () => {
-  it('anyone can report a deck, without signing in', async () => {
-    await expect(discover().report('1', 'copyright', 'This is the NIV')).resolves.toBeUndefined();
-    await expect(discover().report('1', 'inappropriate', '')).resolves.toBeUndefined();
-    await expect(discover().report('1', 'other', 'x'.repeat(900))).resolves.toBeUndefined(); // long notes are cut to the limit before sending
-  });
-
-  it('but nobody can read, change or remove reports', async () => {
-    const db = stranger();
-    await assertSucceeds(addDoc(collection(db, 'reports'), { deckId: '1', reason: 'other', createdAt: serverTimestamp() }));
-    await assertFails(getDocs(collection(db, 'reports')));
-    await env.withSecurityRulesDisabled(async (ctx) => { await setDoc(doc(ctx.firestore(), 'reports', 'r1'), { deckId: '1', reason: 'other', createdAt: Timestamp.now() }); });
-    await assertFails(getDoc(doc(db, 'reports', 'r1')));
-    await assertFails(updateDoc(doc(db, 'reports', 'r1'), { reason: 'copyright' }));
-    await assertFails(deleteDoc(doc(db, 'reports', 'r1')));
-    const alice = env.authenticatedContext('alice').firestore();
-    await assertFails(getDoc(doc(alice, 'reports', 'r1'))); // not even signed-in people
-  });
-
-  it('a report must be well-formed', async () => {
-    const db = stranger();
-    const base = { deckId: '1', reason: 'copyright', details: 'x', createdAt: serverTimestamp() };
-    await assertSucceeds(addDoc(collection(db, 'reports'), base));
-    for (const bad of [{ reason: 'spam' }, { reason: '' }, { deckId: '' }, { deckId: 5 }, { details: 'x'.repeat(501) }, { details: 5 }, { createdAt: Timestamp.fromMillis(5) }, { extra: 'nope' }, { email: 'a@b.c' }]) {
-      await assertFails(addDoc(collection(db, 'reports'), { ...base, ...bad }));
-    }
-    const { createdAt: _c, ...noDate } = base;
-    await assertFails(addDoc(collection(db, 'reports'), noDate));
   });
 });
