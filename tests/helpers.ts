@@ -45,7 +45,7 @@ export const openDeck = (page: Page, deckId: string) => page.goto(`/#/decks/${de
 
 /** Chooses which study cards each verse gets (Settings > Cards for each verse). */
 export async function setCardKinds(page: Page, kinds: 'Both' | 'Recall the passage' | 'Identify the verse') {
-  await page.goto('/#/settings');
+  await page.goto('/#/settings/card-kinds');
   const radio = page.getByRole('radio', { name: new RegExp(`^${kinds}`) });
   // The page loads the saved choice after it appears, which can undo a click made too early: retry until it sticks.
   await expect(async () => {
@@ -57,13 +57,13 @@ export async function setCardKinds(page: Page, kinds: 'Both' | 'Recall the passa
 
 /** The fill-in-the-blanks difficulty lives only in Settings. */
 export async function setBlankDifficulty(page: Page, level: 'Easy' | 'Medium' | 'Hard') {
-  await page.goto('/#/settings');
-  const button = page.getByRole('group', { name: 'Blanks difficulty' }).getByRole('button', { name: level, exact: true });
+  await page.goto('/#/settings/blanks');
+  const radio = page.getByRole('radio', { name: level, exact: true });
   // The page loads the saved choice after it appears, which can undo a click made too early: retry until it sticks.
   await expect(async () => {
-    await button.click();
+    await radio.check();
     await page.waitForTimeout(150);
-    await expect(button).toHaveAttribute('aria-pressed', 'true', { timeout: 1000 });
+    await expect(radio).toBeChecked({ timeout: 1000 });
   }).toPass({ timeout: 10_000 });
 }
 

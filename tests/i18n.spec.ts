@@ -27,7 +27,7 @@ async function esAddCard(page: Page, deckId: string, reference: string, passage:
   await page.reload();
 }
 async function esSetKinds(page: Page, name: RegExp) {
-  await page.goto('/#/settings');
+  await page.goto('/#/settings/card-kinds');
   // The page loads the saved choice after it appears, which can undo a click made too early: retry until it sticks.
   await expect(async () => {
     await page.getByRole('radio', { name }).check();

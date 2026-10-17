@@ -3,23 +3,46 @@ import { closeWithEscape } from './helpers';
 
 test('settings explanations live behind an "i" with a drawer, not as small print', async ({ page }) => {
   await page.goto('/#/settings');
-  const explanations: [string, string][] = [
-    ['New cards per day', 'Counted across all decks.'],
-    ['Cards for each verse', 'Recall the passage from its verse, and name the verse from its passage.'],
-    ['Fill-in-the-blanks difficulty', 'Sets how many words are hidden in each verse.'],
-  ];
-  for (const [title, text] of explanations) {
-    await expect(page.getByText(text)).toHaveCount(0); // nothing printed on the page
-    await page.getByRole('button', { name: title, exact: true }).click();
-    const drawer = page.getByRole('dialog', { name: title });
-    await expect(drawer).toContainText(text);
-    await closeWithEscape(page);
-    await expect(page.getByRole('dialog')).toHaveCount(0);
-  }
+  await expect(page.getByText('Counted across all decks.')).toHaveCount(0); // nothing printed on the page
+  await page.getByRole('button', { name: 'New cards per day', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'New cards per day' })).toContainText('Counted across all decks.');
+  await closeWithEscape(page);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+
+test('card kinds and blanks difficulty are their own pages, showing the current choice on the Settings row', async ({ page }) => {
+  await page.goto('/#/settings');
+  const kindsRow = page.getByRole('link', { name: /^Cards for each verse/ });
+  const blanksRow = page.getByRole('link', { name: /^Fill-in-the-blanks difficulty/ });
+  await expect(kindsRow).toContainText('Both');
+  await expect(blanksRow).toContainText('Medium');
+  await expect(page.getByRole('radio')).toHaveCount(0); // no options on the Settings page itself
+
+  await kindsRow.click();
+  await expect(page.getByRole('radio')).toHaveCount(3);
+  await page.getByRole('radio', { name: 'Identify the verse' }).check();
+  await page.getByRole('link', { name: 'Back' }).click();
+  await expect(kindsRow).toContainText('Identify the verse'); // remembered
+
+  await blanksRow.click();
+  await expect(page.getByRole('radio')).toHaveCount(3);
+  await expect(page.getByRole('radio', { name: 'Medium' })).toBeChecked();
+  await page.getByRole('radio', { name: 'Hard' }).check();
+  await page.getByRole('link', { name: 'Back' }).click();
+  await expect(blanksRow).toContainText('Hard');
+  await page.reload();
+  await expect(page.getByRole('link', { name: /^Fill-in-the-blanks difficulty/ })).toContainText('Hard');
+});
+
+test('the blanks explanation is behind the "i" in the page title', async ({ page }) => {
+  await page.goto('/#/settings/blanks');
+  await expect(page.getByText('Sets how many words are hidden in each verse.')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Fill-in-the-blanks difficulty', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Fill-in-the-blanks difficulty' })).toContainText('Sets how many words are hidden in each verse.');
 });
 
 test('the card-kinds options show only their names; the drawer explains all three', async ({ page }) => {
-  await page.goto('/#/settings');
+  await page.goto('/#/settings/card-kinds');
   const radios = page.getByRole('radio');
   await expect(radios).toHaveCount(3);
   await expect(page.getByText('You see the verse reference and recall the passage.')).toHaveCount(0);
@@ -31,10 +54,9 @@ test('the card-kinds options show only their names; the drawer explains all thre
   }
 });
 
-test('Notifications and Backup keep their text visible', async ({ page }) => {
+test('Notifications keep their text visible', async ({ page }) => {
   await page.goto('/#/settings');
   await expect(page.getByText("Study reminders aren't available yet.")).toBeVisible();
-  await expect(page.getByText(/You don't need an account/)).toBeVisible();
 });
 
 test('the Language explanation is behind the "i" in the Language page title', async ({ page }) => {

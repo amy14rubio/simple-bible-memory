@@ -17,7 +17,7 @@ test('Settings lets you choose which cards each verse gets, and it changes how m
   await openDeck(page, id);
   await expect(page.getByText('1 card to study today.')).toBeVisible();
 
-  await page.goto('/#/settings');
+  await page.goto('/#/settings/card-kinds');
   await expect(page.getByRole('radio', { name: /^Identify the verse/ })).toBeChecked(); // remembered
 });
 

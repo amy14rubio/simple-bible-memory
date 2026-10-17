@@ -17,6 +17,8 @@ import { SettingsPage } from './features/settings/SettingsPage';
 import { ThemePage } from './features/settings/ThemePage';
 import { LanguagePage } from './features/settings/LanguagePage';
 import { FontPage } from './features/settings/FontPage';
+import { CardKindsPage } from './features/settings/CardKindsPage';
+import { BlanksPage } from './features/settings/BlanksPage';
 import { ImportPage } from './features/exchange/ImportPage';
 import { DiscoverPage } from './features/discover/DiscoverPage';
 import { DiscoverDeckPage } from './features/discover/DiscoverDeckPage';
@@ -72,6 +74,8 @@ export default function App() {
                     <Route path="settings/theme" element={<ThemePage />} />
                     <Route path="settings/language" element={<LanguagePage />} />
                     <Route path="settings/font" element={<FontPage />} />
+                    <Route path="settings/card-kinds" element={<CardKindsPage />} />
+                    <Route path="settings/blanks" element={<BlanksPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Route>
                 </Routes>
