@@ -110,6 +110,22 @@ export function HiddenClose({ label, ...props }: { label: string } & ButtonHTMLA
   return <button type="button" className="sr-only" {...props}>{label}</button>;
 }
 
+/** An on/off switch. Give it the id of the text that labels it. */
+export function Switch({ checked, onChange, labelledBy }: { checked: boolean; onChange: (checked: boolean) => void; labelledBy: string }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-labelledby={labelledBy}
+      onClick={() => onChange(!checked)}
+      className={`relative h-8 w-14 shrink-0 rounded-full border border-border transition-colors ${checked ? 'bg-primary' : 'bg-surface'}`}
+    >
+      <span aria-hidden className={`absolute top-1 size-6 rounded-full transition-all ${checked ? 'left-7 bg-primary-foreground' : 'left-1 bg-muted'}`} />
+    </button>
+  );
+}
+
 export function Page({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`px-5 py-6 ${className}`}>{children}</div>;
 }
@@ -129,11 +145,11 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
 }
 
 /** Label on the left, control on the right, hairline below: the wireframe's form rows. */
-export function FormRow({ label, children }: { label: string; children: (id: string) => ReactNode }) {
+export function FormRow({ label, labelNode, children }: { label: string; /** Replaces the plain label (for example a label with an "i"). The field then needs its own aria-label, since this is not a <label>. */ labelNode?: ReactNode; children: (id: string) => ReactNode }) {
   const id = useId();
   return (
     <div className="flex items-center gap-4 border-b border-border py-1.5">
-      <label htmlFor={id} className="w-24 shrink-0 text-[0.9375rem] font-medium">{label}</label>
+      {labelNode ?? <label htmlFor={id} className="w-24 shrink-0 text-[0.9375rem] font-medium">{label}</label>}
       <div className="min-w-0 flex-1">{children(id)}</div>
     </div>
   );

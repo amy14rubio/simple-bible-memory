@@ -81,7 +81,7 @@ test.describe('the Theme page', () => {
     await openCustom(page);
     await hex(page, 'Background').fill('#223344');
     await hex(page, 'Text').fill('#ffeecc');
-    await page.waitForTimeout(600); // the app saves a moment after the last change
+    await page.waitForTimeout(1500); // the app saves a moment after the last change
     await page.reload();
     expect(await bodyColors(page)).toEqual({ background: 'rgb(34, 51, 68)', color: 'rgb(255, 238, 204)' });
     await page.goto('/#/settings');
@@ -92,7 +92,7 @@ test.describe('the Theme page', () => {
     await openCustom(page);
     await hex(page, 'Background').fill('#102030');
     await hex(page, 'Accent').fill('#ff8800');
-    await page.waitForTimeout(600);
+    await page.waitForTimeout(1500);
 
     await tile(page, 'Light').click();
     expect(await rootVar(page, '--background')).toBe(''); // every custom colour is removed

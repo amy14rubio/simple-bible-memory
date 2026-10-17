@@ -68,11 +68,9 @@ export function ThemeProvider({ settings, children }: { settings: SettingsReposi
       setCustomState(c);
       setPref('custom');
       remember('custom', c);
+      void settings.set('theme', 'custom'); // the choice itself is saved at once; only the colour values wait for you to stop dragging
       clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(() => {
-        void settings.set('custom_theme', c);
-        void settings.set('theme', 'custom');
-      }, 250);
+      saveTimer.current = setTimeout(() => void settings.set('custom_theme', c), 250);
     },
     [settings],
   );

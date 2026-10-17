@@ -54,7 +54,7 @@ test.describe('adding cards: save, toast, and a cleared form', () => {
     const id = await createDeck(page, 'Many');
     await page.goto(`/#/cards/new?deck=${id}`);
     await reference(page).fill('John 3:16');
-    await page.getByLabel('Source').fill('Example translation');
+    await page.getByLabel('Note', { exact: true }).fill('Example translation');
     await passage(page).fill('First example passage.');
     await page.getByRole('button', { name: 'Save' }).click(); // the check mark in the header
 
@@ -62,7 +62,7 @@ test.describe('adding cards: save, toast, and a cleared form', () => {
     await expect(page).toHaveURL(new RegExp(`#/cards/new\\?deck=${id}$`)); // still the same form
     await expect(reference(page)).toHaveValue('');
     await expect(passage(page)).toHaveValue('');
-    await expect(page.getByLabel('Source')).toHaveValue('Example translation');
+    await expect(page.getByLabel('Note', { exact: true })).toHaveValue('Example translation');
     await expect(reference(page)).toBeFocused();
     await expect(page.getByRole('button', { name: 'Add another card' })).toHaveCount(0); // the old button is gone
 
@@ -150,7 +150,7 @@ test.describe('split into separate verses', () => {
     const id = await createDeck(page, 'Split');
     await page.goto(`/#/cards/new?deck=${id}`);
     await reference(page).fill('Psalm 130');
-    await page.getByLabel('Source').fill('Example translation');
+    await page.getByLabel('Note', { exact: true }).fill('Example translation');
     await passage(page).fill(EIGHT);
     await splitButton(page).click();
 
@@ -166,7 +166,7 @@ test.describe('split into separate verses', () => {
     await expect(page.getByText('8 verses added')).toBeVisible();
     await expect(reference(page)).toHaveValue('');
     await expect(passage(page)).toHaveValue('');
-    await expect(page.getByLabel('Source')).toHaveValue('Example translation');
+    await expect(page.getByLabel('Note', { exact: true })).toHaveValue('Example translation');
     await page.goto(`/#/decks/${id}/cards`);
     await expect(page.getByRole('row')).toHaveCount(9); // header + 8
     await expect(page.getByRole('link', { name: 'Psalm 130:1', exact: true })).toBeVisible();
@@ -175,7 +175,7 @@ test.describe('split into separate verses', () => {
     await page.getByText('Example three third.').click();
     await expect(reference(page)).toHaveValue('Psalm 130:3');
     await expect(passage(page)).toHaveValue('Example three third.');
-    await expect(page.getByLabel('Source')).toHaveValue('Example translation');
+    await expect(page.getByLabel('Note', { exact: true })).toHaveValue('Example translation');
   });
 
   test('a verse range (Psalm 130:1-2) becomes 2 cards: 4 study cards', async ({ page }) => {
@@ -323,7 +323,7 @@ test('the Deck row in the card form opens the same popup as the other deck picke
   await createDeck(page, 'Beta');
   await page.goto(`/#/cards/new?deck=${a}`);
   await expect(page.locator('select')).toHaveCount(0); // no system dropdown
-  await expect(page.getByLabel('Source')).toHaveAttribute('placeholder', 'Optional');
+  await expect(page.getByLabel('Note', { exact: true })).toHaveAttribute('placeholder', 'Optional');
 
   const row = page.getByRole('button', { name: 'Deck: Alpha' });
   await expect(row).toBeVisible();

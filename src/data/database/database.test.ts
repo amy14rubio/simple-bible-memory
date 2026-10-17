@@ -53,7 +53,7 @@ describe('migration 0002 (card kinds)', () => {
     await db.run("INSERT INTO card_schedule VALUES ('c', 123, 4.5, 6.7, 2, 3, 1, 0, 9, 100, 'old-engine')");
     await db.run("INSERT INTO review_logs VALUES ('l', 'c', 100, 3, 'type', 1, 50, 4.5, 6.7, 9, 2)");
 
-    expect(await migrate(db)).toBe(2);
+    expect(await migrate(db)).toBe(MIGRATIONS.at(-1)!.version); // runs migration 0002 (and any after it) on top of version 1
 
     expect(await db.query('SELECT * FROM card_schedule')).toEqual([
       { card_id: 'c', kind: 'recall', due: 123, stability: 4.5, difficulty: 6.7, state: 2, reps: 3, lapses: 1, learning_steps: 0, scheduled_days: 9, last_review: 100, scheduler_version: 'old-engine' },

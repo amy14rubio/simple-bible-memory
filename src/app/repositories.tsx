@@ -5,6 +5,9 @@ import { createCardRepository, type CardRepository } from '../data/repositories/
 import { createSettingsRepository, type SettingsRepository } from '../data/repositories/settingsRepository';
 import { createReviewRepository, type ReviewRepository } from '../data/repositories/reviewRepository';
 import { createStatsRepository, type StatsRepository } from '../data/repositories/statsRepository';
+import { createExchangeRepository, type ExchangeRepository } from '../data/repositories/exchangeRepository';
+import { createSharingRepository, type SharingRepository } from '../data/repositories/sharingRepository';
+import { watchWrites } from '../data/writeEvents';
 import { createScheduler, type Scheduler } from '../domain/scheduling/scheduler';
 
 export interface Repositories {
@@ -13,6 +16,9 @@ export interface Repositories {
   settings: SettingsRepository;
   reviews: ReviewRepository;
   stats: StatsRepository;
+  exchange: ExchangeRepository;
+  /** The local record of what is published. It uses the plain database, so its own bookkeeping is not announced as a change. */
+  sharing: SharingRepository;
   scheduler: Scheduler;
 }
 const Ctx = createContext<Repositories | null>(null);
@@ -21,12 +27,15 @@ export function RepositoriesProvider({ db, children }: { db: Database; children:
   const repos = useMemo<Repositories>(
     () => {
       const scheduler = createScheduler();
+      const watched = watchWrites(db); // anything saved through this is announced, which is how published decks notice edits
       return {
-        decks: createDeckRepository(db),
-        cards: createCardRepository(db),
-        settings: createSettingsRepository(db),
-        reviews: createReviewRepository(db, scheduler),
-        stats: createStatsRepository(db),
+        decks: createDeckRepository(watched),
+        cards: createCardRepository(watched),
+        settings: createSettingsRepository(watched),
+        reviews: createReviewRepository(watched, scheduler),
+        stats: createStatsRepository(watched),
+        exchange: createExchangeRepository(watched),
+        sharing: createSharingRepository(db),
         scheduler,
       };
     },

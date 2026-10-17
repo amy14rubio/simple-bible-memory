@@ -137,7 +137,7 @@ test.describe('verses are not translated', () => {
     const id = await createDeck(page, 'My verses');
     await page.goto(`/#/cards/new?deck=${id}`);
     await page.getByLabel('Verse(s)').fill('John 3:16');
-    await page.getByLabel('Source').fill('Example translation');
+    await page.getByLabel('Note', { exact: true }).fill('Example translation');
     await page.getByLabel('Passage', { exact: true }).fill('Example passage text, typed exactly like this.');
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByText('John 3:16 added')).toBeVisible();
@@ -153,7 +153,7 @@ test.describe('verses are not translated', () => {
     await expect(page.getByText('Example passage text, typed exactly like this.')).toBeVisible(); // the passage: untouched
     await page.getByText('Example passage text, typed exactly like this.').click();
     await expect(page.getByLabel('Versículo(s)')).toHaveValue('John 3:16');
-    await expect(page.getByLabel('Fuente')).toHaveValue('Example translation');
+    await expect(page.getByLabel('Nota', { exact: true })).toHaveValue('Example translation');
     await expect(page.getByLabel('Pasaje', { exact: true })).toHaveValue('Example passage text, typed exactly like this.');
   });
 

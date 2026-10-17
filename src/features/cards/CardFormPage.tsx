@@ -6,6 +6,7 @@ import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, Button, ButtonLink, ConfirmDialog, EmptyState, ErrorMessage, FormRow, GrowingTextarea, IconButton, Page, rowInput } from '../../components/ui';
 import type { Card, DeckSummary } from '../../domain/types';
 import { DeckPicker } from '../../components/DeckPicker';
+import { InfoLabel } from '../../components/InfoDrawer';
 import { toast } from '../../components/shadcn/toast';
 import { canSplit, splitPassage, type SplitResult } from '../../domain/bible/split';
 import { loadCardKinds } from '../study/cardKinds';
@@ -114,7 +115,12 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
             </FormRow>
           )}
           <FormRow label={t('cardForm.verses')}>{(fid) => <input id={fid} ref={referenceInput} className={rowInput} value={reference} onChange={(e) => setReference(e.target.value)} placeholder={t('cardForm.versesPlaceholder')} autoFocus={!card} />}</FormRow>
-          <FormRow label={t('cardForm.source')}>{(fid) => <input id={fid} className={rowInput} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('common.optional')} />}</FormRow>
+          <FormRow
+            label={t('cardForm.note')}
+            labelNode={<InfoLabel title={t('cardForm.note')} info={t('cardForm.noteInfo')} className="w-24 shrink-0 text-[0.9375rem] font-medium" />}
+          >
+            {(fid) => <input id={fid} aria-label={t('cardForm.note')} className={rowInput} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('common.optional')} />}
+          </FormRow>
         </div>
 
         <div className="space-y-2">
