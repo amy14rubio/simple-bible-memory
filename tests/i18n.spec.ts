@@ -205,7 +205,6 @@ test.describe('the app in Spanish', () => {
 
     await page.goto('/');
     await page.getByRole('button', { name: 'Acciones de Versículos del camino' }).click();
-    await expect(page.getByRole('link', { name: 'Añadir tarjeta' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Ver tarjetas' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Práctica extra', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Renombrar baraja' })).toBeVisible();

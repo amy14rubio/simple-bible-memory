@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Ellipsis, Search, Settings } from 'lucide-react';
+import { EllipsisVertical, Search, Settings } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { AppBar, ButtonLink, EmptyState, ErrorMessage, IconButton, IconLink, SearchBar } from '../../components/ui';
@@ -56,7 +56,7 @@ export function DecksPage() {
                 <span className="sr-only"> {t('decks.dueSuffix')}</span>{/* the screen shows just the number; screen readers also hear what it counts */}
               </span>
             </Link>
-            <IconButton label={t('decks.actionsFor', { title: d.title })} onClick={() => setMenuFor(d)}><Ellipsis size={20} aria-hidden /></IconButton>
+            <IconButton label={t('decks.actionsFor', { title: d.title })} onClick={() => setMenuFor(d)}><EllipsisVertical size={20} aria-hidden /></IconButton>
           </li>
         ))}
       </ul>

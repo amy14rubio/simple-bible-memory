@@ -126,6 +126,10 @@ test.describe('import a deck file', () => {
     await expect(contents).toContainText('My Psalms');
     await expect(contents).toContainText('2 cards');
     await expect(page.getByRole('switch', { name: 'Import my progress too' })).toHaveCount(0); // the file has none
+    // Import comes first; "Choose a different file" sits below it
+    const importY = (await page.getByRole('button', { name: 'Import', exact: true }).boundingBox())!.y;
+    const otherY = (await page.getByText('Choose a different file').boundingBox())!.y;
+    expect(importY).toBeLessThan(otherY);
     await page.getByRole('button', { name: 'Import', exact: true }).click();
     await expect(page.getByText('Imported 1 deck')).toBeVisible();
     await expect(page).toHaveURL(/#\/decks\/[0-9a-f-]{36}$/);

@@ -29,6 +29,7 @@ test('browse newest first, search, filter, then import a public deck', async ({ 
   await openDiscover(page);
 
   const links = page.locator('a[href*="/discover/"]');
+  await expect(page.getByRole('heading', { name: 'Newest' })).toHaveClass(/sr-only/); // no visible label, only for screen readers
   await expect(links.first()).toContainText('Alpha');
   await expect(links).toHaveCount(3);
 

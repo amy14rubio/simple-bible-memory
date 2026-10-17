@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Ellipsis, Keyboard, Layers, Mic, TextCursorInput, type LucideIcon } from 'lucide-react';
+import { EllipsisVertical, Keyboard, Layers, Mic, TextCursorInput, type LucideIcon } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, IconButton, Page } from '../../components/ui';
@@ -46,7 +46,7 @@ export function DeckHomePage() {
       <AppBar
         title={deck.title}
         back={<BackButton to="/" label={t('common.backToDecks')} />}
-        actions={<IconButton label={t('deckHome.actions')} onClick={() => setMenuOpen(true)}><Ellipsis size={20} aria-hidden /></IconButton>}
+        actions={<IconButton label={t('deckHome.actions')} onClick={() => setMenuOpen(true)}><EllipsisVertical size={20} aria-hidden /></IconButton>}
       />
       {stats.total === 0 ? (
         <EmptyState title={t('deckHome.emptyTitle')} action={<ButtonLink to={`/cards/new?deck=${id}`}>{t('common.newCard')}</ButtonLink>}>
