@@ -1,7 +1,8 @@
 rules_version = '2';
 
 // Public decks: anyone can read them, only the signed-in person who published a deck can change or remove it.
-// Everything else is closed. Private decks and study progress never reach Firestore: they stay on the phone.
+// A person's own backup (users/{uid}/items) is readable and writable by that person only.
+// Everything else is closed.
 //
 // The list of allowed translations below must match src/domain/sharing/translations.ts (a test checks this).
 service cloud.firestore {
@@ -52,6 +53,75 @@ service cloud.firestore {
         && isTextOrNull(request.resource.data.get('details', null), 500)
         && request.resource.data.createdAt == request.time;
       allow read, update, delete: if false;
+    }
+
+    // ---- A person's own backup: decks, cards, study schedules and a few settings, private to them. ----
+    // One document per thing, named "deck~ID", "card~ID", "schedule~CARDID~KIND" or "setting~KEY". A newer version can
+    // always replace an older one but never the other way round, so two devices that disagree end up with the latest edit.
+    // A deleted thing is kept as a small "deleted" stub so other devices learn about it.
+    function itemKind(itemId) { return itemId.split('~')[0]; }
+    function nonNegInt(v) { return v is int && v >= 0; }
+    function tombstone(d, itemId) {
+      return d.keys().hasOnly(['entity', 'deleted', 'updatedAt', 'syncedAt'])
+        && d.keys().hasAll(['entity', 'deleted', 'updatedAt', 'syncedAt'])
+        && d.deleted == true
+        && d.entity == itemKind(itemId)
+        && itemKind(itemId) in ['deck', 'card', 'schedule']; // settings are never deleted
+    }
+    function liveDeck(d) {
+      return d.keys().hasOnly(['entity', 'deleted', 'title', 'description', 'translation', 'language', 'publishId', 'importedFrom', 'createdAt', 'updatedAt', 'syncedAt'])
+        && d.keys().hasAll(['entity', 'deleted', 'title', 'description', 'translation', 'language', 'publishId', 'importedFrom', 'createdAt', 'updatedAt', 'syncedAt'])
+        && isText(d.title, 1, 200)
+        && isTextOrNull(d.description, 2000)
+        && isTextOrNull(d.translation, 40) && isTextOrNull(d.language, 40) && isTextOrNull(d.publishId, 100) && isTextOrNull(d.importedFrom, 100)
+        && nonNegInt(d.createdAt);
+    }
+    function liveCard(d) {
+      return d.keys().hasOnly(['entity', 'deleted', 'reference', 'verseText', 'note', 'createdAt', 'updatedAt', 'decks', 'syncedAt'])
+        && d.keys().hasAll(['entity', 'deleted', 'reference', 'verseText', 'note', 'createdAt', 'updatedAt', 'decks', 'syncedAt'])
+        && isText(d.reference, 1, 200)
+        && isText(d.verseText, 1, 20000)
+        && isTextOrNull(d.note, 2000)
+        && nonNegInt(d.createdAt)
+        && d.decks is list && d.decks.size() >= 1 && d.decks.size() <= 50;
+    }
+    function liveSchedule(d, itemId) {
+      return d.keys().hasOnly(['entity', 'deleted', 'cardId', 'kind', 'due', 'stability', 'difficulty', 'state', 'reps', 'lapses', 'learningSteps', 'scheduledDays', 'lastReview', 'version', 'updatedAt', 'syncedAt'])
+        && d.keys().hasAll(['entity', 'deleted', 'cardId', 'kind', 'due', 'stability', 'difficulty', 'state', 'reps', 'lapses', 'learningSteps', 'scheduledDays', 'lastReview', 'version', 'updatedAt', 'syncedAt'])
+        && isText(d.cardId, 1, 100)
+        && d.kind in ['recall', 'identify']
+        && itemId == 'schedule~' + d.cardId + '~' + d.kind
+        && d.due is number && d.stability is number && d.difficulty is number
+        && d.state in [0, 1, 2, 3]
+        && nonNegInt(d.reps) && nonNegInt(d.lapses) && nonNegInt(d.learningSteps) && nonNegInt(d.scheduledDays)
+        && (d.lastReview == null || d.lastReview is number)
+        && isText(d.version, 1, 100);
+    }
+    function liveSetting(d, itemId) {
+      return d.keys().hasOnly(['entity', 'deleted', 'key', 'value', 'updatedAt', 'syncedAt'])
+        && d.keys().hasAll(['entity', 'deleted', 'key', 'value', 'updatedAt', 'syncedAt'])
+        && itemId == 'setting~' + d.key
+        && d.key in ['new_cards_per_day', 'card_kinds', 'blank_difficulty']
+        && ((d.value is string && d.value.size() <= 40) || d.value is number);
+    }
+    function validItem(d, itemId) {
+      return d.entity in ['deck', 'card', 'schedule', 'setting']
+        && d.entity == itemKind(itemId)
+        && d.updatedAt is int && d.updatedAt >= 0
+        && d.syncedAt == request.time
+        && d.deleted is bool
+        && (d.deleted == true ? tombstone(d, itemId) : (
+             (d.entity == 'deck' && liveDeck(d))
+          || (d.entity == 'card' && liveCard(d))
+          || (d.entity == 'schedule' && liveSchedule(d, itemId))
+          || (d.entity == 'setting' && liveSetting(d, itemId))));
+    }
+    match /users/{uid}/items/{itemId} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create: if signedIn() && request.auth.uid == uid && validItem(request.resource.data, itemId);
+      allow update: if signedIn() && request.auth.uid == uid && validItem(request.resource.data, itemId)
+        && request.resource.data.updatedAt >= resource.data.updatedAt;
+      allow delete: if signedIn() && request.auth.uid == uid; // used when the person deletes their account
     }
 
     match /publicDecks/{deckId} {

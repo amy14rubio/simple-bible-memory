@@ -7,6 +7,7 @@ import { createReviewRepository, type ReviewRepository } from '../data/repositor
 import { createStatsRepository, type StatsRepository } from '../data/repositories/statsRepository';
 import { createExchangeRepository, type ExchangeRepository } from '../data/repositories/exchangeRepository';
 import { createSharingRepository, type SharingRepository } from '../data/repositories/sharingRepository';
+import { createAccountRepository, type AccountRepository } from '../data/repositories/accountRepository';
 import { watchWrites } from '../data/writeEvents';
 import { createScheduler, type Scheduler } from '../domain/scheduling/scheduler';
 
@@ -19,6 +20,8 @@ export interface Repositories {
   exchange: ExchangeRepository;
   /** The local record of what is published. It uses the plain database, so its own bookkeeping is not announced as a change. */
   sharing: SharingRepository;
+  /** The local half of keeping the signed-in person's account in step. Also the plain database: the sync announces its own changes. */
+  account: AccountRepository;
   scheduler: Scheduler;
 }
 const Ctx = createContext<Repositories | null>(null);
@@ -36,6 +39,7 @@ export function RepositoriesProvider({ db, children }: { db: Database; children:
         stats: createStatsRepository(watched),
         exchange: createExchangeRepository(watched),
         sharing: createSharingRepository(db),
+        account: createAccountRepository(db),
         scheduler,
       };
     },

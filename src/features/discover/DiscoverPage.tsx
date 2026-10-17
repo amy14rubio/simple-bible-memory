@@ -72,7 +72,7 @@ export function DiscoverPage() {
         <EmptyState title={t('discover.unavailable')}>{null}</EmptyState>
       ) : (
         <Page className="space-y-4 pt-4">
-          <h2 className="font-serif text-xl">{heading}</h2>
+          <h2 className="sr-only">{heading}</h2>
           {state === 'loading' && <p role="status" className="text-muted">{t('discover.loading')}</p>}
           {state === 'error' && (
             <div className="space-y-3">

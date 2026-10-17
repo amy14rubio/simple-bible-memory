@@ -6,7 +6,7 @@ import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, ButtonLink, ConfirmDialog, EmptyState, ErrorMessage, IconButton, IconLink, Page, SearchBar } from '../../components/ui';
 import { DeckPicker } from '../../components/DeckPicker';
 import { useI18n } from '../../i18n/I18nProvider';
-import { onDatabaseWrite } from '../../data/writeEvents';
+import { useRefreshOnWrites } from '../../app/useRefreshOnWrites';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { deleteCardsWithUndo } from '../cards/undoDelete';
 import { moveCardsWithUndo } from '../cards/undoMove';
@@ -36,10 +36,10 @@ export function CardBrowsePage() {
   const press = useRef<{ timer: number; x: number; y: number } | null>(null);
   const justSelected = useRef(false); // a long press ends with a click, which must not also toggle the card
   const isAll = id === ALL_DECKS;
-  const { data, loading, reload } = useAsync(async () => ({ all: await decks.list(), list: isAll ? await cards.listAll() : await cards.listByDeck(id) }), [id, isAll, decks, cards]);
+  const { data, loading, refresh } = useAsync(async () => ({ all: await decks.list(), list: isAll ? await cards.listAll() : await cards.listByDeck(id) }), [id, isAll, decks, cards]);
 
   // Anything saved elsewhere (for example Undo on a toast) refreshes the list.
-  useEffect(() => onDatabaseWrite(reload), [reload]);
+  useRefreshOnWrites(refresh);
   // Leaving this deck, or cards disappearing, ends the selection of what is gone.
   useEffect(() => { setSelecting(false); setSelected(new Set()); }, [id]);
   useEffect(() => {

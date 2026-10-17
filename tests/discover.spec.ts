@@ -29,6 +29,7 @@ test('browse newest first, search, filter, then import a public deck', async ({ 
   await openDiscover(page);
 
   const links = page.locator('a[href*="/discover/"]');
+  await expect(page.getByRole('heading', { name: 'Newest' })).toHaveClass(/sr-only/); // no visible label, only for screen readers
   await expect(links.first()).toContainText('Alpha');
   await expect(links).toHaveCount(3);
 
@@ -134,4 +135,12 @@ test('a deck you hid after a report is no longer listed', async ({ page }) => {
 test('Settings has the one place to contact us', async ({ page }) => {
   await page.goto('/#/settings');
   await expect(page.getByRole('link', { name: 'amyruth.rubio@gmail.com' })).toHaveAttribute('href', /^mailto:amyruth\.rubio@gmail\.com/);
+
+  // the explanation sits behind the "i" next to the heading, not on the page
+  await expect(page.getByText('Questions, or a copyright concern')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Contact', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Contact' })).toContainText('Questions, or a copyright concern');
+  await closeWithEscape(page);
+  await page.getByRole('button', { name: 'Account and backup' }).click();
+  await expect(page.getByRole('dialog', { name: 'Account and backup' })).toContainText("You don't need an account");
 });

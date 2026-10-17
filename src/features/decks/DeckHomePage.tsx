@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Ellipsis, Keyboard, Layers, Mic, TextCursorInput, type LucideIcon } from 'lucide-react';
+import { EllipsisVertical, Keyboard, Layers, Mic, TextCursorInput, type LucideIcon } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
+import { useRefreshOnWrites } from '../../app/useRefreshOnWrites';
 import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, IconButton, Page } from '../../components/ui';
 import { useI18n } from '../../i18n/I18nProvider';
 import type { MessageKey } from '../../i18n';
@@ -26,7 +27,7 @@ export function DeckHomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const extraPractice = useSearchParams()[0].get('practice') === '1';
-  const { data, loading } = useAsync(async () => {
+  const { data, loading, refresh } = useAsync(async () => {
     const newPerDay = await loadNewPerDay(settings);
     const kinds = await loadCardKinds(settings);
     return {
@@ -36,6 +37,7 @@ export function DeckHomePage() {
       nextDue: await reviews.nextDue(id, kinds),
     };
   }, [id, decks, reviews, settings]);
+  useRefreshOnWrites(refresh);
 
   if (loading) return null;
   if (!data?.deck) return <><AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;
@@ -46,7 +48,7 @@ export function DeckHomePage() {
       <AppBar
         title={deck.title}
         back={<BackButton to="/" label={t('common.backToDecks')} />}
-        actions={<IconButton label={t('deckHome.actions')} onClick={() => setMenuOpen(true)}><Ellipsis size={20} aria-hidden /></IconButton>}
+        actions={<IconButton label={t('deckHome.actions')} onClick={() => setMenuOpen(true)}><EllipsisVertical size={20} aria-hidden /></IconButton>}
       />
       {stats.total === 0 ? (
         <EmptyState title={t('deckHome.emptyTitle')} action={<ButtonLink to={`/cards/new?deck=${id}`}>{t('common.newCard')}</ButtonLink>}>

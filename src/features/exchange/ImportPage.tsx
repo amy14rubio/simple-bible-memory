@@ -119,6 +119,15 @@ export function ImportPage() {
     </FormRow>
   );
 
+  // Before a file is chosen this is the one thing to press. Afterwards Import comes first and this moves below it.
+  const chooser = (
+    <label className="flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border text-[0.9375rem] font-medium hover:bg-surface has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring">
+      <FileUp size={20} aria-hidden />
+      {loaded ? t('import.chooseAnother') : t('import.choose')}
+      <input type="file" accept=".json,.txt,.tsv,.csv,application/json,text/plain,text/csv,text/tab-separated-values" onChange={(e) => void choose(e)} className="sr-only" />
+    </label>
+  );
+
   return (
     <>
       <AppBar
@@ -126,11 +135,7 @@ export function ImportPage() {
         back={<BackButton to="/" label={t('common.back')} />}
       />
       <Page className="space-y-6 pt-2">
-        <label className="flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border text-[0.9375rem] font-medium hover:bg-surface has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring">
-          <FileUp size={20} aria-hidden />
-          {loaded ? t('import.chooseAnother') : t('import.choose')}
-          <input type="file" accept=".json,.txt,.tsv,.csv,application/json,text/plain,text/csv,text/tab-separated-values" onChange={(e) => void choose(e)} className="sr-only" />
-        </label>
+        {!loaded && chooser}
 
         {errorKey && <ErrorMessage error={t(errorKey)} />}
 
@@ -188,6 +193,7 @@ export function ImportPage() {
 
         {error && <ErrorMessage error={error} />}
         {loaded && <Button className="w-full" disabled={busy || !canImport} onClick={() => void run()}>{t('import.button')}</Button>}
+        {loaded && chooser}
       </Page>
     </>
   );

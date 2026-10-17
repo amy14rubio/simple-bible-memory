@@ -27,7 +27,7 @@ async function esAddCard(page: Page, deckId: string, reference: string, passage:
   await page.reload();
 }
 async function esSetKinds(page: Page, name: RegExp) {
-  await page.goto('/#/settings');
+  await page.goto('/#/settings/card-kinds');
   // The page loads the saved choice after it appears, which can undo a click made too early: retry until it sticks.
   await expect(async () => {
     await page.getByRole('radio', { name }).check();
@@ -205,7 +205,6 @@ test.describe('the app in Spanish', () => {
 
     await page.goto('/');
     await page.getByRole('button', { name: 'Acciones de Versículos del camino' }).click();
-    await expect(page.getByRole('link', { name: 'Añadir tarjeta' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Ver tarjetas' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Práctica extra', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Renombrar baraja' })).toBeVisible();

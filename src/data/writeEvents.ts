@@ -4,6 +4,9 @@ import type { Database } from './database/Database';
 const listeners = new Set<() => void>();
 export const onDatabaseWrite = (callback: () => void) => { listeners.add(callback); return () => { listeners.delete(callback); }; };
 
+/** Says that the database changed (for changes made by something that does not go through the repositories, like account sync). */
+export const announceDatabaseWrite = () => listeners.forEach((l) => l());
+
 /** The same database, but every write (a statement that changes data, or a finished transaction) is announced. */
 export function watchWrites(db: Database): Database {
   const announce = () => listeners.forEach((l) => l());

@@ -6,7 +6,7 @@ import { useTheme } from '../../app/theme';
 import { useFont } from '../../app/fonts';
 import { useSharing } from '../../app/sharing';
 import { ExportDrawer, type ExportTarget } from '../exchange/ExportDrawer';
-import { AppBar, BackButton, ConfirmDialog, Page, Segmented } from '../../components/ui';
+import { AppBar, BackButton, ConfirmDialog, Page } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
 import type { CardKindSetting } from '../../domain/study/cardKind';
@@ -15,8 +15,6 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { CONTACT_EMAIL } from '../discover/contact';
 import { loadCardKindSetting } from '../study/cardKinds';
 import { MAX_NEW_PER_DAY, loadNewPerDay } from '../study/newPerDay';
-
-const KIND_ORDER: CardKindSetting[] = ['both', 'recall', 'identify'];
 
 const THEME_LABEL = { system: 'settings.themeSystem', light: 'settings.themeLight', dark: 'settings.themeDark', custom: 'settings.themeCustom' } as const;
 
@@ -48,8 +46,6 @@ export function SettingsPage() {
     const n = Number(value);
     if (value !== '' && Number.isInteger(n) && n >= 0 && n <= MAX_NEW_PER_DAY) void settings.set('new_cards_per_day', n);
   };
-  const changeKinds = (k: CardKindSetting) => { setKinds(k); void settings.set('card_kinds', k); };
-  const changeDifficulty = (d: Difficulty) => { setDifficulty(d); void settings.set('blank_difficulty', d); };
 
   return (
     <>
@@ -92,40 +88,20 @@ export function SettingsPage() {
               className="w-20 rounded-lg border border-border bg-surface px-3 py-2 text-center text-base"
             />
           </div>
-          <fieldset aria-label={t('settings.kindsLegend')} className="border-b border-border pb-2 pt-1">
-            <legend className="-mb-1">
-              <InfoLabel
-                title={t('settings.kindsLegend')}
-                info={
-                  <dl className="grid gap-4">
-                    {KIND_ORDER.map((k) => (
-                      <div key={k}>
-                        <dt className="font-semibold">{t(`kinds.${k}.title` as MessageKey)}</dt>
-                        <dd className="text-muted">{t(`kinds.${k}.description` as MessageKey)}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                }
-              />
-            </legend>
-            <div>
-              {KIND_ORDER.map((k) => (
-                <label key={k} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-1 py-1.5 hover:bg-surface">
-                  <input type="radio" name="card-kinds" value={k} checked={kinds === k} onChange={() => changeKinds(k)} className="size-4 accent-[var(--foreground)]" />
-                  <span className="font-medium">{t(`kinds.${k}.title` as MessageKey)}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          <div className={row}>
-            <InfoLabel title={t('settings.blanks')} info={t('settings.blanksHint')} />
-            <Segmented<Difficulty>
-              label={t('settings.blanksGroup')}
-              value={difficulty}
-              options={[{ value: 'easy', label: t('difficulty.easy') }, { value: 'medium', label: t('difficulty.medium') }, { value: 'hard', label: t('difficulty.hard') }]}
-              onChange={changeDifficulty}
-            />
-          </div>
+          <Link to="/settings/card-kinds" className={`${row} hover:bg-surface`}>
+            <span>{t('settings.kindsLegend')}</span>
+            <span className="flex items-center gap-1 text-muted">
+              {t(`kinds.${kinds}.title` as MessageKey)}
+              <ChevronRight size={20} aria-hidden />
+            </span>
+          </Link>
+          <Link to="/settings/blanks" className={`${row} hover:bg-surface`}>
+            <span>{t('settings.blanks')}</span>
+            <span className="flex items-center gap-1 text-muted">
+              {t(`difficulty.${difficulty}` as MessageKey)}
+              <ChevronRight size={20} aria-hidden />
+            </span>
+          </Link>
         </section>
 
         <section aria-labelledby="notifications">
@@ -134,8 +110,14 @@ export function SettingsPage() {
         </section>
 
         <section aria-labelledby="backup">
-          <h2 id="backup" className="mb-1 font-serif text-xl">{t('settings.backup')}</h2>
-          <p className="py-2 text-muted">{t('settings.backupBody')}</p>
+          <h2 id="backup" className="mb-1 font-serif text-xl"><InfoLabel title={t('settings.backup')} info={t('settings.backupBody')} className="py-2" /></h2>
+          {share.available && share.user && share.accountStatus.state !== 'off' && (
+            <div role="status" className={`${row} text-muted`}><span>{t(`account.backup.${share.accountStatus.state}` as MessageKey)}</span></div>
+          )}
+          <button type="button" onClick={() => setExporting({ ids: null, title: t('export.everything') })} className={`${row} w-full text-left hover:bg-surface`}>
+            <span>{t('export.titleAll')}</span>
+            <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
+          </button>
           {share.available && (
             <>
               {accountError && <p role="alert" className="py-2 text-danger">{accountError}</p>}
@@ -157,19 +139,17 @@ export function SettingsPage() {
               )}
             </>
           )}
-          <button type="button" onClick={() => setExporting({ ids: null, title: t('export.everything') })} className={`${row} w-full text-left hover:bg-surface`}>
-            <span>{t('export.titleAll')}</span>
-            <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
-          </button>
-          <Link to="/import" className={`${row} hover:bg-surface`}>
-            <span>{t('settings.import')}</span>
+        </section>
+        <section aria-labelledby="privacy">
+          <h2 id="privacy" className="mb-1 font-serif text-xl">{t('privacy.title')}</h2>
+          <Link to="/settings/privacy" className={`${row} hover:bg-surface`}>
+            <span>{t('privacy.row')}</span>
             <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
           </Link>
         </section>
         {share.available && (
           <section aria-labelledby="contact">
-            <h2 id="contact" className="mb-1 font-serif text-xl">{t('settings.contact')}</h2>
-            <p className="py-2 text-muted">{t('settings.contactBody')}</p>
+            <h2 id="contact" className="mb-1 font-serif text-xl"><InfoLabel title={t('settings.contact')} info={t('settings.contactBody')} className="py-2" /></h2>
             <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Simple Bible Memory')}`} className={`${row} hover:bg-surface`}>
               <span>{CONTACT_EMAIL}</span>
               <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />

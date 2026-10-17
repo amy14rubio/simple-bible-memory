@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Ellipsis, Search, Settings } from 'lucide-react';
+import { EllipsisVertical, Search, Settings } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
+import { useRefreshOnWrites } from '../../app/useRefreshOnWrites';
 import { AppBar, ButtonLink, EmptyState, ErrorMessage, IconButton, IconLink, SearchBar } from '../../components/ui';
 import { DeckMenu } from './DeckMenu';
 import { loadCardKinds } from '../study/cardKinds';
@@ -12,11 +13,12 @@ import { useI18n } from '../../i18n/I18nProvider';
 export function DecksPage() {
   const { t } = useI18n();
   const { decks, reviews, settings } = useRepositories();
-  const { data, error, loading, reload } = useAsync(async () => {
+  const { data, error, loading, reload, refresh } = useAsync(async () => {
     const list = await decks.list();
     const due = await reviews.dueCounts({ newPerDay: await loadNewPerDay(settings), kinds: await loadCardKinds(settings) });
     return list.map((d) => ({ ...d, due: due[d.id] ?? 0 }));
   }, [decks, reviews, settings]);
+  useRefreshOnWrites(refresh);
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
   const [menuFor, setMenuFor] = useState<{ id: string; title: string } | null>(null);
@@ -56,7 +58,7 @@ export function DecksPage() {
                 <span className="sr-only"> {t('decks.dueSuffix')}</span>{/* the screen shows just the number; screen readers also hear what it counts */}
               </span>
             </Link>
-            <IconButton label={t('decks.actionsFor', { title: d.title })} onClick={() => setMenuFor(d)}><Ellipsis size={20} aria-hidden /></IconButton>
+            <IconButton label={t('decks.actionsFor', { title: d.title })} onClick={() => setMenuFor(d)}><EllipsisVertical size={20} aria-hidden /></IconButton>
           </li>
         ))}
       </ul>

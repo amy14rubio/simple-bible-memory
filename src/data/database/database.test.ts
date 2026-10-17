@@ -125,10 +125,10 @@ describe('schema constraints', () => {
 describe('transactions', () => {
   it('commits on success and rolls back on error', async () => {
     await migrate(db);
-    await db.transaction((tx) => tx.run("INSERT INTO settings VALUES ('ok', '1')"));
+    await db.transaction((tx) => tx.run("INSERT INTO settings (key, value) VALUES ('ok', '1')"));
     await expect(
       db.transaction(async (tx) => {
-        await tx.run("INSERT INTO settings VALUES ('lost', '1')");
+        await tx.run("INSERT INTO settings (key, value) VALUES ('lost', '1')");
         throw new Error('boom');
       }),
     ).rejects.toThrow('boom');
