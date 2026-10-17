@@ -73,7 +73,7 @@ test.describe('the language setting', () => {
     await language(page, 'Español').click();
     await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible(); // the page itself changes at once
     await expect(page.locator('html')).toHaveAttribute('lang', 'es');
-    await expect(page).toHaveTitle('Memoria Bíblica Simple');
+    await expect(page).toHaveTitle('Idioma · Memoria Bíblica Simple');
     await page.goto('/#/settings');
     await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Notificaciones' })).toBeVisible();
@@ -272,8 +272,8 @@ test.describe('the app in Spanish', () => {
     await expect(page.getByRole('button', { name: 'Mostrar respuesta' })).toHaveCount(1);
     await page.getByLabel('Escribe el versículo de memoria').fill('uno dos cinco cuatro');
     await page.getByRole('button', { name: 'Mostrar respuesta' }).click();
-    await expect(page.getByRole('region', { name: 'Tu respuesta' })).toContainText('uno dos cinco cuatro');
-    await expect(page.getByRole('region', { name: 'Versículo correcto' })).toContainText('Uno dos tres cuatro.');
+    await expect(page.getByRole('region', { name: 'Tu respuesta' })).toContainText(/uno dos.*cinco.*cuatro/); // (hidden words mark the wrong run)
+    await expect(page.getByRole('region', { name: 'Versículo correcto' })).toContainText(/Uno dos.*tres.*cuatro\./);
     await expect(page.getByRole('button', { name: /^Otra vez.*sugerido/ })).toBeVisible();
 
     // identify card: type the verse
@@ -283,7 +283,7 @@ test.describe('the app in Spanish', () => {
     await page.getByLabel(/Escribe el versículo, por ejemplo/).fill('Juan 3:17');
     await page.getByRole('button', { name: 'Mostrar respuesta' }).click();
     await expect(page.getByText('Tu respuesta')).toBeVisible();
-    await expect(page.getByText('Juan 3:17')).toBeVisible();
+    await expect(page.getByRole('group', { name: /^No del todo/ })).toContainText(/Juan.*3.*17.*16/);
     await ctx.close();
   });
 

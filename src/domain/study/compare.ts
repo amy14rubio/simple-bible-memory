@@ -68,6 +68,9 @@ export interface Segment {
   state: 'match' | 'wrong' | 'plain' | 'gap';
 }
 
+/** How many words are wrong in some painted text (for the summary read out when a result appears). */
+export const countWrong = (segments: Segment[]) => segments.filter((x) => x.state === 'wrong').length;
+
 /**
  * Splits both texts back into displayable pieces, keeping punctuation and line breaks as written.
  * On the expected side, `wrong` words are the ones that were missed. On the typed side, they are the extra or wrong ones.

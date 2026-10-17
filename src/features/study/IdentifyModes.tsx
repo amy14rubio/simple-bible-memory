@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react';
 import type { Card } from '../../domain/types';
 import { checkReference } from '../../domain/study/identify';
-import { paintComparison } from '../../domain/study/compare';
+import { countWrong, paintComparison } from '../../domain/study/compare';
 import { buildCitationChoices } from '../../domain/study/choices';
 import type { Rating } from '../../domain/study/rating';
 import { Button } from '../../components/ui';
 import { ActionBar, RatingBar } from './RatingBar';
 import { useI18n } from '../../i18n/I18nProvider';
 import { PaintedText } from './PaintedText';
+import { AnswerRegion } from './AnswerRegion';
 
 interface ModeProps {
   card: Card;
@@ -28,9 +29,9 @@ export function IdentifyFlashcard({ card, intervals, onRate }: ModeProps) {
       <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
         <Passage text={card.verseText} />
         {revealed && (
-          <div className="space-y-1">
+          <AnswerRegion label={`${t('study.answer')}: ${card.reference}`} className="space-y-1">
             <p className="font-serif text-3xl font-medium tracking-tight">{card.reference}</p>
-          </div>
+          </AnswerRegion>
         )}
       </div>
       <ActionBar>
@@ -71,7 +72,14 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
             />
           </div>
         ) : (
-          <section aria-label={t('identify.answer')} className="space-y-5 text-center">
+          <AnswerRegion
+            className="space-y-5 text-center"
+            label={
+              'correct' in result
+                ? result.correct ? `${t('common.correct')}. ${card.reference}` : t('identify.wrongSummary', { extra: countWrong(result.painted.typed), answer: card.reference })
+                : `${t('study.answer')}: ${card.reference}`
+            }
+          >
             {'correct' in result && !result.correct && (
               <div className="space-y-1">
                 <h2 className="text-sm font-medium text-muted">{t('identify.yourAnswer')}</h2>
@@ -86,7 +94,7 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
                 ) : card.reference}
               </p>
             </div>
-          </section>
+          </AnswerRegion>
         )}
       </div>
       <ActionBar>
@@ -142,6 +150,7 @@ export function IdentifyChoice({ card, references, sessionSeed, intervals, onRat
           })}
         </div>
       </div>
+      {picked !== undefined && <AnswerRegion label={correct ? `${t('common.correct')}. ${card.reference}` : t('identify.wrongChoice', { answer: card.reference })} />}
       {picked !== undefined && (
         <ActionBar>
           <RatingBar suggested={correct ? 3 : 1} intervals={intervals} onRate={onRate} />

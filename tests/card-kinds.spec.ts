@@ -56,18 +56,20 @@ test('identify card, Type: abbreviations are accepted; wrong and empty answers a
   await expect(page.getByRole('button', { name: 'Show answer' })).toHaveCount(1);
   await page.getByLabel(/Type the verse/).fill('jn 3:16');
   await page.getByRole('button', { name: 'Show answer' }).click();
-  await expect(page.getByRole('region', { name: 'Answer' })).toHaveText('John 3:16'); // right: just the reference, in green
-  await expect(page.getByRole('region', { name: 'Answer' }).locator('span')).toHaveCSS('color', 'rgb(21, 128, 61)');
+  const right = page.getByRole('group', { name: /^Correct\. John 3:16$/ });
+  await expect(right).toHaveText('John 3:16'); // right: just the reference, in green
+  await expect(right.locator('span')).toHaveCSS('color', 'rgb(21, 128, 61)');
   await expect(page.getByRole('button', { name: /^Good.*suggested/ })).toBeVisible();
   await page.getByRole('button', { name: /^Good/ }).click();
 
   await page.getByLabel(/Type the verse/).fill('Psalm 24:1');
   await page.getByRole('button', { name: 'Show answer' }).click();
-  const mine = page.getByRole('region', { name: 'Answer' }).locator('div').filter({ hasText: 'Your answer' });
-  await expect(mine).toContainText('Psalm 24:1'); // what I typed, with the wrong number in red
+  const wrong = page.getByRole('group', { name: /^Not quite\. Wrong words in your answer/ });
+  const mine = wrong.locator('div').filter({ hasText: 'Your answer' });
+  await expect(mine).toContainText(/Psalm.*24.*:1/); // what I typed, with the wrong number in red (and marked in words)
   await expect(mine.locator('del')).toHaveText('24');
-  await expect(page.getByRole('region', { name: 'Answer' }).locator('mark')).toHaveText('23');
-  await expect(page.getByText('Psalm 23:1', { exact: true })).toBeVisible();
+  await expect(wrong.locator('mark')).toHaveText('23');
+  await expect(wrong).toContainText(/Psalm.*23.*:1/); // the right verse is shown too
   await expect(page.getByRole('button', { name: /^Again.*suggested/ })).toBeVisible();
   await page.getByRole('button', { name: /^Again/ }).click();
 

@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import type { Card } from '../../domain/types';
-import { compareVerse, paintComparison, type Comparison, type Segment } from '../../domain/study/compare';
+import { compareVerse, countWrong, paintComparison, type Comparison, type Segment } from '../../domain/study/compare';
 import type { Rating } from '../../domain/study/rating';
 import { Button, GrowingTextarea } from '../../components/ui';
 import { ActionBar, RatingBar } from './RatingBar';
 import { useI18n } from '../../i18n/I18nProvider';
 import { PaintedText } from './PaintedText';
+import { AnswerRegion } from './AnswerRegion';
 
 type Result = { comparison: Comparison; painted: ReturnType<typeof paintComparison> } | { revealedOnly: true };
 
@@ -39,11 +40,14 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
           </>
         ) : 'comparison' in result && result.comparison.exact ? (
           // Everything right: just the verse, in green.
-          <section aria-label={t('type.exact')}>
+          <AnswerRegion label={`${t('type.exact')} ${card.verseText}`}>
             <p className="scripture whitespace-pre-line text-lg"><PaintedText segments={result.painted.expected} side="expected" /></p>
-          </section>
+          </AnswerRegion>
         ) : (
-          <div className="space-y-6">
+          <AnswerRegion
+            className="space-y-6"
+            label={'comparison' in result ? t('type.summary', { extra: countWrong(result.painted.typed), missed: countWrong(result.painted.expected) }) : `${t('type.correctVerse')}: ${card.verseText}`}
+          >
             {'comparison' in result && <Words label={t('type.yourAnswer')} segments={result.painted.typed} side="typed" />}
             {'comparison' in result ? (
               <Words label={t('type.correctVerse')} segments={result.painted.expected} side="expected" />
@@ -53,7 +57,7 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
                 <p className="scripture whitespace-pre-line text-lg">{card.verseText}</p>
               </section>
             )}
-          </div>
+          </AnswerRegion>
         )}
       </div>
       <ActionBar>

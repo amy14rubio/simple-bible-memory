@@ -62,7 +62,7 @@ test('type: one "Show answer" button; a forgiving match suggests Good; mistakes 
   await page.getByLabel('Type the verse from memory').fill('FOR EXAMPLE its a test typed by you');
   await page.getByRole('button', { name: 'Show answer' }).click();
   // everything right: only the verse, in green. No second copy, no word counts, no legend
-  await expect(page.getByRole('region', { name: 'Every word matched.' })).toContainText("For example, it's a test; typed by you.");
+  await expect(page.getByRole('group', { name: /^Every word matched\./ })).toContainText("For example, it's a test; typed by you.");
   await expect(page.getByRole('region', { name: 'Your answer' })).toHaveCount(0);
   await expect(page.getByText(/words matched|Underlined/)).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^Good.*suggested/ })).toBeVisible();

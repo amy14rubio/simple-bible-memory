@@ -62,7 +62,7 @@ export function AppBar({ title, titleSlot, back, actions, serif = true }: { titl
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center gap-1 border-b border-border bg-background px-2">
       {back}
-      {titleSlot ?? <h1 className={`min-w-0 flex-1 truncate px-2 text-lg ${serif ? 'font-serif font-medium tracking-tight' : 'font-semibold'}`}>{title}</h1>}
+      {titleSlot ?? (title ? <h1 className={`min-w-0 flex-1 truncate px-2 text-lg ${serif ? 'font-serif font-medium tracking-tight' : 'font-semibold'}`}>{title}</h1> : <div className="flex-1" />)}
       <div className="flex items-center">{actions}</div>
     </header>
   );

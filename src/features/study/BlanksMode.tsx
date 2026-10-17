@@ -3,6 +3,7 @@ import type { Card } from '../../domain/types';
 import { buildWordBank, checkCloze, generateCloze, hashSeed, isCorrectWord, wordsOf, type BankWord, type Difficulty } from '../../domain/study/cloze';
 import type { Rating } from '../../domain/study/rating';
 import { ActionBar, RatingBar } from './RatingBar';
+import { AnswerRegion } from './AnswerRegion';
 import { useI18n } from '../../i18n/I18nProvider';
 
 /**
@@ -65,6 +66,7 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
           })}
         </p>
         <p role="status" className="sr-only">{announcement}</p>
+        {result && <AnswerRegion label={t('blanks.done', { right: result.correctCount, total: result.total })} />}
       </div>
 
       <ActionBar>

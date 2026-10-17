@@ -36,7 +36,7 @@ export function I18nProvider({ settings, children }: { settings: SettingsReposit
 
   useEffect(() => {
     document.documentElement.lang = language;
-    document.title = translate(language, 'app.name');
+    // (the tab's title is set per screen by useRouteAnnouncer)
   }, [language]);
 
   const setPreference = useCallback(
