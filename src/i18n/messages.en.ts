@@ -203,6 +203,7 @@ export const en = {
   'discover.empty': 'No public decks yet.',
   'discover.emptyBody': "Publish one from a deck's menu and it will show up here.",
   'discover.noMatch': 'No decks match your search or filters.',
+  'discover.count': { one: '{count} deck shown', other: '{count} decks shown' },
   'discover.loadMore': 'Load more',
   'discover.loading': 'Loading decks…',
   'discover.error': "Couldn't load public decks. Check your connection and try again.",
@@ -475,6 +476,11 @@ export const en = {
   'blanks.bank': 'Word bank',
 
   // how long until a card is due
+  'unitSpoken.minutes': { one: '{count} minute', other: '{count} minutes' },
+  'unitSpoken.hours': { one: '{count} hour', other: '{count} hours' },
+  'unitSpoken.days': { one: '{count} day', other: '{count} days' },
+  'unitSpoken.months': { one: '{count} month', other: '{count} months' },
+  'unitSpoken.years': { one: '{count} year', other: '{count} years' },
   'unit.minutes': '{count}m',
   'unit.hours': '{count}h',
   'unit.days': '{count}d',

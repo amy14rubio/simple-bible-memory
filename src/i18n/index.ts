@@ -64,6 +64,12 @@ export function intervalUnits(language: Language): IntervalUnits {
 }
 export const formatIntervalIn = (language: Language, ms: number) => formatIntervalWith(ms, intervalUnits(language));
 
+/** The same, written out for a screen reader to say: "10 minutes", "6 months" ("10m" is read as a letter). */
+export function formatIntervalSpokenIn(language: Language, ms: number): string {
+  const unit = (key: MessageKey) => (count: number) => translate(language, key, { count });
+  return formatIntervalWith(ms, { minutes: unit('unitSpoken.minutes'), hours: unit('unitSpoken.hours'), days: unit('unitSpoken.days'), months: unit('unitSpoken.months'), years: unit('unitSpoken.years') });
+}
+
 /** A book's name in the interface language. Unknown books and languages without a table show the canonical name. */
 export function bookName(language: Language, canonical: string): string {
   return language === 'es' ? BOOK_NAMES_ES[canonical] ?? canonical : canonical;

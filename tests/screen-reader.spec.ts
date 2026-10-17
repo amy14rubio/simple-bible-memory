@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 import { addCard, createDeck, setCardKinds, tapFirstBankWord, wordBankOpen } from './helpers';
 
 /**
@@ -241,5 +242,30 @@ test.describe('the medium fixes', () => {
     await expect(page.getByRole('status').filter({ hasText: /Low contrast: this text colour/ })).toBeVisible();
     await hex.fill('#17171a');
     await expect(page.getByText(/Low contrast: this text colour/)).toHaveCount(0);
+  });
+});
+
+test.describe('the small fixes', () => {
+  test('L1: no two landmarks share a name on Settings (best-practice check)', async ({ page }) => {
+    await page.goto('/#/settings');
+    await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+    const results = await new AxeBuilder({ page }).withTags(['best-practice']).analyze();
+    expect(results.violations.map((v) => v.id)).toEqual([]);
+  });
+
+  test('L2: rating buttons say their wait in words ("10 minutes"), not "10m"', async ({ page }) => {
+    const id = await deckWithCard(page);
+    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await page.getByRole('button', { name: 'Show answer' }).click();
+    const good = page.getByRole('group', { name: 'How well did you remember it?' }).getByRole('button', { name: /^Good/ });
+    await expect(good).toHaveAccessibleName(/^Good\s+\d+ (minutes?|hours?|days?)/);
+    await expect(good).toContainText(/\d+(m|h|d)/); // the short form is still what is drawn
+  });
+
+  test('L4: the chart legend buttons are at least 44px tall', async ({ page }) => {
+    await deckWithCard(page);
+    await page.goto('/#/stats');
+    const legend = page.getByRole('group', { name: 'Highlight a stage in the chart' }).getByRole('button').first();
+    expect((await legend.boundingBox())!.height).toBeGreaterThanOrEqual(44);
   });
 });

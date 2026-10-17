@@ -32,6 +32,7 @@ test('browse newest first, search, filter, then import a public deck', async ({ 
   await expect(page.getByRole('heading', { name: 'Newest' })).toHaveClass(/sr-only/); // no visible label, only for screen readers
   await expect(links.first()).toContainText('Alpha');
   await expect(links).toHaveCount(3);
+  await expect(page.getByRole('status').filter({ hasText: '3 decks shown' })).toBeAttached(); // the count is said out loud
 
   // search by the start of a title
   await page.getByRole('button', { name: 'Search public decks' }).click();

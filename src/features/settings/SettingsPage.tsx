@@ -104,7 +104,7 @@ export function SettingsPage() {
           </Link>
         </section>
 
-        <section aria-labelledby="notifications">
+        <section>
           <h2 id="notifications" className="mb-1 font-serif text-xl">{t('settings.notifications')}</h2>
           <p className="py-2 text-muted">{t('settings.notificationsBody')}</p>
         </section>

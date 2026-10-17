@@ -15,6 +15,7 @@ import { BlanksMode } from './BlanksMode';
 import { IdentifyChoice, IdentifyFlashcard, IdentifyType } from './IdentifyModes';
 import { loadCardKinds } from './cardKinds';
 import { VerseLangProvider, asLang } from './verseLang';
+import { SpokenIntervalsProvider } from './spokenIntervals';
 import { loadNewPerDay } from './newPerDay';
 
 type Mode = 'flashcard' | 'type' | 'blanks';
@@ -75,7 +76,7 @@ export function StudySessionPage() {
 function Session({ verseLang, heading, deckId, mode, extraPractice, references, passages, initialQueue, initialDifficulty, seed }: {
   verseLang: string | undefined; heading: string; deckId: string; mode: Mode; extraPractice: boolean; references: string[]; passages: string[]; initialQueue: QueueEntry[]; initialDifficulty: Difficulty; seed: string;
 }) {
-  const { t, formatInterval, describeError } = useI18n();
+  const { t, formatInterval, formatIntervalSpoken, describeError } = useI18n();
   const { reviews, scheduler } = useRepositories();
   const [queue, setQueue] = useState(initialQueue);
   const [index, setIndex] = useState(0);
@@ -93,6 +94,12 @@ function Session({ verseLang, heading, deckId, mode, extraPractice, references, 
     const due = scheduler.preview(entry.schedule, now);
     return { 1: formatInterval(due[1] - now), 2: formatInterval(due[2] - now), 3: formatInterval(due[3] - now), 4: formatInterval(due[4] - now) } as Record<Rating, string>;
   }, [entry, extraPractice, scheduler, formatInterval]);
+  const spokenIntervals = useMemo(() => {
+    if (!entry || extraPractice) return undefined;
+    const now = Date.now();
+    const due = scheduler.preview(entry.schedule, now);
+    return { 1: formatIntervalSpoken(due[1] - now), 2: formatIntervalSpoken(due[2] - now), 3: formatIntervalSpoken(due[3] - now), 4: formatIntervalSpoken(due[4] - now) } as Record<Rating, string>;
+  }, [entry, extraPractice, scheduler, formatIntervalSpoken]);
 
   // Anki-style counters: new / learning / to review, for the cards still ahead (the current one is underlined).
   const remaining = useMemo(() => {
@@ -159,6 +166,7 @@ function Session({ verseLang, heading, deckId, mode, extraPractice, references, 
       <progress className="sr-only" max={queue.length} value={index} aria-label={t('study.progress')} />
       <AppBar back={exit} title={extraPractice ? t('study.extraTitle') : <span className="sr-only">{heading}</span>} />
       <VerseLangProvider value={verseLang}>
+      <SpokenIntervalsProvider value={spokenIntervals}>
       <div className="flex flex-1 flex-col px-5">
         <ul aria-label={t('study.remaining')} className="flex gap-3 pt-3 text-sm font-normal">
           {counter('new', t('study.counterNew'))}
@@ -180,6 +188,7 @@ function Session({ verseLang, heading, deckId, mode, extraPractice, references, 
           </>
         )}
       </div>
+      </SpokenIntervalsProvider>
       </VerseLangProvider>
     </div>
   );

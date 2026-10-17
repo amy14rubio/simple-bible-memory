@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { SettingsRepository } from '../data/repositories/settingsRepository';
 import {
-  bookName, cacheLanguagePreference, cachedLanguagePreference, describeError, formatIntervalIn, parseLanguagePreference,
+  bookName, cacheLanguagePreference, cachedLanguagePreference, describeError, formatIntervalIn, formatIntervalSpokenIn, parseLanguagePreference,
   resolveLanguage, translate, type Language, type LanguagePreference, type MessageKey, type Params,
 } from '.';
 
@@ -13,6 +13,8 @@ interface I18nValue {
   t: (key: MessageKey, params?: Params) => string;
   /** "10m" in English, "10 min" in Spanish. */
   formatInterval: (ms: number) => string;
+  /** The interval written out for a screen reader ("10 minutes"). */
+  formatIntervalSpoken: (ms: number) => string;
   /** A book's name in the interface language ("Psalm" / "Salmos"). */
   bookName: (canonical: string) => string;
   /** Text for an error, in the interface language. */
@@ -55,6 +57,7 @@ export function I18nProvider({ settings, children }: { settings: SettingsReposit
       setPreference,
       t: (key, params) => translate(language, key, params),
       formatInterval: (ms) => formatIntervalIn(language, ms),
+      formatIntervalSpoken: (ms) => formatIntervalSpokenIn(language, ms),
       bookName: (canonical) => bookName(language, canonical),
       describeError: (error) => describeError(language, error),
     }),

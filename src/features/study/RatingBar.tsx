@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 import type { Rating } from '../../domain/study/rating';
 import { useI18n } from '../../i18n/I18nProvider';
 import type { MessageKey } from '../../i18n';
+import { useSpokenIntervals } from './spokenIntervals';
 
 const RATINGS: Rating[] = [1, 2, 3, 4];
 const LABEL_KEYS: Record<Rating, MessageKey> = { 1: 'rating.again', 2: 'rating.hard', 3: 'rating.good', 4: 'rating.easy' };
@@ -24,6 +25,7 @@ export function ActionBar({ children }: { children: ReactNode }) {
  */
 export function RatingBar({ suggested, intervals, onRate }: { suggested?: Rating; intervals?: Record<Rating, string>; onRate: (r: Rating) => void }) {
   const { t } = useI18n();
+  const spoken = useSpokenIntervals();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return; // (Cmd+1 switches browser tabs, for one)
@@ -52,7 +54,8 @@ export function RatingBar({ suggested, intervals, onRate }: { suggested?: Rating
         >
           {/* DOM order is label, then interval (screen readers say "Good, 10m"); flex-col-reverse shows the interval above. */}
           <span className={`text-[0.9375rem] font-semibold ${RATING_TEXT[r]}`}>{t(LABEL_KEYS[r])}</span>
-          {intervals && <span className="text-xs text-muted">{intervals[r]}</span>}
+          {intervals && <span aria-hidden={spoken ? true : undefined} className="text-xs text-muted">{intervals[r]}</span>}
+          {intervals && spoken && <span className="sr-only">{spoken[r]}</span>}
           {r === suggested && <span className="sr-only">{t('rating.suggested')}</span>}
         </button>
       ))}

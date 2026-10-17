@@ -117,7 +117,7 @@ export function OptionPicker({ label, value, options, onChange, variant = 'title
                   type="button"
                   aria-pressed={group === f.value}
                   onClick={() => setGroup(f.value)}
-                  className={`min-h-9 shrink-0 rounded-full border px-4 text-sm font-medium ${group === f.value ? 'border-foreground bg-primary text-primary-foreground' : 'border-border text-muted hover:text-foreground'}`}
+                  className={`min-h-11 shrink-0 rounded-full border px-4 text-sm font-medium ${group === f.value ? 'border-foreground bg-primary text-primary-foreground' : 'border-border text-muted hover:text-foreground'}`}
                 >
                   {f.label}
                 </button>
