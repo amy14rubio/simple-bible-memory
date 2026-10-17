@@ -36,10 +36,13 @@ export interface DeckPage {
   cursor: unknown | null;
 }
 
+export type ReportReason = 'copyright' | 'inappropriate' | 'other';
+export const REPORT_REASONS: ReportReason[] = ['copyright', 'inappropriate', 'other'];
 
 /** Everything the Discover screens need from the public catalogue. Anyone can use it, signed in or not. */
 export interface DiscoverBackend {
   listDecks(filters: DiscoverFilters, cursor?: unknown): Promise<DeckPage>;
   getDeck(id: string): Promise<PublicDeck | null>;
   getCards(id: string): Promise<PublicCard[]>;
+  report(deckId: string, reason: ReportReason, details: string): Promise<void>;
 }

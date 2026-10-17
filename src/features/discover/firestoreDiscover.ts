@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, limit, orderBy, query, startAfter, where, type DocumentData, type DocumentSnapshot, type Firestore, type QueryConstraint } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, getDocs, limit, orderBy, query, serverTimestamp, startAfter, where, type DocumentData, type DocumentSnapshot, type Firestore, type QueryConstraint } from 'firebase/firestore';
 import { PAGE_SIZE, type DiscoverBackend, type PublicDeck } from './types';
 
 /**
@@ -32,17 +32,22 @@ export function createFirestoreDiscover(db: Firestore): DiscoverBackend {
 
       const snap = await getDocs(query(collection(db, 'publicDecks'), ...c));
       const docs = snap.docs.slice(0, PAGE_SIZE);
-      return { decks: docs.map((d) => toDeck(d.id, d.data())), cursor: snap.docs.length > PAGE_SIZE ? docs[docs.length - 1]! : null };
+      // Decks you hid after a report stay in Firestore but are left out here.
+      return { decks: docs.filter((d) => d.data().hidden !== true).map((d) => toDeck(d.id, d.data())), cursor: snap.docs.length > PAGE_SIZE ? docs[docs.length - 1]! : null };
     },
 
     async getDeck(id) {
       const snap = await getDoc(doc(db, 'publicDecks', id));
-      return snap.exists() ? toDeck(snap.id, snap.data()) : null;
+      return snap.exists() && snap.data().hidden !== true ? toDeck(snap.id, snap.data()) : null;
     },
 
     async getCards(id) {
       const snap = await getDocs(query(collection(db, 'publicDecks', id, 'cards'), orderBy('position')));
       return snap.docs.map((d) => ({ id: d.id, reference: d.data().reference, verseText: d.data().verseText, position: d.data().position }));
+    },
+
+    async report(deckId, reason, details) {
+      await addDoc(collection(db, 'reports'), { deckId, reason, details: details.trim().slice(0, 500), status: 'open', createdAt: serverTimestamp() });
     },
   };
 }

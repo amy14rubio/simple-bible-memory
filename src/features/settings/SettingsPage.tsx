@@ -12,6 +12,7 @@ import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
 import type { CardKindSetting } from '../../domain/study/cardKind';
 import { LANGUAGES, type MessageKey } from '../../i18n';
 import { useI18n } from '../../i18n/I18nProvider';
+import { CONTACT_EMAIL } from '../discover/contact';
 import { loadCardKindSetting } from '../study/cardKinds';
 import { MAX_NEW_PER_DAY, loadNewPerDay } from '../study/newPerDay';
 
@@ -165,6 +166,16 @@ export function SettingsPage() {
             <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
           </Link>
         </section>
+        {share.available && (
+          <section aria-labelledby="contact">
+            <h2 id="contact" className="mb-1 font-serif text-xl">{t('settings.contact')}</h2>
+            <p className="py-2 text-muted">{t('settings.contactBody')}</p>
+            <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Simple Bible Memory')}`} className={`${row} hover:bg-surface`}>
+              <span>{CONTACT_EMAIL}</span>
+              <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
+            </a>
+          </section>
+        )}
         <ExportDrawer target={exporting} onClose={() => setExporting(null)} />
         <ConfirmDialog
           open={confirmingDelete}

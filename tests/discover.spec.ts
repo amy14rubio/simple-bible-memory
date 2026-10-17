@@ -68,12 +68,18 @@ test('browse newest first, search, filter, then import a public deck', async ({ 
   await expect(page.getByRole('button', { name: 'Import again' })).toBeVisible();
 });
 
-test('a deck page has a contact link instead of a report button', async ({ page }) => {
+test('report a public deck without signing in', async ({ page }) => {
   await seed(page, seeded);
   await openDiscover(page);
   await page.locator('a[href*="/discover/"]').first().click();
-  await expect(page.getByRole('link', { name: 'Contact us about this deck' })).toHaveAttribute('href', /^mailto:amyruth\.rubio@gmail\.com\?subject=Alpha/);
-  await expect(page.getByRole('button', { name: 'Report' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Report this deck' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Report this deck' });
+  await dialog.getByRole('radio', { name: 'Inappropriate content' }).check();
+  await dialog.getByLabel('Details').fill('Not suitable.');
+  await dialog.getByRole('button', { name: 'Send report' }).click();
+  await expect(page.getByText("Thanks, we'll take a look.")).toBeVisible();
+  const reports = await page.evaluate(() => (window as unknown as { __fakeCloud: () => { reports: { reason: string; details: string }[] } }).__fakeCloud().reports);
+  expect(reports).toEqual([expect.objectContaining({ reason: 'inappropriate', details: 'Not suitable.' })]);
 });
 
 test('empty and offline states, and Load more', async ({ page }) => {
@@ -115,4 +121,17 @@ test('a long deck previews 5 cards and Show more reveals the rest', async ({ pag
   await expect(page.getByText(/^John 3:\d+$/)).toHaveCount(8);
   await page.getByRole('button', { name: 'Show less' }).click();
   await expect(page.getByText(/^John 3:\d+$/)).toHaveCount(5);
+});
+
+test('a deck you hid after a report is no longer listed', async ({ page }) => {
+  await seed(page, { ...seeded, hid: { ...deck('Hidden one', 'KJV', 'en', 4000), hidden: true } as ReturnType<typeof deck> });
+  await openDiscover(page);
+  const links = page.locator('a[href*="/discover/"]');
+  await expect(links).toHaveCount(3);
+  await expect(page.getByText('Hidden one')).toHaveCount(0);
+});
+
+test('Settings has the one place to contact us', async ({ page }) => {
+  await page.goto('/#/settings');
+  await expect(page.getByRole('link', { name: 'amyruth.rubio@gmail.com' })).toHaveAttribute('href', /^mailto:amyruth\.rubio@gmail\.com/);
 });

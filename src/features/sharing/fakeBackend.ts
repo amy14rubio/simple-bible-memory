@@ -9,7 +9,8 @@ import { PAGE_SIZE, type DiscoverBackend, type PublicDeck } from '../discover/ty
 const KEY = 'sbm-fake-cloud';
 interface State {
   user: AuthUser | null;
-  decks: Record<string, { ownerId?: string; createdAt?: number; meta: CloudDeckMeta; cards: Record<string, CloudCard> }>;
+  decks: Record<string, { ownerId?: string; createdAt?: number; hidden?: boolean; meta: CloudDeckMeta; cards: Record<string, CloudCard> }>;
+  reports?: { deckId: string; reason: string; details: string }[];
   offline: boolean;
 }
 
@@ -61,17 +62,23 @@ export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; 
       if (s.offline) throw new Error('offline');
       const q = filters.query.trim().toLowerCase();
       const all = Object.entries(s.decks)
-        .filter(([, d]) => (filters.language === 'all' || d.meta.language === filters.language) && (filters.translation === 'all' || d.meta.translation === filters.translation) && (!q || d.meta.title.toLowerCase().startsWith(q)))
+        .filter(([, d]) => !d.hidden && (filters.language === 'all' || d.meta.language === filters.language) && (filters.translation === 'all' || d.meta.translation === filters.translation) && (!q || d.meta.title.toLowerCase().startsWith(q)))
         .sort(([, a], [, b]) => (q ? a.meta.title.toLowerCase().localeCompare(b.meta.title.toLowerCase()) : (b.createdAt ?? 0) - (a.createdAt ?? 0)));
       const start = typeof cursor === 'number' ? cursor : 0;
       const page = all.slice(start, start + PAGE_SIZE);
       return { decks: page.map(([id, d]) => publicDeck(id, d)), cursor: start + PAGE_SIZE < all.length ? start + PAGE_SIZE : null };
     },
-    async getDeck(id) { const s = load(); if (s.offline) throw new Error('offline'); const d = s.decks[id]; return d ? publicDeck(id, d) : null; },
+    async getDeck(id) { const s = load(); if (s.offline) throw new Error('offline'); const d = s.decks[id]; return d && !d.hidden ? publicDeck(id, d) : null; },
     async getCards(id) {
       const s = load();
       if (s.offline) throw new Error('offline');
       return Object.values(s.decks[id]?.cards ?? {}).sort((a, b) => a.position - b.position).map((c) => ({ id: c.id, reference: c.reference, verseText: c.verseText, position: c.position }));
+    },
+    async report(deckId, reason, details) {
+      const s = load();
+      if (s.offline) throw new Error('offline');
+      s.reports = [...(s.reports ?? []), { deckId, reason, details }];
+      save(s);
     },
   };
   return { auth, cloud, discover };

@@ -21,7 +21,7 @@ service cloud.firestore {
           || (d.translation != 'OWN' && languageOf(d.translation) != null && languageOf(d.translation) == d.language);
     }
     function validDeck(d) {
-      return d.keys().hasOnly(['ownerId', 'title', 'titleLower', 'description', 'translation', 'language', 'cardCount', 'createdAt', 'updatedAt'])
+      return d.keys().hasOnly(['ownerId', 'title', 'titleLower', 'description', 'translation', 'language', 'cardCount', 'createdAt', 'updatedAt', 'hidden'])
         && d.keys().hasAll(['ownerId', 'title', 'titleLower', 'translation', 'language', 'cardCount', 'createdAt', 'updatedAt'])
         && isText(d.title, 1, 200)
         && d.titleLower == d.title.lower()
@@ -40,12 +40,27 @@ service cloud.firestore {
       return signedIn() && get(/databases/$(database)/documents/publicDecks/$(deckId)).data.ownerId == request.auth.uid;
     }
 
+    // Anyone can report a public deck (for copyright, inappropriate content or anything else). Nobody can read reports
+    // through the app: you read them in the Firebase console (filter status == open), then set status to "resolved"
+    // and, if the deck must go, set hidden to true on the deck.
+    match /reports/{reportId} {
+      allow create: if request.resource.data.keys().hasOnly(['deckId', 'reason', 'details', 'status', 'createdAt'])
+        && request.resource.data.keys().hasAll(['deckId', 'reason', 'status', 'createdAt'])
+        && request.resource.data.status == 'open'
+        && isText(request.resource.data.deckId, 1, 100)
+        && request.resource.data.reason in ['copyright', 'inappropriate', 'other']
+        && isTextOrNull(request.resource.data.get('details', null), 500)
+        && request.resource.data.createdAt == request.time;
+      allow read, update, delete: if false;
+    }
+
     match /publicDecks/{deckId} {
       allow get, list: if true;
 
       allow create: if signedIn()
         && validDeck(request.resource.data)
         && request.resource.data.ownerId == request.auth.uid
+        && !('hidden' in request.resource.data) // only you (in the console) can hide a deck
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time;
 
@@ -53,6 +68,7 @@ service cloud.firestore {
         && resource.data.ownerId == request.auth.uid
         && validDeck(request.resource.data)
         && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.get('hidden', false) == resource.data.get('hidden', false) // the author cannot un-hide a deck
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.updatedAt == request.time;
 
