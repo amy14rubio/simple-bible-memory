@@ -134,8 +134,7 @@ export function SettingsPage() {
         </section>
 
         <section aria-labelledby="backup">
-          <h2 id="backup" className="mb-1 font-serif text-xl">{t('settings.backup')}</h2>
-          <p className="py-2 text-muted">{t('settings.backupBody')}</p>
+          <h2 id="backup" className="mb-1 font-serif text-xl"><InfoLabel title={t('settings.backup')} info={t('settings.backupBody')} className="py-2" /></h2>
           {share.available && (
             <>
               {accountError && <p role="alert" className="py-2 text-danger">{accountError}</p>}
@@ -168,8 +167,7 @@ export function SettingsPage() {
         </section>
         {share.available && (
           <section aria-labelledby="contact">
-            <h2 id="contact" className="mb-1 font-serif text-xl">{t('settings.contact')}</h2>
-            <p className="py-2 text-muted">{t('settings.contactBody')}</p>
+            <h2 id="contact" className="mb-1 font-serif text-xl"><InfoLabel title={t('settings.contact')} info={t('settings.contactBody')} className="py-2" /></h2>
             <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Simple Bible Memory')}`} className={`${row} hover:bg-surface`}>
               <span>{CONTACT_EMAIL}</span>
               <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
