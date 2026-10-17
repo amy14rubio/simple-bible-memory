@@ -11,6 +11,7 @@ import { toast } from '../../components/shadcn/toast';
 import { canSplit, splitPassage, type SplitResult } from '../../domain/bible/split';
 import { loadCardKinds } from '../study/cardKinds';
 import { useI18n } from '../../i18n/I18nProvider';
+import { deleteCardsWithUndo } from './undoDelete';
 import { BibleGatewayHelper } from './BibleGatewayHelper';
 import { SplitDialog } from './SplitDialog';
 
@@ -93,7 +94,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
   };
 
   const remove = async () => {
-    try { await cards.delete(card!.id); navigate(-1); }
+    try { await deleteCardsWithUndo(cards, [card!.id], t); navigate(-1); }
     catch (err) { setConfirming(false); setError(describeError(err)); }
   };
 
