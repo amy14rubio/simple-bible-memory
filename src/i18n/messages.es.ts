@@ -232,7 +232,6 @@ export const es: Dictionary = {
   'account.deleteFailed': 'No se pudo eliminar tu cuenta. Revisa tu conexión e inténtalo de nuevo.',
   'create.import': 'Importar baraja',
   'deckMenu.export': 'Exportar baraja',
-  'settings.import': 'Importar',
   'export.title': 'Exportar baraja',
   'export.titleAll': 'Exportar todo',
   'export.everything': 'todas las barajas',
@@ -326,7 +325,7 @@ export const es: Dictionary = {
   'settings.notifications': 'Notificaciones',
   'settings.notificationsBody': 'Los recordatorios de estudio aún no están disponibles.',
   'settings.backup': 'Cuenta y copia de seguridad',
-  'settings.backupBody': 'No necesitas una cuenta. Tus barajas y tu progreso se guardan solo en este dispositivo. Exporta un archivo para guardarlos como copia de seguridad o pasarlos a otro dispositivo.',
+  'settings.backupBody': "No necesitas una cuenta. Tus barajas y tu progreso se guardan solo en este dispositivo. Exporta un archivo para guardarlos como copia de seguridad o pasarlos a otro dispositivo. Iniciar sesión solo hace falta para publicar barajas en Descubrir; todavía no respalda ni sincroniza tus propias barajas.",
 
   'stats.title': 'Estadísticas',
   'stats.scope': 'Mostrar estadísticas de',

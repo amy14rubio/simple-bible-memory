@@ -173,7 +173,7 @@ test.describe('import a deck file', () => {
     await page.waitForTimeout(250);
     await page.reload();
 
-    await page.getByRole('link', { name: 'Import' }).click(); // from Settings > Backup
+    await page.goto('/#/import');
     await expect(page).toHaveURL(/#\/import$/);
     await chooseFile(page, 'bible-memory-backup.json', backup);
     await expect(page.getByRole('region', { name: 'What will be added' }).getByRole('listitem')).toHaveCount(2);

@@ -111,6 +111,10 @@ export function SettingsPage() {
 
         <section aria-labelledby="backup">
           <h2 id="backup" className="mb-1 font-serif text-xl"><InfoLabel title={t('settings.backup')} info={t('settings.backupBody')} className="py-2" /></h2>
+          <button type="button" onClick={() => setExporting({ ids: null, title: t('export.everything') })} className={`${row} w-full text-left hover:bg-surface`}>
+            <span>{t('export.titleAll')}</span>
+            <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
+          </button>
           {share.available && (
             <>
               {accountError && <p role="alert" className="py-2 text-danger">{accountError}</p>}
@@ -132,14 +136,6 @@ export function SettingsPage() {
               )}
             </>
           )}
-          <button type="button" onClick={() => setExporting({ ids: null, title: t('export.everything') })} className={`${row} w-full text-left hover:bg-surface`}>
-            <span>{t('export.titleAll')}</span>
-            <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
-          </button>
-          <Link to="/import" className={`${row} hover:bg-surface`}>
-            <span>{t('settings.import')}</span>
-            <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
-          </Link>
         </section>
         {share.available && (
           <section aria-labelledby="contact">

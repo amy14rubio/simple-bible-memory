@@ -247,7 +247,6 @@ export const en = {
   'account.deleteFailed': "Couldn't delete your account. Check your connection and try again.",
   'create.import': 'Import deck',
   'deckMenu.export': 'Export deck',
-  'settings.import': 'Import',
   'export.title': 'Export deck',
   'export.titleAll': 'Export everything',
   'export.everything': 'all decks',
@@ -341,7 +340,7 @@ export const en = {
   'settings.notifications': 'Notifications',
   'settings.notificationsBody': "Study reminders aren't available yet.",
   'settings.backup': 'Account and backup',
-  'settings.backupBody': "You don't need an account. Your decks and progress are stored only on this device. Export a file to back them up or move them to another device.",
+  'settings.backupBody': "You don't need an account. Your decks and progress are stored only on this device. Export a file to back them up or move them to another device. Signing in is only needed to publish decks to Discover; it doesn't back up or sync your own decks yet.",
 
   // statistics
   'stats.title': 'Statistics',

@@ -65,3 +65,14 @@ test('the Language explanation is behind the "i" in the Language page title', as
   await page.getByRole('button', { name: 'Language', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Language' })).toContainText('Changes the text of the app only.');
 });
+
+test('Account and backup: Export everything comes first, then sign in, and there is no Import row', async ({ page }) => {
+  await page.goto('/#/settings');
+  const section = page.getByRole('region', { name: 'Account and backup' });
+  const items = section.getByRole('button').filter({ hasNotText: /^Account and backup$/ });
+  await expect(items.nth(0)).toContainText('Export everything');
+  await expect(items.nth(1)).toContainText('Sign in');
+  await expect(section.getByRole('link')).toHaveCount(0);
+  await section.getByRole('button', { name: 'Account and backup', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Account and backup' })).toContainText("doesn't back up or sync your own decks yet");
+});
