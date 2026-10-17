@@ -2,7 +2,8 @@ import * as React from "react"
 import { Toast as ToastPrimitive } from "@base-ui/react/toast"
 import { cn } from "cn"
 
-import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react"
+import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon, XIcon } from "lucide-react"
+import { useI18n } from "../../i18n/I18nProvider"
 
 const toast = ToastPrimitive.createToastManager()
 
@@ -139,6 +140,7 @@ function ToastIcon({ type }: { type: string | undefined }) {
 
 function ToastList() {
   const { toasts } = ToastPrimitive.useToastManager()
+  const { t } = useI18n()
 
   return toasts.map((toastItem) => (
     <Toast key={toastItem.id} toast={toastItem}>
@@ -148,6 +150,20 @@ function ToastList() {
           <ToastTitle />
           <ToastDescription />
         </div>
+        {toastItem.actionProps && (
+          <ToastPrimitive.Action
+            data-slot="toast-action"
+            className="min-h-11 shrink-0 rounded-lg px-3 text-[0.9375rem] font-semibold underline underline-offset-4 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          />
+        )}
+        <ToastPrimitive.Close
+          aria-label={t("toast.dismiss")}
+          aria-hidden={false} // Base UI hides it from screen readers unless the toast stack is open; with one toast at a time it is always meant to be reachable
+          data-slot="toast-close"
+          className="-mr-2 flex size-9 shrink-0 items-center justify-center rounded-full outline-none hover:bg-background/15 focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        >
+          <XIcon className="size-5" aria-hidden="true" />
+        </ToastPrimitive.Close>
       </ToastContent>
     </Toast>
   ))
