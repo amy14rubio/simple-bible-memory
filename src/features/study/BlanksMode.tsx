@@ -4,6 +4,7 @@ import { buildWordBank, checkCloze, generateCloze, hashSeed, isCorrectWord, word
 import type { Rating } from '../../domain/study/rating';
 import { ActionBar, RatingBar } from './RatingBar';
 import { AnswerRegion } from './AnswerRegion';
+import { useVerseLang } from './verseLang';
 import { useI18n } from '../../i18n/I18nProvider';
 
 /**
@@ -24,6 +25,7 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
 
   const [picked, setPicked] = useState<string[]>([]); // the word tapped for each finished blank
   const [announcement, setAnnouncement] = useState('');
+  const lang = useVerseLang();
   const step = picked.length;
   const done = step >= blanks.length;
   // A fresh, reshuffled bank for each blank.
@@ -32,7 +34,8 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
   const tap = (word: BankWord) => {
     const answer = blanks[step]!.answer;
     setPicked((p) => [...p, word.text]);
-    setAnnouncement(isCorrectWord(word.text, answer) ? t('blanks.correct', { answer }) : t('blanks.wrong', { answer }));
+    const verdict = isCorrectWord(word.text, answer) ? t('blanks.correct', { answer }) : t('blanks.wrong', { answer });
+    setAnnouncement(step + 1 < blanks.length ? `${verdict}. ${t('blanks.current', { n: step + 2 })}` : verdict);
   };
 
   const result = done ? checkCloze(segments, picked) : null;
@@ -40,8 +43,8 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
   return (
     <>
       <div className="flex-1 space-y-6 pt-6">
-        <p className="text-center font-serif text-2xl font-medium tracking-tight">{card.reference}</p>
-        <p className="scripture whitespace-pre-line text-xl leading-[2.4]">
+        <p lang={lang} className="text-center font-serif text-2xl font-medium tracking-tight">{card.reference}</p>
+        <p lang={lang} className="scripture whitespace-pre-line text-xl leading-[2.4]">
           {segments.map((s, i) => {
             if (s.type === 'text') return <span key={i}>{s.text}</span>;
             const width = { width: `${Math.max(4, s.answer.length)}ch` };

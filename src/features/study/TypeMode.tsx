@@ -7,6 +7,7 @@ import { ActionBar, RatingBar } from './RatingBar';
 import { useI18n } from '../../i18n/I18nProvider';
 import { PaintedText } from './PaintedText';
 import { AnswerRegion } from './AnswerRegion';
+import { useVerseLang } from './verseLang';
 
 type Result = { comparison: Comparison; painted: ReturnType<typeof paintComparison> } | { revealedOnly: true };
 
@@ -14,6 +15,7 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
   const { t } = useI18n();
   const [typed, setTyped] = useState('');
   const [result, setResult] = useState<Result>();
+  const lang = useVerseLang();
 
   // One button for everything: if you typed something it is checked against the verse, if not it just reveals it.
   const check = () => setResult(typed.trim() ? { comparison: compareVerse(card.verseText, typed), painted: paintComparison(card.verseText, typed) } : { revealedOnly: true });
@@ -21,7 +23,7 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
   return (
     <>
       <div className="flex flex-1 flex-col gap-5 pt-6">
-        <p className="text-center font-serif text-2xl font-medium tracking-tight">{card.reference}</p>
+        <p lang={lang} className="text-center font-serif text-2xl font-medium tracking-tight">{card.reference}</p>
         {!result ? (
           <>
             <label className="sr-only" htmlFor="typed">{t('type.label')}</label>
@@ -41,7 +43,7 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
         ) : 'comparison' in result && result.comparison.exact ? (
           // Everything right: just the verse, in green.
           <AnswerRegion label={`${t('type.exact')} ${card.verseText}`}>
-            <p className="scripture whitespace-pre-line text-lg"><PaintedText segments={result.painted.expected} side="expected" /></p>
+            <p lang={lang} className="scripture whitespace-pre-line text-lg"><PaintedText segments={result.painted.expected} side="expected" /></p>
           </AnswerRegion>
         ) : (
           <AnswerRegion
@@ -54,7 +56,7 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
             ) : (
               <section aria-label={t('type.correctVerse')} className="space-y-1">
                 <h2 className="text-sm font-medium text-muted">{t('type.correctVerse')}</h2>
-                <p className="scripture whitespace-pre-line text-lg">{card.verseText}</p>
+                <p lang={lang} className="scripture whitespace-pre-line text-lg">{card.verseText}</p>
               </section>
             )}
           </AnswerRegion>
@@ -72,10 +74,11 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
 }
 
 function Words({ label, segments, side }: { label: string; segments: Segment[]; side: 'typed' | 'expected' }) {
+  const lang = useVerseLang();
   return (
     <section aria-label={label} className="space-y-1">
       <h2 className="text-sm font-medium text-muted">{label}</h2>
-      <p className="scripture whitespace-pre-line text-lg"><PaintedText segments={segments} side={side} /></p>
+      <p lang={lang} className="scripture whitespace-pre-line text-lg"><PaintedText segments={segments} side={side} /></p>
     </section>
   );
 }

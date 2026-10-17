@@ -26,8 +26,12 @@ export function RatingBar({ suggested, intervals, onRate }: { suggested?: Rating
   const { t } = useI18n();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return; // (Cmd+1 switches browser tabs, for one)
       const t = e.target as HTMLElement;
       if (t.closest('input, textarea, select')) return;
+      // Single-key shortcuts only act while focus is on the answer or the rating buttons (or nowhere), so they never
+      // fire unexpectedly for someone moving about the screen with a screen reader or the keyboard.
+      if (t !== document.body && !t.closest('[data-rating-keys]')) return;
       const n = Number(e.key);
       if (n >= 1 && n <= 4) onRate(n as Rating);
     };
@@ -36,7 +40,7 @@ export function RatingBar({ suggested, intervals, onRate }: { suggested?: Rating
   }, [onRate]);
 
   return (
-    <div role="group" aria-label={t('rating.question')} className="grid grid-cols-4 gap-2">
+    <div role="group" aria-label={t('rating.question')} data-rating-keys className="grid grid-cols-4 gap-2">
       {RATINGS.map((r) => (
         <button
           key={r}

@@ -9,7 +9,9 @@ import { DeckPicker } from '../../components/DeckPicker';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { toast } from '../../components/shadcn/toast';
 import { canSplit, splitPassage, type SplitResult } from '../../domain/bible/split';
+import { ValidationError } from '../../domain/errors';
 import { loadCardKinds } from '../study/cardKinds';
+import { asLang } from '../study/verseLang';
 import { useI18n } from '../../i18n/I18nProvider';
 import { deleteCardsWithUndo } from './undoDelete';
 import { BibleGatewayHelper } from './BibleGatewayHelper';
@@ -48,11 +50,13 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
   const [verseText, setVerseText] = useState(card?.verseText ?? '');
   const [note, setNote] = useState(card?.note ?? '');
   const [error, setError] = useState<string>();
+  const [invalid, setInvalid] = useState<'reference' | 'passage'>();
   const [confirming, setConfirming] = useState(false);
   const [split, setSplit] = useState<SplitResult | null>(null);
   const [splitBusy, setSplitBusy] = useState(false);
   const [splitError, setSplitError] = useState<string>();
   const referenceInput = useRef<HTMLInputElement>(null);
+  const lang = asLang(deckList.find((d) => d.id === deckId)?.bibleLanguage); // so verses typed here are read in their own language
 
   /** After adding, the form stays open with the verse and passage cleared (deck and source kept), ready for the next card. */
   const readyForNext = () => {
@@ -74,7 +78,14 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
         toast.add({ title: t('toast.cardAdded', { reference: saved.reference }), type: 'success' });
         readyForNext();
       }
-    } catch (err) { setError(describeError(err)); }
+    } catch (err) {
+      setError(describeError(err));
+      // Say which field is wrong (and put the cursor in it), not just that something is.
+      const field = err instanceof ValidationError ? (err.code === 'reference-required' ? 'reference' : err.code === 'verse-text-required' ? 'passage' : undefined) : undefined;
+      setInvalid(field);
+      if (field === 'reference') referenceInput.current?.focus();
+      if (field === 'passage') document.getElementById('passage')?.focus();
+    }
   };
 
   const confirmSplit = async () => {
@@ -106,7 +117,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
         actions={<IconButton type="submit" label={t('common.save')}><Check size={22} aria-hidden /></IconButton>}
       />
       <Page className="space-y-5 pt-2">
-        {error && <ErrorMessage error={error} />}
+        {error && <ErrorMessage id="form-error" error={error} />}
         <div>
           {!card && (
             <FormRow label={t('cardForm.deck')}>
@@ -115,7 +126,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
               )}
             </FormRow>
           )}
-          <FormRow label={t('cardForm.verses')}>{(fid) => <input id={fid} ref={referenceInput} className={rowInput} value={reference} onChange={(e) => setReference(e.target.value)} placeholder={t('cardForm.versesPlaceholder')} autoFocus={!card} />}</FormRow>
+          <FormRow label={t('cardForm.verses')}>{(fid) => <input id={fid} ref={referenceInput} lang={lang} aria-invalid={invalid === 'reference' || undefined} aria-describedby={invalid === 'reference' ? 'form-error' : undefined} className={rowInput} value={reference} onChange={(e) => { setReference(e.target.value); setInvalid(undefined); }} placeholder={t('cardForm.versesPlaceholder')} autoFocus={!card} />}</FormRow>
           <FormRow
             label={t('cardForm.note')}
             labelNode={<InfoLabel title={t('cardForm.note')} info={t('cardForm.noteInfo')} className="w-24 shrink-0 text-[0.9375rem] font-medium" />}
@@ -131,9 +142,12 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
           </div>
           <GrowingTextarea
             id="passage"
+            lang={lang}
+            aria-invalid={invalid === 'passage' || undefined}
+            aria-describedby={invalid === 'passage' ? 'form-error' : undefined}
             className="scripture"
             value={verseText}
-            onChange={(e) => setVerseText(e.target.value)}
+            onChange={(e) => { setVerseText(e.target.value); setInvalid(undefined); }}
             placeholder={t('cardForm.passagePlaceholder')}
           />
           {/* Only offered when it can actually be used: a chapter or several verses, with a passage to split. */}

@@ -236,10 +236,10 @@ export function EmptyState({ title, children, action }: { title: string; childre
   );
 }
 
-export function ErrorMessage({ error }: { error: Error | string }) {
+export function ErrorMessage({ error, id }: { error: Error | string; id?: string }) {
   const { describeError } = useI18n();
   return (
-    <p role="alert" className="rounded-lg border border-danger p-3.5 text-danger">
+    <p role="alert" id={id} className="rounded-lg border border-danger p-3.5 text-danger">
       {typeof error === 'string' ? error : describeError(error)}
     </p>
   );

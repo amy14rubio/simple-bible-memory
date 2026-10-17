@@ -4,18 +4,20 @@ import type { Rating } from '../../domain/study/rating';
 import { Button } from '../../components/ui';
 import { ActionBar, RatingBar } from './RatingBar';
 import { AnswerRegion } from './AnswerRegion';
+import { useVerseLang } from './verseLang';
 import { useI18n } from '../../i18n/I18nProvider';
 
 export function FlashcardMode({ card, intervals, onRate }: { card: Card; intervals?: Record<Rating, string>; onRate: (r: Rating) => void }) {
   const { t } = useI18n();
   const [revealed, setRevealed] = useState(false);
+  const lang = useVerseLang();
   return (
     <>
       <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
-        <p className="font-serif text-3xl font-medium tracking-tight">{card.reference}</p>
+        <p lang={lang} className="font-serif text-3xl font-medium tracking-tight">{card.reference}</p>
         {revealed && (
           <AnswerRegion label={`${t('study.answer')}: ${card.verseText}`} className="space-y-3">
-            <p className="scripture whitespace-pre-line text-xl">{card.verseText}</p>
+            <p lang={lang} className="scripture whitespace-pre-line text-xl">{card.verseText}</p>
           </AnswerRegion>
         )}
       </div>

@@ -1,10 +1,11 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, ErrorMessage, FormRow, IconButton, Page, rowInput } from '../../components/ui';
 import { useI18n } from '../../i18n/I18nProvider';
+import { ValidationError } from '../../domain/errors';
 import { TranslationFields, type TranslationValue } from '../sharing/TranslationFields';
 
 /** One form for both "New deck" (/decks/new) and "Rename deck" (/decks/:id/edit). */
@@ -24,6 +25,8 @@ function DeckForm({ id, initialTitle, initialDescription, initialTranslation, no
   const [description, setDescription] = useState(initialDescription);
   const [translation, setTranslation] = useState(initialTranslation);
   const [error, setError] = useState<string>();
+  const [titleInvalid, setTitleInvalid] = useState(false);
+  const titleInput = useRef<HTMLInputElement>(null);
 
   if (notFound) return <><AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;
 
@@ -33,7 +36,13 @@ function DeckForm({ id, initialTitle, initialDescription, initialTranslation, no
       const details = { title, description, translationCode: translation.translation, bibleLanguage: translation.language };
       if (id) { await decks.update(id, details); navigate(`/decks/${id}`, { replace: true }); }
       else { const d = await decks.create(details); navigate(`/decks/${d.id}`, { replace: true }); }
-    } catch (err) { setError(describeError(err)); }
+    } catch (err) {
+      setError(describeError(err));
+      // Say which field is wrong (and put the cursor in it), not just that something is.
+      const bad = err instanceof ValidationError && err.code === 'deck-title-required';
+      setTitleInvalid(bad);
+      if (bad) titleInput.current?.focus();
+    }
   };
 
   return (
@@ -44,8 +53,8 @@ function DeckForm({ id, initialTitle, initialDescription, initialTranslation, no
         actions={<IconButton type="submit" label={t('common.save')}><Check size={22} aria-hidden /></IconButton>}
       />
       <Page className="space-y-4 pt-2">
-        {error && <ErrorMessage error={error} />}
-        <FormRow label={t('deckForm.title')}>{(fid) => <input id={fid} className={rowInput} value={title} onChange={(e) => setTitle(e.target.value)} autoFocus placeholder={t('deckForm.titlePlaceholder')} />}</FormRow>
+        {error && <ErrorMessage id="form-error" error={error} />}
+        <FormRow label={t('deckForm.title')}>{(fid) => <input id={fid} ref={titleInput} aria-invalid={titleInvalid || undefined} aria-describedby={titleInvalid ? 'form-error' : undefined} className={rowInput} value={title} onChange={(e) => { setTitle(e.target.value); setTitleInvalid(false); }} autoFocus placeholder={t('deckForm.titlePlaceholder')} />}</FormRow>
         <FormRow label={t('deckForm.description')}>{(fid) => <input id={fid} className={rowInput} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('common.optional')} />}</FormRow>
         <TranslationFields value={translation} onChange={setTranslation} />
       </Page>

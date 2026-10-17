@@ -138,3 +138,108 @@ test.describe('studying', () => {
     await expect(page.getByRole('group', { name: /^Answer: / })).toBeFocused();
   });
 });
+
+test.describe('the medium fixes', () => {
+  test('M1: selecting cards is announced, comes first for a screen reader, and keeps focus sensible', async ({ page }) => {
+    const id = await deckWithCard(page);
+    await page.goto(`/#/decks/${id}/cards`);
+    // the way in is before the list, not after every card
+    const before = await page.getByRole('button', { name: 'Select cards' }).evaluate((b) => !!(b.compareDocumentPosition(document.querySelector('table')!) & Node.DOCUMENT_POSITION_FOLLOWING));
+    expect(before).toBe(true);
+
+    await page.getByRole('button', { name: 'Select cards' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('status').filter({ hasText: 'Selecting cards. 0 selected.' })).toBeAttached();
+    await expect(page.getByRole('checkbox').first()).toBeFocused(); // the cursor goes into the list
+    await page.keyboard.press('Space');
+    await expect(page.getByRole('status').filter({ hasText: 'Selecting cards. 1 selected.' })).toBeAttached();
+    await page.getByRole('button', { name: 'Cancel selection' }).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Selection ended.' })).toBeAttached();
+    expect(await focused(page)).toMatchObject({ tag: 'h1' });
+  });
+
+  test('M2: the Undo toast says Undo is there, and stays long enough to find it', async ({ page }) => {
+    const id = await deckWithCard(page);
+    await page.goto(`/#/decks/${id}/cards`);
+    await page.getByRole('row', { name: /Psalm 1:1/ }).click();
+    await page.getByRole('button', { name: 'Delete card' }).click();
+    await page.locator('dialog[open]').getByRole('button', { name: 'Delete card' }).click();
+    const toast = page.getByRole('region', { name: 'Notifications' });
+    await expect(toast).toContainText('Psalm 1:1 deleted');
+    await expect(toast).toContainText('Undo is available in the Notifications region.');
+    await page.waitForTimeout(11_000); // the old time limit
+    await expect(toast.getByRole('button', { name: 'Undo' })).toBeVisible();
+  });
+
+  test('M3: after a blank is filled, the announcement says which blank is next', async ({ page }) => {
+    const id = await deckWithCard(page);
+    await page.goto(`/#/decks/${id}/study/blanks`);
+    await page.getByRole('group', { name: 'Word bank' }).getByRole('button').first().click();
+    await expect(page.getByRole('status').filter({ hasText: /Blank 2, the one to fill in now/ })).toBeAttached();
+  });
+
+  test('M4: verses carry their own language, even when the app is in another', async ({ page }) => {
+    await page.goto('/#/decks/new');
+    await page.getByLabel('Title').fill('Salmos');
+    await page.getByRole('button', { name: /^Translation/ }).click();
+    await page.getByRole('dialog', { name: 'Select a translation' }).getByRole('button', { name: /RV1909/ }).click();
+    await page.getByRole('button', { name: 'Save' }).click();
+    await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
+    const id = page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1]!;
+    await addCard(page, id, 'Salmo 23:1', 'Jehová es mi pastor; nada me faltará.');
+    await page.goto(`/#/decks/${id}/cards`);
+    await expect(page.locator('td [lang="es"]').first()).toBeAttached();
+    await setCardKinds(page, 'Recall the passage');
+    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await page.getByRole('button', { name: 'Show answer' }).click();
+    await expect(page.locator('p[lang="es"]').filter({ hasText: 'Jehová' })).toBeAttached();
+  });
+
+  test('M5: a form error names the field, marks it invalid and puts the cursor in it', async ({ page }) => {
+    await page.goto('/#/decks/new');
+    await page.getByRole('button', { name: 'Save' }).click();
+    const title = page.getByLabel('Title');
+    await expect(title).toHaveAttribute('aria-invalid', 'true');
+    await expect(title).toHaveAttribute('aria-describedby', 'form-error');
+    await expect(title).toBeFocused();
+    await expect(page.locator('#form-error')).toBeVisible();
+    await title.fill('x');
+    await expect(title).not.toHaveAttribute('aria-invalid', 'true'); // fixing it clears the mark
+
+    const id = await createDeck(page, 'Psalms');
+    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.getByLabel('Passage', { exact: true }).fill('Some text');
+    await page.getByRole('button', { name: 'Save' }).click();
+    const verse = page.getByLabel('Verse(s)');
+    await expect(verse).toHaveAttribute('aria-invalid', 'true');
+    await expect(verse).toBeFocused();
+  });
+
+  test('M6: the 1 to 4 keys rate only when focus is on the answer or the ratings, and never with Cmd/Ctrl', async ({ page }) => {
+    const id = await deckWithCard(page);
+    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await page.getByRole('button', { name: 'Show answer' }).click();
+    await expect(page.getByRole('group', { name: /^Answer: / })).toBeFocused();
+    const remaining = () => page.getByRole('list', { name: 'Cards remaining' }).innerText();
+    const before = await remaining();
+    await page.keyboard.press('Control+3');
+    await page.keyboard.press('Meta+3');
+    expect(await remaining()).toBe(before); // modifier keys are the browser's
+    await page.getByRole('link', { name: 'Exit study' }).focus();
+    await page.keyboard.press('3');
+    expect(await remaining()).toBe(before); // focus is on something else: the key means nothing here
+    await page.getByRole('group', { name: /^Answer: / }).focus();
+    await page.keyboard.press('3'); // on the answer: Good
+    await expect(page.getByRole('button', { name: 'Show answer' })).toBeVisible(); // the next card
+  });
+
+  test('M7: a custom theme with unreadable text says so, out loud', async ({ page }) => {
+    await page.goto('/#/settings/theme');
+    await page.getByRole('radio', { name: 'Custom' }).check();
+    const hex = page.getByLabel('Text, hex code');
+    await hex.fill('#f0f0ee'); // almost the same as the light background
+    await expect(page.getByRole('status').filter({ hasText: /Low contrast: this text colour/ })).toBeVisible();
+    await hex.fill('#17171a');
+    await expect(page.getByText(/Low contrast: this text colour/)).toHaveCount(0);
+  });
+});

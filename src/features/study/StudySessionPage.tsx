@@ -14,6 +14,7 @@ import { TypeMode } from './TypeMode';
 import { BlanksMode } from './BlanksMode';
 import { IdentifyChoice, IdentifyFlashcard, IdentifyType } from './IdentifyModes';
 import { loadCardKinds } from './cardKinds';
+import { VerseLangProvider, asLang } from './verseLang';
 import { loadNewPerDay } from './newPerDay';
 
 type Mode = 'flashcard' | 'type' | 'blanks';
@@ -68,11 +69,11 @@ export function StudySessionPage() {
       </>
     );
   }
-  return <Session heading={heading} deckId={id} mode={mode as Mode} extraPractice={extraPractice} references={data.references} passages={data.passages} initialQueue={data.queue} initialDifficulty={data.difficulty} seed={data.seed} />;
+  return <Session verseLang={asLang(data.deck.bibleLanguage)} heading={heading} deckId={id} mode={mode as Mode} extraPractice={extraPractice} references={data.references} passages={data.passages} initialQueue={data.queue} initialDifficulty={data.difficulty} seed={data.seed} />;
 }
 
-function Session({ heading, deckId, mode, extraPractice, references, passages, initialQueue, initialDifficulty, seed }: {
-  heading: string; deckId: string; mode: Mode; extraPractice: boolean; references: string[]; passages: string[]; initialQueue: QueueEntry[]; initialDifficulty: Difficulty; seed: string;
+function Session({ verseLang, heading, deckId, mode, extraPractice, references, passages, initialQueue, initialDifficulty, seed }: {
+  verseLang: string | undefined; heading: string; deckId: string; mode: Mode; extraPractice: boolean; references: string[]; passages: string[]; initialQueue: QueueEntry[]; initialDifficulty: Difficulty; seed: string;
 }) {
   const { t, formatInterval, describeError } = useI18n();
   const { reviews, scheduler } = useRepositories();
@@ -157,6 +158,7 @@ function Session({ heading, deckId, mode, extraPractice, references, passages, i
       {/* Not drawn, but screen readers can still read how far through the session you are. */}
       <progress className="sr-only" max={queue.length} value={index} aria-label={t('study.progress')} />
       <AppBar back={exit} title={extraPractice ? t('study.extraTitle') : <span className="sr-only">{heading}</span>} />
+      <VerseLangProvider value={verseLang}>
       <div className="flex flex-1 flex-col px-5">
         <ul aria-label={t('study.remaining')} className="flex gap-3 pt-3 text-sm font-normal">
           {counter('new', t('study.counterNew'))}
@@ -178,6 +180,7 @@ function Session({ heading, deckId, mode, extraPractice, references, passages, i
           </>
         )}
       </div>
+      </VerseLangProvider>
     </div>
   );
 }

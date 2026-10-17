@@ -8,5 +8,5 @@ import { useEffect, useRef, type ReactNode } from 'react';
 export function AnswerRegion({ label, children, className = '' }: { label: string; children?: ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => { ref.current?.focus({ preventScroll: true }); }, []);
-  return <div ref={ref} role="group" aria-label={label} tabIndex={-1} className={className}>{children}</div>;
+  return <div ref={ref} role="group" aria-label={label} data-rating-keys tabIndex={-1} className={className}>{children}</div>;
 }

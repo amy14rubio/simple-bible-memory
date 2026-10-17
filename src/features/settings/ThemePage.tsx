@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTheme, type ThemePreference } from '../../app/theme';
 import { AppBar, BackButton, Button, CheckList, Page } from '../../components/ui';
-import { DARK_START, LIGHT_START, isHex, type CustomTheme } from '../../lib/customTheme';
+import { DARK_START, LIGHT_START, READABLE_CONTRAST, contrastRatio, isHex, type CustomTheme } from '../../lib/customTheme';
 import { useI18n } from '../../i18n/I18nProvider';
 
 type Channel = keyof CustomTheme;
@@ -59,6 +59,16 @@ export function ThemePage() {
               {rows.map(({ channel, label }) => (
                 <ColorRow key={channel} label={label} value={colors[channel]} onChange={(v) => void setCustom({ ...colors, [channel]: v })} />
               ))}
+            </div>
+
+            {/* Said out loud as it changes, so someone choosing colours by ear hears when they make the app unreadable. */}
+            <div role="status" className="space-y-2">
+              {contrastRatio(colors.text, colors.background) < READABLE_CONTRAST && (
+                <p className="rounded-lg border border-danger p-3.5 text-danger">{t('customTheme.lowText', { ratio: contrastRatio(colors.text, colors.background).toFixed(1) })}</p>
+              )}
+              {contrastRatio(colors.accent, colors.background) < READABLE_CONTRAST && (
+                <p className="rounded-lg border border-danger p-3.5 text-danger">{t('customTheme.lowAccent', { ratio: contrastRatio(colors.accent, colors.background).toFixed(1) })}</p>
+              )}
             </div>
 
             <Button variant="secondary" className="w-full" onClick={() => void setCustom(systemDark() ? DARK_START : LIGHT_START)}>{t('customTheme.reset')}</Button>

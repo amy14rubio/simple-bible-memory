@@ -67,8 +67,8 @@ export function DiscoverDeckPage() {
         <section aria-label={t('discover.preview')} className="space-y-3 rounded-3xl bg-panel px-5 py-5">
           {(showAll ? cards : cards.slice(0, PREVIEW)).map((c) => (
             <div key={c.id}>
-              <p className="font-serif font-medium">{c.reference}</p>
-              <p className={`scripture text-[0.9375rem] leading-normal text-muted ${showAll ? '' : 'line-clamp-2'}`}>{c.verseText}</p>
+              <p lang={deck.language} className="font-serif font-medium">{c.reference}</p>
+              <p lang={deck.language} className={`scripture text-[0.9375rem] leading-normal text-muted ${showAll ? '' : 'line-clamp-2'}`}>{c.verseText}</p>
             </div>
           ))}
           {cards.length > PREVIEW && (
