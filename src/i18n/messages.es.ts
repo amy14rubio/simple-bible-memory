@@ -112,7 +112,6 @@ export const es: Dictionary = {
   'move.help': 'Elige la baraja a la que mover las tarjetas seleccionadas.',
   'toast.cardDeleted': '{reference} eliminada',
   'toast.andMore': 'y {count} más',
-  'toast.dismiss': 'Descartar notificación',
   'toast.undo': 'Deshacer',
   'browse.deleteTitle': { one: '¿Eliminar {count} tarjeta?', other: '¿Eliminar {count} tarjetas?' },
   'move.title': { one: 'Mover {count} tarjeta a…', other: 'Mover {count} tarjetas a…' },

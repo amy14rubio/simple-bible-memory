@@ -123,7 +123,6 @@ export const en = {
   'move.help': 'Choose the deck to move the selected cards into.',
   'toast.cardDeleted': '{reference} deleted',
   'toast.andMore': 'and {count} more',
-  'toast.dismiss': 'Dismiss notification',
   'toast.undo': 'Undo',
   'browse.deleteTitle': { one: 'Delete {count} card?', other: 'Delete {count} cards?' },
   'move.title': { one: 'Move {count} card to…', other: 'Move {count} cards to…' },

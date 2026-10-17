@@ -111,16 +111,6 @@ test('move cards to another deck', async ({ page }) => {
   await expect(page.getByText('No cards yet')).toBeVisible();
 });
 
-test('a toast can be dismissed with its X', async ({ page }) => {
-  await deckWithCards(page);
-  await row(page, 'Psalm 1:1').click();
-  await page.getByRole('button', { name: 'Delete card' }).click();
-  await page.locator('dialog[open]').getByRole('button', { name: 'Delete card' }).click();
-  await expect(page.getByRole('heading', { name: 'Psalm 1:1 deleted' })).toBeVisible();
-  await page.getByRole('button', { name: 'Dismiss notification' }).click();
-  await expect(page.getByRole('heading', { name: 'Psalm 1:1 deleted' })).toHaveCount(0);
-});
-
 test('the keyboard can start selecting, and the screen has no accessibility violations while selecting', async ({ page }) => {
   await deckWithCards(page);
   await page.getByRole('button', { name: 'Select cards' }).focus();
