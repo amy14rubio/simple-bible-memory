@@ -37,6 +37,12 @@ test('signing in backs up decks, cards and the study schedule, and says so', asy
   expect(keys.some((k) => k.startsWith('card~'))).toBe(true);
   expect(keys.some((k) => k.startsWith('schedule~'))).toBe(true);
   expect(keys.some((k) => k.startsWith('setting~theme'))).toBe(false); // looks are not backed up
+
+  // the backup message comes first in Account and backup, above the buttons
+  const section = page.getByRole('region', { name: 'Account and backup' });
+  const message = (await section.getByRole('status').boundingBox())!.y;
+  expect(message).toBeLessThan((await section.getByRole('button', { name: 'Export everything' }).boundingBox())!.y);
+  expect(message).toBeLessThan((await section.getByRole('button', { name: 'Sign out' }).boundingBox())!.y);
 });
 
 test('a second device that signs in gets the decks, and later changes arrive by themselves', async ({ browser }) => {

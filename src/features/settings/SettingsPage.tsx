@@ -111,6 +111,9 @@ export function SettingsPage() {
 
         <section aria-labelledby="backup">
           <h2 id="backup" className="mb-1 font-serif text-xl"><InfoLabel title={t('settings.backup')} info={t('settings.backupBody')} className="py-2" /></h2>
+          {share.available && share.user && share.accountStatus.state !== 'off' && (
+            <div role="status" className={`${row} text-muted`}><span>{t(`account.backup.${share.accountStatus.state}` as MessageKey)}</span></div>
+          )}
           <button type="button" onClick={() => setExporting({ ids: null, title: t('export.everything') })} className={`${row} w-full text-left hover:bg-surface`}>
             <span>{t('export.titleAll')}</span>
             <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
@@ -121,9 +124,6 @@ export function SettingsPage() {
               {share.user ? (
                 <>
                   <div className={row}><span className="min-w-0 truncate">{t('account.signedInAs', { name: share.user.displayName ?? share.user.email ?? '' })}</span></div>
-                  {share.accountStatus.state !== 'off' && (
-                    <div role="status" className={`${row} text-muted`}><span>{t(`account.backup.${share.accountStatus.state}` as MessageKey)}</span></div>
-                  )}
                   <button type="button" onClick={() => void share.signOut()} className={`${row} w-full text-left hover:bg-surface`}>
                     <span>{t('account.signOut')}</span>
                   </button>
