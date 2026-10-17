@@ -121,6 +121,9 @@ export function SettingsPage() {
               {share.user ? (
                 <>
                   <div className={row}><span className="min-w-0 truncate">{t('account.signedInAs', { name: share.user.displayName ?? share.user.email ?? '' })}</span></div>
+                  {share.accountStatus.state !== 'off' && (
+                    <div role="status" className={`${row} text-muted`}><span>{t(`account.backup.${share.accountStatus.state}` as MessageKey)}</span></div>
+                  )}
                   <button type="button" onClick={() => void share.signOut()} className={`${row} w-full text-left hover:bg-surface`}>
                     <span>{t('account.signOut')}</span>
                   </button>
@@ -136,6 +139,13 @@ export function SettingsPage() {
               )}
             </>
           )}
+        </section>
+        <section aria-labelledby="privacy">
+          <h2 id="privacy" className="mb-1 font-serif text-xl">{t('privacy.title')}</h2>
+          <Link to="/settings/privacy" className={`${row} hover:bg-surface`}>
+            <span>{t('privacy.row')}</span>
+            <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
+          </Link>
         </section>
         {share.available && (
           <section aria-labelledby="contact">

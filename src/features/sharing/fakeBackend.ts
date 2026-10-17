@@ -1,5 +1,7 @@
 import type { AuthBackend, AuthUser, CloudBackend, CloudCard, CloudDeckMeta } from './types';
 import { PAGE_SIZE, type DiscoverBackend, type PublicDeck } from '../discover/types';
+import type { AccountBackend } from '../account/types';
+import { createFakeAccount, emptyFakeAccount, type FakeAccountState } from '../account/fakeAccount';
 
 /**
  * A stand-in for Google sign-in and Firestore, kept in the browser's localStorage, used by the browser tests
@@ -11,13 +13,17 @@ interface State {
   user: AuthUser | null;
   decks: Record<string, { ownerId?: string; createdAt?: number; hidden?: boolean; meta: CloudDeckMeta; cards: Record<string, CloudCard> }>;
   reports?: { deckId: string; reason: string; details: string }[];
+  /** Tests: which account the next sign-in is (default one account). */
+  nextUid?: string;
   offline: boolean;
 }
 
 const load = (): State => { try { return { user: null, decks: {}, offline: false, ...(JSON.parse(localStorage.getItem(KEY) ?? '{}') as Partial<State>) }; } catch { return { user: null, decks: {}, offline: false }; } };
 const save = (s: State) => localStorage.setItem(KEY, JSON.stringify(s));
 
-export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; discover: DiscoverBackend } {
+const ACCOUNT_KEY = 'sbm-fake-account';
+
+export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; discover: DiscoverBackend; account: AccountBackend } {
   const listeners = new Set<(u: AuthUser | null) => void>();
   const emit = (u: AuthUser | null) => listeners.forEach((l) => l(u));
   const edit = <T>(fn: (s: State) => T): T => {
@@ -35,7 +41,7 @@ export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; 
     subscribe(cb) { listeners.add(cb); setTimeout(() => cb(load().user), 0); return () => { listeners.delete(cb); }; },
     async signInWithGoogle() {
       const s = load();
-      s.user = { uid: 'fake-user', email: 'reader@example.com', displayName: 'Reader' };
+      s.user = { uid: s.nextUid ?? 'fake-user', email: `${s.nextUid ?? 'reader'}@example.com`, displayName: s.nextUid ?? 'Reader' };
       save(s);
       emit(s.user);
       return s.user;
@@ -81,5 +87,16 @@ export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; 
       save(s);
     },
   };
-  return { auth, cloud, discover };
+  // The person's private backup, kept beside the public decks. "Offline" is shared, so one switch cuts off both.
+  const account = createFakeAccount(
+    {
+      load: (): FakeAccountState => {
+        try { return { ...emptyFakeAccount(), ...(JSON.parse(localStorage.getItem(ACCOUNT_KEY) ?? '{}') as Partial<FakeAccountState>), offline: load().offline }; } catch { return { ...emptyFakeAccount(), offline: load().offline }; }
+      },
+      save: ({ offline: _o, ...rest }) => localStorage.setItem(ACCOUNT_KEY, JSON.stringify(rest)),
+    },
+    () => load().user?.uid ?? null,
+  );
+  (window as unknown as { __fakeAccount: () => unknown }).__fakeAccount = () => JSON.parse(localStorage.getItem(ACCOUNT_KEY) ?? '{}');
+  return { auth, cloud, discover, account };
 }

@@ -1,11 +1,12 @@
 import type { AuthBackend, CloudBackend } from './types';
 import type { DiscoverBackend } from '../discover/types';
+import type { AccountBackend } from '../account/types';
 
 /**
  * Finds the sign-in and the public catalogue. The real ones come from Firebase and are loaded only when needed (the
  * library is large), so people who never sign in never download it. The browser tests swap in stand-ins.
  */
-export interface Backends { auth: AuthBackend; cloud: CloudBackend; discover: DiscoverBackend }
+export interface Backends { auth: AuthBackend; cloud: CloudBackend; discover: DiscoverBackend; account: AccountBackend }
 
 const env = import.meta.env;
 const config = {
@@ -24,19 +25,21 @@ let loading: Promise<Backends> | undefined;
 export function loadBackends(): Promise<Backends> {
   loading ??= (async (): Promise<Backends> => {
     if (env.VITE_SHARING_BACKEND === 'fake') return (await import('./fakeBackend')).createFakeBackends();
-    const [{ initializeApp }, { getAuth }, { getFirestore }, { createFirebaseAuth }, { createFirestoreCloud }, { createFirestoreDiscover }] = await Promise.all([
-      import('firebase/app'), import('firebase/auth'), import('firebase/firestore'), import('./firebaseAuth'), import('./firestoreCloud'), import('../discover/firestoreDiscover'),
+    const [{ initializeApp }, { getAuth }, { getFirestore }, { createFirebaseAuth }, { createFirestoreCloud }, { createFirestoreDiscover }, { createFirestoreAccount }] = await Promise.all([
+      import('firebase/app'), import('firebase/auth'), import('firebase/firestore'), import('./firebaseAuth'), import('./firestoreCloud'), import('../discover/firestoreDiscover'), import('../account/firestoreAccount'),
     ]);
+    const uid = () => {
+      if (!auth.currentUser) throw new Error('Not signed in');
+      return auth.currentUser.uid;
+    };
     const app = initializeApp(config);
     const auth = getAuth(app);
     const firestore = getFirestore(app);
     return {
       auth: createFirebaseAuth(auth),
-      cloud: createFirestoreCloud(firestore, () => {
-        if (!auth.currentUser) throw new Error('Not signed in');
-        return auth.currentUser.uid;
-      }),
+      cloud: createFirestoreCloud(firestore, uid),
       discover: createFirestoreDiscover(firestore),
+      account: createFirestoreAccount(firestore, uid),
     };
   })().catch((e) => { loading = undefined; throw e; });
   return loading;

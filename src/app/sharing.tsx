@@ -1,8 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useRepositories } from './repositories';
-import { onDatabaseWrite } from '../data/writeEvents';
+import { announceDatabaseWrite, onDatabaseWrite } from '../data/writeEvents';
 import { loadBackends, sharingAvailable, type Backends } from '../features/sharing/backend';
 import { createSyncEngine } from '../features/sharing/syncEngine';
+import { createAccountSync, type AccountChoice } from '../features/account/accountSync';
+import type { AccountBackend, AccountStatus } from '../features/account/types';
 import type { AuthUser, CloudBackend, DeckSyncStatus } from '../features/sharing/types';
 
 interface SharingValue {
@@ -20,6 +22,12 @@ interface SharingValue {
   publish: (deckId: string) => Promise<void>;
   unpublish: (deckId: string) => Promise<void>;
   statusOf: (deckId: string) => DeckSyncStatus | undefined;
+  /** Is the person's own data (decks, cards, study schedule) being backed up to their account? */
+  accountStatus: AccountStatus;
+  /** Set when the person signed in with a different account than this device was linked to: they must choose what happens to the decks here. */
+  pendingSwitch: { email: string | null } | null;
+  /** 'cancel' signs out again and changes nothing. */
+  resolveSwitch: (choice: AccountChoice | 'cancel') => Promise<void>;
 }
 const Ctx = createContext<SharingValue | null>(null);
 
@@ -28,10 +36,11 @@ const Ctx = createContext<SharingValue | null>(null);
  * is already published). Once signed in, every edit to a published deck is sent automatically in the background.
  */
 export function SharingProvider({ children }: { children: ReactNode }) {
-  const { sharing } = useRepositories();
+  const { sharing, account: accountRepo } = useRepositories();
   const available = useMemo(() => sharingAvailable(), []);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
+  const [pendingSwitch, setPendingSwitch] = useState<{ uid: string; email: string | null } | null>(null);
   const [version, bump] = useState(0); // goes up whenever a deck's sync status changes, so screens showing it update
   const userRef = useRef<AuthUser | null>(null);
   const backends = useRef<Backends>(undefined);
@@ -50,6 +59,23 @@ export function SharingProvider({ children }: { children: ReactNode }) {
   }, []);
   const engine = useMemo(() => createSyncEngine({ sharing, cloud, ready: () => userRef.current !== null }), [sharing, cloud]);
 
+  // The person's own data goes to their account through this, which also waits for the real thing to be loaded.
+  const accountBackend = useMemo<AccountBackend>(() => {
+    const b = async () => (backends.current ??= await loadBackends()).account;
+    return {
+      listen(since, onItems, onError) {
+        let stop: (() => void) | undefined;
+        let cancelled = false;
+        void b().then((a) => { if (!cancelled) stop = a.listen(since, onItems, onError); }, onError);
+        return () => { cancelled = true; stop?.(); };
+      },
+      push: async (items) => (await b()).push(items),
+      removeAll: async () => (await b()).removeAll(),
+    };
+  }, []);
+  const account = useMemo(() => createAccountSync({ repo: accountRepo, backend: accountBackend, announce: announceDatabaseWrite }), [accountRepo, accountBackend]);
+  const [accountStatus, setAccountStatus] = useState<AccountStatus>({ state: 'off' });
+
   const loading = useRef(false);
   const ensureLoaded = useCallback(() => {
     if (!available || loading.current) return;
@@ -60,23 +86,34 @@ export function SharingProvider({ children }: { children: ReactNode }) {
         userRef.current = u;
         setUser(u);
         setAuthLoaded(true);
-        if (u) void engine.syncAll(); // signing in catches up on anything that was waiting
+        if (u) {
+          void engine.syncAll(); // signing in catches up on anything that was waiting
+          // Back up the person's own data too, unless this device holds decks from another account: then they choose first.
+          void account.prepare(u.uid).then((r) => { if (r === 'ready') void account.start(u.uid); else setPendingSwitch({ uid: u.uid, email: u.email }); });
+        } else {
+          account.stop();
+          setPendingSwitch(null);
+        }
       });
     }).catch(() => { loading.current = false; });
-  }, [available, engine]);
+  }, [available, engine, account]);
 
-  // Published decks already exist: sign-in is needed to keep them up to date, so load it.
-  useEffect(() => { if (available) void sharing.publishedDeckIds().then((ids) => { if (ids.length > 0) ensureLoaded(); }); }, [available, sharing, ensureLoaded]);
+  // Published decks already exist, or this device is linked to an account: sign-in is needed to keep them up to date, so load it.
+  useEffect(() => {
+    if (!available) return;
+    void Promise.all([sharing.publishedDeckIds(), accountRepo.getMeta('owner')]).then(([ids, owner]) => { if (ids.length > 0 || owner) ensureLoaded(); });
+  }, [available, sharing, accountRepo, ensureLoaded]);
 
   // Edits are noticed, and sent a moment later; coming back online catches up too.
   useEffect(() => {
     if (!available) return;
-    const off = onDatabaseWrite(() => engine.schedule());
-    const online = () => void engine.syncAll();
+    const off = onDatabaseWrite(() => { engine.schedule(); account.schedule(); });
+    const online = () => { void engine.syncAll(); void account.syncAll(); };
     window.addEventListener('online', online);
     const unsubscribe = engine.subscribe(() => bump((n) => n + 1));
-    return () => { off(); window.removeEventListener('online', online); unsubscribe(); };
-  }, [available, engine]);
+    const unsubscribeAccount = account.subscribe(() => setAccountStatus(account.status()));
+    return () => { off(); window.removeEventListener('online', online); unsubscribe(); unsubscribeAccount(); };
+  }, [available, engine, account]);
 
   const value = useMemo<SharingValue>(() => ({
     available,
@@ -95,6 +132,7 @@ export function SharingProvider({ children }: { children: ReactNode }) {
     async deleteAccount() {
       const b = (backends.current ??= await loadBackends());
       await b.cloud.removeAllMine(); // first: if this fails (offline), the account stays so it can be tried again
+      await account.eraseAccountData(); // the backup of decks, cards and study schedules goes too
       for (const id of await sharing.publishedDeckIds()) await sharing.unpublish(id);
       await b.auth.deleteAccount();
       bump((n) => n + 1);
@@ -109,7 +147,22 @@ export function SharingProvider({ children }: { children: ReactNode }) {
       await engine.unpublish(deckId);
     },
     statusOf: (deckId) => engine.status(deckId),
-  }), [available, user, authLoaded, ensureLoaded, engine, sharing, version]);
+    accountStatus,
+    pendingSwitch: pendingSwitch && { email: pendingSwitch.email },
+    async resolveSwitch(choice) {
+      const pending = pendingSwitch;
+      if (!pending) return;
+      setPendingSwitch(null);
+      if (choice === 'cancel') {
+        const b = (backends.current ??= await loadBackends());
+        await b.auth.signOut(); // nothing was changed on this device
+        return;
+      }
+      await account.resolve(pending.uid, choice);
+      announceDatabaseWrite(); // 'replace' emptied this device: screens refresh
+      await account.start(pending.uid);
+    },
+  }), [available, user, authLoaded, ensureLoaded, engine, sharing, version, accountStatus, pendingSwitch, account]);
 
   return <Ctx value={value}>{children}</Ctx>;
 }

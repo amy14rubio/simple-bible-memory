@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { ChartColumn, LibraryBig, Plus } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
 import { CreateDrawer } from '../features/create/CreateDrawer';
+import { AccountSwitchDialog } from '../features/account/AccountSwitchDialog';
 
 const tab = ({ isActive }: { isActive: boolean }) =>
   `flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-xs font-medium ${isActive ? 'text-foreground' : 'text-muted'}`;
@@ -17,6 +18,7 @@ export function AppShell() {
   return (
     <div className="mx-auto min-h-dvh max-w-2xl sm:border-x sm:border-border">
       <main className={showNav ? 'pb-28' : ''}><Outlet /></main>
+      <AccountSwitchDialog />
 
       {showNav && (
         <>

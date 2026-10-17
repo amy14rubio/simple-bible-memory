@@ -55,3 +55,14 @@ The list is kept on the device for a week. If the key is missing or Google can't
 - **Export deck** (deck ⋯ menu) saves one deck as a `.json` file. The "Include my progress" switch also saves your study schedule and history; leave it off when sharing.
 - **Settings > Account and backup > Export everything** saves every deck, with progress by default, as a backup.
 - **Import** (the + drawer, or Settings) reads a deck file from this app, or an Anki deck exported as "Notes in Plain Text" (you choose which column is the verse, the passage and the source). Imports always become new decks; nothing already in the app is changed.
+
+
+## Account backup and sync (Google sign-in)
+
+Signing in with Google (Settings > Account and backup) backs up the person's decks, cards, study schedules and the three study settings to a private area of Firestore, and brings them to any device they sign in on. There is nothing to press: it runs in the background, and works offline (changes wait and are sent when the connection is back). Review history, theme, font and language stay on the device. No Cloud Functions are used.
+
+- **Where it lives:** `users/{uid}/items/{kind~id}`, one small document per deck, card (with the decks it is in), schedule and setting. `firestore.rules` makes it private to the person, checks every document's shape, and refuses to replace a newer version with an older one. The rules are tested against the emulator: `npm run test:rules`.
+- **How it syncs:** the device remembers a fingerprint of everything it last agreed with the account (`account_sync_state`), sends what differs, and sends a "deleted" stub for what was removed. Each device listens for changes by "synced at" time, so other devices' edits arrive live. When two devices disagree, the most recent edit wins (`updated_at`; for a schedule, the most recent review). See `src/features/account/accountSync.ts`.
+- **Signing in on a device that already has decks:** they are merged with the account's. If the device was linked to a different account before, the person is asked whether to add its decks to the new account or replace them (`AccountSwitchDialog`).
+- **Deleting the account** removes the backup and the public decks; the decks on the device stay.
+- **Tests:** `src/features/account/accountSync.test.ts` runs two devices (two databases) against one fake cloud; `tests/account-sync.spec.ts` covers the screens; `rules-tests/account.rules.test.ts` tries to break the rules.

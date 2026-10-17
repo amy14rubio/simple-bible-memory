@@ -160,6 +160,7 @@ export function createCardRepository(db: Database, now: Clock = Date.now): CardR
     },
 
     async restore(deleted) {
+      const t = now();
       await db.transaction(async (tx) => {
         // Cards first (memberships, schedules and history point at them), in the order they were collected.
         for (const table of DELETED_TABLES) {
@@ -173,6 +174,8 @@ export function createCardRepository(db: Database, now: Clock = Date.now): CardR
             if (table === 'deck_cards') await forgetRemoval(tx, row.deck_id as string, row.card_id as string);
           }
         }
+        // Restored cards count as just edited, so the person's other devices take them back too.
+        for (const c of deleted.cards) await tx.run('UPDATE cards SET updated_at = ? WHERE id = ?', [t, c.id]);
       });
     },
 
@@ -186,12 +189,14 @@ export function createCardRepository(db: Database, now: Clock = Date.now): CardR
           await tx.run('DELETE FROM deck_cards WHERE card_id = ? AND deck_id != ?', [id, toDeckId]);
           await tx.run('INSERT OR IGNORE INTO deck_cards (deck_id, card_id, added_at) VALUES (?, ?, ?)', [toDeckId, id, t + i]);
           await forgetRemoval(tx, toDeckId, id);
+          await tx.run('UPDATE cards SET updated_at = ? WHERE id = ?', [t + i, id]); // so the move reaches the person's other devices
         }
         return moved;
       });
     },
 
     async undoMove(moved) {
+      const t = now();
       await db.transaction(async (tx) => {
         for (const { cardId, memberships } of moved.from) {
           const origin = memberships.map((m) => m.deckId);
@@ -203,6 +208,7 @@ export function createCardRepository(db: Database, now: Clock = Date.now): CardR
             await tx.run('INSERT OR IGNORE INTO deck_cards (deck_id, card_id, added_at) VALUES (?, ?, ?)', [m.deckId, cardId, m.addedAt]);
             await forgetRemoval(tx, m.deckId, cardId);
           }
+          await tx.run('UPDATE cards SET updated_at = ? WHERE id = ?', [t, cardId]);
         }
       });
     },

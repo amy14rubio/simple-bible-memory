@@ -65,7 +65,7 @@ export function createSharingRepository(db: Database): SharingRepository {
     },
 
     async publish(deckId, publishId) {
-      await db.run('UPDATE decks SET publish_id = ?, synced_meta = NULL WHERE id = ?', [publishId, deckId]);
+      await db.run('UPDATE decks SET publish_id = ?, synced_meta = NULL, updated_at = ? WHERE id = ?', [publishId, Date.now(), deckId]);
       await db.run('UPDATE deck_cards SET synced_hash = NULL WHERE deck_id = ?', [deckId]);
     },
 
@@ -73,7 +73,7 @@ export function createSharingRepository(db: Database): SharingRepository {
       await db.transaction(async (tx) => {
         const [r] = await tx.query<Row>('SELECT publish_id FROM decks WHERE id = ?', [deckId]);
         const publishId = r?.publish_id as string | null | undefined;
-        await tx.run('UPDATE decks SET publish_id = NULL, synced_meta = NULL WHERE id = ?', [deckId]);
+        await tx.run('UPDATE decks SET publish_id = NULL, synced_meta = NULL, updated_at = ? WHERE id = ?', [Date.now(), deckId]);
         await tx.run('UPDATE deck_cards SET synced_hash = NULL WHERE deck_id = ?', [deckId]);
         if (publishId) await tx.run('DELETE FROM sync_tombstones WHERE publish_id = ?', [publishId]);
       });
