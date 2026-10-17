@@ -23,7 +23,41 @@ export interface CardRepository {
   createMany(deckId: string, inputs: CardInput[]): Promise<Card[]>;
   update(id: string, input: CardInput): Promise<void>;
   delete(id: string): Promise<void>;
+  /**
+   * Deletes several cards (with their schedules and review history) in one go and hands back everything it removed,
+   * so `restore` can put them back exactly as they were (this is what "Undo" uses).
+   */
+  deleteMany(ids: string[]): Promise<DeletedCards>;
+  /** Puts back what `deleteMany` removed. Cards that already exist again are left alone. */
+  restore(deleted: DeletedCards): Promise<void>;
+  /**
+   * Files the cards in another deck, in the order given (after the cards already there). A card's study progress belongs
+   * to the card, so it moves with it. A card ends up only in the destination deck.
+   */
+  moveMany(ids: string[], toDeckId: string): Promise<MovedCards>;
+  /** Puts moved cards back in the decks, and in the places, they came from. */
+  undoMove(moved: MovedCards): Promise<void>;
 }
+
+/** Where each moved card was, so a move can be undone. */
+export interface MovedCards {
+  toDeckId: string;
+  from: { cardId: string; memberships: { deckId: string; addedAt: number }[] }[];
+}
+
+/** Whole rows of everything a deleted card had, so deleting can be undone. */
+export interface DeletedCards {
+  cards: Card[];
+  rows: { table: DeletedTable; row: Row }[];
+}
+const DELETED_TABLES = ['cards', 'deck_cards', 'card_schedule', 'review_logs'] as const;
+type DeletedTable = (typeof DELETED_TABLES)[number];
+// A published deck's per-card "last sent" fingerprint is not restored: the card is simply sent again.
+const NOT_RESTORED = new Set(['synced_hash']);
+
+/** A card that comes back to a published deck no longer needs its removal sent to the public copy. */
+const forgetRemoval = (tx: Database, deckId: string, cardId: string) =>
+  tx.run('DELETE FROM sync_tombstones WHERE card_id = ? AND publish_id = (SELECT publish_id FROM decks WHERE id = ?)', [cardId, deckId]);
 
 export function createCardRepository(db: Database, now: Clock = Date.now): CardRepository {
   return {
@@ -106,6 +140,71 @@ export function createCardRepository(db: Database, now: Clock = Date.now): CardR
 
     async delete(id) {
       await db.run('DELETE FROM cards WHERE id = ?', [id]); // cascades to memberships, schedule, logs
+    },
+
+    async deleteMany(ids) {
+      return db.transaction(async (tx) => {
+        const deleted: DeletedCards = { cards: [], rows: [] };
+        for (const id of ids) {
+          const card = await tx.query<Row>('SELECT * FROM cards WHERE id = ?', [id]);
+          if (!card[0]) continue;
+          deleted.cards.push(toCard(card[0]));
+          for (const table of DELETED_TABLES) {
+            const rows = await tx.query<Row>(`SELECT * FROM ${table} WHERE ${table === 'cards' ? 'id' : 'card_id'} = ?`, [id]);
+            for (const row of rows) deleted.rows.push({ table, row });
+          }
+          await tx.run('DELETE FROM cards WHERE id = ?', [id]);
+        }
+        return deleted;
+      });
+    },
+
+    async restore(deleted) {
+      await db.transaction(async (tx) => {
+        // Cards first (memberships, schedules and history point at them), in the order they were collected.
+        for (const table of DELETED_TABLES) {
+          for (const { table: t, row } of deleted.rows) {
+            if (t !== table) continue;
+            const columns = Object.keys(row).filter((c) => !NOT_RESTORED.has(c));
+            await tx.run(
+              `INSERT OR IGNORE INTO ${table} (${columns.join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`,
+              columns.map((c) => row[c] as SqlValue),
+            );
+            if (table === 'deck_cards') await forgetRemoval(tx, row.deck_id as string, row.card_id as string);
+          }
+        }
+      });
+    },
+
+    async moveMany(ids, toDeckId) {
+      const t = now();
+      return db.transaction(async (tx) => {
+        const moved: MovedCards = { toDeckId, from: [] };
+        for (const [i, id] of ids.entries()) {
+          const was = await tx.query<Row>('SELECT deck_id, added_at FROM deck_cards WHERE card_id = ?', [id]);
+          moved.from.push({ cardId: id, memberships: was.map((r) => ({ deckId: r.deck_id as string, addedAt: r.added_at as number })) });
+          await tx.run('DELETE FROM deck_cards WHERE card_id = ? AND deck_id != ?', [id, toDeckId]);
+          await tx.run('INSERT OR IGNORE INTO deck_cards (deck_id, card_id, added_at) VALUES (?, ?, ?)', [toDeckId, id, t + i]);
+          await forgetRemoval(tx, toDeckId, id);
+        }
+        return moved;
+      });
+    },
+
+    async undoMove(moved) {
+      await db.transaction(async (tx) => {
+        for (const { cardId, memberships } of moved.from) {
+          const origin = memberships.map((m) => m.deckId);
+          // Leave the destination (unless the card was already there), then go back to every deck it came from.
+          for (const d of (await tx.query<Row>('SELECT deck_id FROM deck_cards WHERE card_id = ?', [cardId])).map((r) => r.deck_id as string)) {
+            if (!origin.includes(d)) await tx.run('DELETE FROM deck_cards WHERE card_id = ? AND deck_id = ?', [cardId, d]);
+          }
+          for (const m of memberships) {
+            await tx.run('INSERT OR IGNORE INTO deck_cards (deck_id, card_id, added_at) VALUES (?, ?, ?)', [m.deckId, cardId, m.addedAt]);
+            await forgetRemoval(tx, m.deckId, cardId);
+          }
+        }
+      });
     },
   };
 }

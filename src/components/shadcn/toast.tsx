@@ -148,6 +148,12 @@ function ToastList() {
           <ToastTitle />
           <ToastDescription />
         </div>
+        {toastItem.actionProps && (
+          <ToastPrimitive.Action
+            data-slot="toast-action"
+            className="min-h-11 shrink-0 rounded-lg px-3 text-[0.9375rem] font-semibold underline underline-offset-4 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          />
+        )}
       </ToastContent>
     </Toast>
   ))

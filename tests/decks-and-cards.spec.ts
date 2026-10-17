@@ -110,7 +110,7 @@ test('delete card and delete deck both ask for confirmation', async ({ page }) =
 
   await page.getByRole('link', { name: /X 1:1/ }).click();
   await page.getByRole('button', { name: 'Delete card' }).click();
-  const dialog = page.getByRole('dialog');
+  const dialog = page.locator('dialog[open]');
   await dialog.getByRole('button', { name: 'Cancel' }).click();
   await expect(page.getByLabel('Verse(s)')).toHaveValue('X 1:1'); // cancelled: still editing
   await page.getByRole('button', { name: 'Delete card' }).first().click();
