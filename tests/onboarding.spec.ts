@@ -14,11 +14,11 @@ test.describe('first launch', () => {
     await page.goto('/');
     await expect(page).toHaveURL(/#\/welcome$/);
     await expect(heading(page)).toHaveText('Welcome to Simple Bible Memory'); // a welcome first
-    await expect(page.getByText('Learn Bible verses by heart, a few minutes at a time.')).toBeVisible();
+    await expect(page.locator('h1 + p')).toHaveCount(0); // a title and nothing under it
     await expect(page.getByRole('button', { name: 'Skip' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Back' })).toHaveCount(0); // nothing to go back to yet
 
-    for (const title of ['Decks and cards', 'Practise at the right time', 'Three ways to practise', 'Make your first deck']) {
+    for (const title of ['Decks and cards', 'Practice', 'Smart scheduling', 'Try the starter deck']) {
       await next(page).click();
       await expect(heading(page)).toHaveText(title);
     }
@@ -52,7 +52,7 @@ test.describe('first launch', () => {
     await page.keyboard.press('ArrowLeft');
     await expect(heading(page)).toHaveText('Welcome to Simple Bible Memory');
 
-    const card = page.getByRole('region', { name: 'Welcome to Simple Bible Memory' });
+    const card = page.getByRole('region', { name: 'Welcome' });
     const box = (await card.boundingBox())!;
     const y = box.y + box.height / 2;
     await page.mouse.move(box.x + box.width * 0.8, y);

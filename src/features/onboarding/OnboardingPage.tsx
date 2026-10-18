@@ -59,7 +59,7 @@ export function OnboardingPage() {
   return (
     <div className="mx-auto flex min-h-dvh max-w-sm flex-col px-8 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3">
       <div className="flex justify-end">
-        <Button variant="ghost" onClick={finish} className="text-muted">{t('onboarding.skip')}</Button>
+        <Button variant="ghost" onClick={finish} className="-mr-5 text-muted">{t('onboarding.skip')}</Button>
       </div>
 
       <section
@@ -67,20 +67,20 @@ export function OnboardingPage() {
         onPointerDown={down}
         onPointerUp={up}
         onPointerCancel={() => { swipeFrom.current = null; }}
-        className="flex flex-1 touch-pan-y select-none flex-col items-center justify-center gap-7 text-center"
+        className="flex flex-1 touch-pan-y select-none flex-col items-center justify-center text-center"
       >
-        <div key={card.key} className="onboarding-card flex flex-col items-center gap-7">
-          <div aria-hidden className="grid size-36 place-items-center rounded-full bg-panel text-accent">
-            <Icon size={60} strokeWidth={1.4} />
+        <div key={card.key} className="onboarding-card flex flex-col items-center gap-5">
+          <div aria-hidden className="grid size-28 place-items-center rounded-full bg-panel text-accent">
+            <Icon size={48} strokeWidth={1.4} />
           </div>
-          <div className="mx-auto max-w-[17rem] space-y-3">
-            <h1 ref={heading} tabIndex={-1} aria-describedby="onboarding-step" className="font-serif text-3xl font-medium leading-tight tracking-tight">{t(card.title)}</h1>
-            <p className="text-lg leading-snug text-muted">{t(card.body)}</p>
+          <div className="mx-auto max-w-[20rem] space-y-3">
+            <h1 ref={heading} tabIndex={-1} aria-describedby="onboarding-step" className="text-balance font-serif text-3xl font-medium leading-tight tracking-tight">{t(card.title)}</h1>
+            {card.body && <p className="mx-auto max-w-[17rem] text-lg leading-snug text-muted">{t(card.body)}</p>}
           </div>
         </div>
       </section>
 
-      <div className="space-y-5">
+      <div className="space-y-4">
         <p id="onboarding-step" className="sr-only">{t('onboarding.step', { n: step + 1, total: ONBOARDING_CARDS.length })}</p>
         <ol aria-hidden className="flex justify-center gap-2.5">
           {ONBOARDING_CARDS.map((c, i) => (

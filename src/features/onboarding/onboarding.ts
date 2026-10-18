@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { BookOpen, CalendarClock, FilePlus2, Layers, ListChecks } from 'lucide-react';
+import { BookOpen, CalendarClock, Layers, ListChecks, Sparkles } from 'lucide-react';
 import type { MessageKey } from '../../i18n';
 
 /** The setting that remembers the welcome tour was seen (finished or skipped). */
@@ -23,15 +23,17 @@ export function onboardingDisabledForTests(): boolean {
   }
 }
 
-export interface OnboardingCard { key: 'welcome' | 'decks' | 'rhythm' | 'ways' | 'start'; icon: LucideIcon; title: MessageKey; body: MessageKey }
+export interface OnboardingCard { key: 'welcome' | 'decks' | 'practice' | 'schedule' | 'starter'; icon: LucideIcon; title: MessageKey; /** The welcome card has no text under its title. */ body?: MessageKey }
 
 /**
- * Five cards in plain words, assuming nothing (no Anki, no jargon about scheduling): a welcome, what a deck and a card are, why it brings verses back at different times, the three ways to practise, and how to begin.
+ * Five short cards, nothing assumed (no Anki, no jargon): a welcome (title only), what a deck and a card are, the ways to
+ * practice, how the scheduling works, and a push to try the starter deck. Nobody wants a long tour before they can start, so it stops there. The empty home
+ * screen takes it from here.
  */
 export const ONBOARDING_CARDS: OnboardingCard[] = [
-  { key: 'welcome', icon: BookOpen, title: 'onboarding.welcome.title', body: 'onboarding.welcome.body' },
+  { key: 'welcome', icon: BookOpen, title: 'onboarding.welcome.title' },
   { key: 'decks', icon: Layers, title: 'onboarding.decks.title', body: 'onboarding.decks.body' },
-  { key: 'rhythm', icon: CalendarClock, title: 'onboarding.rhythm.title', body: 'onboarding.rhythm.body' },
-  { key: 'ways', icon: ListChecks, title: 'onboarding.ways.title', body: 'onboarding.ways.body' },
-  { key: 'start', icon: FilePlus2, title: 'onboarding.start.title', body: 'onboarding.start.body' },
+  { key: 'practice', icon: ListChecks, title: 'onboarding.practice.title', body: 'onboarding.practice.body' },
+  { key: 'schedule', icon: CalendarClock, title: 'onboarding.schedule.title', body: 'onboarding.schedule.body' },
+  { key: 'starter', icon: Sparkles, title: 'onboarding.starter.title', body: 'onboarding.starter.body' },
 ];
