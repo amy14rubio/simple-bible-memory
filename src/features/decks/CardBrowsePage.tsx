@@ -11,6 +11,7 @@ import { usePopupHistory } from '../../lib/usePopupHistory';
 import { deleteCardsWithUndo } from '../cards/undoDelete';
 import { moveCardsWithUndo } from '../cards/undoMove';
 import { MoveDrawer } from './MoveDrawer';
+import { asLang } from '../study/verseLang';
 
 /** The id used in the address for "All decks": /decks/all/cards. */
 export const ALL_DECKS = 'all';
@@ -50,6 +51,22 @@ export function CardBrowsePage() {
   const stopSelecting = () => { setSelecting(false); setSelected(new Set()); };
   usePopupHistory(selecting, stopSelecting); // Back leaves selection instead of the screen
 
+  // Selection is announced out loud and keeps focus somewhere sensible, because the controls that start and end it come and go.
+  const [announce, setAnnounce] = useState('');
+  const wasSelecting = useRef(false);
+  useEffect(() => {
+    if (selecting) {
+      setAnnounce(t('browse.selectingStatus', { count: selected.size }));
+      if (!wasSelecting.current) document.querySelector<HTMLInputElement>('table input[type=checkbox]:checked, table input[type=checkbox]')?.focus({ preventScroll: true });
+    } else if (wasSelecting.current) {
+      setAnnounce(t('browse.selectionEnded'));
+      // Back to the screen's heading (not the Select button, which would pop into view and shift the list under the pointer).
+      const heading = document.querySelector<HTMLElement>('main h1');
+      if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); }
+    }
+    wasSelecting.current = selecting;
+  }, [selecting, selected.size, t]);
+
   if (loading && !data) return null;
   const deck = data?.all.find((d) => d.id === id);
   if (!data || (!isAll && !deck)) return <><AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;
@@ -57,6 +74,7 @@ export function CardBrowsePage() {
   const heading = isAll ? t('browse.headingAll') : t('browse.heading', { deck: deck!.title });
   const newCardTo = isAll ? '/cards/new' : `/cards/new?deck=${id}`; // in All decks you choose the deck inside the form
   const q = query.trim().toLowerCase();
+  const lang = isAll ? undefined : asLang(deck?.bibleLanguage); // the verses' language (not known when decks are mixed)
   const shown = data.list.filter((c) => c.reference.toLowerCase().includes(q) || c.verseText.toLowerCase().includes(q));
   const ordered = data.list.filter((c) => selected.has(c.id)).map((c) => c.id); // in the order on screen
   const destinations = data.all.filter((d) => d.id !== id);
@@ -111,6 +129,9 @@ export function CardBrowsePage() {
           }
         />
       )}
+      <p role="status" className="sr-only">{announce}</p>
+      {/* Press-and-hold is the quick way in; this is the way in for the keyboard and screen readers, so it comes first. */}
+      {!selecting && data.list.length > 0 && <button type="button" onClick={() => startSelecting()} className="sr-only focus:not-sr-only focus:m-3 focus:rounded-lg focus:border focus:border-border focus:px-4 focus:py-2">{t('browse.select')}</button>}
       {data.list.length === 0 ? (
         <EmptyState title={t('browse.emptyTitle')} action={<ButtonLink to={newCardTo}>{t('common.newCard')}</ButtonLink>}>
           {isAll ? t('browse.emptyBodyAll') : t('browse.emptyBody')}
@@ -153,16 +174,14 @@ export function CardBrowsePage() {
                   </td>
                 )}
                 <td className="px-5 py-3.5 align-top font-serif font-medium">
-                  <Link to={`/cards/${c.id}/edit`} onClick={(e) => { if (selecting) e.preventDefault(); }} className="block focus-visible:outline-offset-4">{c.reference}</Link>
+                  <Link lang={lang} to={`/cards/${c.id}/edit`} onClick={(e) => { if (selecting) e.preventDefault(); }} className="block focus-visible:outline-offset-4">{c.reference}</Link>
                 </td>
-                <td className="py-3.5 pr-5 align-top"><span className="scripture line-clamp-2 text-[0.9375rem] leading-normal text-muted">{c.verseText}</span></td>
+                <td className="py-3.5 pr-5 align-top"><span lang={lang} className="scripture line-clamp-2 text-[0.9375rem] leading-normal text-muted">{c.verseText}</span></td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
-      {/* Press-and-hold is the quick way in; this is the way in for the keyboard and screen readers. */}
-      {!selecting && data.list.length > 0 && <button type="button" onClick={() => startSelecting()} className="sr-only focus:not-sr-only focus:m-3 focus:rounded-lg focus:border focus:border-border focus:px-4 focus:py-2">{t('browse.select')}</button>}
       {data.list.length > 0 && shown.length === 0 && <p className="px-5 py-10 text-center text-muted">{t('browse.noMatch', { query })}</p>}
       <ConfirmDialog
         open={confirmingDelete}

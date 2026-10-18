@@ -86,7 +86,7 @@ test.describe('adding cards: save, toast, and a cleared form', () => {
     const toast = page.getByText('John 3:16 added');
     await expect(toast).toBeVisible();
     await page.waitForTimeout(700); // let it finish sliding in
-    const box = (await page.locator('[data-slot="toast"]').boundingBox())!;
+    const box = (await page.locator('[data-slot="toast"]').filter({ hasText: 'John 3:16 added' }).boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(12); // a margin on the left
     expect(390 - (box.x + box.width)).toBeGreaterThanOrEqual(12); // and on the right
     expect(700 - (box.y + box.height)).toBeGreaterThanOrEqual(12); // and below it
@@ -253,7 +253,7 @@ test.describe('split into separate verses', () => {
     await reference(page).fill('Psalm 130:1-3');
     await passage(page).fill('1 Example one first. 3 Example three third.');
     await splitButton(page).click();
-    await expect(page.getByRole('dialog')).toContainText("couldn't find verse 2");
+    await expect(page.locator('dialog[open]')).toContainText("couldn't find verse 2");
   });
 });
 

@@ -109,7 +109,7 @@ export default function CardCountsChart({ slices, caption, legendLabel, describe
             type="button"
             aria-pressed={selected === s.key}
             onClick={() => toggle(s.key)}
-            className="flex min-h-9 items-center gap-1.5 justify-self-start rounded-md px-2.5 text-xs whitespace-nowrap hover:bg-foreground/10 aria-pressed:bg-foreground/10 aria-pressed:font-medium"
+            className="flex min-h-11 items-center gap-1.5 justify-self-start rounded-md px-2.5 text-xs whitespace-nowrap hover:bg-foreground/10 aria-pressed:bg-foreground/10 aria-pressed:font-medium"
           >
             <span aria-hidden className="size-2 shrink-0 rounded-[2px]" style={{ backgroundColor: s.color }} />
             {s.label} {s.value}

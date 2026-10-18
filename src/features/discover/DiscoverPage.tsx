@@ -73,6 +73,7 @@ export function DiscoverPage() {
       ) : (
         <Page className="space-y-4 pt-4">
           <h2 className="sr-only">{heading}</h2>
+          <p role="status" className="sr-only">{state === 'ready' ? t('discover.count', { count: decks.length }) : ''}</p>
           {state === 'loading' && <p role="status" className="text-muted">{t('discover.loading')}</p>}
           {state === 'error' && (
             <div className="space-y-3">

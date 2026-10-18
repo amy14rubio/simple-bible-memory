@@ -11,8 +11,8 @@ test('new card shows interval hints; Good brings it back soon (learning); Easy g
 
   // first pass: hints come from the scheduler (documented default learning steps: 1m / 10m)
   await page.getByRole('button', { name: 'Show answer' }).click();
-  await expect(page.getByRole('button', { name: /^Again.*1m/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /^Good.*10m/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Again\s+1 minute$/ })).toContainText('1m'); // said as words, drawn short
+  await expect(page.getByRole('button', { name: /^Good\s+10 minutes$/ })).toContainText('10m');
   await page.getByRole('button', { name: /^Good/ }).click();
 
   // due in 10 minutes -> shown again in this session (learning step)

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { ChartColumn, LibraryBig, Plus } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
+import { useRouteAnnouncer } from './useRouteAnnouncer';
 import { CreateDrawer } from '../features/create/CreateDrawer';
 import { AccountSwitchDialog } from '../features/account/AccountSwitchDialog';
 
@@ -13,11 +14,13 @@ export function AppShell() {
   const { t } = useI18n();
   const { pathname } = useLocation();
   const [creating, setCreating] = useState(false);
+  const main = useRef<HTMLElement>(null);
+  useRouteAnnouncer(main);
   const showNav = pathname === '/';
 
   return (
     <div className="mx-auto min-h-dvh max-w-2xl sm:border-x sm:border-border">
-      <main className={showNav ? 'pb-28' : ''}><Outlet /></main>
+      <main ref={main} className={showNav ? 'pb-28' : ''}><Outlet /></main>
       <AccountSwitchDialog />
 
       {showNav && (

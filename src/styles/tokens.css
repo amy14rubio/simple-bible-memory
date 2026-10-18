@@ -107,3 +107,6 @@ select:focus-visible { outline: none; }
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
+
+/* Things that take focus only from code (a heading after a screen change, an answer after "Show answer") need no ring. */
+[tabindex='-1']:focus { outline: none; }

@@ -26,6 +26,14 @@ export function luminance(hex: string): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
+/** WCAG contrast ratio between two colours, 1 (none) to 21 (black on white). Text needs 4.5 to be comfortably readable. */
+export function contrastRatio(a: string, b: string): number {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+export const READABLE_CONTRAST = 4.5;
+
 /** Which built-in palette (for the rating colours and the browser's own controls) suits this background. */
 export const isDarkBackground = (background: string) => luminance(background) < 0.3;
 

@@ -8,6 +8,9 @@ import { Button } from '../../components/ui';
 import { ActionBar, RatingBar } from './RatingBar';
 import { useI18n } from '../../i18n/I18nProvider';
 import { PaintedText } from './PaintedText';
+import { AnswerRegion } from './AnswerRegion';
+import { useVerseLang } from './verseLang';
+import { CARD_PROMPT_ID, CardPrompt } from './cardPosition';
 
 interface ModeProps {
   card: Card;
@@ -15,26 +18,29 @@ interface ModeProps {
   onRate: (r: Rating) => void;
 }
 
-const Passage = ({ text }: { text: string }) => (
-  <blockquote className="scripture whitespace-pre-line text-center text-xl">{text}</blockquote>
-);
+const Passage = ({ text }: { text: string }) => {
+  const lang = useVerseLang();
+  return <blockquote lang={lang} className="scripture whitespace-pre-line text-center text-xl">{text}</blockquote>;
+};
 
 /** Identify card, Flashcard mode: see the passage, recall the verse, reveal, rate. */
 export function IdentifyFlashcard({ card, intervals, onRate }: ModeProps) {
   const { t } = useI18n();
   const [revealed, setRevealed] = useState(false);
+  const lang = useVerseLang();
   return (
     <>
+      <CardPrompt prompt={t('study.promptName')} />
       <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
         <Passage text={card.verseText} />
         {revealed && (
-          <div className="space-y-1">
-            <p className="font-serif text-3xl font-medium tracking-tight">{card.reference}</p>
-          </div>
+          <AnswerRegion labelOnly label={`${t('study.answer')}: ${card.reference}`} className="space-y-1">
+            <p lang={lang} className="font-serif text-3xl font-medium tracking-tight">{card.reference}</p>
+          </AnswerRegion>
         )}
       </div>
       <ActionBar>
-        {revealed ? <RatingBar intervals={intervals} onRate={onRate} /> : <Button className="w-full" onClick={() => setRevealed(true)} autoFocus>{t('study.showAnswer')}</Button>}
+        {revealed ? <RatingBar intervals={intervals} onRate={onRate} /> : <Button className="w-full" onClick={() => setRevealed(true)} autoFocus aria-describedby={CARD_PROMPT_ID}>{t('study.showAnswer')}</Button>}
       </ActionBar>
     </>
   );
@@ -47,12 +53,14 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
   const { t } = useI18n();
   const [typed, setTyped] = useState('');
   const [result, setResult] = useState<TypeResult>();
+  const lang = useVerseLang();
 
   const check = () => setResult(typed.trim() ? { typed: typed.trim(), ...checkReference(card.reference, typed), painted: paintComparison(card.reference, typed) } : { revealedOnly: true });
 
   return (
     <>
       <div className="flex flex-1 flex-col gap-6 pt-6">
+        <CardPrompt prompt={t('study.promptName')} />
         <Passage text={card.verseText} />
         {!result ? (
           <div className="space-y-2">
@@ -64,6 +72,7 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
               onKeyDown={(e) => e.key === 'Enter' && check()}
               placeholder={t('identify.placeholder')}
               autoFocus
+              aria-describedby={CARD_PROMPT_ID}
               autoCapitalize="words"
               autoCorrect="off"
               spellCheck={false}
@@ -71,22 +80,30 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
             />
           </div>
         ) : (
-          <section aria-label={t('identify.answer')} className="space-y-5 text-center">
+          <AnswerRegion
+            labelOnly
+            className="space-y-5 text-center"
+            label={
+              'correct' in result
+                ? result.correct ? `${t('common.correct')}. ${card.reference}` : t('identify.wrongSummary', { typed: result.typed, answer: card.reference })
+                : `${t('study.answer')}: ${card.reference}`
+            }
+          >
             {'correct' in result && !result.correct && (
               <div className="space-y-1">
                 <h2 className="text-sm font-medium text-muted">{t('identify.yourAnswer')}</h2>
-                <p className="font-serif text-3xl font-medium tracking-tight"><PaintedText segments={result.painted.typed} side="typed" /></p>
+                <p lang={lang} className="font-serif text-3xl font-medium tracking-tight"><PaintedText segments={result.painted.typed} side="typed" /></p>
               </div>
             )}
             <div className="space-y-1">
               {'correct' in result && !result.correct && <h2 className="text-sm font-medium text-muted">{t('type.correctVerse')}</h2>}
-              <p className="font-serif text-3xl font-medium tracking-tight">
+              <p lang={lang} className="font-serif text-3xl font-medium tracking-tight">
                 {'correct' in result ? (
                   result.correct ? <span className="text-good">{card.reference}</span> : <PaintedText segments={result.painted.expected} side="expected" />
                 ) : card.reference}
               </p>
             </div>
-          </section>
+          </AnswerRegion>
         )}
       </div>
       <ActionBar>
@@ -111,14 +128,16 @@ export function IdentifyChoice({ card, references, sessionSeed, intervals, onRat
     [card, references, sessionSeed],
   );
   const [picked, setPicked] = useState<string>();
+  const lang = useVerseLang();
   if (!choices) return <IdentifyType card={card} intervals={intervals} onRate={onRate} />;
 
   const correct = picked === card.reference;
   return (
     <>
       <div className="flex flex-1 flex-col gap-6 pt-6">
+        <CardPrompt prompt={t('study.promptChoose')} />
         <Passage text={card.verseText} />
-        <div role="group" aria-label={t('identify.choose')} className="grid gap-2.5">
+        <div role="group" aria-label={t('identify.choose')} aria-describedby={CARD_PROMPT_ID} className="grid gap-2.5">
           {choices.map((c) => {
             const isRight = c === card.reference;
             const state = picked === undefined ? 'idle' : isRight ? 'right' : c === picked ? 'wrong' : 'other';
@@ -133,7 +152,7 @@ export function IdentifyChoice({ card, references, sessionSeed, intervals, onRat
                   state === 'right' ? 'border-2 border-good text-good' : state === 'wrong' ? 'border-2 border-again text-again' : 'border-border'
                 } ${state === 'idle' ? 'hover:bg-surface' : ''} ${state === 'other' ? 'text-muted' : ''}`}
               >
-                <span>{c}</span>
+                <span lang={lang}>{c}</span>
                 {/* color is the visible signal; screen readers get the words */}
                 {state === 'right' && <span className="sr-only">{t('common.correct')}</span>}
                 {state === 'wrong' && <span className="sr-only">{t('identify.yourAnswer')}</span>}
@@ -142,6 +161,7 @@ export function IdentifyChoice({ card, references, sessionSeed, intervals, onRat
           })}
         </div>
       </div>
+      {picked !== undefined && <AnswerRegion label={correct ? `${t('common.correct')}. ${card.reference}` : t('identify.wrongChoice', { answer: card.reference })} />}
       {picked !== undefined && (
         <ActionBar>
           <RatingBar suggested={correct ? 3 : 1} intervals={intervals} onRate={onRate} />
