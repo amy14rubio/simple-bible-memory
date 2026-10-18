@@ -4,12 +4,13 @@ import { Check, ChevronLeft, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
 import { usePopupHistory } from '../lib/usePopupHistory';
 
-type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
+type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'light';
 const variants: Record<Variant, string> = {
   primary: 'bg-primary text-primary-foreground hover:opacity-90',
   secondary: 'border border-border bg-background hover:bg-surface',
   danger: 'border border-danger text-danger hover:bg-surface',
   ghost: 'hover:bg-surface',
+  light: 'btn-light', // a white button (see tokens.css)
 };
 
 export function Button({ variant = 'primary', className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {

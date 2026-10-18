@@ -170,9 +170,9 @@ test.describe('verses are not translated', () => {
     const deck = await esCreateDeck(page, 'Baraja');
     await page.goto(`/#/cards/new?deck=${deck}`);
     await page.getByLabel('Versículo(s)').fill('John 3:16'); // English book name in the Spanish app
-    await expect(page.getByRole('button', { name: /Buscar en Bible Gateway/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Buscar pasaje/ })).toBeVisible();
     await page.getByLabel('Versículo(s)').fill('Salmos 130:1');
-    await expect(page.getByRole('button', { name: /Buscar en Bible Gateway/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Buscar pasaje/ })).toBeVisible();
     await ctx.close();
   });
 });
@@ -337,7 +337,7 @@ test.describe('the app in Spanish', () => {
     await ctx.close();
   });
 
-  test('Bible Gateway helper and splitting verses in Spanish', async ({ browser }) => {
+  test('Find passage helper and splitting verses in Spanish', async ({ browser }) => {
     const { ctx, page } = await spanishPage(browser);
     await ctx.route('https://www.biblegateway.com/**', (route) => route.fulfill({ contentType: 'text/html', body: '<p>stub</p>' }));
     const id = await esCreateDeck(page, 'Separar');
@@ -345,11 +345,11 @@ test.describe('the app in Spanish', () => {
     await page.getByLabel('Versículo(s)').fill('Salmos 130:1-2');
     await page.getByLabel('Pasaje', { exact: true }).fill('1 Texto de ejemplo uno. 2 Texto de ejemplo dos.');
 
-    await page.getByRole('button', { name: /Buscar en Bible Gateway/ }).click();
+    await page.getByRole('button', { name: /Buscar pasaje/ }).click();
     const gateway = page.getByRole('dialog', { name: 'Buscar un pasaje bíblico' });
-    await expect(gateway).toContainText('Bible Gateway se abrirá en el navegador de tu dispositivo.');
+    await expect(gateway).toContainText('Explora y compara distintas versiones de la Biblia en estos sitios.');
     const popup = ctx.waitForEvent('page');
-    await gateway.getByRole('button', { name: /Continuar a Bible Gateway/ }).click();
+    await gateway.getByRole('button', { name: /Abrir Bible Gateway/ }).click();
     expect((await popup).url()).toBe('https://www.biblegateway.com/passage/?search=Psalm+130%3A1-2'); // the link itself is not translated
 
     await page.getByRole('button', { name: 'Separar en versículos' }).click();

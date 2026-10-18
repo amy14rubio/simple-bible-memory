@@ -14,7 +14,7 @@ import { loadCardKinds } from '../study/cardKinds';
 import { asLang } from '../study/verseLang';
 import { useI18n } from '../../i18n/I18nProvider';
 import { deleteCardsWithUndo } from './undoDelete';
-import { BibleGatewayHelper } from './BibleGatewayHelper';
+import { FindPassageHelper } from './FindPassageHelper';
 import { SplitDialog } from './SplitDialog';
 
 /** "Add card" (/cards/new?deck=ID) and "Edit card" (/cards/:id/edit). */
@@ -139,7 +139,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
         <div className="space-y-2">
           <div className="flex min-h-11 items-center justify-between gap-3">
             <label htmlFor="passage" className="text-[0.9375rem] font-medium">{t('cardForm.passage')}</label>
-            <BibleGatewayHelper reference={reference} />
+            <FindPassageHelper reference={reference} language={lang} />
           </div>
           <GrowingTextarea
             id="passage"

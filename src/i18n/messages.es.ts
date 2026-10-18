@@ -125,6 +125,13 @@ export const es: Dictionary = {
   'toast.cardsRestored': { one: '{count} tarjeta restaurada', other: '{count} tarjetas restauradas' },
   'browse.noMatch': 'Ninguna tarjeta coincide con "{query}".',
 
+  'find.button': 'Buscar pasaje',
+  'find.title': 'Buscar un pasaje bíblico',
+  'find.p1': 'Explora y compara distintas versiones de la Biblia en estos sitios.',
+  'find.p2': 'Copia el pasaje allí y pégalo en tu tarjeta.',
+  'find.offline': 'Parece que no tienes conexión, así que la página puede no cargar hasta que te reconectes.',
+  'find.openGateway': 'Abrir Bible Gateway',
+  'find.openEbible': 'Abrir eBible',
   'cardForm.add': 'Añadir tarjeta',
   'cardForm.edit': 'Editar tarjeta',
   'cardForm.createDeckFirst': 'Crea primero una baraja',
@@ -146,13 +153,6 @@ export const es: Dictionary = {
   'cardForm.deleteBody': '{reference} y su historial de repasos se eliminarán de forma permanente.',
   'cardForm.thisCard': 'Esta tarjeta',
 
-  'gateway.button': 'Buscar en Bible Gateway',
-  'gateway.title': 'Buscar un pasaje bíblico',
-  'gateway.p1': 'Puedes usar Bible Gateway para explorar distintas versiones de la Biblia y encontrar el pasaje que quieres memorizar.',
-  'gateway.p2': 'Bible Gateway se abrirá en el navegador de tu dispositivo. Allí puedes copiar el pasaje y pegarlo en tu tarjeta en esta aplicación.',
-  'gateway.p3': 'Esta aplicación no obtiene ni copia automáticamente el texto bíblico de Bible Gateway.',
-  'gateway.offline': 'Parece que no tienes conexión, así que la página puede no cargar hasta que te reconectes.',
-  'gateway.continue': 'Continuar a Bible Gateway',
 
   'split.title': 'Separar en versículos',
   'split.creates': { one: 'Esto crea {count} tarjeta, una por versículo.', other: 'Esto crea {count} tarjetas, una por versículo.' },
