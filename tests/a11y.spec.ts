@@ -31,10 +31,10 @@ for (const scheme of ['light', 'dark'] as const) {
     await page.goto(`/#/cards/new?deck=${id}`);
     await page.getByLabel('Verse(s)').fill('John 3:16');
     await page.getByLabel('Passage', { exact: true }).fill('Example verse text typed by the user.');
-    await audit(page, 'card form with Bible Gateway button');
-    await page.getByRole('button', { name: /Find on Bible Gateway/ }).click();
+    await audit(page, 'card form with the Find passage button');
+    await page.getByRole('button', { name: /Find passage/ }).click();
     await expect(page.getByRole('dialog', { name: 'Find a Bible passage' })).toBeVisible();
-    await audit(page, 'Bible Gateway dialog');
+    await audit(page, 'Find passage dialog');
     await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).dispatchEvent('click');
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByText('John 3:16 added')).toBeVisible();

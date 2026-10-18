@@ -137,6 +137,13 @@ export const en = {
   'browse.noMatch': 'No cards match "{query}".',
 
   // card form
+  'find.button': 'Find passage',
+  'find.title': 'Find a Bible passage',
+  'find.p1': 'Explore different translations and compare them on these sites.',
+  'find.p2': 'Copy the passage there and paste it into your card.',
+  'find.offline': 'You appear to be offline, so the page may not load until you reconnect.',
+  'find.openGateway': 'Open Bible Gateway',
+  'find.openEbible': 'Open eBible',
   'cardForm.add': 'Add card',
   'cardForm.edit': 'Edit card',
   'cardForm.createDeckFirst': 'Create a deck first',
@@ -159,13 +166,6 @@ export const en = {
   'cardForm.thisCard': 'This card',
 
   // Bible Gateway helper
-  'gateway.button': 'Find on Bible Gateway',
-  'gateway.title': 'Find a Bible passage',
-  'gateway.p1': 'You can use Bible Gateway to explore different Bible translations and find the passage you want to memorize.',
-  'gateway.p2': "Bible Gateway will open in your device's web browser. You can copy the passage there and paste it into your verse card in this app.",
-  'gateway.p3': "This app doesn't automatically retrieve or copy Bible text from Bible Gateway.",
-  'gateway.offline': 'You appear to be offline, so the page may not load until you reconnect.',
-  'gateway.continue': 'Continue to Bible Gateway',
 
   // split into verses
   'split.title': 'Split into separate verses',

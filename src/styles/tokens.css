@@ -114,3 +114,9 @@ select:focus-visible { outline: none; }
 /* The welcome tour's cards ease in. (prefers-reduced-motion above shortens this to nothing.) */
 @keyframes onboarding-in { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
 .onboarding-card { animation: onboarding-in 260ms ease-out; }
+
+/* A white button: pure white in the light theme, the soft white of the primary button in the dark theme. */
+.btn-light { background: #ffffff; color: #17171a; border: 1px solid var(--border); }
+.btn-light:hover { background: #f1f0ec; }
+:root[data-theme='dark'] .btn-light { background: #f1f0ec; color: #131312; border-color: transparent; }
+:root[data-theme='dark'] .btn-light:hover { background: #ffffff; }
