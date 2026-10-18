@@ -266,3 +266,21 @@ test('switching deck in the card browser keeps Back simple: one Back returns to 
   await page.goBack();
   await expect(page).toHaveURL(new RegExp(`#/decks/${a}/cards$`)); // not a leftover popup entry
 });
+
+test('the deck menu has "Add card", first, on the home list and on the deck page', async ({ page }) => {
+  const id = await createDeck(page, 'Psalms');
+  // from the home list
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Actions for Psalms' }).click();
+  const links = page.getByRole('navigation', { name: 'Deck actions' }).getByRole('link');
+  await expect(links.first()).toHaveText('Add card');
+  await links.first().click();
+  await expect(page).toHaveURL(new RegExp(`#/cards/new\\?deck=${id}$`));
+  await expect(page.getByRole('heading', { name: 'Add card', level: 1 })).toBeVisible();
+
+  // from the deck page
+  await page.goto(`/#/decks/${id}`);
+  await page.getByRole('button', { name: 'Deck actions' }).click();
+  await page.getByRole('navigation', { name: 'Deck actions' }).getByRole('link', { name: 'Add card' }).click();
+  await expect(page).toHaveURL(new RegExp(`#/cards/new\\?deck=${id}$`));
+});

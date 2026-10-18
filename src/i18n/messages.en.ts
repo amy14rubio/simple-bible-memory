@@ -63,6 +63,7 @@ export const en = {
   // deck menu
   'deckMenu.defaultTitle': 'Deck',
   'deckMenu.actions': 'Deck actions',
+  'deckMenu.addCard': 'Add card',
   'deckMenu.browse': 'Browse cards',
   'deckMenu.extraPractice': 'Extra practice',
   'deckMenu.rename': 'Rename deck',
