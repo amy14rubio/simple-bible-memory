@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Card } from '../../domain/types';
-import { compareVerse, countWrong, paintComparison, type Comparison, type Segment } from '../../domain/study/compare';
+import { compareVerse, differences, paintComparison, type Comparison, type Segment } from '../../domain/study/compare';
 import type { Rating } from '../../domain/study/rating';
 import { Button, GrowingTextarea } from '../../components/ui';
 import { ActionBar, RatingBar } from './RatingBar';
@@ -8,6 +8,7 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { PaintedText } from './PaintedText';
 import { AnswerRegion } from './AnswerRegion';
 import { useVerseLang } from './verseLang';
+import { CARD_PROMPT_ID, CardPrompt } from './cardPosition';
 
 type Result = { comparison: Comparison; painted: ReturnType<typeof paintComparison> } | { revealedOnly: true };
 
@@ -23,6 +24,7 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
   return (
     <>
       <div className="flex flex-1 flex-col gap-5 pt-6">
+        <CardPrompt prompt={card.reference} />
         <p lang={lang} className="text-center font-serif text-2xl font-medium tracking-tight">{card.reference}</p>
         {!result ? (
           <>
@@ -33,6 +35,7 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
               value={typed}
               placeholder={t('type.placeholder')}
               autoFocus
+              aria-describedby={CARD_PROMPT_ID}
               autoCapitalize="off"
               autoCorrect="off"
               spellCheck={false}
@@ -42,22 +45,22 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
           </>
         ) : 'comparison' in result && result.comparison.exact ? (
           // Everything right: just the verse, in green.
-          <AnswerRegion label={`${t('type.exact')} ${card.verseText}`}>
+          <AnswerRegion labelOnly label={`${t('type.exact')} ${card.verseText}`}>
             <p lang={lang} className="scripture whitespace-pre-line text-lg"><PaintedText segments={result.painted.expected} side="expected" /></p>
           </AnswerRegion>
         ) : (
           <AnswerRegion
             className="space-y-6"
-            label={'comparison' in result ? t('type.summary', { extra: countWrong(result.painted.typed), missed: countWrong(result.painted.expected) }) : `${t('type.correctVerse')}: ${card.verseText}`}
+            label={'comparison' in result ? t('type.summary', { count: differences(result.comparison.ops).length }) : `${t('type.correctVerse')}: ${card.verseText}`}
           >
             {'comparison' in result && <Words label={t('type.yourAnswer')} segments={result.painted.typed} side="typed" />}
             {'comparison' in result ? (
               <Words label={t('type.correctVerse')} segments={result.painted.expected} side="expected" />
             ) : (
-              <section aria-label={t('type.correctVerse')} className="space-y-1">
+              <div className="space-y-1">
                 <h2 className="text-sm font-medium text-muted">{t('type.correctVerse')}</h2>
                 <p lang={lang} className="scripture whitespace-pre-line text-lg">{card.verseText}</p>
-              </section>
+              </div>
             )}
           </AnswerRegion>
         )}
@@ -76,9 +79,9 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
 function Words({ label, segments, side }: { label: string; segments: Segment[]; side: 'typed' | 'expected' }) {
   const lang = useVerseLang();
   return (
-    <section aria-label={label} className="space-y-1">
+    <div className="space-y-1">
       <h2 className="text-sm font-medium text-muted">{label}</h2>
       <p lang={lang} className="scripture whitespace-pre-line text-lg"><PaintedText segments={segments} side={side} /></p>
-    </section>
+    </div>
   );
 }

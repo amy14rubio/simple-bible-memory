@@ -272,8 +272,8 @@ test.describe('the app in Spanish', () => {
     await expect(page.getByRole('button', { name: 'Mostrar respuesta' })).toHaveCount(1);
     await page.getByLabel('Escribe el versículo de memoria').fill('uno dos cinco cuatro');
     await page.getByRole('button', { name: 'Mostrar respuesta' }).click();
-    await expect(page.getByRole('region', { name: 'Tu respuesta' })).toContainText(/uno dos.*cinco.*cuatro/); // (hidden words mark the wrong run)
-    await expect(page.getByRole('region', { name: 'Versículo correcto' })).toContainText(/Uno dos.*tres.*cuatro\./);
+    await expect(page.getByRole('heading', { name: 'Tu respuesta' }).locator('xpath=..')).toContainText(/uno dos.*cinco.*cuatro/); // (hidden words mark the wrong run)
+    await expect(page.getByRole('heading', { name: 'Versículo correcto' }).locator('xpath=..')).toContainText(/Uno dos.*tres.*cuatro\./);
     await expect(page.getByRole('button', { name: /^Otra vez.*sugerido/ })).toBeVisible();
 
     // identify card: type the verse

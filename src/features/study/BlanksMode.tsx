@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Card } from '../../domain/types';
 import { buildWordBank, checkCloze, generateCloze, hashSeed, isCorrectWord, wordsOf, type BankWord, type Difficulty } from '../../domain/study/cloze';
 import type { Rating } from '../../domain/study/rating';
 import { ActionBar, RatingBar } from './RatingBar';
 import { AnswerRegion } from './AnswerRegion';
 import { useVerseLang } from './verseLang';
+import { useCardPosition } from './cardPosition';
 import { useI18n } from '../../i18n/I18nProvider';
 
 /**
@@ -26,10 +27,17 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
   const [picked, setPicked] = useState<string[]>([]); // the word tapped for each finished blank
   const [announcement, setAnnouncement] = useState('');
   const lang = useVerseLang();
+  const position = useCardPosition();
   const step = picked.length;
   const done = step >= blanks.length;
   // A fresh, reshuffled bank for each blank.
   const bank = useMemo(() => buildWordBank({ segments, step, extraWords: deckWords, seed }), [segments, step, deckWords, seed]);
+
+  // Said as the card appears (a live region only speaks changes, so it is filled in after the first draw).
+  useEffect(() => {
+    if (position && blanks.length > 0) setAnnouncement(`${t('study.cardPrompt', { n: position.n, total: position.total, prompt: card.reference })} ${t('blanks.current', { n: 1 })}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const tap = (word: BankWord) => {
     const answer = blanks[step]!.answer;

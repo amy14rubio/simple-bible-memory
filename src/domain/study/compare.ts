@@ -68,8 +68,31 @@ export interface Segment {
   state: 'match' | 'wrong' | 'plain' | 'gap';
 }
 
-/** How many words are wrong in some painted text (for the summary read out when a result appears). */
-export const countWrong = (segments: Segment[]) => segments.filter((x) => x.state === 'wrong').length;
+/** One place where what was typed differs from the verse, with the word before it so it can be found. */
+export interface Difference {
+  /** The matching word just before (null: at the very start). */
+  after: string | null;
+  /** What was typed there ("" if nothing). */
+  typed: string;
+  /** What the verse has there ("" if nothing). */
+  missing: string;
+}
+
+/** The differences in reading order, each a self-contained fact: after "world", you typed "earth" and the verse has "heaven". */
+export function differences(ops: DiffOp[]): Difference[] {
+  const out: Difference[] = [];
+  let after: string | null = null;
+  for (let i = 0; i < ops.length; ) {
+    const op = ops[i]!;
+    if (op.type === 'match') { after = op.word; i++; continue; }
+    const missing: string[] = [];
+    const typed: string[] = [];
+    for (; i < ops.length && ops[i]!.type !== 'match'; i++) (ops[i]!.type === 'missing' ? missing : typed).push(ops[i]!.word);
+    out.push({ after, typed: typed.join(' '), missing: missing.join(' ') });
+  }
+  return out;
+}
+
 
 /**
  * Splits both texts back into displayable pieces, keeping punctuation and line breaks as written.

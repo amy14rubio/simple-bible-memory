@@ -86,22 +86,44 @@ test.describe('studying', () => {
     await expect(page.getByRole('group', { name: 'How well did you remember it?' }).getByRole('button').first()).toBeFocused();
   });
 
-  test('Type: the result says how many words were wrong, and marks each run of wrong words in words', async ({ page }) => {
+  test('Type: the result reads as the summary, then "Your answer" in full, then "Correct verse" in full', async ({ page }) => {
     const id = await deckWithCard(page);
     await page.goto(`/#/decks/${id}/study/type`);
-    const card = (await page.locator('main p').filter({ hasText: /^(John 3:16|Psalm 23:1|Psalm 1:1|Psalm 2:1)$/ }).first().textContent())!;
-    const typed = card === 'John 3:16' ? 'For God so hated the earth that he gave nothing' : 'Totally different words here';
+    const reference = (await page.locator('main p').filter({ hasText: /^(John 3:16|Psalm 23:1|Psalm 1:1|Psalm 2:1)$/ }).first().textContent())!;
+    const typed = { 'John 3:16': 'For God so hated the earth that he gave nothing', 'Psalm 23:1': 'The Lord is my master; I shall not want extra', 'Psalm 1:1': 'Blessed is the man that walketh extra', 'Psalm 2:1': 'Why do the extra rage' }[reference]!;
     await page.getByRole('textbox').fill(typed);
     await page.getByRole('button', { name: 'Show answer' }).click();
 
-    const group = page.getByRole('group', { name: /^Not every word matched\./ });
+    const group = page.getByRole('group', { name: /^Not every word matched: \d+ differences?\.$/ });
     await expect(group).toBeFocused();
-    const text = (await group.textContent())!;
-    expect(text).toContain('Extra words:');
-    expect(text).toContain('Missed words:');
-    expect(text).toContain('end.');
-    // no tooltip-only information is left behind
+    // what you typed, as ONE piece of text (not a stop per word), and nothing but the two full texts after the summary
+    const mine = page.getByRole('heading', { name: 'Your answer' }).locator('xpath=..');
+    const correct = page.getByRole('heading', { name: 'Correct verse' }).locator('xpath=..');
+    await expect(mine.locator('.sr-only')).toHaveText(typed);
+    await expect(correct.locator('.sr-only')).toHaveText(/\S/);
+    // the coloured copy is for eyes only
+    await expect(mine.locator('[aria-hidden="true"]')).toHaveCount(1);
+    await expect(group.getByRole('list')).toHaveCount(0); // no list of differences
     expect(await group.locator('[title]').count()).toBe(0);
+  });
+
+  test('Flashcard: the answer is read once (its name), and its drawn copy is skipped by screen readers', async ({ page }) => {
+    const id = await deckWithCard(page);
+    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await page.getByRole('button', { name: 'Show answer' }).click();
+    const group = page.getByRole('group', { name: /^Answer: / });
+    await expect(group.locator('[aria-hidden="true"]')).toHaveCount(1);
+  });
+
+  test('Each card says where you are and what is asked, as its first control takes focus', async ({ page }) => {
+    const id = await deckWithCard(page);
+    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await expect(page.getByRole('button', { name: 'Show answer' })).toBeFocused();
+    await expect(page.getByRole('button', { name: 'Show answer' })).toHaveAccessibleDescription(/^Card 1 of \d+\. (John 3:16|Psalm 23:1|Psalm 1:1|Psalm 2:1)$/);
+    await page.goto(`/#/decks/${id}/study/type`);
+    await expect(page.getByRole('textbox')).toHaveAccessibleDescription(/^Card 1 of \d+\. /);
+    await page.goto(`/#/decks/${id}/study/blanks`);
+    await expect(page.getByRole('status').filter({ hasText: /Card 1 of \d+\. .* Blank 1, the one to fill in now/ })).toBeAttached();
   });
 
   test('Type: a perfect answer says so, and says the verse', async ({ page }) => {

@@ -64,8 +64,8 @@ test('identify card, Type: abbreviations are accepted; wrong and empty answers a
 
   await page.getByLabel(/Type the verse/).fill('Psalm 24:1');
   await page.getByRole('button', { name: 'Show answer' }).click();
-  const wrong = page.getByRole('group', { name: /^Not quite\. Wrong words in your answer/ });
-  const mine = wrong.locator('div').filter({ hasText: 'Your answer' });
+  const wrong = page.getByRole('group', { name: /^Not quite\. You typed / });
+  const mine = wrong.locator('div.space-y-1').filter({ hasText: 'Your answer' });
   await expect(mine).toContainText(/Psalm.*24.*:1/); // what I typed, with the wrong number in red (and marked in words)
   await expect(mine.locator('del')).toHaveText('24');
   await expect(wrong.locator('mark')).toHaveText('23');

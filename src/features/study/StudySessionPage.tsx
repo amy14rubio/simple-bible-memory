@@ -16,6 +16,7 @@ import { IdentifyChoice, IdentifyFlashcard, IdentifyType } from './IdentifyModes
 import { loadCardKinds } from './cardKinds';
 import { VerseLangProvider, asLang } from './verseLang';
 import { SpokenIntervalsProvider } from './spokenIntervals';
+import { CardPositionProvider } from './cardPosition';
 import { loadNewPerDay } from './newPerDay';
 
 type Mode = 'flashcard' | 'type' | 'blanks';
@@ -167,6 +168,7 @@ function Session({ verseLang, heading, deckId, mode, extraPractice, references, 
       <AppBar back={exit} title={extraPractice ? t('study.extraTitle') : <span className="sr-only">{heading}</span>} />
       <VerseLangProvider value={verseLang}>
       <SpokenIntervalsProvider value={spokenIntervals}>
+      <CardPositionProvider value={{ n: index + 1, total: queue.length }}>
       <div className="flex flex-1 flex-col px-5">
         <ul aria-label={t('study.remaining')} className="flex gap-3 pt-3 text-sm font-normal">
           {counter('new', t('study.counterNew'))}
@@ -188,6 +190,7 @@ function Session({ verseLang, heading, deckId, mode, extraPractice, references, 
           </>
         )}
       </div>
+      </CardPositionProvider>
       </SpokenIntervalsProvider>
       </VerseLangProvider>
     </div>

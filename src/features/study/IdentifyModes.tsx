@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { Card } from '../../domain/types';
 import { checkReference } from '../../domain/study/identify';
-import { countWrong, paintComparison } from '../../domain/study/compare';
+import { paintComparison } from '../../domain/study/compare';
 import { buildCitationChoices } from '../../domain/study/choices';
 import type { Rating } from '../../domain/study/rating';
 import { Button } from '../../components/ui';
@@ -10,6 +10,7 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { PaintedText } from './PaintedText';
 import { AnswerRegion } from './AnswerRegion';
 import { useVerseLang } from './verseLang';
+import { CARD_PROMPT_ID, CardPrompt } from './cardPosition';
 
 interface ModeProps {
   card: Card;
@@ -29,16 +30,17 @@ export function IdentifyFlashcard({ card, intervals, onRate }: ModeProps) {
   const lang = useVerseLang();
   return (
     <>
+      <CardPrompt prompt={t('study.promptName')} />
       <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
         <Passage text={card.verseText} />
         {revealed && (
-          <AnswerRegion label={`${t('study.answer')}: ${card.reference}`} className="space-y-1">
+          <AnswerRegion labelOnly label={`${t('study.answer')}: ${card.reference}`} className="space-y-1">
             <p lang={lang} className="font-serif text-3xl font-medium tracking-tight">{card.reference}</p>
           </AnswerRegion>
         )}
       </div>
       <ActionBar>
-        {revealed ? <RatingBar intervals={intervals} onRate={onRate} /> : <Button className="w-full" onClick={() => setRevealed(true)} autoFocus>{t('study.showAnswer')}</Button>}
+        {revealed ? <RatingBar intervals={intervals} onRate={onRate} /> : <Button className="w-full" onClick={() => setRevealed(true)} autoFocus aria-describedby={CARD_PROMPT_ID}>{t('study.showAnswer')}</Button>}
       </ActionBar>
     </>
   );
@@ -58,6 +60,7 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
   return (
     <>
       <div className="flex flex-1 flex-col gap-6 pt-6">
+        <CardPrompt prompt={t('study.promptName')} />
         <Passage text={card.verseText} />
         {!result ? (
           <div className="space-y-2">
@@ -69,6 +72,7 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
               onKeyDown={(e) => e.key === 'Enter' && check()}
               placeholder={t('identify.placeholder')}
               autoFocus
+              aria-describedby={CARD_PROMPT_ID}
               autoCapitalize="words"
               autoCorrect="off"
               spellCheck={false}
@@ -77,10 +81,11 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
           </div>
         ) : (
           <AnswerRegion
+            labelOnly
             className="space-y-5 text-center"
             label={
               'correct' in result
-                ? result.correct ? `${t('common.correct')}. ${card.reference}` : t('identify.wrongSummary', { extra: countWrong(result.painted.typed), answer: card.reference })
+                ? result.correct ? `${t('common.correct')}. ${card.reference}` : t('identify.wrongSummary', { typed: result.typed, answer: card.reference })
                 : `${t('study.answer')}: ${card.reference}`
             }
           >
@@ -130,8 +135,9 @@ export function IdentifyChoice({ card, references, sessionSeed, intervals, onRat
   return (
     <>
       <div className="flex flex-1 flex-col gap-6 pt-6">
+        <CardPrompt prompt={t('study.promptChoose')} />
         <Passage text={card.verseText} />
-        <div role="group" aria-label={t('identify.choose')} className="grid gap-2.5">
+        <div role="group" aria-label={t('identify.choose')} aria-describedby={CARD_PROMPT_ID} className="grid gap-2.5">
           {choices.map((c) => {
             const isRight = c === card.reference;
             const state = picked === undefined ? 'idle' : isRight ? 'right' : c === picked ? 'wrong' : 'other';

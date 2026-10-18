@@ -4,17 +4,22 @@ import { useI18n } from '../../i18n/I18nProvider';
 /**
  * Words you got right are green, wrong ones red. Only the text color changes, never a background.
  * Wrong words also get a line (strike-through for what you typed, underline for what you missed)
- * so the meaning isn't carried by color alone. For screen readers, which ignore all of that, each run of wrong words is
- * bracketed by hidden text: "Extra words: … end." (what you typed) or "Missed words: … end." (what the verse has).
+ * so the meaning isn't carried by color alone. Screen readers ignore all of that, so the result also has a list of the
+ * differences in words (see DifferenceList).
  */
-const isSpace = (s: Segment) => s.state === 'plain' && s.text.trim() === '';
-
 export function PaintedText({ segments, side }: { segments: Segment[]; side: 'typed' | 'expected' }) {
+  const plain = segments.filter((s) => s.state !== 'gap').map((s) => s.text).join('');
+  // The colours are only for eyes: a screen reader would stop on every single word. It gets the text as one string instead.
+  return (
+    <>
+      <span aria-hidden="true"><Painted segments={segments} side={side} /></span>
+      <span className="sr-only">{plain}</span>
+    </>
+  );
+}
+
+function Painted({ segments, side }: { segments: Segment[]; side: 'typed' | 'expected' }) {
   const { t } = useI18n();
-  const neighbour = (from: number, step: 1 | -1) => {
-    for (let j = from + step; j >= 0 && j < segments.length; j += step) if (!isSpace(segments[j]!)) return segments[j];
-    return undefined;
-  };
   return (
     <>
       {segments.map((s, i) => {
@@ -28,14 +33,10 @@ export function PaintedText({ segments, side }: { segments: Segment[]; side: 'ty
           );
         }
         if (s.state === 'match') return <span key={i} className="text-good">{s.text}</span>;
-        const starts = neighbour(i, -1)?.state !== 'wrong';
-        const ends = neighbour(i, 1)?.state !== 'wrong';
-        const start = starts && <span className="sr-only"> {t(side === 'typed' ? 'type.srExtraStart' : 'type.srMissedStart')} </span>;
-        const end = ends && <span className="sr-only"> {t('type.srEnd')} </span>;
         return side === 'typed' ? (
-          <span key={i}>{start}<del className="text-again">{s.text}</del>{end}</span>
+          <del key={i} className="text-again">{s.text}</del>
         ) : (
-          <span key={i}>{start}<mark className="bg-transparent px-0.5 text-again underline decoration-2 underline-offset-4">{s.text}</mark>{end}</span>
+          <mark key={i} className="bg-transparent px-0.5 text-again underline decoration-2 underline-offset-4">{s.text}</mark>
         );
       })}
     </>
