@@ -49,9 +49,15 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
             <p lang={lang} className="scripture whitespace-pre-line text-lg"><PaintedText segments={result.painted.expected} side="expected" /></p>
           </AnswerRegion>
         ) : (
+          // One spoken line, so it is heard straight away with no swiping: the summary, what you typed, and the verse.
           <AnswerRegion
+            labelOnly
             className="space-y-6"
-            label={'comparison' in result ? t('type.summary', { count: differences(result.comparison.ops).length }) : `${t('type.correctVerse')}: ${card.verseText}`}
+            label={
+              'comparison' in result
+                ? `${t('type.summary', { count: differences(result.comparison.ops).length })} ${t('type.yourAnswer')}: ${result.painted.typed.filter((s) => s.state !== 'gap').map((s) => s.text).join('').trim()}. ${t('type.correctVerse')}: ${card.verseText}`
+                : `${t('type.correctVerse')}: ${card.verseText}`
+            }
           >
             {'comparison' in result && <Words label={t('type.yourAnswer')} segments={result.painted.typed} side="typed" />}
             {'comparison' in result ? (

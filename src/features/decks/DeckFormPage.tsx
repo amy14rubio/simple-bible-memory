@@ -5,6 +5,7 @@ import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, ErrorMessage, FormRow, IconButton, Page, rowInput } from '../../components/ui';
 import { useI18n } from '../../i18n/I18nProvider';
+import { toast } from '../../components/shadcn/toast';
 import { ValidationError } from '../../domain/errors';
 import { TranslationFields, type TranslationValue } from '../sharing/TranslationFields';
 
@@ -35,7 +36,11 @@ function DeckForm({ id, initialTitle, initialDescription, initialTranslation, no
     try {
       const details = { title, description, translationCode: translation.translation, bibleLanguage: translation.language };
       if (id) { await decks.update(id, details); navigate(`/decks/${id}`, { replace: true }); }
-      else { const d = await decks.create(details); navigate(`/decks/${d.id}`, { replace: true }); }
+      else {
+        const d = await decks.create(details);
+        navigate(`/decks/${d.id}`, { replace: true });
+        toast.add({ title: t('toast.deckCreated', { title: d.title }), type: 'success' }); // heard by screen readers too
+      }
     } catch (err) {
       setError(describeError(err));
       // Say which field is wrong (and put the cursor in it), not just that something is.
@@ -48,13 +53,14 @@ function DeckForm({ id, initialTitle, initialDescription, initialTranslation, no
   return (
     <form id="deck-form" onSubmit={submit}>
       <AppBar
+        titleId="form-heading"
         title={id ? t('deckForm.rename') : t('deckForm.new')}
         back={<BackButton label={t('common.cancel')} />}
         actions={<IconButton type="submit" label={t('common.save')}><Check size={22} aria-hidden /></IconButton>}
       />
       <Page className="space-y-4 pt-2">
         {error && <ErrorMessage id="form-error" error={error} />}
-        <FormRow label={t('deckForm.title')}>{(fid) => <input id={fid} ref={titleInput} aria-invalid={titleInvalid || undefined} aria-describedby={titleInvalid ? 'form-error' : undefined} className={rowInput} value={title} onChange={(e) => { setTitle(e.target.value); setTitleInvalid(false); }} autoFocus placeholder={t('deckForm.titlePlaceholder')} />}</FormRow>
+        <FormRow label={t('deckForm.title')}>{(fid) => <input id={fid} ref={titleInput} aria-invalid={titleInvalid || undefined} aria-describedby={titleInvalid ? 'form-heading form-error' : 'form-heading'} className={rowInput} value={title} onChange={(e) => { setTitle(e.target.value); setTitleInvalid(false); setError(undefined); }} autoFocus placeholder={t('deckForm.titlePlaceholder')} />}</FormRow>
         <FormRow label={t('deckForm.description')}>{(fid) => <input id={fid} className={rowInput} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('common.optional')} />}</FormRow>
         <TranslationFields value={translation} onChange={setTranslation} />
       </Page>

@@ -148,6 +148,7 @@ export const en = {
   'cardForm.noteInfo': 'Just for you, like where you found the verse or something to remember. It stays private and is never published with a deck.',
   'cardForm.passage': 'Passage',
   'cardForm.passagePlaceholder': 'Type or paste the passage',
+  'toast.deckCreated': 'Deck {title} created',
   'toast.cardAdded': '{reference} added',
   'toast.versesAdded': { one: '{count} verse added', other: '{count} verses added' },
   'toast.changesSaved': 'Changes saved',
@@ -478,6 +479,7 @@ export const en = {
   'blanks.youChose': ' (you chose {word})',
   'blanks.current': 'Blank {n}, the one to fill in now',
   'blanks.blank': 'Blank {n}',
+  'blanks.blankWord': 'blank',
   'blanks.bank': 'Word bank',
 
   // how long until a card is due

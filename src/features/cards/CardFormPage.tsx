@@ -112,6 +112,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
   return (
     <form id="card-form" onSubmit={submit}>
       <AppBar
+        titleId="form-heading"
         title={card ? t('cardForm.edit') : t('cardForm.add')}
         back={<BackButton label={t('common.cancel')} />}
         actions={<IconButton type="submit" label={t('common.save')}><Check size={22} aria-hidden /></IconButton>}
@@ -126,7 +127,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
               )}
             </FormRow>
           )}
-          <FormRow label={t('cardForm.verses')}>{(fid) => <input id={fid} ref={referenceInput} lang={lang} aria-invalid={invalid === 'reference' || undefined} aria-describedby={invalid === 'reference' ? 'form-error' : undefined} className={rowInput} value={reference} onChange={(e) => { setReference(e.target.value); setInvalid(undefined); }} placeholder={t('cardForm.versesPlaceholder')} autoFocus={!card} />}</FormRow>
+          <FormRow label={t('cardForm.verses')}>{(fid) => <input id={fid} ref={referenceInput} lang={lang} aria-invalid={invalid === 'reference' || undefined} aria-describedby={invalid === 'reference' ? 'form-heading form-error' : 'form-heading'} className={rowInput} value={reference} onChange={(e) => { setReference(e.target.value); setInvalid(undefined); setError(undefined); }} placeholder={t('cardForm.versesPlaceholder')} autoFocus={!card} />}</FormRow>
           <FormRow
             label={t('cardForm.note')}
             labelNode={<InfoLabel title={t('cardForm.note')} info={t('cardForm.noteInfo')} className="w-24 shrink-0 text-[0.9375rem] font-medium" />}
@@ -147,7 +148,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
             aria-describedby={invalid === 'passage' ? 'form-error' : undefined}
             className="scripture"
             value={verseText}
-            onChange={(e) => { setVerseText(e.target.value); setInvalid(undefined); }}
+            onChange={(e) => { setVerseText(e.target.value); setInvalid(undefined); setError(undefined); }}
             placeholder={t('cardForm.passagePlaceholder')}
           />
           {/* Only offered when it can actually be used: a chapter or several verses, with a passage to split. */}

@@ -136,6 +136,7 @@ export const es: Dictionary = {
   'cardForm.noteInfo': 'Solo para ti, por ejemplo dónde encontraste el versículo o algo que recordar. Es privada y nunca se publica con una baraja.',
   'cardForm.passage': 'Pasaje',
   'cardForm.passagePlaceholder': 'Escribe o pega el pasaje',
+  'toast.deckCreated': 'Baraja {title} creada',
   'toast.cardAdded': '{reference} agregado',
   'toast.versesAdded': { one: '{count} versículo agregado', other: '{count} versículos agregados' },
   'toast.changesSaved': 'Cambios guardados',
@@ -458,6 +459,7 @@ export const es: Dictionary = {
   'blanks.youChose': ' (elegiste {word})',
   'blanks.current': 'Espacio en blanco {n}, el que toca llenar ahora',
   'blanks.blank': 'Espacio en blanco {n}',
+  'blanks.blankWord': 'espacio en blanco',
   'blanks.bank': 'Banco de palabras',
 
   'unitSpoken.minutes': { one: '{count} minuto', other: '{count} minutos' },

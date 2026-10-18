@@ -63,7 +63,7 @@ test('type: one "Show answer" button; a forgiving match suggests Good; mistakes 
   await page.getByRole('button', { name: 'Show answer' }).click();
   // everything right: only the verse, in green. No second copy, no word counts, no legend
   await expect(page.getByRole('group', { name: /^Every word matched\./ })).toContainText("For example, it's a test; typed by you.");
-  await expect(page.getByRole('heading', { name: 'Your answer' }).locator('xpath=..')).toHaveCount(0);
+  await expect(page.locator('h2', { hasText: 'Your answer' }).locator('xpath=..')).toHaveCount(0);
   await expect(page.getByText(/words matched|Underlined/)).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^Good.*suggested/ })).toBeVisible();
   await page.getByRole('button', { name: /^Good/ }).click();
@@ -71,8 +71,8 @@ test('type: one "Show answer" button; a forgiving match suggests Good; mistakes 
   // second card
   await page.getByLabel('Type the verse from memory').fill('for example its a quiz typed by you');
   await page.getByRole('button', { name: 'Show answer' }).click();
-  const mine = page.getByRole('heading', { name: 'Your answer' }).locator('xpath=..');
-  const correct = page.getByRole('heading', { name: 'Correct verse' }).locator('xpath=..');
+  const mine = page.locator('h2', { hasText: 'Your answer' }).locator('xpath=..');
+  const correct = page.locator('h2', { hasText: 'Correct verse' }).locator('xpath=..');
   await expect(mine.locator('del')).toHaveText(/quiz/); // my wrong word, red, only in my answer
   await expect(mine.locator('mark')).toHaveCount(0);
   await expect(correct.locator('mark')).toHaveText(/test/); // the word I should have typed, red, only in the correct verse
@@ -92,11 +92,11 @@ test('type: skipped words leave a red gap so a partly-right answer does not look
   await study(page, id, 'type');
   await page.getByLabel('Type the verse from memory').fill('blessed are in spirit');
   await page.getByRole('button', { name: 'Show answer' }).click();
-  const mine = page.getByRole('heading', { name: 'Your answer' }).locator('xpath=..');
+  const mine = page.locator('h2', { hasText: 'Your answer' }).locator('xpath=..');
   await expect(mine.locator('mark')).toHaveCount(1); // one gap, where "the poor" was skipped
   await expect(mine.locator('mark')).toContainText('missing words');
   await expect(mine.locator('mark')).toHaveCSS('color', 'rgb(198, 40, 40)');
-  await expect(page.getByRole('heading', { name: 'Correct verse' }).locator('xpath=..').locator('mark')).toHaveText(['the', 'poor']);
+  await expect(page.locator('h2', { hasText: 'Correct verse' }).locator('xpath=..').locator('mark')).toHaveText(['the', 'poor']);
 });
 
 test('type: Show answer with nothing typed reveals the verse and suggests Again', async ({ page }) => {
@@ -105,7 +105,7 @@ test('type: Show answer with nothing typed reveals the verse and suggests Again'
   await setCardKinds(page, 'Recall the passage'); // these tests are about the recall card
   await study(page, id, 'type');
   await page.getByRole('button', { name: 'Show answer' }).click();
-  await expect(page.getByRole('heading', { name: 'Correct verse' }).locator('xpath=..')).toContainText('Hidden words here.');
+  await expect(page.locator('h2', { hasText: 'Correct verse' }).locator('xpath=..')).toContainText('Hidden words here.');
   await expect(page.getByRole('button', { name: /^Again.*suggested/ })).toBeVisible();
 });
 

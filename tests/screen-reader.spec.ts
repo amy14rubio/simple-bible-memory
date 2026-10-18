@@ -86,7 +86,7 @@ test.describe('studying', () => {
     await expect(page.getByRole('group', { name: 'How well did you remember it?' }).getByRole('button').first()).toBeFocused();
   });
 
-  test('Type: the result reads as the summary, then "Your answer" in full, then "Correct verse" in full', async ({ page }) => {
+  test('Type: the whole result is one spoken line: the summary, what you typed, then the verse (no swiping needed)', async ({ page }) => {
     const id = await deckWithCard(page);
     await page.goto(`/#/decks/${id}/study/type`);
     const reference = (await page.locator('main p').filter({ hasText: /^(John 3:16|Psalm 23:1|Psalm 1:1|Psalm 2:1)$/ }).first().textContent())!;
@@ -94,16 +94,11 @@ test.describe('studying', () => {
     await page.getByRole('textbox').fill(typed);
     await page.getByRole('button', { name: 'Show answer' }).click();
 
-    const group = page.getByRole('group', { name: /^Not every word matched: \d+ differences?\.$/ });
+    const group = page.getByRole('group', { name: /^Not every word matched: \d+ differences?\. Your answer: .+\. Correct verse: .+/ });
     await expect(group).toBeFocused();
-    // what you typed, as ONE piece of text (not a stop per word), and nothing but the two full texts after the summary
-    const mine = page.getByRole('heading', { name: 'Your answer' }).locator('xpath=..');
-    const correct = page.getByRole('heading', { name: 'Correct verse' }).locator('xpath=..');
-    await expect(mine.locator('.sr-only')).toHaveText(typed);
-    await expect(correct.locator('.sr-only')).toHaveText(/\S/);
-    // the coloured copy is for eyes only
-    await expect(mine.locator('[aria-hidden="true"]')).toHaveCount(1);
-    await expect(group.getByRole('list')).toHaveCount(0); // no list of differences
+    expect(await group.getAttribute('aria-label')).toContain(`Your answer: ${typed}.`);
+    // what is drawn is for eyes only (the name above already says all of it)
+    await expect(group.locator('> div[aria-hidden="true"]')).toHaveCount(1);
     expect(await group.locator('[title]').count()).toBe(0);
   });
 
@@ -123,7 +118,7 @@ test.describe('studying', () => {
     await page.goto(`/#/decks/${id}/study/type`);
     await expect(page.getByRole('textbox')).toHaveAccessibleDescription(/^Card 1 of \d+\. /);
     await page.goto(`/#/decks/${id}/study/blanks`);
-    await expect(page.getByRole('status').filter({ hasText: /Card 1 of \d+\. .* Blank 1, the one to fill in now/ })).toBeAttached();
+    await expect(page.getByRole('status').filter({ hasText: /Card 1 of \d+\. .*blank\. Word bank: / })).toBeAttached();
   });
 
   test('Type: a perfect answer says so, and says the verse', async ({ page }) => {
@@ -198,7 +193,7 @@ test.describe('the medium fixes', () => {
     const id = await deckWithCard(page);
     await page.goto(`/#/decks/${id}/study/blanks`);
     await page.getByRole('group', { name: 'Word bank' }).getByRole('button').first().click();
-    await expect(page.getByRole('status').filter({ hasText: /Blank 2, the one to fill in now/ })).toBeAttached();
+    await expect(page.getByRole('status').filter({ hasText: /blank\. Word bank: / })).toBeAttached(); // the verse up to the next blank, then the options
   });
 
   test('M4: verses carry their own language, even when the app is in another', async ({ page }) => {
@@ -223,7 +218,7 @@ test.describe('the medium fixes', () => {
     await page.getByRole('button', { name: 'Save' }).click();
     const title = page.getByLabel('Title');
     await expect(title).toHaveAttribute('aria-invalid', 'true');
-    await expect(title).toHaveAttribute('aria-describedby', 'form-error');
+    await expect(title).toHaveAttribute('aria-describedby', 'form-heading form-error');
     await expect(title).toBeFocused();
     await expect(page.locator('#form-error')).toBeVisible();
     await title.fill('x');
@@ -289,5 +284,28 @@ test.describe('the small fixes', () => {
     await page.goto('/#/stats');
     const legend = page.getByRole('group', { name: 'Highlight a stage in the chart' }).getByRole('button').first();
     expect((await legend.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  });
+});
+
+test.describe('making a deck, and the blanks, as a screen reader hears them', () => {
+  test('the new deck form is read with the screen name; saving says the deck was created; a fixed error goes away', async ({ page }) => {
+    await page.goto('/#/decks/new');
+    await expect(page.getByLabel('Title')).toHaveAccessibleDescription('New deck');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(page.locator('#form-error')).toBeVisible();
+    await page.getByLabel('Title').fill('Proverbs');
+    await expect(page.locator('#form-error')).toHaveCount(0); // the old message does not linger once fixed
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByRole('region', { name: 'Notifications' })).toContainText('Deck Proverbs created');
+    await expect(page.getByRole('heading', { level: 1, name: 'Proverbs' })).toBeFocused();
+  });
+
+  test('Blanks says the verse up to the blank, then the word bank, for every blank', async ({ page }) => {
+    const id = await deckWithCard(page);
+    await page.goto(`/#/decks/${id}/study/blanks`);
+    const say = page.getByRole('status').filter({ hasText: /^Card 1 of \d+\. .+ blank\. Word bank: (\S+, ){7}\S+\.$/ });
+    await expect(say).toBeAttached();
+    await page.getByRole('group', { name: 'Word bank' }).getByRole('button').first().click();
+    await expect(page.getByRole('status').filter({ hasText: /^(Correct: |Not quite: the word was ).+ blank\. Word bank: / })).toBeAttached();
   });
 });

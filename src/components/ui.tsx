@@ -58,11 +58,11 @@ export function BackButton({ to, label }: { to?: string; label?: string }) {
 }
 
 /** Top bar with a hairline underneath, as in the wireframes. */
-export function AppBar({ title, titleSlot, back, actions, serif = true }: { title?: ReactNode; titleSlot?: ReactNode; back?: ReactNode; actions?: ReactNode; serif?: boolean }) {
+export function AppBar({ title, titleSlot, back, actions, serif = true, titleId }: { title?: ReactNode; titleSlot?: ReactNode; back?: ReactNode; actions?: ReactNode; serif?: boolean; titleId?: string }) {
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center gap-1 border-b border-border bg-background px-2">
       {back}
-      {titleSlot ?? (title ? <h1 className={`min-w-0 flex-1 truncate px-2 text-lg ${serif ? 'font-serif font-medium tracking-tight' : 'font-semibold'}`}>{title}</h1> : <div className="flex-1" />)}
+      {titleSlot ?? (title ? <h1 id={titleId} className={`min-w-0 flex-1 truncate px-2 text-lg ${serif ? 'font-serif font-medium tracking-tight' : 'font-semibold'}`}>{title}</h1> : <div className="flex-1" />)}
       <div className="flex items-center">{actions}</div>
     </header>
   );
