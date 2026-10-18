@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { ChartColumn, LibraryBig, Plus } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
 import { useRouteAnnouncer } from './useRouteAnnouncer';
+import { useFirstLaunchTour } from '../features/onboarding/useFirstLaunchTour';
 import { CreateDrawer } from '../features/create/CreateDrawer';
 import { AccountSwitchDialog } from '../features/account/AccountSwitchDialog';
 
@@ -16,6 +17,7 @@ export function AppShell() {
   const [creating, setCreating] = useState(false);
   const main = useRef<HTMLElement>(null);
   useRouteAnnouncer(main);
+  useFirstLaunchTour();
   const showNav = pathname === '/';
 
   return (

@@ -140,6 +140,13 @@ export function SettingsPage() {
             </>
           )}
         </section>
+        <section aria-labelledby="help">
+          <h2 id="help" className="mb-1 font-serif text-xl">{t('settings.help')}</h2>
+          <Link to="/welcome" className={`${row} hover:bg-surface`}>
+            <span>{t('onboarding.tour')}</span>
+            <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
+          </Link>
+        </section>
         <section aria-labelledby="privacy">
           <h2 id="privacy" className="mb-1 font-serif text-xl">{t('privacy.title')}</h2>
           <Link to="/settings/privacy" className={`${row} hover:bg-surface`}>
