@@ -132,10 +132,6 @@ export const en = {
   'toast.cardDeleted': '{reference} deleted',
   'toast.andMore': 'and {count} more',
   'toast.undoHint': 'Undo is available in the Notifications region.',
-  'customTheme.lowText':
-    'Low contrast: this text colour is hard to read on this background ({ratio}:1). Aim for at least 4.5:1.',
-  'customTheme.lowAccent':
-    'Low contrast: the accent colour is hard to read on this background ({ratio}:1). Aim for at least 4.5:1.',
   'toast.undo': 'Undo',
   'browse.deleteTitle': { one: 'Delete {count} card?', other: 'Delete {count} cards?' },
   'move.title': { one: 'Move {count} card to…', other: 'Move {count} cards to…' },

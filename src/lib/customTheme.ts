@@ -9,8 +9,8 @@ export interface CustomTheme {
 }
 
 /** The app's own light and dark palettes: the starting point for a new custom theme. */
-export const LIGHT_START: CustomTheme = { background: '#f8f8f6', text: '#17171a', accent: '#8a1f30' };
-export const DARK_START: CustomTheme = { background: '#131312', text: '#f1f0ec', accent: '#e8909c' };
+export const LIGHT_START: CustomTheme = { background: '#f8f8f6', text: '#17171a', accent: '#d96878' };
+export const DARK_START: CustomTheme = { background: '#131312', text: '#f1f0ec', accent: '#d96878' };
 
 export const HEX = /^#[0-9a-f]{6}$/i;
 export const isHex = (value: string) => HEX.test(value);
@@ -25,14 +25,6 @@ export function luminance(hex: string): number {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)) as [number, number, number];
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
-
-/** WCAG contrast ratio between two colours, 1 (none) to 21 (black on white). Text needs 4.5 to be comfortably readable. */
-export function contrastRatio(a: string, b: string): number {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
-  return (hi + 0.05) / (lo + 0.05);
-}
-
-export const READABLE_CONTRAST = 4.5;
 
 /** Which built-in palette (for the rating colours and the browser's own controls) suits this background. */
 export const isDarkBackground = (background: string) => luminance(background) < 0.3;

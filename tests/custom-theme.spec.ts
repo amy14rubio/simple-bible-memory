@@ -56,7 +56,7 @@ test.describe('the Theme page', () => {
     await hex(page, 'Accent').fill('#ff8800');
     expect(await bodyColors(page)).toEqual({ background: 'rgb(16, 32, 48)', color: 'rgb(224, 240, 255)' });
     expect(await rootVar(page, '--accent')).toBe('#ff8800');
-    await expect(page.getByText('Learning')).toHaveCSS('color', 'rgb(255, 136, 0)'); // the accent in the preview
+    await expect(page.getByText('Learning').locator('span')).toHaveCSS('background-color', 'rgb(255, 136, 0)'); // the accent dot in the preview
     expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe('dark'); // a dark background gets the dark palette for the rest
   });
 

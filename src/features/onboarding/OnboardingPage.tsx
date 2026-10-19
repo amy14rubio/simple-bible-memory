@@ -70,9 +70,13 @@ export function OnboardingPage() {
         className="flex flex-1 touch-pan-y select-none flex-col items-center justify-center text-center"
       >
         <div key={card.key} className="onboarding-card flex flex-col items-center gap-5">
-          <div aria-hidden className="grid size-28 place-items-center rounded-full bg-panel text-accent">
-            <Icon size={48} strokeWidth={1.4} />
-          </div>
+          {step === 0 ? (
+            <img src="/logo.svg" alt="" aria-hidden draggable={false} className="pointer-events-none size-44" /> // the logo greets you on the first card; the icons take over after it
+          ) : (
+            <div aria-hidden className="grid size-28 place-items-center rounded-full bg-panel text-accent">
+              <Icon size={48} strokeWidth={1.4} />
+            </div>
+          )}
           <div className="mx-auto max-w-[20rem] space-y-3">
             <h1 ref={heading} tabIndex={-1} aria-describedby="onboarding-step" className="text-balance font-serif text-3xl font-medium leading-tight tracking-tight">{t(card.title)}</h1>
             {card.body && <p className="mx-auto max-w-[17rem] text-lg leading-snug text-muted">{t(card.body)}</p>}

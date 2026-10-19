@@ -123,10 +123,6 @@ export const es: Dictionary = {
   'toast.cardDeleted': '{reference} eliminada',
   'toast.andMore': 'y {count} más',
   'toast.undoHint': 'Deshacer está disponible en la región de Notificaciones.',
-  'customTheme.lowText':
-    'Poco contraste: este color de texto es difícil de leer sobre este fondo ({ratio}:1). Procura al menos 4.5:1.',
-  'customTheme.lowAccent':
-    'Poco contraste: el color de acento es difícil de leer sobre este fondo ({ratio}:1). Procura al menos 4.5:1.',
   'toast.undo': 'Deshacer',
   'browse.deleteTitle': { one: '¿Eliminar {count} tarjeta?', other: '¿Eliminar {count} tarjetas?' },
   'move.title': { one: 'Mover {count} tarjeta a…', other: 'Mover {count} tarjetas a…' },

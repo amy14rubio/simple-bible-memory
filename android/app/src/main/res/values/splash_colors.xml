@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The launch screen's background: the app's paper colour (dark page colour in dark mode, see values-night). -->
+    <color name="splash_background">#f8f8f6</color>
+</resources>
