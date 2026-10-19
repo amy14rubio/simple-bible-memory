@@ -67,7 +67,7 @@ export function RemindersSection() {
 
   const summary = (r: Reminder) => {
     const key = `reminders.summary.${r.repeat}` as MessageKey;
-    return t(key, { time: formatTime(language, r.time), from: formatTime(language, r.from), to: formatTime(language, r.to), day: weekdayName(language, r.weekday) });
+    return t(key, { time: formatTime(language, r.time), day: weekdayName(language, r.weekday) });
   };
 
   return (

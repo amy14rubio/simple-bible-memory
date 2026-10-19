@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
 import { Button, FormRow, GrowingTextarea, HiddenClose, rowInput } from '../../components/ui';
-import { MESSAGE_MAX, REPEATS, dayKey, toMinutes, type Reminder, type Repeat } from '../../domain/reminders/schedule';
+import { MESSAGE_MAX, REPEATS, dayKey, type Reminder, type Repeat } from '../../domain/reminders/schedule';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useI18n } from '../../i18n/I18nProvider';
 import type { MessageKey } from '../../i18n';
@@ -26,14 +26,6 @@ export function ReminderDrawer({ reminder, isNew, onSave, onDelete, onClose }: {
 
   const r = draft ?? reminder;
   const set = (patch: Partial<Reminder>) => setDraft((d) => (d ? { ...d, ...patch } : d));
-  // An empty time box (while someone is still typing) keeps the old value rather than saving nothing.
-  const time = (key: 'time' | 'from' | 'to', value: string) => {
-    if (!value) return;
-    if (key === 'from' && toMinutes(value) > toMinutes(draft!.to)) set({ from: value, to: value });
-    else if (key === 'to' && toMinutes(value) < toMinutes(draft!.from)) set({ to: value, from: value });
-    else set({ [key]: value });
-  };
-
   return (
     <Drawer open={open} onOpenChange={(o) => { if (!o) onClose(); }} showSwipeHandle>
       <DrawerContent className="mx-auto max-w-2xl pb-[var(--safe-bottom)]">
@@ -60,14 +52,7 @@ export function ReminderDrawer({ reminder, isNew, onSave, onDelete, onClose }: {
                   )}
                 </FormRow>
               )}
-              {r.repeat === 'hourly' ? (
-                <>
-                  <FormRow label={t('reminders.from')}>{(id) => <TimeField id={id} label={t('reminders.from')} value={r.from} onChange={(v) => time('from', v)} />}</FormRow>
-                  <FormRow label={t('reminders.to')}>{(id) => <TimeField id={id} label={t('reminders.to')} value={r.to} onChange={(v) => time('to', v)} />}</FormRow>
-                </>
-              ) : (
-                <FormRow label={t('reminders.time')}>{(id) => <TimeField id={id} label={t('reminders.time')} value={r.time} onChange={(v) => time('time', v)} />}</FormRow>
-              )}
+              <FormRow label={t('reminders.time')}>{(id) => <TimeField id={id} label={t('reminders.time')} value={r.time} onChange={(v) => set({ time: v })} />}</FormRow>
               <div className="space-y-1 pt-3">
                 <label htmlFor="reminder-message" className="text-[0.9375rem] font-medium">{t('reminders.message')}</label>
                 <GrowingTextarea id="reminder-message" value={r.message} maxLength={MESSAGE_MAX} placeholder={t('reminders.defaultMessage')} onChange={(e) => set({ message: e.target.value })} />

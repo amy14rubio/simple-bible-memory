@@ -66,25 +66,7 @@ test('a reminder can be edited: its own message, a weekly day and time', async (
   expect(items.every((n) => new Date(n.at).getDay() === 5 && new Date(n.at).getHours() === 7)).toBe(true);
 });
 
-test('hourly reminders stay inside their window, and the window cannot end before it starts', async ({ page }) => {
-  await turnOn(page);
-  await page.getByRole('button', { name: /Every day at 8:00 PM/ }).click();
-  const drawer = page.getByRole('dialog', { name: 'Edit reminder' });
-  await drawer.getByLabel('Repeat').selectOption('hourly');
-  await setTime(drawer, 'From', '10:00');
-  await setTime(drawer, 'Until', '13:00');
-  await setTime(drawer, 'From', '15:00'); // later than "Until": the window follows instead of breaking
-  await expect(drawer.getByRole('button', { name: 'Until, 3:00 PM' })).toBeVisible();
-  await setTime(drawer, 'From', '10:00');
-  await setTime(drawer, 'Until', '13:00');
-  await drawer.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByRole('list', { name: 'Your reminders' })).toContainText('Every hour, 10:00 AM to 1:00 PM');
-  await expect.poll(async () => new Set((await scheduled(page)).map((n) => new Date(n.at).getHours())).size).toBe(4);
-  const hours = new Set((await scheduled(page)).map((n) => new Date(n.at).getHours()));
-  expect([...hours].sort((a, b) => a - b)).toEqual([10, 11, 12, 13]);
-});
-
-test('there can be two reminders and no more, each with its own message', async ({ page }) => {
+test('there can be two reminders, each with its own message', async ({ page }) => {
   await turnOn(page);
   await page.getByRole('button', { name: 'Add a reminder' }).click();
   const drawer = page.getByRole('dialog', { name: 'New reminder' });
@@ -92,10 +74,27 @@ test('there can be two reminders and no more, each with its own message', async 
   await drawer.getByLabel('Message').fill('Good morning, a verse first!');
   await drawer.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('list', { name: 'Your reminders' }).getByRole('listitem')).toHaveCount(2);
-  await expect(page.getByRole('button', { name: 'Add a reminder' })).toHaveCount(0);
   await expect.poll(async () => new Set((await scheduled(page)).map((n) => n.body)).size).toBe(2);
   const items = await scheduled(page);
   expect(new Set(items.map((n) => n.body))).toEqual(new Set([DEFAULT_MESSAGE, 'Good morning, a verse first!']));
+});
+
+test('up to ten reminders, then no more can be added, and the phone is never given too many alarms', async ({ page }) => {
+  await turnOn(page);
+  for (let i = 2; i <= 10; i++) {
+    await page.getByRole('button', { name: 'Add a reminder' }).click();
+    await page.getByRole('dialog', { name: 'New reminder' }).getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByRole('list', { name: 'Your reminders' }).getByRole('listitem')).toHaveCount(i);
+  }
+  await expect(page.getByRole('button', { name: 'Add a reminder' })).toHaveCount(0);
+  await expect.poll(async () => (await scheduled(page)).length).toBe(400);
+});
+
+test('there is no hourly option', async ({ page }) => {
+  await turnOn(page);
+  await page.getByRole('button', { name: /Every day at 8:00 PM/ }).click();
+  const options = await page.getByRole('dialog', { name: 'Edit reminder' }).getByLabel('Repeat').locator('option').allTextContents();
+  expect(options).toEqual(['Every day', 'Every 2 days', 'Every week']);
 });
 
 test('deleting a reminder removes it; deleting the last one turns reminders off', async ({ page }) => {
@@ -180,12 +179,12 @@ test.describe('the time button', () => {
     await expect(clock).toHaveAttribute('tabindex', '-1');
   });
 
-  test('the drawer fits a small phone without sideways scrolling, even for hourly', async ({ browser }) => {
+  test('the drawer fits a small phone without sideways scrolling, even for weekly', async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 360, height: 740 } });
     const page = await ctx.newPage();
     const drawer = await open(page);
-    await drawer.getByLabel('Repeat').selectOption('hourly');
-    for (const name of ['From, 9:00 AM', 'Until, 9:00 PM']) {
+    await drawer.getByLabel('Repeat').selectOption('weekly');
+    for (const name of ['Time, 8:00 PM']) {
       const box = await drawer.getByRole('button', { name }).boundingBox();
       expect(box!.x + box!.width, name).toBeLessThanOrEqual(360);
     }

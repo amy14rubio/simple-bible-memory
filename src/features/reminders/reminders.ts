@@ -18,13 +18,11 @@ function clean(list: unknown): Reminder[] {
   if (!Array.isArray(list)) return [];
   const out: Reminder[] = [];
   for (const r of list as Partial<Reminder>[]) {
-    if (!r || typeof r.id !== 'string' || !REPEATS.includes(r.repeat as never) || !isTime(r.time) || !isTime(r.from) || !isTime(r.to)) continue;
+    if (!r || typeof r.id !== 'string' || !REPEATS.includes(r.repeat as never) || !isTime(r.time)) continue;
     out.push({
       id: r.id,
       repeat: r.repeat!,
       time: r.time,
-      from: r.from,
-      to: r.to,
       weekday: Number.isInteger(r.weekday) && r.weekday! >= 0 && r.weekday! <= 6 ? r.weekday! : 0,
       startDay: typeof r.startDay === 'string' ? r.startDay : '1970-01-01',
       message: typeof r.message === 'string' ? r.message.slice(0, MESSAGE_MAX) : '',

@@ -3,21 +3,18 @@
  * Nothing here knows about phones: `planNotifications` just answers "given these reminders and the time now, when
  * should the phone buzz?", so it can be tested without a phone.
  */
-export type Repeat = 'hourly' | 'daily' | 'every2days' | 'weekly';
-export const REPEATS: Repeat[] = ['hourly', 'daily', 'every2days', 'weekly'];
+export type Repeat = 'daily' | 'every2days' | 'weekly';
+export const REPEATS: Repeat[] = ['daily', 'every2days', 'weekly'];
 
-/** A person can have one reminder or two (for example a morning and an evening one). */
-export const MAX_REMINDERS = 2;
+/** How many reminders a person can have (a morning verse, an evening review, a weekly catch-up...). */
+export const MAX_REMINDERS = 10;
 export const MESSAGE_MAX = 120;
 
 export interface Reminder {
   id: string;
   repeat: Repeat;
-  /** "HH:MM", 24-hour. Used by daily, every 2 days and weekly. */
+  /** "HH:MM", 24-hour. */
   time: string;
-  /** Hourly reminders only buzz between these two times ("HH:MM"), so they never wake anyone up. */
-  from: string;
-  to: string;
   /** Weekly: 0 = Sunday ... 6 = Saturday. */
   weekday: number;
   /** "YYYY-MM-DD", the day an "every 2 days" reminder counts from, so its rhythm does not shift each time we re-plan. */
@@ -32,16 +29,14 @@ export interface PlannedNotification {
   body: string;
 }
 
-/** How many upcoming notifications are scheduled per reminder. The plan is rebuilt every time the app opens. */
-export const PLAN_PER_REMINDER = 100;
+/**
+ * How many upcoming notifications are scheduled in all. Android allows roughly 500 pending alarms per app, so this stays
+ * comfortably under; the budget is shared out between the reminders (10 reminders get 40 each, which is still 40 days of
+ * a daily one). The plan is rebuilt every time the app opens, which tops it up.
+ */
+export const PLAN_TOTAL = 400;
+export const PLAN_PER_REMINDER_MAX = 100;
 const MAX_DAYS_AHEAD = 400;
-
-export const toMinutes = (hhmm: string): number => {
-  const [h, m] = hhmm.split(':').map(Number);
-  return (h ?? 0) * 60 + (m ?? 0);
-};
-export const fromMinutes = (minutes: number): string =>
-  `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 
 export const isTime = (v: unknown): v is string => typeof v === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(v);
 
@@ -57,18 +52,7 @@ function daysBetween(from: string, to: string): number {
 }
 
 export function newReminder(now: Date, id: string): Reminder {
-  return { id, repeat: 'daily', time: '20:00', from: '09:00', to: '21:00', weekday: now.getDay(), startDay: dayKey(now), message: '' };
-}
-
-/** The times of day a reminder fires on a day it is active. Hourly: on the hour from `from` to `to`, inclusive. */
-export function timesOfDay(r: Reminder): string[] {
-  if (r.repeat !== 'hourly') return [r.time];
-  const start = toMinutes(r.from);
-  const end = toMinutes(r.to);
-  if (end < start) return [r.from];
-  const times: string[] = [];
-  for (let m = start; m <= end; m += 60) times.push(fromMinutes(m));
-  return times;
+  return { id, repeat: 'daily', time: '20:00', weekday: now.getDay(), startDay: dayKey(now), message: '' };
 }
 
 function activeOn(r: Reminder, day: Date): boolean {
@@ -81,20 +65,18 @@ function activeOn(r: Reminder, day: Date): boolean {
 export function planNotifications(reminders: Reminder[], now: Date, defaultMessage: string): PlannedNotification[] {
   const planned: PlannedNotification[] = [];
   const earliest = now.getTime() + 5_000;
+  const perReminder = Math.min(PLAN_PER_REMINDER_MAX, Math.floor(PLAN_TOTAL / Math.max(1, reminders.length)));
   for (const r of reminders) {
     const body = r.message.trim() || defaultMessage;
-    const times = timesOfDay(r);
+    const [h, m] = r.time.split(':').map(Number);
     let count = 0;
-    for (let offset = 0; offset < MAX_DAYS_AHEAD && count < PLAN_PER_REMINDER; offset++) {
+    for (let offset = 0; offset < MAX_DAYS_AHEAD && count < perReminder; offset++) {
       const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
       if (!activeOn(r, day)) continue;
-      for (const time of times) {
-        const [h, m] = time.split(':').map(Number);
-        const at = new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, m);
-        if (at.getTime() < earliest) continue;
-        planned.push({ reminderId: r.id, at, body });
-        if (++count >= PLAN_PER_REMINDER) break;
-      }
+      const at = new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, m);
+      if (at.getTime() < earliest) continue;
+      planned.push({ reminderId: r.id, at, body });
+      count++;
     }
   }
   return planned.sort((a, b) => a.at.getTime() - b.at.getTime());

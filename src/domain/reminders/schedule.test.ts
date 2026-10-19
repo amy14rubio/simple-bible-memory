@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_REMINDERS, PLAN_PER_REMINDER, newReminder, planNotifications, timesOfDay, type Reminder } from './schedule';
+import { MAX_REMINDERS, PLAN_PER_REMINDER_MAX, PLAN_TOTAL, newReminder, planNotifications, type Reminder } from './schedule';
 
 const at = (iso: string) => new Date(iso); // local time, e.g. '2026-03-02T10:00:00'
 const base = (over: Partial<Reminder>): Reminder => ({ ...newReminder(at('2026-03-02T09:00:00'), 'a'), ...over });
@@ -24,17 +24,6 @@ describe('planNotifications', () => {
     expect(days).toEqual(['2026-03-06 18:30', '2026-03-13 18:30', '2026-03-20 18:30']);
   });
 
-  it('hourly: every hour inside the window, and never outside it', () => {
-    const r = base({ repeat: 'hourly', from: '09:00', to: '12:00' });
-    expect(timesOfDay(r)).toEqual(['09:00', '10:00', '11:00', '12:00']);
-    const plan = planNotifications([r], at('2026-03-02T10:30:00'), 'hi').slice(0, 4).map((n) => stamp(n.at));
-    expect(plan).toEqual(['2026-03-02 11:00', '2026-03-02 12:00', '2026-03-03 09:00', '2026-03-03 10:00']);
-  });
-
-  it('an hourly window that ends before it starts is just the start time', () => {
-    expect(timesOfDay(base({ repeat: 'hourly', from: '15:00', to: '09:00' }))).toEqual(['15:00']);
-  });
-
   it('uses the app message when the reminder has none, and the person\'s own when it has', () => {
     const plain = base({ message: '' });
     const own = base({ id: 'b', message: '  Read Psalm 23  ' });
@@ -43,16 +32,25 @@ describe('planNotifications', () => {
     expect(plan.find((n) => n.reminderId === 'b')!.body).toBe('Read Psalm 23');
   });
 
-  it('merges two reminders soonest first, and caps how many are planned', () => {
+  it('merges two reminders soonest first, each planned a long way ahead', () => {
     const morning = base({ id: 'm', time: '08:00' });
     const evening = base({ id: 'e', time: '20:00' });
     const plan = planNotifications([morning, evening], at('2026-03-02T07:00:00'), 'hi');
     expect(plan.slice(0, 3).map((n) => n.reminderId)).toEqual(['m', 'e', 'm']);
-    expect(plan.length).toBe(PLAN_PER_REMINDER * 2);
+    expect(plan.length).toBe(PLAN_PER_REMINDER_MAX * 2);
     expect(plan.every((n, i) => i === 0 || plan[i - 1]!.at <= n.at)).toBe(true);
   });
 
-  it('allows at most two reminders', () => {
-    expect(MAX_REMINDERS).toBe(2);
+  it('allows ten reminders, and shares one budget between them so the phone never holds too many alarms', () => {
+    expect(MAX_REMINDERS).toBe(10);
+    const ten = Array.from({ length: MAX_REMINDERS }, (_, i) => base({ id: `r${i}`, time: `${String(8 + i).padStart(2, '0')}:00` }));
+    const plan = planNotifications(ten, at('2026-03-02T07:00:00'), 'hi');
+    expect(plan.length).toBe(PLAN_TOTAL);
+    expect(plan.length).toBeLessThan(500); // Android's limit is about 500 pending alarms
+    for (const r of ten) expect(plan.filter((n) => n.reminderId === r.id).length).toBe(PLAN_TOTAL / MAX_REMINDERS);
+  });
+
+  it('a single reminder is planned about a hundred firings ahead', () => {
+    expect(planNotifications([base({})], at('2026-03-02T07:00:00'), 'hi').length).toBe(PLAN_PER_REMINDER_MAX);
   });
 });
