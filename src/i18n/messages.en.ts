@@ -224,6 +224,8 @@ export const en = {
   'discover.notFound': 'This deck is no longer available.',
   'discover.import': 'Import deck',
   'discover.importAgain': 'Import again',
+  'discover.needsUpdate': 'This deck needs a newer version of the app. Update the app to import it.',
+  'discover.needsUpdateShort': 'Needs a newer app version',
   'discover.alreadyHave': 'You already have a copy of this deck.',
   'discover.open': 'Open it',
   'discover.preview': 'Preview',
@@ -281,6 +283,7 @@ export const en = {
   'publish.pickTranslation': "Choose the translation of this deck's text to publish it.",
   'publish.copyrighted': "This translation is copyrighted, so it can't be published.",
   'publish.noLanguage': 'Choose the language of your own words to publish this deck.',
+  'publish.newerFormat': 'This deck was published by a newer version of the app. Update the app to keep it in sync.',
   'publish.tooMany': "Decks with more than 1,000 cards can't be published.",
   'publish.why': 'Why only some translations?',
   'publish.whyBody':

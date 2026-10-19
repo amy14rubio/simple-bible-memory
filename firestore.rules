@@ -22,7 +22,8 @@ service cloud.firestore {
           || (d.translation != 'OWN' && languageOf(d.translation) != null && languageOf(d.translation) == d.language);
     }
     function validDeck(d) {
-      return d.keys().hasOnly(['ownerId', 'title', 'titleLower', 'description', 'translation', 'language', 'cardCount', 'createdAt', 'updatedAt', 'hidden'])
+      return d.keys().hasOnly(['ownerId', 'title', 'titleLower', 'description', 'translation', 'language', 'cardCount', 'createdAt', 'updatedAt', 'hidden', 'v'])
+        && validVersion(d)
         && d.keys().hasAll(['ownerId', 'title', 'titleLower', 'translation', 'language', 'cardCount', 'createdAt', 'updatedAt'])
         && isText(d.title, 1, 200)
         && d.titleLower == d.title.lower()
@@ -31,7 +32,8 @@ service cloud.firestore {
         && d.cardCount is int && d.cardCount >= 0 && d.cardCount <= 1000;
     }
     function validCard(c) {
-      return c.keys().hasOnly(['reference', 'verseText', 'position']) // a card's private note is never published
+      return c.keys().hasOnly(['reference', 'verseText', 'position', 'v']) // a card's private note is never published
+        && validVersion(c)
         && c.keys().hasAll(['reference', 'verseText', 'position'])
         && isText(c.reference, 1, 200)
         && isText(c.verseText, 1, 20000)
@@ -145,6 +147,7 @@ service cloud.firestore {
         && validDeck(request.resource.data)
         && request.resource.data.ownerId == resource.data.ownerId
         && request.resource.data.get('hidden', false) == resource.data.get('hidden', false) // the author cannot un-hide a deck
+        && request.resource.data.get('v', 1) >= resource.data.get('v', 1) // never an older format over a newer one
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.updatedAt == request.time;
 
@@ -153,7 +156,9 @@ service cloud.firestore {
       // Cards must be deleted before their deck (afterwards nobody could prove who owned them).
       match /cards/{cardId} {
         allow get, list: if true;
-        allow create, update: if ownsDeck(deckId) && validCard(request.resource.data);
+        allow create: if ownsDeck(deckId) && validCard(request.resource.data);
+        allow update: if ownsDeck(deckId) && validCard(request.resource.data)
+          && request.resource.data.get('v', 1) >= resource.data.get('v', 1); // never an older format over a newer one
         allow delete: if ownsDeck(deckId);
       }
     }

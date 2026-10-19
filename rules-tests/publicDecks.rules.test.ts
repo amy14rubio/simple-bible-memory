@@ -180,3 +180,36 @@ describe('cards in a published deck', () => {
     await assertSucceeds(deleteDoc(doc(alice(), 'publicDecks', 'd1')));
   });
 });
+
+describe('the format version (v) of a published deck', () => {
+  const seedAt = (v: number) => env.withSecurityRulesDisabled(async (ctx) => {
+    const db = ctx.firestore();
+    await setDoc(doc(db, 'publicDecks', 'd1'), { ...newDeck({ v }), createdAt: Timestamp.fromMillis(1000), updatedAt: Timestamp.fromMillis(1000) });
+    await setDoc(doc(db, 'publicDecks', 'd1', 'cards', 'c1'), card({ v }));
+  });
+
+  it('a deck and its cards may carry v (a whole number from 1), or none at all (published before versions existed)', async () => {
+    await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'a'), newDeck({ v: 1 })));
+    await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'b'), newDeck()));
+    await assertFails(setDoc(doc(alice(), 'publicDecks', 'c'), newDeck({ v: 0 })));
+    await assertFails(setDoc(doc(alice(), 'publicDecks', 'c'), newDeck({ v: 1.5 })));
+    await assertFails(setDoc(doc(alice(), 'publicDecks', 'c'), newDeck({ v: 'two' })));
+    await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'a', 'cards', 'x'), card({ v: 1 })));
+    await assertFails(setDoc(doc(alice(), 'publicDecks', 'a', 'cards', 'y'), card({ v: 0 })));
+  });
+
+  it('a deck saved in a newer format is never changed back to an older one, by its author or anyone', async () => {
+    await seedAt(2);
+    await assertFails(updateDoc(doc(alice(), 'publicDecks', 'd1'), { v: 1, updatedAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(doc(alice(), 'publicDecks', 'd1'), { v: 2, title: 'Still fine', titleLower: 'still fine', updatedAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(doc(alice(), 'publicDecks', 'd1'), { v: 3, updatedAt: serverTimestamp() }));
+  });
+
+  it('a card saved in a newer format cannot be replaced by an older one (an older app writes whole cards)', async () => {
+    await seedAt(2);
+    await assertFails(setDoc(doc(alice(), 'publicDecks', 'd1', 'cards', 'c1'), card({ v: 1, verseText: 'An older app' })));
+    await assertFails(setDoc(doc(alice(), 'publicDecks', 'd1', 'cards', 'c1'), card({ verseText: 'An app with no versions' })));
+    await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'd1', 'cards', 'c1'), card({ v: 2, verseText: 'The newer app' })));
+    await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'd1', 'cards', 'c2'), card({ v: 1 }))); // a new card is a new card
+  });
+});

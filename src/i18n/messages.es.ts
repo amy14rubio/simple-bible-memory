@@ -221,6 +221,8 @@ export const es: Dictionary = {
   'discover.notFound': 'Esta baraja ya no está disponible.',
   'discover.import': 'Importar baraja',
   'discover.importAgain': 'Importar de nuevo',
+  'discover.needsUpdate': 'Esta baraja necesita una versión más reciente de la app. Actualiza la app para importarla.',
+  'discover.needsUpdateShort': 'Necesita una versión más reciente',
   'discover.alreadyHave': 'Ya tienes una copia de esta baraja.',
   'discover.open': 'Abrirla',
   'discover.preview': 'Vista previa',
@@ -282,6 +284,7 @@ export const es: Dictionary = {
   'publish.pickTranslation': 'Elige la traducción del texto de esta baraja para poder publicarla.',
   'publish.copyrighted': 'Esta traducción tiene derechos de autor, así que no se puede publicar.',
   'publish.noLanguage': 'Elige el idioma de tus propias palabras para publicar esta baraja.',
+  'publish.newerFormat': 'Esta baraja fue publicada con una versión más reciente de la app. Actualiza la app para mantenerla sincronizada.',
   'publish.tooMany': 'Las barajas con más de 1000 tarjetas no se pueden publicar.',
   'publish.why': '¿Por qué solo algunas traducciones?',
   'publish.whyBody':

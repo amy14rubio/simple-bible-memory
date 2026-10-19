@@ -153,7 +153,31 @@ test('a public deck\'s description keeps its line breaks on its page', async ({ 
   await page.locator('a[href*="/discover/"]').first().click();
   const text = page.getByText('First line.');
   await expect(text).toBeVisible();
-  expect(await text.evaluate((e) => getComputedStyle(e).whiteSpace)).toBe('pre-line');
+  await expect(text).toHaveCSS('white-space', 'pre-line'); // keeps the line breaks (retries until the page has settled)
   expect((await text.boundingBox())!.height).toBeGreaterThan(30); // two lines tall
 });
 
+
+test('a deck published by a newer version of the app can be looked at, but not imported until the app is updated', async ({ page }) => {
+  const newer = deck('Newer format', 'KJV', 'en', 5000);
+  (newer.meta as Record<string, unknown>).v = 2; // saved in a format this app does not know
+  await seed(page, { n: newer, ...seeded });
+  await openDiscover(page);
+
+  const links = page.locator('a[href*="/discover/"]');
+  await expect(links).toHaveCount(4); // still listed: nothing is hidden
+  await expect(links.first()).toContainText('Newer format');
+  await expect(links.first()).toContainText('Needs a newer app version');
+  await expect(links.nth(1)).not.toContainText('Needs a newer app version'); // an ordinary deck
+
+  await links.first().click();
+  await expect(page.getByRole('heading', { name: 'Newer format' })).toBeVisible();
+  await expect(page.getByText('Verse text 0 of Newer format.')).toBeVisible(); // it can be read
+  await expect(page.getByRole('status').filter({ hasText: 'needs a newer version of the app' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Import deck' })).toBeDisabled();
+
+  // an ordinary deck still imports
+  await page.goBack();
+  await links.nth(1).click();
+  await expect(page.getByRole('button', { name: 'Import deck' })).toBeEnabled();
+});

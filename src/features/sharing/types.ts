@@ -6,6 +6,8 @@ export interface CloudCard {
   reference: string;
   verseText: string;
   position: number;
+  /** The format version it is saved in. */
+  v: number;
 }
 
 /** A deck's details as they appear in the public copy. */
@@ -15,6 +17,8 @@ export interface CloudDeckMeta {
   translation: string;
   language: SharingLanguage;
   cardCount: number;
+  /** The format version the deck and its cards are saved in. */
+  v: number;
 }
 
 /**
@@ -50,7 +54,12 @@ export interface AuthBackend {
 }
 
 /** Why a deck cannot be published or kept in sync. */
-export type BlockReason = 'no-translation' | 'copyrighted' | 'no-language' | 'too-many-cards';
+export type BlockReason = 'no-translation' | 'copyrighted' | 'no-language' | 'too-many-cards' | 'newer-format';
+
+/** The public copy was saved by a newer version of the app than this one, so this app must not touch it. */
+export class NewerFormatError extends Error {
+  constructor() { super('The public copy of this deck is in a newer format than this app understands.'); }
+}
 export type DeckSyncStatus =
   | { state: 'syncing' }
   | { state: 'synced' }

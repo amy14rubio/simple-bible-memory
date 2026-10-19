@@ -1,5 +1,5 @@
 import { collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where, writeBatch, type Firestore } from 'firebase/firestore';
-import type { CloudBackend, CloudCard, CloudDeckMeta } from './types';
+import { NewerFormatError, type CloudBackend, type CloudCard, type CloudDeckMeta } from './types';
 
 /**
  * The public catalogue in Firestore. Layout: `publicDecks/{id}` holds a deck's details (and who owns it, as an opaque
@@ -15,11 +15,26 @@ const deckFields = (m: CloudDeckMeta) => ({
   translation: m.translation,
   language: m.language,
   cardCount: m.cardCount,
+  v: m.v,
 });
 
 export function createFirestoreCloud(db: Firestore, uid: () => string): CloudBackend {
   const deckRef = (id: string) => doc(db, 'publicDecks', id);
   const cardsRef = (id: string) => collection(db, 'publicDecks', id, 'cards');
+
+  /**
+   * Runs a write. If the rules refuse it because the public copy is in a newer format than this app writes (the rules never
+   * let an older format replace a newer one), that is reported as NewerFormatError rather than as a failure to retry.
+   */
+  async function guarded<T>(id: string, v: number, write: () => Promise<T>): Promise<T> {
+    try { return await write(); } catch (e) {
+      if ((e as { code?: string }).code === 'permission-denied') {
+        const there = await getDoc(deckRef(id)).catch(() => null);
+        if (there?.exists() && typeof there.data().v === 'number' && there.data().v > v) throw new NewerFormatError();
+      }
+      throw e;
+    }
+  }
 
   async function removeDeck(id: string) {
     if (!(await getDoc(deckRef(id))).exists()) return; // already gone (the rules need the deck to prove who owns its cards)
@@ -36,20 +51,20 @@ export function createFirestoreCloud(db: Firestore, uid: () => string): CloudBac
 
   return {
     async createDeck(id, meta) {
-      await setDoc(deckRef(id), { ownerId: uid(), ...deckFields(meta), createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+      await guarded(id, meta.v, () => setDoc(deckRef(id), { ownerId: uid(), ...deckFields(meta), createdAt: serverTimestamp(), updatedAt: serverTimestamp() }));
     },
 
     async updateDeck(id, meta) {
-      await updateDoc(deckRef(id), { ...deckFields(meta), updatedAt: serverTimestamp() });
+      await guarded(id, meta.v, () => updateDoc(deckRef(id), { ...deckFields(meta), updatedAt: serverTimestamp() }));
     },
 
     async putCards(id, cards: CloudCard[]) {
       for (let i = 0; i < cards.length; i += CHUNK) {
         const batch = writeBatch(db);
         for (const c of cards.slice(i, i + CHUNK)) {
-          batch.set(doc(db, 'publicDecks', id, 'cards', c.id), { reference: c.reference, verseText: c.verseText, position: c.position });
+          batch.set(doc(db, 'publicDecks', id, 'cards', c.id), { reference: c.reference, verseText: c.verseText, position: c.position, v: c.v });
         }
-        await batch.commit();
+        await guarded(id, Math.max(...cards.slice(i, i + CHUNK).map((c) => c.v)), () => batch.commit());
       }
     },
 

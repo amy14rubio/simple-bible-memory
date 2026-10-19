@@ -40,8 +40,24 @@ The order matters, because the rules are separate from the app:
 3. Before each release, install the new build **over an old one that has real data** and check the decks, cards and
    schedules are all still there.
 
+## Published decks (`publicDecks`)
+
+Published decks follow the same idea with their own constant, `PUBLIC_SCHEMA_VERSION` (`src/domain/sharing/version.ts`).
+A published deck and each of its cards carry `v`; one published before versions existed counts as 1.
+
+- **Discover** still lists a deck in a newer format, but marks it "Needs a newer app version" and turns Import off with a
+  message asking the person to update. Nothing is hidden, and nobody gets a damaged copy.
+- **The author's own devices:** an older device that edits a deck a newer device published does not write over it; the deck
+  shows a "published by a newer version" status instead.
+- **The rules** refuse to replace a card, or set a deck's `v`, in an older format than what is stored.
+- **A limit worth knowing:** apps released before this existed update a published deck's details with a partial update (only
+  the fields they know), which the rules cannot tell from a correct one. So an old app can still change a newer deck's title,
+  description, translation or card count. It cannot rewrite its cards. That is why changes to a published deck should stay
+  additive.
+
+When you change the shape of a published deck, raise `PUBLIC_SCHEMA_VERSION`; the app then re-sends each deck's details once,
+which stamps the public copy with the new version.
+
 ## What this does not cover
 
-- `publicDecks` has no version label yet. Its shape is fixed by the rules (`hasOnly`), and apps ignore fields they do not
-  know, so adding an optional field is safe, but a breaking change there needs the same care (and a version label).
 - Review history never leaves the device, so it needs only a local migration.

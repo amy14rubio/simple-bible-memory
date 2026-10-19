@@ -1,4 +1,4 @@
-import type { AuthBackend, AuthUser, CloudBackend, CloudCard, CloudDeckMeta } from './types';
+import { NewerFormatError, type AuthBackend, type AuthUser, type CloudBackend, type CloudCard, type CloudDeckMeta } from './types';
 import { PAGE_SIZE, type DiscoverBackend, type PublicDeck } from '../discover/types';
 import type { AccountBackend } from '../account/types';
 import { createFakeAccount, emptyFakeAccount, type FakeAccountState } from '../account/fakeAccount';
@@ -52,7 +52,7 @@ export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; 
 
   const cloud: CloudBackend = {
     async createDeck(id, meta) { edit((s) => { s.decks[id] = { ownerId: s.user!.uid, createdAt: Date.now(), meta, cards: {} }; }); },
-    async updateDeck(id, meta) { edit((s) => { const d = s.decks[id]; if (!d) throw new Error('no such deck'); d.meta = meta; }); },
+    async updateDeck(id, meta) { edit((s) => { const d = s.decks[id]; if (!d) throw new Error('no such deck'); if ((d.meta.v ?? 1) > meta.v) throw new NewerFormatError(); d.meta = meta; }); },
     async putCards(id, cards) { edit((s) => { const d = s.decks[id]; if (!d) throw new Error('no such deck'); for (const c of cards) d.cards[c.id] = c; }); },
     async removeCards(id, ids) { edit((s) => { const d = s.decks[id]; if (d) for (const i of ids) delete d.cards[i]; }); },
     async removeDeck(id) { edit((s) => { delete s.decks[id]; }); },
@@ -60,7 +60,7 @@ export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; 
   };
 
   const publicDeck = (id: string, d: State['decks'][string]): PublicDeck => ({
-    id, title: d.meta.title, description: d.meta.description, translation: d.meta.translation, language: d.meta.language, cardCount: d.meta.cardCount, createdAt: d.createdAt ?? 0,
+    id, title: d.meta.title, description: d.meta.description, translation: d.meta.translation, language: d.meta.language, cardCount: d.meta.cardCount, createdAt: d.createdAt ?? 0, v: d.meta.v ?? 1,
   });
   const discover: DiscoverBackend = {
     async listDecks(filters, cursor) {

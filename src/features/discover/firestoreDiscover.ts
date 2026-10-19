@@ -13,6 +13,7 @@ const toDeck = (id: string, d: DocumentData): PublicDeck => ({
   language: d.language,
   cardCount: d.cardCount,
   createdAt: typeof d.createdAt?.toMillis === 'function' ? d.createdAt.toMillis() : 0,
+  v: typeof d.v === 'number' ? d.v : 1,
 });
 
 export function createFirestoreDiscover(db: Firestore): DiscoverBackend {

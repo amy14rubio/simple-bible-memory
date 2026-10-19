@@ -65,7 +65,7 @@ describe('publishing', () => {
     await engine.publish(deck.id);
     const id = await publishId(deck.id);
     const copy = cloud.decks.get(id)!;
-    expect(copy.meta).toEqual({ title: 'Psalms', description: 'Shepherd', translation: 'RV1909', language: 'es', cardCount: 3 });
+    expect(copy.meta).toEqual({ title: 'Psalms', description: 'Shepherd', translation: 'RV1909', language: 'es', cardCount: 3, v: 1 });
     expect([...copy.cards.values()].map((c) => [c.id, c.position, c.reference])).toEqual(made.map((c, i) => [c.id, i, c.reference]));
     expect(engine.status(deck.id)).toEqual({ state: 'synced' });
   });
@@ -245,5 +245,41 @@ describe('scheduling', () => {
     expect(sent()).toEqual([]); // not yet
     await new Promise((r) => setTimeout(r, 60));
     expect(sent()).toEqual(['putCards 1']);
+  });
+});
+
+describe('deck formats: an app never damages what a newer app published', () => {
+  it('the public copy says which format it is in, for the deck and every card', async () => {
+    const { deck } = await psalms();
+    await engine.publish(deck.id);
+    const copy = cloud.decks.get(await publishId(deck.id))!;
+    expect(copy.meta.v).toBe(1);
+    expect([...copy.cards.values()].every((c) => c.v === 1)).toBe(true);
+  });
+
+  it('an app on an older format leaves a newer public copy alone, and says why', async () => {
+    const { deck } = await psalms();
+    const newer = createSyncEngine({ sharing, cloud, ready: () => true, delayMs: 5, schemaVersion: 2 });
+    await newer.publish(deck.id);
+    const id = await publishId(deck.id);
+    expect(cloud.decks.get(id)!.meta.v).toBe(2);
+
+    // the same deck, edited on a device that has not been updated
+    await decks.update(deck.id, { title: 'Renamed on the older app', description: 'x', translationCode: 'KJV', bibleLanguage: null });
+    engine = createSyncEngine({ sharing, cloud, ready: () => true, delayMs: 5 }); // schemaVersion 1
+    await engine.syncAll();
+    expect(engine.status(deck.id)).toEqual({ state: 'blocked', reason: 'newer-format' });
+    expect(cloud.decks.get(id)!.meta.title).toBe('Psalms'); // untouched
+    expect(cloud.decks.get(id)!.meta.v).toBe(2);
+  });
+
+  it('a newer app does write over an older public copy, and stamps it with the new format', async () => {
+    const { deck } = await psalms();
+    await engine.publish(deck.id); // format 1
+    const id = await publishId(deck.id);
+    const newer = createSyncEngine({ sharing, cloud, ready: () => true, delayMs: 5, schemaVersion: 2 });
+    await newer.syncAll();
+    expect(newer.status(deck.id)).toEqual({ state: 'synced' });
+    expect(cloud.decks.get(id)!.meta.v).toBe(2); // the details are re-sent once when the format changes
   });
 });

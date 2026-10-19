@@ -5,6 +5,7 @@ import { AppBar, BackButton, Button, EmptyState, ErrorMessage, IconButton, Page,
 import { loadBackends, sharingAvailable } from '../sharing/backend';
 import { useI18n } from '../../i18n/I18nProvider';
 import { NO_FILTERS, type DiscoverFilters, type PublicDeck } from './types';
+import { PUBLIC_SCHEMA_VERSION } from '../../domain/sharing/version';
 import { deckSummary } from './names';
 import { FilterDrawer } from './FilterDrawer';
 
@@ -90,7 +91,7 @@ export function DiscoverPage() {
                 <li key={d.id} className="border-b border-border">
                   <Link to={`/discover/${d.id}`} className="block px-5 py-4 hover:bg-surface">
                     <span className="block font-serif text-lg leading-snug">{d.title}</span>
-                    <span className="mt-0.5 block text-sm text-muted">{deckSummary(d, t('translation.own'), t('import.cards', { count: d.cardCount }))}</span>
+                    <span className="mt-0.5 block text-sm text-muted">{deckSummary(d, t('translation.own'), t('import.cards', { count: d.cardCount }))}{d.v > PUBLIC_SCHEMA_VERSION && ` · ${t('discover.needsUpdateShort')}`}</span>
                     {d.description && <span className="mt-1 block line-clamp-2 text-[0.9375rem] text-muted">{d.description}</span>}
                   </Link>
                 </li>
