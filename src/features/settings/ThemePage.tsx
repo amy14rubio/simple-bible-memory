@@ -3,6 +3,7 @@ import { useTheme, type ThemePreference } from '../../app/theme';
 import { AppBar, BackButton, Button, CheckList, Page } from '../../components/ui';
 import { DARK_START, LIGHT_START, isHex, type CustomTheme } from '../../lib/customTheme';
 import { useI18n } from '../../i18n/I18nProvider';
+import { ColorPickerDialog } from './ColorPickerDialog';
 
 type Channel = keyof CustomTheme;
 
@@ -75,20 +76,22 @@ const systemDark = () => window.matchMedia('(prefers-color-scheme: dark)').match
 function ColorRow({ label, value, onChange }: { label: string; value: string; onChange: (hex: string) => void }) {
   const { t } = useI18n();
   const [text, setText] = useState(value);
+  const [picking, setPicking] = useState(false);
   useEffect(() => setText(value), [value]); // follow the picker, and Reset
 
   return (
     <div className="flex items-center gap-4 border-b border-border py-3">
       <span className="min-w-0 flex-1">{label}</span>
-      <label className="relative size-10 shrink-0 cursor-pointer overflow-hidden rounded-full border border-border" style={{ background: value }}>
-        <input
-          type="color"
-          aria-label={t('customTheme.pickerFor', { label })}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="absolute inset-0 size-full cursor-pointer opacity-0"
-        />
-      </label>
+      <button
+        type="button"
+        aria-label={t('customTheme.pickerFor', { label })}
+        aria-haspopup="dialog"
+        aria-expanded={picking}
+        onClick={() => setPicking(true)}
+        className="size-10 shrink-0 rounded-full border border-border"
+        style={{ background: value }}
+      />
+      <ColorPickerDialog open={picking} label={label} value={value} onChange={onChange} onClose={() => setPicking(false)} />
       <input
         type="text"
         aria-label={t('customTheme.hexFor', { label })}

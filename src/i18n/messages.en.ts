@@ -425,6 +425,8 @@ export const en = {
   'customTheme.background': 'Background',
   'customTheme.text': 'Text',
   'customTheme.accent': 'Accent',
+  'customTheme.colorPreview': '{label}, preview',
+  'customTheme.hue': 'hue',
   'customTheme.pickerFor': 'Pick {label}',
   'customTheme.hexFor': '{label}, hex code',
   'customTheme.reset': 'Reset to default',

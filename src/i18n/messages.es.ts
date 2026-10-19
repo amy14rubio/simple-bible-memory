@@ -432,6 +432,8 @@ export const es: Dictionary = {
   'customTheme.background': 'Fondo',
   'customTheme.text': 'Texto',
   'customTheme.accent': 'Acento',
+  'customTheme.colorPreview': '{label}, vista previa',
+  'customTheme.hue': 'tono',
   'customTheme.pickerFor': 'Elegir {label}',
   'customTheme.hexFor': '{label}, código hex',
   'customTheme.reset': 'Restablecer',

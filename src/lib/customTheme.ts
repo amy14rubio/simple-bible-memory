@@ -47,6 +47,11 @@ export function customThemeVars(c: CustomTheme): { dark: boolean; vars: Record<s
       '--surface': mix(c.text, 6, c.background),
       '--panel': mix(c.text, 9, c.background),
       '--border': mix(c.text, 14, c.background),
+      // The banner after a rating: its words are tinted by the rating, but in a custom theme they are simply the theme's background colour on the text-coloured pill.
+      '--toast-again': c.background,
+      '--toast-hard': c.background,
+      '--toast-good': c.background,
+      '--toast-easy': c.background,
     },
   };
 }
