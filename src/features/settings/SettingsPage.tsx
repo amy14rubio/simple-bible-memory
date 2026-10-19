@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
@@ -35,6 +35,7 @@ export function SettingsPage() {
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [kinds, setKinds] = useState<CardKindSetting>('both');
   const [encouragement, setEncouragement] = useState(true);
+  const encouragementTouched = useRef(false); // a tap before the saved value has loaded must not be undone by it
 
   useEffect(() => { share.ensureLoaded(); }, [share]);
 
@@ -42,7 +43,7 @@ export function SettingsPage() {
     loadNewPerDay(settings).then((n) => setNewPerDay(String(n)));
     loadCardKindSetting(settings).then(setKinds);
     settings.get<Difficulty>('blank_difficulty').then((d) => d && DIFFICULTIES.includes(d) && setDifficulty(d));
-    settings.get<boolean>('encouragement').then((on) => setEncouragement(on ?? encouragementDefault()));
+    settings.get<boolean>('encouragement').then((on) => { if (!encouragementTouched.current) setEncouragement(on ?? encouragementDefault()); });
   }, [settings]);
 
   const changeNew = (value: string) => {
@@ -109,7 +110,7 @@ export function SettingsPage() {
           <div className={row}>
             <span id="encouragement-label" className="sr-only">{t('settings.encouragement')}</span>
             <InfoLabel title={t('settings.encouragement')} info={t('settings.encouragementHint')} />
-            <Switch checked={encouragement} labelledBy="encouragement-label" onChange={(on) => { setEncouragement(on); void settings.set('encouragement', on); }} />
+            <Switch checked={encouragement} labelledBy="encouragement-label" onChange={(on) => { encouragementTouched.current = true; setEncouragement(on); void settings.set('encouragement', on); }} />
           </div>
         </section>
 

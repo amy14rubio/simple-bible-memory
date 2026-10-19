@@ -132,7 +132,7 @@ test.describe('the Settings switch', () => {
   });
 });
 
-test('it is the toast\'s own look, and follows a custom theme: the pill is the text colour, the words are the rating\'s colour', async ({ page }) => {
+test('it is the toast\'s own look, and follows a custom theme: the pill is the text colour, the words are the theme\'s background colour', async ({ page }) => {
   await page.goto('/#/settings/theme');
   await page.getByRole('radio', { name: 'Custom' }).check();
   await page.getByLabel('Background, hex code').fill('#fff4e5');
@@ -144,7 +144,7 @@ test('it is the toast\'s own look, and follows a custom theme: the pill is the t
   await expect(card).toBeVisible();
   const style = await card.evaluate((e) => ({ pill: getComputedStyle(e).backgroundColor, words: getComputedStyle(e.querySelector('p')!).color, weight: getComputedStyle(e.querySelector('p')!).fontWeight, size: getComputedStyle(e.querySelector('p')!).fontSize, font: getComputedStyle(e.querySelector('p')!).fontFamily, bodyFont: getComputedStyle(document.body).fontFamily }));
   expect(style.pill).toBe('rgb(42, 26, 0)'); // the colour chosen for text
-  expect(style.words).toBe('rgb(153, 235, 187)'); // Good's green, chosen to read on that dark pill
+  expect(style.words).toBe('rgb(255, 244, 229)'); // the theme's own background colour, whatever the rating (no rating tints in a custom theme)
   expect(style.weight).toBe('500'); // medium, like the other toasts, not bold
   expect(style.size).toBe('15px'); // 0.9375rem, like the other toasts
   expect(style.font).toBe(style.bodyFont); // the app's own font

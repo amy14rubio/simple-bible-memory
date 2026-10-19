@@ -56,15 +56,94 @@ test.describe('the Theme page', () => {
     await hex(page, 'Accent').fill('#ff8800');
     expect(await bodyColors(page)).toEqual({ background: 'rgb(16, 32, 48)', color: 'rgb(224, 240, 255)' });
     expect(await rootVar(page, '--accent')).toBe('#ff8800');
-    await expect(page.getByText('Learning')).toHaveCSS('color', 'rgb(255, 136, 0)'); // the accent in the preview
+    for (const v of ['--toast-again', '--toast-hard', '--toast-good', '--toast-easy']) expect(await rootVar(page, v)).toBe('#102030'); // the rating banner's words follow the theme's background
+    await expect(page.getByText('Learning').locator('span')).toHaveCSS('background-color', 'rgb(255, 136, 0)'); // the accent dot in the preview
     expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe('dark'); // a dark background gets the dark palette for the rest
   });
 
-  test('the native colour picker works too', async ({ page }) => {
-    await openCustom(page);
-    await page.getByLabel('Pick Background').fill('#336699');
-    expect((await bodyColors(page)).background).toBe('rgb(51, 102, 153)');
-    await expect(hex(page, 'Background')).toHaveValue('#336699');
+  test.describe('the colour picker', () => {
+    const swatch = (page: Page, label: string) => page.getByRole('button', { name: `Pick ${label}` });
+    const dialog = (page: Page, label: string) => page.getByRole('dialog', { name: `Pick ${label}` });
+    const hue = (page: Page, label: string) => dialog(page, label).getByRole('slider', { name: `${label}, hue` });
+
+    test('tapping a swatch opens a dialog with the colour square, the hue slider and a preview, and nothing else', async ({ page }) => {
+      await openCustom(page);
+      await expect(dialog(page, 'Background')).toBeHidden();
+      await swatch(page, 'Background').click();
+      const d = dialog(page, 'Background');
+      await expect(d).toBeVisible();
+      await expect(d.getByRole('heading', { name: 'Background' })).toBeVisible();
+      await expect(d.getByRole('slider')).toHaveCount(2); // the square's thumb and the hue slider
+      await expect(hue(page, 'Background')).toBeVisible();
+      await expect(d.getByRole('img', { name: /Background, preview/ })).toBeVisible();
+      await expect(d.locator('input[type="text"], input[type="color"]')).toHaveCount(0); // no hex box in the dialog (it is on the page)
+      await expect(d.getByRole('button').filter({ hasNotText: 'Close' })).toHaveCount(0); // no random-colour or preset buttons
+    });
+
+    test('moving the hue recolours the whole app as you go, and the hex box on the page follows', async ({ page }) => {
+      await openCustom(page);
+      await hex(page, 'Accent').fill('#ff0000');
+      await swatch(page, 'Accent').click();
+      const slider = hue(page, 'Accent');
+      await slider.focus();
+      await page.keyboard.press('PageUp'); // a big step in hue: red towards orange
+      await expect.poll(() => rootVar(page, '--accent')).not.toBe('#ff0000');
+      const moved = await rootVar(page, '--accent');
+      await expect(hex(page, 'Accent')).toHaveValue(moved);
+      expect(moved).toMatch(/^#[0-9a-f]{6}$/);
+    });
+
+    test('the square changes saturation and brightness, and the hex box on the page still moves it', async ({ page }) => {
+      await openCustom(page);
+      await hex(page, 'Accent').fill('#ff0000');
+      await swatch(page, 'Accent').click();
+      const area = dialog(page, 'Accent').getByRole('slider', { name: /Color picker/ });
+      await area.focus();
+      await page.keyboard.press('ArrowLeft'); // less saturated: towards a paler red
+      await expect.poll(() => rootVar(page, '--accent')).not.toBe('#ff0000');
+      // a colour typed into the page box (behind the dialog) is followed by the preview
+      await dialog(page, 'Accent').getByRole('button', { name: 'Close' }).click({ force: true });
+      await hex(page, 'Accent').fill('#00aa00');
+      await swatch(page, 'Accent').click();
+      await expect(dialog(page, 'Accent').getByRole('img', { name: /preview/ })).toBeVisible();
+      expect(await rootVar(page, '--accent')).toBe('#00aa00');
+    });
+
+    test('the dialog closes with Escape, with a tap outside, and with Back; the colour stays', async ({ page }) => {
+      await openCustom(page);
+      await swatch(page, 'Background').click();
+      await hue(page, 'Background').focus();
+      await page.keyboard.press('PageDown');
+      const changed = await rootVar(page, '--background');
+      await page.keyboard.press('Escape');
+      await expect(dialog(page, 'Background')).toBeHidden();
+      expect(await rootVar(page, '--background')).toBe(changed);
+
+      await swatch(page, 'Background').click();
+      await expect(dialog(page, 'Background')).toBeVisible();
+      await page.mouse.click(5, 5); // on the dimmed page outside the card
+      await expect(dialog(page, 'Background')).toBeHidden();
+
+      await swatch(page, 'Background').click();
+      await expect(dialog(page, 'Background')).toBeVisible();
+      await page.goBack(); // the phone's Back closes the dialog, not the page
+      await expect(dialog(page, 'Background')).toBeHidden();
+      await expect(page).toHaveURL(/#\/settings\/theme$/);
+    });
+
+    for (const scheme of ['light', 'dark'] as const) {
+      test(`the open dialog has no accessibility violations (${scheme})`, async ({ browser }) => {
+        const ctx = await browser.newContext({ colorScheme: scheme });
+        const page = await ctx.newPage();
+        await openCustom(page);
+        await swatch(page, 'Text').click();
+        await expect(dialog(page, 'Text')).toBeVisible();
+        await page.waitForTimeout(400);
+        const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+        expect(r.violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+        await ctx.close();
+      });
+    }
   });
 
   test('typing an invalid hex code changes nothing, and a half-typed code is dropped when you leave the field', async ({ page }) => {

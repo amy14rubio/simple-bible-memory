@@ -250,16 +250,6 @@ test.describe('the medium fixes', () => {
     await page.keyboard.press('3'); // on the answer: Good
     await expect(page.getByRole('button', { name: 'Show answer' })).toBeVisible(); // the next card
   });
-
-  test('M7: a custom theme with unreadable text says so, out loud', async ({ page }) => {
-    await page.goto('/#/settings/theme');
-    await page.getByRole('radio', { name: 'Custom' }).check();
-    const hex = page.getByLabel('Text, hex code');
-    await hex.fill('#f0f0ee'); // almost the same as the light background
-    await expect(page.getByRole('status').filter({ hasText: /Low contrast: this text colour/ })).toBeVisible();
-    await hex.fill('#17171a');
-    await expect(page.getByText(/Low contrast: this text colour/)).toHaveCount(0);
-  });
 });
 
 test.describe('the small fixes', () => {

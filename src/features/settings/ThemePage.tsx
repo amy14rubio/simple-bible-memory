@@ -1,8 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTheme, type ThemePreference } from '../../app/theme';
 import { AppBar, BackButton, Button, CheckList, Page } from '../../components/ui';
-import { DARK_START, LIGHT_START, READABLE_CONTRAST, contrastRatio, isHex, type CustomTheme } from '../../lib/customTheme';
+import { DARK_START, LIGHT_START, isHex, type CustomTheme } from '../../lib/customTheme';
 import { useI18n } from '../../i18n/I18nProvider';
+import { ColorPickerDialog } from './ColorPickerDialog';
 
 type Channel = keyof CustomTheme;
 
@@ -50,7 +51,7 @@ export function ThemePage() {
             <section aria-label={t('customTheme.preview')} className="space-y-3 rounded-3xl bg-panel px-5 py-6">
               <p className="font-serif text-xl font-medium">{t('customTheme.sampleReference')}</p>
               <p className="scripture text-lg">{t('customTheme.samplePassage')}</p>
-              <p className="text-sm font-medium text-accent">{t('customTheme.sampleAccent')}</p>
+              <p className="flex items-center gap-2 text-sm font-medium"><span aria-hidden className="size-2.5 rounded-full bg-accent" />{t('customTheme.sampleAccent')}</p>
               <div className="h-2 overflow-hidden rounded-full bg-foreground/10"><div className="h-full w-2/3 rounded-full bg-accent" /></div>
               <div aria-hidden className="flex min-h-12 items-center justify-center rounded-lg bg-primary text-[0.9375rem] font-medium text-primary-foreground">{t('study.showAnswer')}</div>
             </section>
@@ -59,16 +60,6 @@ export function ThemePage() {
               {rows.map(({ channel, label }) => (
                 <ColorRow key={channel} label={label} value={colors[channel]} onChange={(v) => void setCustom({ ...colors, [channel]: v })} />
               ))}
-            </div>
-
-            {/* Said out loud as it changes, so someone choosing colours by ear hears when they make the app unreadable. */}
-            <div role="status" className="space-y-2">
-              {contrastRatio(colors.text, colors.background) < READABLE_CONTRAST && (
-                <p className="rounded-lg border border-danger p-3.5 text-danger">{t('customTheme.lowText', { ratio: contrastRatio(colors.text, colors.background).toFixed(1) })}</p>
-              )}
-              {contrastRatio(colors.accent, colors.background) < READABLE_CONTRAST && (
-                <p className="rounded-lg border border-danger p-3.5 text-danger">{t('customTheme.lowAccent', { ratio: contrastRatio(colors.accent, colors.background).toFixed(1) })}</p>
-              )}
             </div>
 
             <Button variant="secondary" className="w-full" onClick={() => void setCustom(systemDark() ? DARK_START : LIGHT_START)}>{t('customTheme.reset')}</Button>
@@ -85,20 +76,22 @@ const systemDark = () => window.matchMedia('(prefers-color-scheme: dark)').match
 function ColorRow({ label, value, onChange }: { label: string; value: string; onChange: (hex: string) => void }) {
   const { t } = useI18n();
   const [text, setText] = useState(value);
+  const [picking, setPicking] = useState(false);
   useEffect(() => setText(value), [value]); // follow the picker, and Reset
 
   return (
     <div className="flex items-center gap-4 border-b border-border py-3">
       <span className="min-w-0 flex-1">{label}</span>
-      <label className="relative size-10 shrink-0 cursor-pointer overflow-hidden rounded-full border border-border" style={{ background: value }}>
-        <input
-          type="color"
-          aria-label={t('customTheme.pickerFor', { label })}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="absolute inset-0 size-full cursor-pointer opacity-0"
-        />
-      </label>
+      <button
+        type="button"
+        aria-label={t('customTheme.pickerFor', { label })}
+        aria-haspopup="dialog"
+        aria-expanded={picking}
+        onClick={() => setPicking(true)}
+        className="size-10 shrink-0 rounded-full border border-border"
+        style={{ background: value }}
+      />
+      <ColorPickerDialog open={picking} label={label} value={value} onChange={onChange} onClose={() => setPicking(false)} />
       <input
         type="text"
         aria-label={t('customTheme.hexFor', { label })}

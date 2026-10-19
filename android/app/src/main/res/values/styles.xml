@@ -18,5 +18,9 @@
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <!-- Android 12 and newer draw their own launch screen (the app icon on a colour): paper, or the dark page in dark mode. -->
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <!-- Just the heart, with no rounded plate behind it (the plate is what Android draws when it is given the whole adaptive icon). -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
     </style>
 </resources>
