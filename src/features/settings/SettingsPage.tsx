@@ -148,7 +148,7 @@ export function SettingsPage() {
           </Link>
         </section>
         <section aria-labelledby="privacy">
-          <h2 id="privacy" className="mb-1 font-serif text-xl">{t('privacy.title')}</h2>
+          <h2 id="privacy" className="mb-1 font-serif text-xl"><InfoLabel title={t('privacy.title')} info={t('privacy.settingsInfo')} className="py-2" /></h2>
           <Link to="/settings/privacy" className={`${row} hover:bg-surface`}>
             <span>{t('privacy.row')}</span>
             <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />

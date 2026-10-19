@@ -76,3 +76,19 @@ test('Account and backup: Export everything comes first, then sign in, and there
   await section.getByRole('button', { name: 'Account and backup', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Account and backup' })).toContainText('also backs up your decks, cards, study schedule and study settings to your account');
 });
+
+test('the Settings Privacy "i" says what the Privacy page is for, and the page\'s own "i" gives its summary', async ({ page }) => {
+  await page.goto('/#/settings');
+  await expect(page.getByText('Find out what the app stores, where it goes, and who can see it.')).toHaveCount(0); // behind the i
+  await page.getByRole('button', { name: 'Privacy', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Privacy' })).toContainText('Find out what the app stores, where it goes, and who can see it. Your decks stay on your device unless you sign in.');
+  await closeWithEscape(page);
+
+  await page.goto('/#/settings/privacy');
+  await expect(page.getByText('The short version:')).toHaveCount(0); // the summary is behind the i, not printed
+  await page.getByRole('button', { name: 'Privacy', exact: true }).click();
+  const drawer = page.getByRole('dialog', { name: 'Privacy' });
+  await expect(drawer).toContainText('The short version: your decks stay on your device unless you sign in or publish one.');
+  await expect(drawer).toContainText('you can delete your account and its data any time');
+});
+
