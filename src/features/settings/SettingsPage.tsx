@@ -16,6 +16,7 @@ import { CONTACT_EMAIL } from '../discover/contact';
 import { encouragementDefault } from '../study/encouragement';
 import { loadCardKindSetting } from '../study/cardKinds';
 import { MAX_NEW_PER_DAY, loadNewPerDay } from '../study/newPerDay';
+import { RemindersSection } from '../reminders/RemindersSection';
 
 const THEME_LABEL = { system: 'settings.themeSystem', light: 'settings.themeLight', dark: 'settings.themeDark', custom: 'settings.themeCustom' } as const;
 
@@ -112,10 +113,7 @@ export function SettingsPage() {
           </div>
         </section>
 
-        <section>
-          <h2 id="notifications" className="mb-1 font-serif text-xl">{t('settings.notifications')}</h2>
-          <p className="py-2 text-muted">{t('settings.notificationsBody')}</p>
-        </section>
+        <RemindersSection />
 
         <section aria-labelledby="backup">
           <h2 id="backup" className="mb-1 font-serif text-xl"><InfoLabel title={t('settings.backup')} info={t('settings.backupBody')} className="py-2" /></h2>

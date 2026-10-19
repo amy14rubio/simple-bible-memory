@@ -5,6 +5,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { useRouteAnnouncer } from './useRouteAnnouncer';
 import { useFirstLaunchTour } from '../features/onboarding/useFirstLaunchTour';
 import { CreateDrawer } from '../features/create/CreateDrawer';
+import { useReminderSync } from '../features/reminders/useReminderSync';
 import { AccountSwitchDialog } from '../features/account/AccountSwitchDialog';
 
 const tab = ({ isActive }: { isActive: boolean }) =>
@@ -18,6 +19,7 @@ export function AppShell() {
   const main = useRef<HTMLElement>(null);
   useRouteAnnouncer(main);
   useFirstLaunchTour();
+  useReminderSync();
   const showNav = pathname === '/';
 
   return (
@@ -27,7 +29,7 @@ export function AppShell() {
 
       {showNav && (
         <>
-          <nav aria-label={t('nav.main')} className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background pb-[env(safe-area-inset-bottom)]">
+          <nav aria-label={t('nav.main')} className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background pb-[var(--safe-bottom)]">
             <div className="mx-auto flex max-w-2xl items-center px-4">
               <NavLink to="/" end className={tab}><LibraryBig size={22} aria-hidden />{t('nav.decks')}</NavLink>
               <button

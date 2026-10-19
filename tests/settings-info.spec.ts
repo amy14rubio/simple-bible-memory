@@ -54,11 +54,6 @@ test('the card-kinds options show only their names; the drawer explains all thre
   }
 });
 
-test('Notifications keep their text visible', async ({ page }) => {
-  await page.goto('/#/settings');
-  await expect(page.getByText("Study reminders aren't available yet.")).toBeVisible();
-});
-
 test('the Language explanation is behind the "i" in the Language page title', async ({ page }) => {
   await page.goto('/#/settings/language');
   await expect(page.getByText('Changes the text of the app only.')).toHaveCount(0);

@@ -57,7 +57,7 @@ export function OnboardingPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-sm flex-col px-8 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3">
+    <div className="mx-auto flex min-h-dvh max-w-sm flex-col px-8 pb-[max(1.5rem,var(--safe-bottom))] pt-[max(0.75rem,var(--safe-top))]">
       <div className="flex justify-end">
         <Button variant="ghost" onClick={finish} className="-mr-5 text-muted">{t('onboarding.skip')}</Button>
       </div>

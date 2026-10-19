@@ -9,7 +9,7 @@ export function MoveDrawer({ open, count, decks, onPick, onClose }: { open: bool
   usePopupHistory(open, onClose);
   return (
     <Drawer open={open} onOpenChange={(o) => { if (!o) onClose(); }} showSwipeHandle>
-      <DrawerContent className="mx-auto max-w-2xl pb-[env(safe-area-inset-bottom)]">
+      <DrawerContent className="mx-auto max-w-2xl pb-[var(--safe-bottom)]">
         <DrawerHeader className="px-6 pb-2 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
           <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{t('move.title', { count })}</DrawerTitle>
           <DrawerDescription className="sr-only">{t('move.help')}</DrawerDescription>
