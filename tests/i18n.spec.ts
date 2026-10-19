@@ -281,7 +281,7 @@ test.describe('the app in Spanish', () => {
     await esSetKinds(page, /^Identificar el versículo/);
     await page.goto(`/#/decks/${id}/study/type`);
     await expect(page.getByText('Uno dos tres cuatro.')).toBeVisible();
-    await page.getByLabel(/Escribe el versículo, por ejemplo/).fill('Juan 3:17');
+    await page.getByLabel(/Escribe la referencia del versículo/).fill('Juan 3:17');
     await page.getByRole('button', { name: 'Mostrar respuesta' }).click();
     await expect(page.getByText('Tu respuesta')).toBeVisible();
     await expect(page.getByRole('group', { name: /^No del todo/ })).toContainText(/Juan.*3.*17.*16/);

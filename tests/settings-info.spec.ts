@@ -74,7 +74,7 @@ test('Account and backup: Export everything comes first, then sign in, and there
   await expect(items.nth(1)).toContainText('Sign in');
   await expect(section.getByRole('link')).toHaveCount(0);
   await section.getByRole('button', { name: 'Account and backup', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'Account and backup' })).toContainText('also backs up your decks, cards, study schedule and study settings to your account');
+  await expect(page.getByRole('dialog', { name: 'Account and backup' })).toContainText('also backs up your decks, cards, study schedule and settings to your account');
 });
 
 test('the Settings Privacy "i" says what the Privacy page is for, and the page\'s own "i" gives its summary', async ({ page }) => {

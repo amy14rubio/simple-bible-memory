@@ -454,7 +454,7 @@ export const en = {
   'settings.notificationsBody': "Study reminders aren't available yet.",
   'settings.backup': 'Account and backup',
   'settings.backupBody':
-    "You don't need an account. Your decks and progress are stored on this device. Export a file to back them up or move them. Signing in with Google also backs up your decks, cards, study schedule and study settings to your account automatically, and brings them to any device you sign in on. Review history stays on the device it was made on.",
+    "You don't need an account. Your decks and progress are stored on this device. Export a file to back them up or move them.\n\nSigning in with Google also backs up your decks, cards, study schedule and settings to your account, and brings them to any device you sign in on. Your study log (each time you studied a card, which powers your stats) stays on the device where you studied.",
 
   // statistics
   'stats.title': 'Statistics',
@@ -556,8 +556,8 @@ export const en = {
   'type.missingWords': 'missing words',
 
   // identify the verse
-  'identify.inputLabel': 'Type the verse, for example John 3:16',
-  'identify.placeholder': 'Type the verse, such as John 3:16',
+  'identify.inputLabel': 'Type the verse reference',
+  'identify.placeholder': 'Type the verse reference',
   'identify.answer': 'Answer',
   'identify.choose': 'Choose the verse',
   'identify.yourAnswer': 'Your answer',
