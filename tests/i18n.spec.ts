@@ -76,7 +76,7 @@ test.describe('the language setting', () => {
     await expect(page).toHaveTitle('Idioma · Memoria Bíblica Simple');
     await page.goto('/#/settings');
     await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Notificaciones' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Recordatorios de estudio' })).toBeVisible();
     await expect(page.getByLabel('Tarjetas nuevas por día', { exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: /^Idioma/ })).toContainText('Español'); // the row shows the choice
     await page.goto('/#/settings/language');

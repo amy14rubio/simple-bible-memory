@@ -12,4 +12,6 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_APP_ID?: string;
   /** 'fake' swaps in stand-ins for Google sign-in and Firestore (browser tests only). */
   readonly VITE_SHARING_BACKEND?: string;
+  /** 'true' swaps in a stand-in for phone notifications (browser tests only). */
+  readonly VITE_FAKE_NOTIFICATIONS?: string;
 }
