@@ -1,4 +1,5 @@
 import { AppBar, BackButton, Page } from '../../components/ui';
+import { InfoLabel } from '../../components/InfoDrawer';
 import type { MessageKey } from '../../i18n';
 import { useI18n } from '../../i18n/I18nProvider';
 import { CONTACT_EMAIL } from '../discover/contact';
@@ -10,9 +11,8 @@ export function PrivacyPage() {
   const { t } = useI18n();
   return (
     <>
-      <AppBar title={t('privacy.title')} back={<BackButton to="/settings" label={t('common.back')} />} />
+      <AppBar title={<InfoLabel title={t('privacy.title')} info={t('privacy.pageInfo')} />} back={<BackButton to="/settings" label={t('common.back')} />} />
       <Page className="space-y-7 pt-2">
-        <p className="text-muted">{t('privacy.intro')}</p>
         {SECTIONS.map((s) => (
           <section key={s} aria-labelledby={`privacy-${s}`} className="space-y-2">
             <h2 id={`privacy-${s}`} className="font-serif text-xl">{t(`privacy.${s}.title` as MessageKey)}</h2>

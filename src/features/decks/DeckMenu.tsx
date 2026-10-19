@@ -42,6 +42,7 @@ export function DeckMenu({ deck, onClose, onDeleted }: {
       <Dialog open={!!deck && !confirming} onClose={() => { if (!confirming) onClose(); }} title={deck?.title ?? t('deckMenu.defaultTitle')}>
         {error && <p role="alert" className="mb-2 text-danger">{error}</p>}
         <nav aria-label={t('deckMenu.actions')} className="flex flex-col border-t border-border">
+          <Link to={`/cards/new?deck=${deck?.id}`} onClick={onClose} className={item}>{t('deckMenu.addCard')}</Link>
           <Link to={`/decks/${deck?.id}/cards`} onClick={onClose} className={item}>{t('deckMenu.browse')}</Link>
           <Link to={`/decks/${deck?.id}?practice=1`} onClick={onClose} className={item}>{t('deckMenu.extraPractice')}</Link>
           <Link to={`/decks/${deck?.id}/edit`} onClick={onClose} className={item}>{t('deckMenu.rename')}</Link>

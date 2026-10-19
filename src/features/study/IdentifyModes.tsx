@@ -4,7 +4,7 @@ import { checkReference } from '../../domain/study/identify';
 import { paintComparison } from '../../domain/study/compare';
 import { buildCitationChoices } from '../../domain/study/choices';
 import type { Rating } from '../../domain/study/rating';
-import { Button } from '../../components/ui';
+import { Button, GrowingTextarea } from '../../components/ui';
 import { ActionBar, RatingBar } from './RatingBar';
 import { useI18n } from '../../i18n/I18nProvider';
 import { PaintedText } from './PaintedText';
@@ -65,18 +65,18 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
         {!result ? (
           <div className="space-y-2">
             <label htmlFor="typed-reference" className="sr-only">{t('identify.inputLabel')}</label>
-            <input
+            <GrowingTextarea
               id="typed-reference"
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && check()}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); check(); } }}
               placeholder={t('identify.placeholder')}
               autoFocus
               aria-describedby={CARD_PROMPT_ID}
               autoCapitalize="words"
               autoCorrect="off"
               spellCheck={false}
-              className="w-full rounded-lg border border-border bg-surface px-4 py-3.5 text-center text-lg placeholder:text-muted"
+              className="text-center"
             />
           </div>
         ) : (

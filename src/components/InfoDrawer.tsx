@@ -38,7 +38,7 @@ export function InfoLabel({ title, info, className = '' }: { title: string; info
         <DrawerContent className="mx-auto max-w-2xl pb-[env(safe-area-inset-bottom)]">
           <DrawerHeader className="gap-2 px-6 pb-4 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
             <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{title}</DrawerTitle>
-            {typeof info === 'string' && <DrawerDescription className="max-w-none text-base text-foreground">{info}</DrawerDescription>}
+            {typeof info === 'string' && <DrawerDescription className="max-w-none whitespace-pre-line text-base text-foreground">{info}</DrawerDescription>}
           </DrawerHeader>
           {typeof info !== 'string' && <div className="px-6 pb-2">{info}</div>}
           <div className="h-6" />

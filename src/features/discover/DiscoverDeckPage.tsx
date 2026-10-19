@@ -61,7 +61,7 @@ export function DiscoverDeckPage() {
             <IconButton label={t('report.title')} onClick={() => setReporting(true)} className="-mr-3 -mt-1.5 shrink-0 text-muted"><Flag size={20} aria-hidden /></IconButton>
           </div>
           <p className="text-muted">{deckSummary(deck, t('translation.own'), t('import.cards', { count: cards.length }))}</p>
-          {deck.description && <p className="pt-2">{deck.description}</p>}
+          {deck.description && <p className="whitespace-pre-line pt-2">{deck.description}</p>}
         </div>
 
         <section aria-label={t('discover.preview')} className="space-y-3 rounded-3xl bg-panel px-5 py-5">

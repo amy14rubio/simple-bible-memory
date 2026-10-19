@@ -6,13 +6,14 @@ import { useTheme } from '../../app/theme';
 import { useFont } from '../../app/fonts';
 import { useSharing } from '../../app/sharing';
 import { ExportDrawer, type ExportTarget } from '../exchange/ExportDrawer';
-import { AppBar, BackButton, ConfirmDialog, Page } from '../../components/ui';
+import { AppBar, BackButton, ConfirmDialog, Page, Switch } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
 import type { CardKindSetting } from '../../domain/study/cardKind';
 import { LANGUAGES, type MessageKey } from '../../i18n';
 import { useI18n } from '../../i18n/I18nProvider';
 import { CONTACT_EMAIL } from '../discover/contact';
+import { encouragementDefault } from '../study/encouragement';
 import { loadCardKindSetting } from '../study/cardKinds';
 import { MAX_NEW_PER_DAY, loadNewPerDay } from '../study/newPerDay';
 
@@ -32,6 +33,7 @@ export function SettingsPage() {
   const [newPerDay, setNewPerDay] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [kinds, setKinds] = useState<CardKindSetting>('both');
+  const [encouragement, setEncouragement] = useState(true);
 
   useEffect(() => { share.ensureLoaded(); }, [share]);
 
@@ -39,6 +41,7 @@ export function SettingsPage() {
     loadNewPerDay(settings).then((n) => setNewPerDay(String(n)));
     loadCardKindSetting(settings).then(setKinds);
     settings.get<Difficulty>('blank_difficulty').then((d) => d && DIFFICULTIES.includes(d) && setDifficulty(d));
+    settings.get<boolean>('encouragement').then((on) => setEncouragement(on ?? encouragementDefault()));
   }, [settings]);
 
   const changeNew = (value: string) => {
@@ -102,6 +105,11 @@ export function SettingsPage() {
               <ChevronRight size={20} aria-hidden />
             </span>
           </Link>
+          <div className={row}>
+            <span id="encouragement-label" className="sr-only">{t('settings.encouragement')}</span>
+            <InfoLabel title={t('settings.encouragement')} info={t('settings.encouragementHint')} />
+            <Switch checked={encouragement} labelledBy="encouragement-label" onChange={(on) => { setEncouragement(on); void settings.set('encouragement', on); }} />
+          </div>
         </section>
 
         <section>
@@ -148,7 +156,7 @@ export function SettingsPage() {
           </Link>
         </section>
         <section aria-labelledby="privacy">
-          <h2 id="privacy" className="mb-1 font-serif text-xl">{t('privacy.title')}</h2>
+          <h2 id="privacy" className="mb-1 font-serif text-xl"><InfoLabel title={t('privacy.title')} info={t('privacy.settingsInfo')} className="py-2" /></h2>
           <Link to="/settings/privacy" className={`${row} hover:bg-surface`}>
             <span>{t('privacy.row')}</span>
             <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />

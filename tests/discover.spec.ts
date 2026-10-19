@@ -145,3 +145,15 @@ test('Settings has the one place to contact us', async ({ page }) => {
   await page.getByRole('button', { name: 'Account and backup' }).click();
   await expect(page.getByRole('dialog', { name: 'Account and backup' })).toContainText("You don't need an account");
 });
+
+test('a public deck\'s description keeps its line breaks on its page', async ({ page }) => {
+  const d = deck('Breaks', 'KJV', 'en', 1000);
+  await seed(page, { b: { ...d, meta: { ...d.meta, description: 'First line.\nSecond line.' } } });
+  await openDiscover(page);
+  await page.locator('a[href*="/discover/"]').first().click();
+  const text = page.getByText('First line.');
+  await expect(text).toBeVisible();
+  expect(await text.evaluate((e) => getComputedStyle(e).whiteSpace)).toBe('pre-line');
+  expect((await text.boundingBox())!.height).toBeGreaterThan(30); // two lines tall
+});
+
