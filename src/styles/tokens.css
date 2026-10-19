@@ -120,3 +120,20 @@ select:focus-visible { outline: none; }
 .btn-light:hover { background: #f1f0ec; }
 :root[data-theme='dark'] .btn-light { background: #f1f0ec; color: #131312; border-color: transparent; }
 :root[data-theme='dark'] .btn-light:hover { background: #ffffff; }
+
+/*
+  The banner after a card is rated is the toast's own look (same shape, font, size, colours and shadow, so it follows light,
+  dark and custom themes). Only the check mark takes the rating's colour: that colour blended halfway into the page colour,
+  which reads well on the toast's pill in every theme (>= 4.9:1). It slides up and down like a toast over BANNER_MS (3s).
+*/
+.rating-banner-card { --tint: color-mix(in srgb, var(--tone) 50%, var(--background)); }
+.rating-banner-card svg { color: var(--tint); }
+@keyframes rating-banner {
+  0% { opacity: 0; transform: translateY(150%); }
+  16% { opacity: 1; transform: none; }
+  88% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(150%); }
+}
+.rating-banner { animation: rating-banner 3000ms cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+/* With reduced motion it simply appears and is removed (the rule above that shortens animations would hide it at once). */
+@media (prefers-reduced-motion: reduce) { .rating-banner { animation: none; } }

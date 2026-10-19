@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
@@ -17,6 +17,8 @@ import { loadCardKinds } from './cardKinds';
 import { VerseLangProvider, asLang } from './verseLang';
 import { SpokenIntervalsProvider } from './spokenIntervals';
 import { CardPositionProvider } from './cardPosition';
+import { RatingBanner, BANNER_MS } from './RatingBanner';
+import { encouragementDefault, pickEncouragement } from './encouragement';
 import { loadNewPerDay } from './newPerDay';
 
 type Mode = 'flashcard' | 'type' | 'blanks';
@@ -50,6 +52,7 @@ export function StudySessionPage() {
         references: deckCards.map((c) => c.reference), // options for "which verse is this?"
         passages: deckCards.map((c) => c.verseText), // decoy words for the word bank
         difficulty: (await settings.get<Difficulty>('blank_difficulty')) ?? 'medium',
+        encouragement: (await settings.get<boolean>('encouragement')) ?? encouragementDefault(),
         seed: crypto.randomUUID(),
       };
     },
@@ -71,11 +74,11 @@ export function StudySessionPage() {
       </>
     );
   }
-  return <Session verseLang={asLang(data.deck.bibleLanguage)} heading={heading} deckId={id} mode={mode as Mode} extraPractice={extraPractice} references={data.references} passages={data.passages} initialQueue={data.queue} initialDifficulty={data.difficulty} seed={data.seed} />;
+  return <Session verseLang={asLang(data.deck.bibleLanguage)} heading={heading} deckId={id} mode={mode as Mode} extraPractice={extraPractice} references={data.references} passages={data.passages} initialQueue={data.queue} initialDifficulty={data.difficulty} seed={data.seed} encouragement={data.encouragement} />;
 }
 
-function Session({ verseLang, heading, deckId, mode, extraPractice, references, passages, initialQueue, initialDifficulty, seed }: {
-  verseLang: string | undefined; heading: string; deckId: string; mode: Mode; extraPractice: boolean; references: string[]; passages: string[]; initialQueue: QueueEntry[]; initialDifficulty: Difficulty; seed: string;
+function Session({ encouragement, verseLang, heading, deckId, mode, extraPractice, references, passages, initialQueue, initialDifficulty, seed }: {
+  encouragement: boolean; verseLang: string | undefined; heading: string; deckId: string; mode: Mode; extraPractice: boolean; references: string[]; passages: string[]; initialQueue: QueueEntry[]; initialDifficulty: Difficulty; seed: string;
 }) {
   const { t, formatInterval, formatIntervalSpoken, describeError } = useI18n();
   const { reviews, scheduler } = useRepositories();
@@ -87,6 +90,15 @@ function Session({ verseLang, heading, deckId, mode, extraPractice, references, 
   // The blanks difficulty is a setting (Settings page), not something you change mid-study.
   const difficulty: Difficulty = DIFFICULTIES.includes(initialDifficulty) ? initialDifficulty : 'medium';
   const busy = useRef(false);
+  // The banner after each rating (a message for the rating chosen, never the same one twice in a row).
+  const [banner, setBanner] = useState<{ id: number; rating: Rating; text: MessageKey } | null>(null);
+  const lastMessage = useRef<MessageKey>(undefined);
+  const bannerCount = useRef(0); // each banner is new, even one that follows another that has already gone
+  useEffect(() => {
+    if (!banner) return;
+    const timer = setTimeout(() => setBanner(null), BANNER_MS);
+    return () => clearTimeout(timer);
+  }, [banner]);
 
   const entry = queue[index];
   const intervals = useMemo(() => {
@@ -124,13 +136,19 @@ function Session({ verseLang, heading, deckId, mode, extraPractice, references, 
         if (schedule.due - Date.now() < REQUEUE_WITHIN_MS) setQueue((q) => [...q, { card: entry.card, kind: entry.kind, schedule }]);
       }
       setReviewedCards((seen) => new Set(seen).add(`${entry.card.id}:${entry.kind}`));
+      if (encouragement) {
+        const text = pickEncouragement(r, lastMessage.current);
+        lastMessage.current = text;
+        setBanner({ id: ++bannerCount.current, rating: r, text });
+      }
       setIndex((i) => i + 1);
     } catch (e) {
       setError(t('study.saveFailed', { message: describeError(e) }));
     } finally {
       busy.current = false;
     }
-  }, [entry, extraPractice, reviews, mode, t, describeError]);
+  }, [entry, extraPractice, reviews, mode, t, describeError, encouragement]);
+  const bannerEl = banner && <RatingBanner key={banner.id} id={banner.id} rating={banner.rating} text={t(banner.text)} />;
 
   const exit = <BackButton to={`/decks/${deckId}`} label={t('study.exit')} />;
 
@@ -138,6 +156,7 @@ function Session({ verseLang, heading, deckId, mode, extraPractice, references, 
     const reviewed = reviewedCards.size;
     return (
       <div className="relative">
+        {bannerEl}
         <AppBar back={exit} title={extraPractice ? t('study.extraTitle') : <span className="sr-only">{heading}</span>} />
         <div className="space-y-8 px-5 py-20 text-center">
           <div className="space-y-2">
@@ -163,6 +182,7 @@ function Session({ verseLang, heading, deckId, mode, extraPractice, references, 
 
   return (
     <div className="relative flex min-h-dvh flex-col">
+      {bannerEl}
       {/* Not drawn, but screen readers can still read how far through the session you are. */}
       <progress className="sr-only" max={queue.length} value={index} aria-label={t('study.progress')} />
       <AppBar back={exit} title={extraPractice ? t('study.extraTitle') : <span className="sr-only">{heading}</span>} />

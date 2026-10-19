@@ -23,12 +23,16 @@ beforeEach(async () => {
 async function seed() {
   const d = await decks.create({ title: 'Psalms', description: 'Memory set' });
   await db.run("UPDATE decks SET bible_language = 'en', translation_code = 'KJV' WHERE id = ?", [d.id]);
-  const a = await cards.create(d.id, { reference: 'Psalm 23:1', verseText: 'The Lord is my shepherd; I shall not want.', note: 'KJV' });
-  await cards.create(d.id, { reference: 'Psalm 23:2', verseText: 'He maketh me to lie down in green pastures.' });
-  await db.run(`INSERT INTO card_schedule VALUES (?, 'recall', 1000, 4.5, 5.5, 2, 3, 1, 0, 7, 900, 'v')`, [a.id]);
-  await db.run(`INSERT INTO card_schedule VALUES (?, 'identify', 2000, 1.5, 6.5, 1, 1, 0, 1, 0, 950, 'v')`, [a.id]);
+  // created together, so they are stamped a millisecond apart and keep their order (two separate creates in the same
+  // millisecond would tie, and the order would be left to chance)
+  const [a] = await cards.createMany(d.id, [
+    { reference: 'Psalm 23:1', verseText: 'The Lord is my shepherd; I shall not want.', note: 'KJV' },
+    { reference: 'Psalm 23:2', verseText: 'He maketh me to lie down in green pastures.' },
+  ]);
+  await db.run(`INSERT INTO card_schedule VALUES (?, 'recall', 1000, 4.5, 5.5, 2, 3, 1, 0, 7, 900, 'v')`, [a!.id]);
+  await db.run(`INSERT INTO card_schedule VALUES (?, 'identify', 2000, 1.5, 6.5, 1, 1, 0, 1, 0, 950, 'v')`, [a!.id]);
   await db.run(`INSERT INTO review_logs (id, card_id, kind, reviewed_at, rating, study_mode, state_before, due_before, stability, difficulty, scheduled_days, elapsed_days)
-                VALUES ('r1', ?, 'recall', 900, 3, 'type', 0, 800, 4.5, 5.5, 7, 0)`, [a.id]);
+                VALUES ('r1', ?, 'recall', 900, 3, 'type', 0, 800, 4.5, 5.5, 7, 0)`, [a!.id]);
   return d;
 }
 const roundTrip = async (ids: string[] | null, progress: boolean) => {
