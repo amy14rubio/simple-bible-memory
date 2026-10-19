@@ -132,7 +132,7 @@ test.describe('the Settings switch', () => {
   });
 });
 
-test('it is the toast\'s own look, and follows a custom theme: the pill is the text colour, the words the background colour', async ({ page }) => {
+test('it is the toast\'s own look, and follows a custom theme: the pill is the text colour, the words are the rating\'s colour', async ({ page }) => {
   await page.goto('/#/settings/theme');
   await page.getByRole('radio', { name: 'Custom' }).check();
   await page.getByLabel('Background, hex code').fill('#fff4e5');
@@ -144,7 +144,7 @@ test('it is the toast\'s own look, and follows a custom theme: the pill is the t
   await expect(card).toBeVisible();
   const style = await card.evaluate((e) => ({ pill: getComputedStyle(e).backgroundColor, words: getComputedStyle(e.querySelector('p')!).color, weight: getComputedStyle(e.querySelector('p')!).fontWeight, size: getComputedStyle(e.querySelector('p')!).fontSize, font: getComputedStyle(e.querySelector('p')!).fontFamily, bodyFont: getComputedStyle(document.body).fontFamily }));
   expect(style.pill).toBe('rgb(42, 26, 0)'); // the colour chosen for text
-  expect(style.words).toBe('rgb(255, 244, 229)'); // the colour chosen for the background
+  expect(style.words).toBe('rgb(153, 235, 187)'); // Good's green, chosen to read on that dark pill
   expect(style.weight).toBe('500'); // medium, like the other toasts, not bold
   expect(style.size).toBe('15px'); // 0.9375rem, like the other toasts
   expect(style.font).toBe(style.bodyFont); // the app's own font
@@ -190,4 +190,19 @@ test('it has no outline, and stays up long enough to read', async ({ page }) => 
   await page.waitForTimeout(2200);
   await expect(banner(page)).toBeVisible(); // still there after more than two seconds
   await expect(banner(page)).toHaveCount(0, { timeout: 4000 }); // and gone by about three
+});
+
+test('the words and the check mark are the colour of the rating chosen', async ({ page }) => {
+  await deckToStudy(page);
+  const seen: Record<number, string> = {};
+  for (const rating of [1, 2, 3, 4] as const) {
+    await rate(page, rating);
+    const card = banner(page).locator('.rating-banner-card');
+    await expect(card).toBeVisible();
+    const [words, check] = await card.evaluate((e) => [getComputedStyle(e.querySelector('p')!).color, getComputedStyle(e.querySelector('svg')!).color]);
+    expect(words).toBe(check); // the same colour for both
+    seen[rating] = words;
+    await expect(banner(page)).toHaveCount(0, { timeout: 8000 });
+  }
+  expect(seen).toEqual({ 1: 'rgb(255, 176, 171)', 2: 'rgb(255, 198, 115)', 3: 'rgb(153, 235, 187)', 4: 'rgb(181, 226, 255)' }); // red, orange, green, blue
 });

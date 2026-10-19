@@ -535,7 +535,7 @@ export const en = {
   'encourage.hard.2': "Close! You're getting there.",
   'encourage.hard.3': 'Stay faithful to the process.',
   'encourage.hard.4': 'One verse at a time.',
-  'encourage.good.1': 'Another step toward knowing His Word.',
+  'encourage.good.1': 'Another step in His Word.',
   'encourage.good.2': 'A beautiful step in your journey.',
   'encourage.good.3': 'Keep delighting in His Word.',
   'encourage.good.4': 'A little more rooted each day.',
