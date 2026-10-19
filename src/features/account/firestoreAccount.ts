@@ -13,7 +13,7 @@ const CHUNK = 400;
 export function createFirestoreAccount(db: Firestore, uid: () => string): AccountBackend {
   const items = () => collection(db, 'users', uid(), 'items');
   const ref = (it: { entity: string; id: string }) => doc(db, 'users', uid(), 'items', itemKey(it.entity as never, it.id));
-  const body = (it: OutItem) => ({ entity: it.entity, deleted: it.deleted, updatedAt: it.updatedAt, ...(it.doc ?? {}), syncedAt: serverTimestamp() });
+  const body = (it: OutItem) => ({ entity: it.entity, deleted: it.deleted, updatedAt: it.updatedAt, v: it.v, ...(it.doc ?? {}), syncedAt: serverTimestamp() });
   const denied = (e: unknown) => typeof e === 'object' && e !== null && (e as { code?: string }).code === 'permission-denied';
 
   return {
@@ -29,7 +29,7 @@ export function createFirestoreAccount(db: Firestore, uid: () => string): Accoun
             const data = change.doc.data();
             const syncedAt = data.syncedAt instanceof Timestamp ? data.syncedAt.toMillis() : 0;
             if (!parsed || typeof data.updatedAt !== 'number' || syncedAt === 0) continue;
-            out.push({ entity: parsed.entity, id: parsed.id, deleted: data.deleted === true, updatedAt: data.updatedAt, syncedAt, data });
+            out.push({ entity: parsed.entity, id: parsed.id, deleted: data.deleted === true, updatedAt: data.updatedAt, syncedAt, v: typeof data.v === 'number' ? data.v : 1, data });
           }
           if (out.length) onItems(out);
         },
@@ -53,7 +53,9 @@ export function createFirestoreAccount(db: Firestore, uid: () => string): Accoun
               if (!denied(err)) throw err;
               // Refused: only "the cloud has a newer one" counts as stale. Any other refusal is a real problem, not to be hidden.
               const there = await getDoc(ref(it));
-              if (there.exists() && typeof there.data().updatedAt === 'number' && there.data().updatedAt > it.updatedAt) stale.push(itemKey(it.entity, it.id));
+              const theirs = there.exists() ? there.data() : null;
+              // Refused because the cloud has a newer edit, or the same thing saved in a newer format than this app writes.
+              if (theirs && typeof theirs.updatedAt === 'number' && (theirs.updatedAt > it.updatedAt || (typeof theirs.v === 'number' && theirs.v > it.v))) stale.push(itemKey(it.entity, it.id));
               else throw err;
             }
           }

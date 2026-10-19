@@ -44,9 +44,9 @@ export function createFakeAccount(store: FakeAccountStore, currentUid: () => str
       for (const it of items) {
         const key = itemKey(it.entity, it.id);
         const existing = mine[key];
-        if (existing && it.updatedAt < existing.updatedAt) { stale.push(key); continue; }
+        if (existing && (it.updatedAt < existing.updatedAt || it.v < existing.v)) { stale.push(key); continue; } // like the real rules: never an older edit, never an older format over a newer one
         s.clock = Math.max(Date.now(), s.clock + 1);
-        mine[key] = { entity: it.entity, id: it.id, deleted: it.deleted, updatedAt: it.updatedAt, syncedAt: s.clock, data: it.doc ? structuredClone(it.doc) : null };
+        mine[key] = { entity: it.entity, id: it.id, deleted: it.deleted, updatedAt: it.updatedAt, syncedAt: s.clock, v: it.v, data: it.doc ? structuredClone(it.doc) : null };
       }
       store.save(s);
       return { stale };

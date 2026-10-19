@@ -62,14 +62,14 @@ service cloud.firestore {
     function itemKind(itemId) { return itemId.split('~')[0]; }
     function nonNegInt(v) { return v is int && v >= 0; }
     function tombstone(d, itemId) {
-      return d.keys().hasOnly(['entity', 'deleted', 'updatedAt', 'syncedAt'])
+      return d.keys().hasOnly(['entity', 'deleted', 'updatedAt', 'v', 'syncedAt'])
         && d.keys().hasAll(['entity', 'deleted', 'updatedAt', 'syncedAt'])
         && d.deleted == true
         && d.entity == itemKind(itemId)
         && itemKind(itemId) in ['deck', 'card', 'schedule']; // settings are never deleted
     }
     function liveDeck(d) {
-      return d.keys().hasOnly(['entity', 'deleted', 'title', 'description', 'translation', 'language', 'publishId', 'importedFrom', 'createdAt', 'updatedAt', 'syncedAt'])
+      return d.keys().hasOnly(['entity', 'deleted', 'title', 'description', 'translation', 'language', 'publishId', 'importedFrom', 'createdAt', 'updatedAt', 'v', 'syncedAt'])
         && d.keys().hasAll(['entity', 'deleted', 'title', 'description', 'translation', 'language', 'publishId', 'importedFrom', 'createdAt', 'updatedAt', 'syncedAt'])
         && isText(d.title, 1, 200)
         && isTextOrNull(d.description, 2000)
@@ -77,7 +77,7 @@ service cloud.firestore {
         && nonNegInt(d.createdAt);
     }
     function liveCard(d) {
-      return d.keys().hasOnly(['entity', 'deleted', 'reference', 'verseText', 'note', 'createdAt', 'updatedAt', 'decks', 'syncedAt'])
+      return d.keys().hasOnly(['entity', 'deleted', 'reference', 'verseText', 'note', 'createdAt', 'updatedAt', 'decks', 'v', 'syncedAt'])
         && d.keys().hasAll(['entity', 'deleted', 'reference', 'verseText', 'note', 'createdAt', 'updatedAt', 'decks', 'syncedAt'])
         && isText(d.reference, 1, 200)
         && isText(d.verseText, 1, 20000)
@@ -86,7 +86,7 @@ service cloud.firestore {
         && d.decks is list && d.decks.size() >= 1 && d.decks.size() <= 50;
     }
     function liveSchedule(d, itemId) {
-      return d.keys().hasOnly(['entity', 'deleted', 'cardId', 'kind', 'due', 'stability', 'difficulty', 'state', 'reps', 'lapses', 'learningSteps', 'scheduledDays', 'lastReview', 'version', 'updatedAt', 'syncedAt'])
+      return d.keys().hasOnly(['entity', 'deleted', 'cardId', 'kind', 'due', 'stability', 'difficulty', 'state', 'reps', 'lapses', 'learningSteps', 'scheduledDays', 'lastReview', 'version', 'updatedAt', 'v', 'syncedAt'])
         && d.keys().hasAll(['entity', 'deleted', 'cardId', 'kind', 'due', 'stability', 'difficulty', 'state', 'reps', 'lapses', 'learningSteps', 'scheduledDays', 'lastReview', 'version', 'updatedAt', 'syncedAt'])
         && isText(d.cardId, 1, 100)
         && d.kind in ['recall', 'identify']
@@ -98,14 +98,19 @@ service cloud.firestore {
         && isText(d.version, 1, 100);
     }
     function liveSetting(d, itemId) {
-      return d.keys().hasOnly(['entity', 'deleted', 'key', 'value', 'updatedAt', 'syncedAt'])
+      return d.keys().hasOnly(['entity', 'deleted', 'key', 'value', 'updatedAt', 'v', 'syncedAt'])
         && d.keys().hasAll(['entity', 'deleted', 'key', 'value', 'updatedAt', 'syncedAt'])
         && itemId == 'setting~' + d.key
         && d.key in ['new_cards_per_day', 'card_kinds', 'blank_difficulty']
         && ((d.value is string && d.value.size() <= 40) || d.value is number);
     }
+    // `v` says which format the item was saved in. It is optional (items saved before versions existed have none: they count
+    // as version 1), and an item may never be replaced by one in an OLDER format, so an app that has not been updated can
+    // never overwrite what a newer app saved.
+    function validVersion(d) { return !('v' in d) || (d.v is int && d.v >= 1 && d.v <= 1000); }
     function validItem(d, itemId) {
       return d.entity in ['deck', 'card', 'schedule', 'setting']
+        && validVersion(d)
         && d.entity == itemKind(itemId)
         && d.updatedAt is int && d.updatedAt >= 0
         && d.syncedAt == request.time
@@ -120,7 +125,8 @@ service cloud.firestore {
       allow read: if signedIn() && request.auth.uid == uid;
       allow create: if signedIn() && request.auth.uid == uid && validItem(request.resource.data, itemId);
       allow update: if signedIn() && request.auth.uid == uid && validItem(request.resource.data, itemId)
-        && request.resource.data.updatedAt >= resource.data.updatedAt;
+        && request.resource.data.updatedAt >= resource.data.updatedAt
+        && request.resource.data.get('v', 1) >= resource.data.get('v', 1);
       allow delete: if signedIn() && request.auth.uid == uid; // used when the person deletes their account
     }
 

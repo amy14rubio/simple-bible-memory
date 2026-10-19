@@ -17,7 +17,7 @@ let signedIn: Record<string, string | null>;
 
 interface Device { name: string; db: Database; decks: ReturnType<typeof createDeckRepository>; cards: ReturnType<typeof createCardRepository>; settings: ReturnType<typeof createSettingsRepository>; repo: ReturnType<typeof createAccountRepository>; sync: AccountSync; announced: number; sharing: ReturnType<typeof createSharingRepository> }
 
-async function device(name: string, opts: { online?: () => boolean } = {}): Promise<Device> {
+async function device(name: string, opts: { online?: () => boolean; schemaVersion?: number } = {}): Promise<Device> {
   const db = await createTestDatabase();
   const repo = createAccountRepository(db);
   const d = { name, db, repo, announced: 0 } as Device;
@@ -26,7 +26,7 @@ async function device(name: string, opts: { online?: () => boolean } = {}): Prom
   d.settings = createSettingsRepository(db, now);
   d.sharing = createSharingRepository(db);
   signedIn[name] = null;
-  d.sync = createAccountSync({ repo, backend: createFakeAccount({ load: () => cloud, save: (s) => { cloud = s; } }, () => signedIn[name] ?? null, 5), announce: () => { d.announced++; }, online: opts.online, delayMs: 1, now });
+  d.sync = createAccountSync({ repo, backend: createFakeAccount({ load: () => cloud, save: (s) => { cloud = s; } }, () => signedIn[name] ?? null, 5), announce: () => { d.announced++; }, online: opts.online, delayMs: 1, now, schemaVersion: opts.schemaVersion });
   return d;
 }
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -288,5 +288,86 @@ describe('deleting the account', () => {
     expect(cloud.items.amy).toBeUndefined();
     expect(await A.repo.getMeta('owner')).toBeUndefined();
     expect(await titles(A)).toEqual(['Psalms']);
+  });
+});
+
+describe('item formats: an app never damages what a newer app saved', () => {
+  const deckItem = (uid: string, id: string) => cloud.items[uid]![`deck~${id}`]!;
+
+  it('everything sent says which format it is in', async () => {
+    const { deck } = await seedA();
+    await signIn(A);
+    await settle(A);
+    expect(deckItem('amy', deck.id).v).toBe(1);
+    expect(Object.values(cloud.items['amy']!).every((i) => i.v === 1)).toBe(true);
+  });
+
+  it('an app that does not understand an item leaves it out, and does not delete it or write over it', async () => {
+    const newer = await device('N', { schemaVersion: 2 });
+    const deck = await newer.decks.create({ title: 'Made by the newer app' });
+    await signIn(newer);
+    await settle(newer);
+    expect(deckItem('amy', deck.id).v).toBe(2);
+
+    await signIn(A); // an older app joins the same account
+    await settle(A, newer);
+    expect(await titles(A)).toEqual([]); // not read: it could be misread
+    await A.decks.create({ title: 'Made on the older app' });
+    await settle(A, newer);
+    expect(deckItem('amy', deck.id)).toMatchObject({ deleted: false, v: 2 }); // not deleted by the older app having no copy
+    expect((deckItem('amy', deck.id).data as { title: string }).title).toBe('Made by the newer app');
+    expect(await titles(newer)).toEqual(['Made by the newer app', 'Made on the older app']); // and its own work still reaches the newer one
+  });
+
+  it('an edit on the older app cannot overwrite the newer format, even if it is the later edit', async () => {
+    const newer = await device('N', { schemaVersion: 2 });
+    const deck = await A.decks.create({ title: 'Psalms' });
+    await signIn(A);
+    await settle(A);
+    await signIn(newer);
+    await settle(A, newer);
+    await newer.decks.update(deck.id, { title: 'Psalms (newer format)' });
+    await settle(A, newer);
+    expect((deckItem('amy', deck.id).data as { title: string }).title).toBe('Psalms (newer format)');
+    expect(deckItem('amy', deck.id).v).toBe(2);
+
+    await A.decks.update(deck.id, { title: 'Psalms, edited on the older app later' });
+    await settle(A, newer);
+    expect((deckItem('amy', deck.id).data as { title: string }).title).toBe('Psalms (newer format)'); // untouched
+    expect(await titles(newer)).toEqual(['Psalms (newer format)']);
+  });
+
+  it('after the app is updated, what it could not read arrives', async () => {
+    const newer = await device('N', { schemaVersion: 2 });
+    const deck = await newer.decks.create({ title: 'Made by the newer app' });
+    await signIn(newer);
+    await settle(newer);
+    await signIn(A);
+    await settle(A, newer);
+    expect(await titles(A)).toEqual([]);
+    A.sync.stop();
+
+    // the same device, now running the update (it understands format 2)
+    const updated = createAccountSync({ repo: A.repo, backend: createFakeAccount({ load: () => cloud, save: (s) => { cloud = s; } }, () => signedIn['A'] ?? null, 5), announce: () => undefined, delayMs: 1, now, schemaVersion: 2 });
+    expect(await updated.prepare('amy')).toBe('ready');
+    await updated.start('amy');
+    await updated.idle();
+    await wait(30);
+    await updated.idle();
+    expect(await titles(A)).toEqual(['Made by the newer app']);
+    expect(deckItem('amy', deck.id)).toMatchObject({ deleted: false, v: 2 });
+    updated.stop();
+  });
+
+  it('a deletion made by a newer app is still honoured (a deleted stub is the same in every format)', async () => {
+    const newer = await device('N', { schemaVersion: 2 });
+    const deck = await A.decks.create({ title: 'Going away' });
+    await signIn(A);
+    await settle(A);
+    await signIn(newer);
+    await settle(A, newer);
+    await newer.decks.delete(deck.id);
+    await settle(A, newer);
+    expect(await titles(A)).toEqual([]);
   });
 });

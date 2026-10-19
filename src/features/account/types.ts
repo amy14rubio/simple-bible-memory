@@ -1,9 +1,9 @@
 import type { Doc, Entity } from '../../domain/account/items';
 
 /** One thing as it arrives from the account. `data` is untrusted: it is checked before it touches the database. */
-export interface RemoteItem { entity: Entity; id: string; deleted: boolean; updatedAt: number; syncedAt: number; data: unknown }
+export interface RemoteItem { entity: Entity; id: string; deleted: boolean; updatedAt: number; syncedAt: number; /** The format version it was saved in (1 if it was saved before versions existed). */ v: number; data: unknown }
 /** One thing on its way to the account. A deleted thing is sent as a stub with no data. */
-export interface OutItem { entity: Entity; id: string; deleted: boolean; updatedAt: number; doc: Doc | null }
+export interface OutItem { entity: Entity; id: string; deleted: boolean; updatedAt: number; /** The format version this device saves in. */ v: number; doc: Doc | null }
 
 /**
  * The person's private area in the cloud. Real one: Firestore (`users/{uid}/items`). Fake one: in the browser, for tests.
