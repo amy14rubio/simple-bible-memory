@@ -34,7 +34,7 @@ test('empty state, then the full deck and card workflow persists across reload',
   await page.getByRole('link', { name: /Commute verses/ }).click();
   await page.getByRole('button', { name: 'Deck actions' }).click();
   await page.getByRole('link', { name: 'Rename deck' }).click();
-  await expect(page.getByLabel('Description')).toBeVisible(); // the second field is "Description"
+  await expect(page.getByLabel('Description')).toBeVisible();
   await page.getByLabel('Title').fill('Renamed');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('heading', { name: 'Renamed' })).toBeVisible();
@@ -284,3 +284,26 @@ test('the deck menu has "Add card", first, on the home list and on the deck page
   await page.getByRole('navigation', { name: 'Deck actions' }).getByRole('link', { name: 'Add card' }).click();
   await expect(page).toHaveURL(new RegExp(`#/cards/new\\?deck=${id}$`));
 });
+
+test('the deck form is Title, then Translation, then a Description that grows as you type', async ({ page }) => {
+  await page.goto('/#/decks/new');
+  const title = (await page.getByLabel('Title').boundingBox())!.y;
+  const translation = (await page.getByRole('button', { name: /^Translation/ }).boundingBox())!.y;
+  const description = page.getByLabel('Description');
+  expect(title).toBeLessThan(translation);
+  expect(translation).toBeLessThan((await description.boundingBox())!.y);
+  expect(await description.evaluate((e) => e.tagName)).toBe('TEXTAREA');
+
+  const oneLine = (await description.boundingBox())!.height;
+  await description.fill('Verses for the morning commute.\nA second line.\nAnd a third.\nA fourth.');
+  expect((await description.boundingBox())!.height).toBeGreaterThan(oneLine * 2); // it grew; no inner scrollbar
+  await page.getByLabel('Title').fill('Commute');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
+
+  // the line breaks are kept
+  await page.getByRole('button', { name: 'Deck actions' }).click();
+  await page.getByRole('link', { name: 'Rename deck' }).click();
+  await expect(page.getByLabel('Description')).toHaveValue('Verses for the morning commute.\nA second line.\nAnd a third.\nA fourth.');
+});
+
