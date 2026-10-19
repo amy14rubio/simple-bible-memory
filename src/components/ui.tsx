@@ -61,7 +61,7 @@ export function BackButton({ to, label }: { to?: string; label?: string }) {
 /** Top bar with a hairline underneath, as in the wireframes. */
 export function AppBar({ title, titleSlot, back, actions, serif = true, titleId }: { title?: ReactNode; titleSlot?: ReactNode; back?: ReactNode; actions?: ReactNode; serif?: boolean; titleId?: string }) {
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-1 border-b border-border bg-background px-2">
+    <header className="sticky top-0 z-20 box-content flex h-14 items-center gap-1 border-b border-border bg-background px-2 pt-[var(--safe-top)]">
       {back}
       {titleSlot ?? (title ? <h1 id={titleId} className={`min-w-0 flex-1 truncate px-2 text-lg ${serif ? 'font-serif font-medium tracking-tight' : 'font-semibold'}`}>{title}</h1> : <div className="flex-1" />)}
       <div className="flex items-center">{actions}</div>
@@ -81,7 +81,7 @@ export function SearchBar({ label, placeholder, value, onChange, backLabel, onCl
   const { t } = useI18n();
   const input = useRef<HTMLInputElement>(null);
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-1 border-b border-border bg-background px-2">
+    <header className="sticky top-0 z-20 box-content flex h-14 items-center gap-1 border-b border-border bg-background px-2 pt-[var(--safe-top)]">
       <IconButton label={backLabel} onClick={onClose}><ChevronLeft size={22} aria-hidden /></IconButton>
       <input
         ref={input}
@@ -112,15 +112,16 @@ export function HiddenClose({ label, ...props }: { label: string } & ButtonHTMLA
 }
 
 /** An on/off switch. Give it the id of the text that labels it. */
-export function Switch({ checked, onChange, labelledBy }: { checked: boolean; onChange: (checked: boolean) => void; labelledBy: string }) {
+export function Switch({ checked, onChange, labelledBy, disabled }: { checked: boolean; onChange: (checked: boolean) => void; labelledBy: string; disabled?: boolean }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
       aria-labelledby={labelledBy}
+      disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative h-8 w-14 shrink-0 rounded-full border border-border transition-colors ${checked ? 'bg-primary' : 'bg-surface'}`}
+      className={`relative h-8 w-14 shrink-0 rounded-full border border-border transition-colors disabled:opacity-40 ${checked ? 'bg-primary' : 'bg-surface'}`}
     >
       <span aria-hidden className={`absolute top-1 size-6 rounded-full transition-all ${checked ? 'left-7 bg-primary-foreground' : 'left-1 bg-muted'}`} />
     </button>

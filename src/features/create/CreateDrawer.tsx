@@ -22,7 +22,7 @@ export function CreateDrawer({ open, onOpenChange }: { open: boolean; onOpenChan
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
-      <DrawerContent className="mx-auto max-w-2xl pb-[env(safe-area-inset-bottom)]">
+      <DrawerContent className="mx-auto max-w-2xl pb-[var(--safe-bottom)]">
         <DrawerHeader className="px-6 pb-4 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
           <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{t('create.title')}</DrawerTitle>
           <DrawerDescription className="sr-only">{t('create.description')}</DrawerDescription>

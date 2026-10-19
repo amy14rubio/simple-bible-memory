@@ -11,6 +11,13 @@
   Contrast (WCAG): muted on background >= 6:1, accent on background >= 8:1, in both themes.
 */
 :root {
+  /*
+    Room for the phone's own bars (status bar on top, gesture bar at the bottom). Browsers and iPhones report it
+    through env(); the Android app reports it through --safe-area-inset-* (set by Capacitor). Whichever is bigger wins.
+  */
+  --safe-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+
   --background: #f8f8f6; /* paper */
   --foreground: #17171a; /* ink */
   --muted: #5e5e5a;
