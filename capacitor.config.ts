@@ -10,6 +10,11 @@ const config: CapacitorConfig = {
       smallIcon: 'ic_stat_heart',
       iconColor: '#d96878',
     },
+    // Google sign-in is done by Android; Firebase sign-in itself stays with the web library (see src/features/sharing/firebaseAuthNative.ts).
+    FirebaseAuthentication: {
+      skipNativeAuth: true,
+      providers: ['google.com'],
+    },
   },
 };
 
