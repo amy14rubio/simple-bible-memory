@@ -1,7 +1,7 @@
 import { GoogleAuthProvider, deleteUser, onAuthStateChanged, reauthenticateWithPopup, signInWithPopup, signOut, type Auth, type User } from 'firebase/auth';
 import type { AuthBackend, AuthUser } from './types';
 
-const toUser = (u: User | null): AuthUser | null => (u ? { uid: u.uid, email: u.email, displayName: u.displayName } : null);
+export const toUser = (u: User | null): AuthUser | null => (u ? { uid: u.uid, email: u.email, displayName: u.displayName } : null);
 
 /**
  * Google sign-in with Firebase Auth. This is the web version (a popup). In the Android and iOS apps Google refuses to
