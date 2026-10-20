@@ -39,9 +39,11 @@ export function ExportDrawer({ target, onClose }: { target: ExportTarget | null;
     setError(undefined);
     try {
       const file = await exchange.exportDecks(target.ids, { progress });
-      downloadTextFile(exportFileName(file.decks.map((d) => d.title)), JSON.stringify(file, null, 2));
-      toast.add({ title: t(target.ids === null ? 'toast.exportedAll' : 'toast.exported', { title: target.title }), type: 'success' });
-      onClose();
+      const saved = await downloadTextFile(exportFileName(file.decks.map((d) => d.title)), JSON.stringify(file, null, 2));
+      if (saved) { // false: the Share panel was closed without choosing anything, so nothing is said or closed
+        toast.add({ title: t(target.ids === null ? 'toast.exportedAll' : 'toast.exported', { title: target.title }), type: 'success' });
+        onClose();
+      }
     } catch (e) {
       setError(describeError(e));
     } finally {
