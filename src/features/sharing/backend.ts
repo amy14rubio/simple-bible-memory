@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core';
 import type { AuthBackend, CloudBackend } from './types';
 import type { DiscoverBackend } from '../discover/types';
 import type { AccountBackend } from '../account/types';
@@ -25,7 +26,8 @@ let loading: Promise<Backends> | undefined;
 export function loadBackends(): Promise<Backends> {
   loading ??= (async (): Promise<Backends> => {
     if (env.VITE_SHARING_BACKEND === 'fake') return (await import('./fakeBackend')).createFakeBackends();
-    const [{ initializeApp }, { getAuth }, { getFirestore }, { createFirebaseAuth }, { createFirestoreCloud }, { createFirestoreDiscover }, { createFirestoreAccount }] = await Promise.all([
+    const native = Capacitor.isNativePlatform();
+    const [{ initializeApp }, { getAuth, initializeAuth, indexedDBLocalPersistence }, { getFirestore }, { createFirebaseAuth }, { createFirestoreCloud }, { createFirestoreDiscover }, { createFirestoreAccount }] = await Promise.all([
       import('firebase/app'), import('firebase/auth'), import('firebase/firestore'), import('./firebaseAuth'), import('./firestoreCloud'), import('../discover/firestoreDiscover'), import('../account/firestoreAccount'),
     ]);
     const uid = () => {
@@ -33,10 +35,13 @@ export function loadBackends(): Promise<Backends> {
       return auth.currentUser.uid;
     };
     const app = initializeApp(config);
-    const auth = getAuth(app);
+    // In the Android app the person stays signed in between launches through the web view's own storage (indexedDB), and signing in
+    // is done by Android's Google account picker instead of a popup.
+    const auth = native ? initializeAuth(app, { persistence: indexedDBLocalPersistence }) : getAuth(app);
+    const authBackend = native ? (await import('./firebaseAuthNative')).createNativeFirebaseAuth(auth) : createFirebaseAuth(auth);
     const firestore = getFirestore(app);
     return {
-      auth: createFirebaseAuth(auth),
+      auth: authBackend,
       cloud: createFirestoreCloud(firestore, uid),
       discover: createFirestoreDiscover(firestore),
       account: createFirestoreAccount(firestore, uid),
