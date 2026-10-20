@@ -14,7 +14,7 @@ import { TranslationFields, type TranslationValue } from './TranslationFields';
 import type { BlockReason } from './types';
 import { TERMS_KEY, TERMS_VERSION } from './terms';
 import { ExternalLink } from '../../components/ExternalLink';
-import { TERMS_URL } from '../../lib/site';
+import { legalUrl } from '../../lib/site';
 
 const BLOCK_MESSAGE: Record<BlockReason, MessageKey> = {
   'no-translation': 'publish.pickTranslation',
@@ -30,7 +30,7 @@ const BLOCK_MESSAGE: Record<BlockReason, MessageKey> = {
  * status or take the deck down.
  */
 export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: string } | null; onClose: () => void }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const { decks, cards, sharing, settings } = useRepositories();
   const share = useSharing();
   const open = deck !== null;
@@ -143,7 +143,7 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
                     <ul className="list-disc space-y-1 pl-5">
                       {(['terms.rule1', 'terms.rule2', 'terms.rule3', 'terms.rule4'] as const).map((k) => <li key={k}>{t(k)}</li>)}
                     </ul>
-                    <p><ExternalLink href={TERMS_URL} className="font-medium underline underline-offset-4">{t('terms.read')}</ExternalLink></p>
+                    <p><ExternalLink href={legalUrl('terms', language)} className="font-medium underline underline-offset-4">{t('terms.read')}</ExternalLink></p>
                     {accepted === false && (
                       <label className="flex min-h-11 items-center gap-3 pt-1 font-medium">
                         <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="size-5 shrink-0 accent-[var(--color-primary)]" />
