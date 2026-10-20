@@ -8,8 +8,11 @@ import { fingerprint } from '../../features/sharing/fingerprint';
 export type Entity = 'deck' | 'card' | 'schedule' | 'setting';
 /** Decks first, then cards (which point at decks), then schedules (which point at cards). */
 export const ENTITY_ORDER: Entity[] = ['deck', 'card', 'schedule', 'setting'];
-/** Only study settings follow the account; how the app looks (theme, font, language) stays per device. */
-export const SETTING_KEYS = ['new_cards_per_day', 'card_kinds', 'blank_difficulty'] as const;
+/**
+ * Only study settings follow the account (how the app looks, in theme, font and language, stays per device), and so does having agreed to
+ * the community rules (`terms_accepted`: the rules version agreed to; the item's own date says when), so signing in on a new phone does not ask again.
+ */
+export const SETTING_KEYS = ['new_cards_per_day', 'card_kinds', 'blank_difficulty', 'terms_accepted'] as const;
 export const CARD_KINDS = ['recall', 'identify'] as const;
 
 /**

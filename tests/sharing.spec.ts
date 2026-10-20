@@ -34,13 +34,12 @@ async function openPublish(page: Page, deckId: string) {
   await expect(drawer(page)).toBeVisible();
 }
 
-/** Agrees to the community rules (asked the first time only) and presses Publish. */
+const rulesDrawer = (page: Page) => page.getByRole('dialog', { name: 'Community rules' });
+/** Presses Publish. The first time, the separate community-rules drawer opens, and "Agree and publish" finishes the job. */
 const publish = async (page: Page) => {
-  const rules = drawer(page).getByRole('region', { name: 'Community rules' });
-  await expect(rules).toContainText('agree to the community rules'); // both the box and the reminder say this, once it is known which applies
-  const box = rules.getByRole('checkbox');
-  if (await box.count()) await box.check();
   await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
+  await expect(rulesDrawer(page).or(page.getByText('Deck published'))).toBeVisible();
+  if (await rulesDrawer(page).isVisible()) await rulesDrawer(page).getByRole('button', { name: 'Agree and publish' }).click();
 };
 const signInInDrawer = async (page: Page) => { await drawer(page).getByRole('button', { name: 'Continue with Google' }).click(); await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeVisible(); };
 
@@ -131,7 +130,6 @@ test.describe('publishing', () => {
     await signInInDrawer(page);
     await picker(page, 'Translation').click();
     await page.getByRole('dialog', { name: 'Select a translation' }).getByRole('button', { name: 'World English Bible (WEB)' }).click();
-    await drawer(page).getByRole('checkbox', { name: 'I agree to the community rules' }).check();
     await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeEnabled();
     await publish(page);
     await expect(page.getByText('Deck published')).toBeVisible();
@@ -321,28 +319,96 @@ test.describe('in Spanish, and accessibility', () => {
 });
 
 test.describe('the community rules before publishing', () => {
-  test('the first time, the rules are shown and Publish waits for the box; afterwards it is a quiet reminder', async ({ page }) => {
+  const pressPublish = (page: Page) => drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
+
+  test('the first time, Publish opens a separate drawer with only the rules; one button agrees and publishes', async ({ page }) => {
     const id = await psalmsDeck(page, 'KJV');
     await openPublish(page, id);
     await signInInDrawer(page);
-    const rules = drawer(page).getByRole('region', { name: 'Community rules' });
+    // the publish drawer itself has nothing about the rules
+    await expect(drawer(page)).not.toContainText('Community rules');
+    await expect(drawer(page).getByRole('checkbox')).toHaveCount(0);
+
+    await pressPublish(page);
+    const rules = rulesDrawer(page);
+    await expect(rules).toBeVisible();
     await expect(rules).toContainText('Only publish text you are allowed to share');
     await expect(rules).toContainText('Keep it about Scripture');
     await expect(rules).toContainText('No hateful, harassing, sexual, violent, illegal or spam content');
     await expect(rules.getByRole('link', { name: 'Read the full terms' })).toHaveAttribute('href', 'https://simple-bible-memory.web.app/terms');
-    const box = rules.getByRole('checkbox', { name: 'I agree to the community rules' });
-    await expect(box).not.toBeChecked();
-    await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeDisabled();
-    await box.check();
-    await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeEnabled();
-    await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
+    await expect(rules.getByRole('checkbox')).toHaveCount(0); // no box: the button is the agreement
+    expect((await published(page)).length).toBe(0); // nothing is published until they agree
+
+    await rules.getByRole('button', { name: 'Agree and publish' }).click();
+    await expect(page.getByText('Deck published')).toBeVisible();
+    expect((await published(page)).length).toBe(1);
+  });
+
+  test('Cancel (or Back) closes only the rules and publishes nothing; the publish drawer is still there', async ({ page }) => {
+    const id = await psalmsDeck(page, 'KJV');
+    await openPublish(page, id);
+    await signInInDrawer(page);
+    await pressPublish(page);
+    await rulesDrawer(page).getByRole('button', { name: 'Cancel', exact: true }).first().click();
+    await expect(rulesDrawer(page)).toHaveCount(0);
+    await expect(drawer(page)).toBeVisible();
+    expect((await published(page)).length).toBe(0);
+
+    await pressPublish(page); // asked again, since they did not agree
+    await expect(rulesDrawer(page)).toBeVisible();
+    await page.goBack(); // the phone's Back closes the rules, not the publish drawer under them
+    await expect(rulesDrawer(page)).toHaveCount(0);
+    await expect(drawer(page)).toBeVisible();
+    expect((await published(page)).length).toBe(0);
+  });
+
+  test('after agreeing once, the next deck publishes straight away, with no rules drawer', async ({ page }) => {
+    const first = await psalmsDeck(page, 'KJV');
+    await openPublish(page, first);
+    await signInInDrawer(page);
+    await publish(page);
     await expect(page.getByText('Deck published')).toBeVisible();
 
-    // a second deck: already agreed, so no box, just the reminder
     const second = await psalmsDeck(page, 'KJV');
     await openPublish(page, second);
-    await expect(drawer(page).getByRole('checkbox')).toHaveCount(0);
-    await expect(drawer(page).getByRole('region', { name: 'Community rules' })).toContainText('By publishing you agree to the community rules.');
-    await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeEnabled();
+    await pressPublish(page);
+    await expect(page.getByText('Deck published')).toBeVisible();
+    await expect(rulesDrawer(page)).toHaveCount(0);
+    expect((await published(page)).length).toBe(2);
   });
+
+  test('if the connection is down after agreeing, the agreement is still remembered (and the deck syncs when it can)', async ({ page }) => {
+    const id = await psalmsDeck(page, 'KJV');
+    await openPublish(page, id);
+    await signInInDrawer(page);
+    await setFake(page, { offline: true });
+    await pressPublish(page);
+    await rulesDrawer(page).getByRole('button', { name: 'Agree and publish' }).click();
+    await expect(rulesDrawer(page)).toHaveCount(0);
+    await expect(drawer(page)).toContainText('Waiting for a connection'); // the deck is marked published and is sent when the connection is back
+    await page.keyboard.press('Escape');
+
+    await setFake(page, { offline: false });
+    const second = await psalmsDeck(page, 'KJV');
+    await openPublish(page, second);
+    await pressPublish(page);
+    await expect(page.getByText('Deck published')).toBeVisible();
+    await expect(rulesDrawer(page)).toHaveCount(0); // not asked a second time
+  });
+
+  for (const scheme of ['light', 'dark'] as const) {
+    test(`the rules drawer has no accessibility violations (${scheme})`, async ({ browser }) => {
+      const ctx = await browser.newContext({ colorScheme: scheme });
+      const page = await ctx.newPage();
+      const id = await psalmsDeck(page, 'KJV');
+      await openPublish(page, id);
+      await signInInDrawer(page);
+      await pressPublish(page);
+      await expect(rulesDrawer(page)).toBeVisible();
+      await page.waitForTimeout(500);
+      const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+      expect(r.violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+      await ctx.close();
+    });
+  }
 });

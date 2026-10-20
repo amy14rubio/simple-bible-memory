@@ -3,6 +3,7 @@ import { useRepositories } from './repositories';
 import { announceDatabaseWrite, onDatabaseWrite } from '../data/writeEvents';
 import { loadBackends, sharingAvailable, type Backends } from '../features/sharing/backend';
 import { createSyncEngine } from '../features/sharing/syncEngine';
+import { TERMS_KEY, TERMS_VERSION } from '../features/sharing/terms';
 import { createAccountSync, type AccountChoice } from '../features/account/accountSync';
 import type { AccountBackend, AccountStatus } from '../features/account/types';
 import type { AuthUser, CloudBackend, DeckSyncStatus } from '../features/sharing/types';
@@ -36,7 +37,7 @@ const Ctx = createContext<SharingValue | null>(null);
  * is already published). Once signed in, every edit to a published deck is sent automatically in the background.
  */
 export function SharingProvider({ children }: { children: ReactNode }) {
-  const { sharing, account: accountRepo } = useRepositories();
+  const { sharing, account: accountRepo, settings } = useRepositories();
   const available = useMemo(() => sharingAvailable(), []);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
@@ -57,7 +58,10 @@ export function SharingProvider({ children }: { children: ReactNode }) {
       removeAllMine: async () => (await b()).cloud.removeAllMine(),
     };
   }, []);
-  const engine = useMemo(() => createSyncEngine({ sharing, cloud, ready: () => userRef.current !== null }), [sharing, cloud]);
+  const engine = useMemo(() => createSyncEngine({
+    sharing, cloud, ready: () => userRef.current !== null,
+    agreed: async () => ((await settings.get<number>(TERMS_KEY)) ?? 0) >= TERMS_VERSION,
+  }), [sharing, cloud, settings]);
 
   // The person's own data goes to their account through this, which also waits for the real thing to be loaded.
   const accountBackend = useMemo<AccountBackend>(() => {

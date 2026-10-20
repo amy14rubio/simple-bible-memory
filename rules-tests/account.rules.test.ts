@@ -155,10 +155,12 @@ describe('only well-formed things are accepted', () => {
     await assertFails(setDoc(doc(as('alice'), 'users', 'alice', 'items', 'deck~d3'), { ...rest, syncedAt: new Date(2000, 0, 1) }));
   });
 
-  it('settings: only the three study settings, with a plain value; never deleted', async () => {
+  it('settings: only the study settings and the rules agreement, with a plain value; never deleted', async () => {
     const s = (key: string, value: unknown) => ({ entity: 'setting', deleted: false, key, value, updatedAt: 1 });
     await assertSucceeds(put('setting~card_kinds', s('card_kinds', 'both')));
     await assertSucceeds(put('setting~new_cards_per_day', s('new_cards_per_day', 20)));
+    await assertSucceeds(put('setting~terms_accepted', s('terms_accepted', 1))); // having agreed to the community rules (the version) follows the account
+    await assertFails(put('setting~terms_accepted', s('terms_accepted', { v: 1 })));
     await assertFails(put('setting~theme', s('theme', 'dark'))); // looks stay on the device
     await assertFails(put('setting~card_kinds', s('card_kinds', { a: 1 })));
     await assertFails(put('setting~card_kinds', s('card_kinds', 'x'.repeat(41))));

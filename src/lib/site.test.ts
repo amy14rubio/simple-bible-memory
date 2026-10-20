@@ -39,10 +39,32 @@ describe('the website pages (public/)', () => {
     const en = read('en', 'privacy-policy');
     expect(en).toMatch(/no analytics/i);
     expect(en).toMatch(/does not use Android's automatic cloud backup/);
-    expect(en).toMatch(/under 13/);
     const es = read('es', 'privacy-policy');
     expect(es).toMatch(/no tiene analítica/);
     expect(es).toMatch(/no usa la copia de seguridad automática/);
-    expect(es).toMatch(/menores de 13/);
+  });
+
+  it('the terms keep the age rule (13 and over)', () => {
+    expect(read('en', 'terms')).toMatch(/at least 13 years old/);
+    expect(read('es', 'terms')).toMatch(/al menos 13 años/);
+  });
+
+  it('the layout the owner asked for: no "short version" box, no Who we are / Children / Contact sections', () => {
+    for (const lang of ['en', 'es'] as const) {
+      for (const page of PAGES) expect(read(lang, page), `${lang}/${page}`).not.toMatch(/class="short"|short version|En resumen/);
+      expect(read(lang, 'privacy-policy')).not.toMatch(/<h2>(Who we are|Quiénes somos|Children|Menores)<\/h2>/);
+      expect(read(lang, 'terms')).not.toMatch(/<h2>(Contact|Contacto)<\/h2>/);
+    }
+  });
+
+  it('the footer has the questions line first, then the links, and the email is only there on the terms page', () => {
+    for (const lang of ['en', 'es'] as const) {
+      for (const page of PAGES) {
+        const footer = read(lang, page).match(/<footer>([\s\S]*?)<\/footer>/)![1]!;
+        expect(footer.indexOf('mailto:'), `${lang}/${page}`).toBeGreaterThan(-1);
+        expect(footer.indexOf('mailto:')).toBeLessThan(footer.indexOf('class="links"'));
+      }
+      expect(read(lang, 'terms').match(/mailto:/g)).toHaveLength(2); // the copyright paragraph and the footer
+    }
   });
 });

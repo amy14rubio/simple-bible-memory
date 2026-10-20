@@ -283,3 +283,48 @@ describe('deck formats: an app never damages what a newer app published', () => 
     expect(cloud.decks.get(id)!.meta.v).toBe(2); // the details are re-sent once when the format changes
   });
 });
+
+describe('the community rules: nothing public is sent until they are agreed to', () => {
+  let agreed = false;
+  beforeEach(() => {
+    agreed = false;
+    engine = createSyncEngine({ sharing, cloud, ready: () => signedIn, delayMs: 5, agreed: async () => agreed });
+  });
+
+  it('refuses to publish before the agreement, and sends and marks nothing', async () => {
+    const { deck } = await psalms();
+    await expect(engine.publish(deck.id)).rejects.toMatchObject({ reason: 'rules' });
+    expect((await sharing.getDeck(deck.id))!.publishId).toBeNull();
+    expect(cloud.log).toEqual([]);
+  });
+
+  it('a deck that is already published (say, from another device) is held back, says why, and goes out once the rules are agreed', async () => {
+    const { deck } = await psalms();
+    agreed = true;
+    await engine.publish(deck.id);
+    const id = await publishId(deck.id);
+    cloud.log.length = 0;
+
+    agreed = false; // this device does not know about the agreement (yet)
+    await decks.update(deck.id, { title: 'Renamed', description: 'x', translationCode: 'KJV', bibleLanguage: null });
+    await engine.syncAll();
+    expect(engine.status(deck.id)).toEqual({ state: 'blocked', reason: 'rules' });
+    expect(cloud.decks.get(id)!.meta.title).toBe('Psalms'); // nothing was sent
+    expect(cloud.log).toEqual([]);
+
+    agreed = true; // the agreement arrives (from the account, or from the person)
+    await engine.syncAll();
+    expect(engine.status(deck.id)).toEqual({ state: 'synced' });
+    expect(cloud.decks.get(id)!.meta.title).toBe('Renamed');
+  });
+
+  it('taking a deck down is always allowed, agreed or not', async () => {
+    const { deck } = await psalms();
+    agreed = true;
+    await engine.publish(deck.id);
+    const id = await publishId(deck.id);
+    agreed = false;
+    await engine.unpublish(deck.id);
+    expect(cloud.decks.has(id)).toBe(false);
+  });
+});

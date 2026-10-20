@@ -54,7 +54,7 @@ export interface AuthBackend {
 }
 
 /** Why a deck cannot be published or kept in sync. */
-export type BlockReason = 'no-translation' | 'copyrighted' | 'no-language' | 'too-many-cards' | 'newer-format';
+export type BlockReason = 'no-translation' | 'copyrighted' | 'no-language' | 'too-many-cards' | 'newer-format' | 'rules';
 
 /** The public copy was saved by a newer version of the app than this one, so this app must not touch it. */
 export class NewerFormatError extends Error {
