@@ -15,6 +15,7 @@
   "dependencies": {
     "@base-ui/react": "^1.9.0",
     "@capacitor/app": "^8.1.2",
+    "@capacitor/app-launcher": "^8.0.1",
     "@capacitor/core": "^8.5.3",
     "@capacitor/local-notifications": "^8.3.1",
     "@fontsource-variable/instrument-sans": "^5.3.0",
