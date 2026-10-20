@@ -103,7 +103,7 @@ service cloud.firestore {
       return d.keys().hasOnly(['entity', 'deleted', 'key', 'value', 'updatedAt', 'v', 'syncedAt'])
         && d.keys().hasAll(['entity', 'deleted', 'key', 'value', 'updatedAt', 'syncedAt'])
         && itemId == 'setting~' + d.key
-        && d.key in ['new_cards_per_day', 'card_kinds', 'blank_difficulty']
+        && d.key in ['new_cards_per_day', 'card_kinds', 'blank_difficulty', 'terms_accepted']
         && ((d.value is string && d.value.size() <= 40) || d.value is number);
     }
     // `v` says which format the item was saved in. It is optional (items saved before versions existed have none: they count

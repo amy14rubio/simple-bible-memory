@@ -21,6 +21,7 @@ const BLOCK_MESSAGE: Record<BlockReason, MessageKey> = {
   'no-language': 'publish.noLanguage',
   'too-many-cards': 'publish.tooMany',
   'newer-format': 'publish.newerFormat',
+  rules: 'publish.rulesNeeded',
 };
 
 /**
@@ -104,6 +105,12 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
     setRules(false);
     await publishNow();
   };
+  // A deck that is already published but was waiting for the agreement: agreeing is enough, syncing resumes by itself (saving the setting triggers it).
+  const agreeOnly = async () => {
+    await settings.set(TERMS_KEY, TERMS_VERSION);
+    setAccepted(true);
+    setRules(false);
+  };
 
   const statusText = () => {
     if (status?.state === 'syncing') return t('publish.status.syncing');
@@ -142,6 +149,9 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
                 {published ? (
                   <>
                     <p role="status" className="rounded-lg bg-panel px-4 py-3 text-[0.9375rem]">{statusText()}</p>
+                    {status?.state === 'blocked' && status.reason === 'rules' && (
+                      <Button className="w-full" disabled={busy} onClick={() => setRules(true)}>{t('publish.reviewRules')}</Button>
+                    )}
                     <Button variant="secondary" className="w-full text-danger" disabled={busy} onClick={() => void run(() => share.unpublish(deck.id), 'publish.unpublishFailed', 'toast.unpublished').then((ok) => { if (ok) onClose(); })}>{t('publish.unpublish')}</Button>
                   </>
                 ) : (
@@ -162,7 +172,13 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
           <DrawerClose render={<HiddenClose label={t('common.cancel')} />} />
         </DrawerContent>
       </Drawer>
-      <CommunityRulesDrawer open={rules} busy={busy} onAgree={() => void agreeAndPublish()} onClose={() => setRules(false)} />
+      <CommunityRulesDrawer
+        open={rules}
+        busy={busy}
+        agreeLabel={published ? 'terms.agree' : 'terms.agreePublish'}
+        onAgree={() => void (published ? agreeOnly() : agreeAndPublish())}
+        onClose={() => setRules(false)}
+      />
     </>
   );
 }

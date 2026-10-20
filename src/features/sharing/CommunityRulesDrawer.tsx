@@ -11,7 +11,7 @@ const RULES = ['terms.rule1', 'terms.rule2', 'terms.rule3', 'terms.rule4'] as co
  * The community rules, on their own, shown the first time someone publishes a deck (see PublishDrawer). One button both agrees
  * and publishes; Cancel goes back to the publish drawer without publishing anything.
  */
-export function CommunityRulesDrawer({ open, busy, onAgree, onClose }: { open: boolean; busy: boolean; onAgree: () => void; onClose: () => void }) {
+export function CommunityRulesDrawer({ open, busy, onAgree, onClose, agreeLabel = 'terms.agreePublish' }: { open: boolean; busy: boolean; onAgree: () => void; onClose: () => void; /** 'terms.agreePublish' (the first publish) or 'terms.agree' (a deck that is already published and waiting for the agreement). */ agreeLabel?: 'terms.agreePublish' | 'terms.agree' }) {
   const { t, language } = useI18n();
   usePopupHistory(open, onClose);
   return (
@@ -27,7 +27,7 @@ export function CommunityRulesDrawer({ open, busy, onAgree, onClose }: { open: b
           </ul>
           <p><ExternalLink href={legalUrl('terms', language)} className="font-medium underline underline-offset-4">{t('terms.read')}</ExternalLink></p>
           <div className="flex flex-col gap-2 pt-1">
-            <Button disabled={busy} onClick={onAgree}>{t('terms.agreePublish')}</Button>
+            <Button disabled={busy} onClick={onAgree}>{t(agreeLabel)}</Button>
             <Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button>
           </div>
         </div>

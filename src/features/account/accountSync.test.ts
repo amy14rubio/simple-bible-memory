@@ -371,3 +371,27 @@ describe('item formats: an app never damages what a newer app saved', () => {
     expect(await titles(A)).toEqual([]);
   });
 });
+
+describe('agreeing to the community rules follows the account', () => {
+  it('agreed on one device, a new device signing in has it too, with the rules version', async () => {
+    await A.settings.set('terms_accepted', 1);
+    await signIn(A);
+    await settle(A);
+    expect(cloud.items['amy']!['setting~terms_accepted']).toMatchObject({ deleted: false, data: { key: 'terms_accepted', value: 1 } });
+
+    expect(await B.settings.get<number>('terms_accepted')).toBeUndefined();
+    await signIn(B);
+    await settle(A, B);
+    expect(await B.settings.get<number>('terms_accepted')).toBe(1);
+  });
+
+  it('agreeing before signing in is carried into the account when signing in', async () => {
+    await B.settings.set('terms_accepted', 1); // no account yet: remembered on the device
+    await signIn(B);
+    await settle(B);
+    expect(cloud.items['amy']!['setting~terms_accepted']).toBeTruthy();
+    await signIn(A);
+    await settle(A, B);
+    expect(await A.settings.get<number>('terms_accepted')).toBe(1);
+  });
+});

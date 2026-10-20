@@ -44,11 +44,13 @@ export interface SyncEngine {
   subscribe(callback: () => void): () => void;
 }
 
-export function createSyncEngine({ sharing, cloud, ready, delayMs = 1500, schemaVersion = PUBLIC_SCHEMA_VERSION }: {
+export function createSyncEngine({ sharing, cloud, ready, agreed = async () => true, delayMs = 1500, schemaVersion = PUBLIC_SCHEMA_VERSION }: {
   sharing: SharingRepository;
   cloud: CloudBackend;
   /** True when the person is signed in (and so changes can be sent). */
   ready: () => boolean;
+  /** Has the person agreed to the community rules (on this device or, through their account, on another)? Nothing is sent to the public catalogue until they have. */
+  agreed?: () => Promise<boolean>;
   delayMs?: number;
   /** The deck format this app writes (a different one only in tests). */
   schemaVersion?: number;
@@ -100,6 +102,8 @@ export function createSyncEngine({ sharing, cloud, ready, delayMs = 1500, schema
     for (const publishId of await sharing.pendingDeckRemovals()) {
       try { await cloud.removeDeck(publishId); await sharing.clearDeckRemoval(publishId); } catch { /* try again next time */ }
     }
+    // Taking decks down is always allowed; sending anything public waits for the agreement (it may arrive from the account a moment later).
+    if (ids.length && !(await agreed())) { for (const id of ids) set(id, { state: 'blocked', reason: 'rules' }); return; }
     for (const id of ids) {
       set(id, { state: 'syncing' });
       try { set(id, await syncDeck(id)); } catch (e) { set(id, e instanceof NewerFormatError ? { state: 'blocked', reason: 'newer-format' } : { state: 'waiting' }); }
@@ -112,6 +116,7 @@ export function createSyncEngine({ sharing, cloud, ready, delayMs = 1500, schema
       if (!deck) throw new Error('No such deck');
       const reason = blockReason(deck, (await sharing.cardsOf(deckId)).length);
       if (reason) throw new PublishBlockedError(reason);
+      if (!(await agreed())) throw new PublishBlockedError('rules');
       if (!deck.publishId) await sharing.publish(deckId, crypto.randomUUID());
       set(deckId, { state: 'syncing' });
       try { set(deckId, await syncDeck(deckId)); } catch (e) { set(deckId, e instanceof NewerFormatError ? { state: 'blocked', reason: 'newer-format' } : { state: 'waiting' }); throw e; }
