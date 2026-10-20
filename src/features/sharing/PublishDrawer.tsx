@@ -18,6 +18,7 @@ const BLOCK_MESSAGE: Record<BlockReason, MessageKey> = {
   copyrighted: 'publish.copyrighted',
   'no-language': 'publish.noLanguage',
   'too-many-cards': 'publish.tooMany',
+  'newer-format': 'publish.newerFormat',
 };
 
 /**

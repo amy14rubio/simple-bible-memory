@@ -15,11 +15,11 @@ const as = (uid: string) => env.authenticatedContext(uid).firestore() as unknown
 const stranger = () => env.unauthenticatedContext().firestore() as unknown as Firestore;
 const backend = (uid: string) => createFirestoreAccount(as(uid), () => uid);
 
-const deck = (id: string, updatedAt: number, title = 'Psalms'): OutItem => ({ entity: 'deck', id, deleted: false, updatedAt, doc: { title, description: null, translation: 'KJV', language: 'en', publishId: null, importedFrom: null, createdAt: 1, updatedAt } });
-const card = (id: string, updatedAt: number): OutItem => ({ entity: 'card', id, deleted: false, updatedAt, doc: { reference: 'John 3:16', verseText: 'For God so loved', note: null, createdAt: 1, updatedAt, decks: [{ deckId: 'd1', addedAt: 5 }] } });
-const schedule = (cardId: string, kind: string, updatedAt: number): OutItem => ({ entity: 'schedule', id: `${cardId}~${kind}`, deleted: false, updatedAt, doc: { cardId, kind, due: 10, stability: 4.5, difficulty: 5.5, state: 2, reps: 3, lapses: 1, learningSteps: 0, scheduledDays: 7, lastReview: updatedAt, version: 'v', updatedAt } });
-const setting = (key: string, value: string | number, updatedAt: number): OutItem => ({ entity: 'setting', id: key, deleted: false, updatedAt, doc: { key, value, updatedAt } });
-const gone = (entity: OutItem['entity'], id: string, updatedAt: number): OutItem => ({ entity, id, deleted: true, updatedAt, doc: null });
+const deck = (id: string, updatedAt: number, title = 'Psalms'): OutItem => ({ entity: 'deck', id, deleted: false, updatedAt, v: 1, doc: { title, description: null, translation: 'KJV', language: 'en', publishId: null, importedFrom: null, createdAt: 1, updatedAt } });
+const card = (id: string, updatedAt: number): OutItem => ({ entity: 'card', id, deleted: false, updatedAt, v: 1, doc: { reference: 'John 3:16', verseText: 'For God so loved', note: null, createdAt: 1, updatedAt, decks: [{ deckId: 'd1', addedAt: 5 }] } });
+const schedule = (cardId: string, kind: string, updatedAt: number): OutItem => ({ entity: 'schedule', id: `${cardId}~${kind}`, deleted: false, updatedAt, v: 1, doc: { cardId, kind, due: 10, stability: 4.5, difficulty: 5.5, state: 2, reps: 3, lapses: 1, learningSteps: 0, scheduledDays: 7, lastReview: updatedAt, version: 'v', updatedAt } });
+const setting = (key: string, value: string | number, updatedAt: number): OutItem => ({ entity: 'setting', id: key, deleted: false, updatedAt, v: 1, doc: { key, value, updatedAt } });
+const gone = (entity: OutItem['entity'], id: string, updatedAt: number): OutItem => ({ entity, id, deleted: true, updatedAt, v: 1, doc: null });
 
 /** What listening gives, once it has settled. */
 const heard = (uid: string, since = 0) => new Promise<RemoteItem[]>((resolve, reject) => {
@@ -94,6 +94,44 @@ describe('privacy', () => {
 
   it('a stranger cannot save anything under their own name either', async () => {
     await expect(createFirestoreAccount(stranger(), () => 'nobody').push([deck('d1', 1)])).rejects.toBeTruthy();
+  });
+});
+
+describe('the format version (v)', () => {
+  const put = (uid: string, id: string, data: Record<string, unknown>) => setDoc(doc(as(uid), 'users', uid, 'items', id), { syncedAt: serverTimestamp(), ...data });
+  const okDeck = { entity: 'deck', deleted: false, title: 'T', description: null, translation: null, language: null, publishId: null, importedFrom: null, createdAt: 1, updatedAt: 1 };
+
+  it('items are saved with their version, and heard back with it; items saved before versions existed count as 1', async () => {
+    await assertSucceeds(put('alice', 'deck~new', { ...okDeck, v: 1 }));
+    await assertSucceeds(put('alice', 'deck~old', okDeck)); // no v: an app from before this existed
+    const items = await heard('alice');
+    expect(items.find((i) => i.id === 'new')!.v).toBe(1);
+    expect(items.find((i) => i.id === 'old')!.v).toBe(1);
+  });
+
+  it('v must be a whole number from 1 up, and goes for deleted stubs too', async () => {
+    await assertFails(put('alice', 'deck~d', { ...okDeck, v: 0 }));
+    await assertFails(put('alice', 'deck~d', { ...okDeck, v: 1.5 }));
+    await assertFails(put('alice', 'deck~d', { ...okDeck, v: 'two' }));
+    await assertSucceeds(put('alice', 'deck~d', { ...okDeck, v: 2 }));
+    await assertSucceeds(put('alice', 'deck~d', { entity: 'deck', deleted: true, updatedAt: 5, v: 2 }));
+  });
+
+  it('an item saved in a newer format is never replaced by an older format, even by a later edit', async () => {
+    await assertSucceeds(put('alice', 'deck~d', { ...okDeck, v: 2, title: 'From the new app', updatedAt: 10 }));
+    await assertFails(put('alice', 'deck~d', { ...okDeck, v: 1, title: 'From the old app', updatedAt: 99 }));
+    await assertFails(put('alice', 'deck~d', { ...okDeck, title: 'From an app with no versions', updatedAt: 99 }));
+    await assertSucceeds(put('alice', 'deck~d', { ...okDeck, v: 3, title: 'From an even newer app', updatedAt: 99 }));
+    const d = (await heard('alice')).find((i) => i.id === 'd')!;
+    expect((d.data as { title: string }).title).toBe('From an even newer app');
+  });
+
+  it('the client reports a refusal for the newer format as stale, not as an error, and nothing is lost', async () => {
+    await assertSucceeds(put('alice', 'deck~d', { ...okDeck, v: 2, title: 'From the new app', updatedAt: 10 }));
+    const oldApp = { ...deck('d', 500), v: 1 }; // later edit time, older format
+    await expect(backend('alice').push([oldApp])).resolves.toEqual({ stale: ['deck~d'] });
+    const d = (await heard('alice')).find((i) => i.id === 'd')!;
+    expect((d.data as { title: string }).title).toBe('From the new app');
   });
 });
 

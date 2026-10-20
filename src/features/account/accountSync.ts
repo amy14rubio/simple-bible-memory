@@ -1,5 +1,5 @@
 import type { AccountRepository } from '../../data/repositories/accountRepository';
-import { ENTITY_ORDER, itemKey, parseKey, remoteWins, makeItem, type Entity } from '../../domain/account/items';
+import { ENTITY_ORDER, NEWER, SCHEMA_VERSION, itemKey, parseKey, remoteWins, makeItem, type Entity } from '../../domain/account/items';
 import type { AccountBackend, AccountStatus, OutItem, RemoteItem } from './types';
 
 /**
@@ -39,7 +39,7 @@ export interface AccountSync {
   idle(): Promise<void>;
 }
 
-export function createAccountSync({ repo, backend, announce, online = () => (typeof navigator === 'undefined' || navigator.onLine !== false), delayMs = 1500, now = Date.now }: {
+export function createAccountSync({ repo, backend, announce, online = () => (typeof navigator === 'undefined' || navigator.onLine !== false), delayMs = 1500, now = Date.now, schemaVersion = SCHEMA_VERSION }: {
   repo: AccountRepository;
   /** Tells the rest of the app the database changed because of the account (screens refresh, public decks re-sync). */
   backend: AccountBackend;
@@ -47,6 +47,8 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
   online?: () => boolean;
   delayMs?: number;
   now?: () => number;
+  /** The item format this app understands (a different one only in tests). */
+  schemaVersion?: number;
 }): AccountSync {
   let uid: string | null = null;
   let stopListening: (() => void) | undefined;
@@ -79,6 +81,10 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
         else await repo.forget([key]); // edited here after it was deleted elsewhere: the edit wins and is sent again
         continue;
       }
+
+      // Saved by a newer app, in a format this one does not understand: leave it completely alone (not read, not replaced,
+      // not deleted), and remember that, so nothing this device sends can damage it. It is read after this app is updated.
+      if (it.v > schemaVersion) { await repo.setAgreed([{ key, hash: NEWER + it.v, updatedAt: it.updatedAt }]); continue; }
 
       const remote = makeItem(it.entity, it.id, it.data);
       if (!remote) continue;
@@ -118,6 +124,7 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
     const forgotten: string[] = [];
     for (const [key, st] of await repo.agreed()) {
       if (live.has(key)) continue;
+      if (st.hash.startsWith(NEWER)) continue; // held for a newer app: not ours to delete
       const parsed = parseKey(key);
       if (!parsed || parsed.entity === 'setting') forgotten.push(key);
       else if (parsed.entity === 'schedule') forgotten.push(key); // goes when its card goes: nothing to send
@@ -131,11 +138,15 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
     const items = await repo.items();
     const agreed = await repo.agreed();
     const out: (OutItem & { hash?: string })[] = [];
-    for (const i of items) if (agreed.get(itemKey(i.entity, i.id))?.hash !== i.hash) out.push({ entity: i.entity, id: i.id, deleted: false, updatedAt: i.updatedAt, doc: i.doc, hash: i.hash });
+    for (const i of items) {
+      const was = agreed.get(itemKey(i.entity, i.id))?.hash;
+      if (was?.startsWith(NEWER)) continue; // the account holds a newer format of this: never overwrite it
+      if (was !== i.hash) out.push({ entity: i.entity, id: i.id, deleted: false, updatedAt: i.updatedAt, v: schemaVersion, doc: i.doc, hash: i.hash });
+    }
     const live = new Set(items.map((i) => itemKey(i.entity, i.id)));
     for (const [key, st] of agreed) {
       const parsed = parseKey(key);
-      if (parsed && st.hash === DELETED && !live.has(key)) out.push({ entity: parsed.entity, id: parsed.id, deleted: true, updatedAt: st.updatedAt, doc: null });
+      if (parsed && st.hash === DELETED && !live.has(key)) out.push({ entity: parsed.entity, id: parsed.id, deleted: true, updatedAt: st.updatedAt, v: schemaVersion, doc: null });
     }
     out.sort((a, b) => ENTITY_ORDER.indexOf(a.entity) - ENTITY_ORDER.indexOf(b.entity));
     for (let i = 0; i < out.length; i += CHUNK) {
@@ -172,6 +183,10 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
       stopListening?.();
       uid = next;
       setStatus({ state: 'syncing' });
+      // After an update, items an older version could not read are now understood: forget that they were held and listen from
+      // the start once, so they arrive.
+      const held = [...(await repo.agreed())].filter(([, st]) => st.hash.startsWith(NEWER) && Number(st.hash.slice(NEWER.length)) <= schemaVersion);
+      if (held.length) { await repo.forget(held.map(([key]) => key)); await repo.setMeta(`cursor:${next}`, '0'); }
       const since = Number((await repo.getMeta(`cursor:${next}`)) ?? 0);
       stopListening = backend.listen(
         since,

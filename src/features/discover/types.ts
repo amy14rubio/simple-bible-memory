@@ -10,6 +10,8 @@ export interface PublicDeck {
   cardCount: number;
   /** When it was first published (milliseconds). */
   createdAt: number;
+  /** The format version it is saved in (1 if it was published before versions existed). */
+  v: number;
 }
 
 export interface PublicCard {

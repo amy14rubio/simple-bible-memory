@@ -17,4 +17,4 @@ export function fingerprint(text: string): string {
 export const cardFingerprint = (c: Pick<CloudCard, 'reference' | 'verseText' | 'position'>) =>
   fingerprint(JSON.stringify([c.reference, c.verseText, c.position]));
 
-export const metaFingerprint = (m: CloudDeckMeta) => fingerprint(JSON.stringify([m.title, m.description, m.translation, m.language, m.cardCount]));
+export const metaFingerprint = (m: CloudDeckMeta) => fingerprint(JSON.stringify([m.title, m.description, m.translation, m.language, m.cardCount, m.v])); // v: a new format version re-sends the deck's details once, so the public copy says which format it is in

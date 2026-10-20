@@ -12,6 +12,16 @@ export const ENTITY_ORDER: Entity[] = ['deck', 'card', 'schedule', 'setting'];
 export const SETTING_KEYS = ['new_cards_per_day', 'card_kinds', 'blank_difficulty'] as const;
 export const CARD_KINDS = ['recall', 'identify'] as const;
 
+/**
+ * The version of the format items are saved in (the shape of each deck, card, schedule and setting). Every item sent to the
+ * account carries it as `v`. An item saved before there was a `v` counts as version 1.
+ * RAISE IT whenever an item's shape changes in a way an older app would misread (see docs/data-compatibility.md).
+ * An app that meets an item with a higher `v` than its own leaves that item completely alone, so it can never damage it.
+ */
+export const SCHEMA_VERSION = 1;
+/** Marks, in the "last agreed" record, an item the account holds in a newer format than this app understands ("newer:2"). */
+export const NEWER = 'newer:';
+
 export type Doc = Record<string, string | number | boolean | null | { deckId: string; addedAt: number }[]>;
 export interface Item { entity: Entity; id: string; updatedAt: number; doc: Doc; hash: string }
 

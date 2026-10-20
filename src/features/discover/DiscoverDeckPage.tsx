@@ -7,6 +7,7 @@ import { useAsync } from '../../app/useAsync';
 import { useRepositories } from '../../app/repositories';
 import { loadBackends } from '../sharing/backend';
 import { useI18n } from '../../i18n/I18nProvider';
+import { PUBLIC_SCHEMA_VERSION } from '../../domain/sharing/version';
 import { deckSummary } from './names';
 import { ReportDrawer } from './ReportDrawer';
 
@@ -34,6 +35,8 @@ export function DiscoverDeckPage() {
   if (loadError) return <><AppBar back={<BackButton to="/discover" label={t('common.back')} />} /><Page><ErrorMessage error={t('discover.error')} /></Page></>;
   if (!data?.deck) return <><AppBar back={<BackButton to="/discover" label={t('common.back')} />} /><EmptyState title={t('discover.notFound')}>{null}</EmptyState></>;
   const { deck, cards, have } = data;
+  // Published by a newer app, in a format this one might misread: it can be looked at, but not imported until the app is updated.
+  const needsUpdate = deck.v > PUBLIC_SCHEMA_VERSION;
 
   const importDeck = async () => {
     setBusy(true);
@@ -84,8 +87,9 @@ export function DiscoverDeckPage() {
           </p>
         )}
         {error && <ErrorMessage error={error} />}
+        {needsUpdate && <p role="status" className="rounded-lg border border-border bg-surface p-3.5 text-[0.9375rem]">{t('discover.needsUpdate')}</p>}
         <div className="space-y-2">
-          <Button className="w-full" disabled={busy || cards.length === 0} onClick={() => void importDeck()}>{have ? t('discover.importAgain') : t('discover.import')}</Button>
+          <Button className="w-full" disabled={busy || cards.length === 0 || needsUpdate} onClick={() => void importDeck()}>{have ? t('discover.importAgain') : t('discover.import')}</Button>
         </div>
       </Page>
       <ReportDrawer deckId={deck.id} open={reporting} onClose={() => setReporting(false)} />

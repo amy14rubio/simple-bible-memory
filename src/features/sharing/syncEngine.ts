@@ -1,7 +1,8 @@
 import type { SharingRepository } from '../../data/repositories/sharingRepository';
+import { PUBLIC_SCHEMA_VERSION } from '../../domain/sharing/version';
 import { LIMITS, canPublishTranslation, translationLanguage, SHARING_LANGUAGES, type SharingLanguage } from '../../domain/sharing/translations';
 import { cardFingerprint, metaFingerprint } from './fingerprint';
-import type { BlockReason, CloudBackend, CloudCard, CloudDeckMeta, DeckSyncStatus } from './types';
+import { NewerFormatError, type BlockReason, type CloudBackend, type CloudCard, type CloudDeckMeta, type DeckSyncStatus } from './types';
 
 /**
  * Keeps each published deck's public copy in step with the local deck, automatically. The local database remembers a
@@ -43,12 +44,14 @@ export interface SyncEngine {
   subscribe(callback: () => void): () => void;
 }
 
-export function createSyncEngine({ sharing, cloud, ready, delayMs = 1500 }: {
+export function createSyncEngine({ sharing, cloud, ready, delayMs = 1500, schemaVersion = PUBLIC_SCHEMA_VERSION }: {
   sharing: SharingRepository;
   cloud: CloudBackend;
   /** True when the person is signed in (and so changes can be sent). */
   ready: () => boolean;
   delayMs?: number;
+  /** The deck format this app writes (a different one only in tests). */
+  schemaVersion?: number;
 }): SyncEngine {
   const statuses = new Map<string, DeckSyncStatus>();
   const listeners = new Set<() => void>();
@@ -65,10 +68,10 @@ export function createSyncEngine({ sharing, cloud, ready, delayMs = 1500 }: {
     const reason = blockReason(deck, rows.length);
     if (reason) return { state: 'blocked', reason };
 
-    const meta: CloudDeckMeta = { title: deck.title, description: deck.description, translation: deck.translationCode!, language: languageOf(deck)!, cardCount: rows.length };
+    const meta: CloudDeckMeta = { title: deck.title, description: deck.description, translation: deck.translationCode!, language: languageOf(deck)!, cardCount: rows.length, v: schemaVersion };
     const cards: (CloudCard & { hash: string; syncedHash: string | null })[] = rows.map((r, position) => {
       const card = { id: r.id, reference: r.reference, verseText: r.verseText, position };
-      return { ...card, hash: cardFingerprint(card), syncedHash: r.syncedHash };
+      return { ...card, v: schemaVersion, hash: cardFingerprint(card), syncedHash: r.syncedHash };
     });
     const changed = cards.filter((c) => c.hash !== c.syncedHash);
     const removals = await sharing.pendingCardRemovals(publishId);
@@ -77,7 +80,7 @@ export function createSyncEngine({ sharing, cloud, ready, delayMs = 1500 }: {
 
     if (firstTime) await cloud.createDeck(publishId, meta);
     for (let i = 0; i < changed.length; i += CHUNK) {
-      await cloud.putCards(publishId, changed.slice(i, i + CHUNK).map(({ id, reference, verseText, position }) => ({ id, reference, verseText, position })));
+      await cloud.putCards(publishId, changed.slice(i, i + CHUNK).map(({ id, reference, verseText, position, v }) => ({ id, reference, verseText, position, v })));
     }
     for (let i = 0; i < removals.length; i += CHUNK) await cloud.removeCards(publishId, removals.slice(i, i + CHUNK));
     if (!firstTime && deck.syncedMeta !== metaStamp) await cloud.updateDeck(publishId, meta);
@@ -99,7 +102,7 @@ export function createSyncEngine({ sharing, cloud, ready, delayMs = 1500 }: {
     }
     for (const id of ids) {
       set(id, { state: 'syncing' });
-      try { set(id, await syncDeck(id)); } catch { set(id, { state: 'waiting' }); }
+      try { set(id, await syncDeck(id)); } catch (e) { set(id, e instanceof NewerFormatError ? { state: 'blocked', reason: 'newer-format' } : { state: 'waiting' }); }
     }
   }
 
@@ -111,7 +114,7 @@ export function createSyncEngine({ sharing, cloud, ready, delayMs = 1500 }: {
       if (reason) throw new PublishBlockedError(reason);
       if (!deck.publishId) await sharing.publish(deckId, crypto.randomUUID());
       set(deckId, { state: 'syncing' });
-      try { set(deckId, await syncDeck(deckId)); } catch (e) { set(deckId, { state: 'waiting' }); throw e; }
+      try { set(deckId, await syncDeck(deckId)); } catch (e) { set(deckId, e instanceof NewerFormatError ? { state: 'blocked', reason: 'newer-format' } : { state: 'waiting' }); throw e; }
     },
 
     async unpublish(deckId) {

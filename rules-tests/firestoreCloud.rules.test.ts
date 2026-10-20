@@ -3,7 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { initializeTestEnvironment, type RulesTestEnvironment } from '@firebase/rules-unit-testing';
 import { collection, doc, getDoc, getDocs, type Firestore } from 'firebase/firestore';
 import { createFirestoreCloud } from '../src/features/sharing/firestoreCloud';
-import type { CloudCard, CloudDeckMeta } from '../src/features/sharing/types';
+import { NewerFormatError, type CloudCard, type CloudDeckMeta } from '../src/features/sharing/types';
 
 /** The app's own write calls, run against the real security rules. */
 let env: RulesTestEnvironment;
@@ -14,8 +14,8 @@ beforeEach(() => env.clearFirestore());
 const as = (uid: string) => createFirestoreCloud(env.authenticatedContext(uid).firestore() as unknown as Firestore, () => uid);
 const reader = () => env.unauthenticatedContext().firestore() as unknown as Firestore;
 
-const meta = (over: Partial<CloudDeckMeta> = {}): CloudDeckMeta => ({ title: 'Psalm 23', description: 'The shepherd psalm', translation: 'KJV', language: 'en', cardCount: 2, ...over });
-const cards = (n: number): CloudCard[] => Array.from({ length: n }, (_, i) => ({ id: `c${i}`, reference: `Psalm 23:${i + 1}`, verseText: `Verse ${i + 1}.`, position: i }));
+const meta = (over: Partial<CloudDeckMeta> = {}): CloudDeckMeta => ({ title: 'Psalm 23', description: 'The shepherd psalm', translation: 'KJV', language: 'en', cardCount: 2, v: 1, ...over });
+const cards = (n: number): CloudCard[] => Array.from({ length: n }, (_, i) => ({ id: `c${i}`, reference: `Psalm 23:${i + 1}`, verseText: `Verse ${i + 1}.`, position: i, v: 1 }));
 const cardIds = async (id: string) => (await getDocs(collection(reader(), 'publicDecks', id, 'cards'))).docs.map((d) => d.id).sort();
 
 describe('the app\'s calls, under the real rules', () => {
@@ -25,7 +25,7 @@ describe('the app\'s calls, under the real rules', () => {
     await alice.putCards('d1', cards(2));
     const deck = (await getDoc(doc(reader(), 'publicDecks', 'd1'))).data()!;
     expect(deck).toMatchObject({ ownerId: 'alice', title: 'Psalm 23', titleLower: 'psalm 23', translation: 'KJV', language: 'en', cardCount: 2 });
-    expect(Object.keys(deck).sort()).toEqual(['cardCount', 'createdAt', 'description', 'language', 'ownerId', 'title', 'titleLower', 'translation', 'updatedAt']);
+    expect(Object.keys(deck).sort()).toEqual(['cardCount', 'createdAt', 'description', 'language', 'ownerId', 'title', 'titleLower', 'translation', 'updatedAt', 'v']);
     expect(await cardIds('d1')).toEqual(['c0', 'c1']);
   });
 
@@ -87,3 +87,20 @@ describe('the app\'s calls, under the real rules', () => {
     expect(await cardIds('b1')).toEqual(['c0']);
   });
 });
+
+describe('an app on an older format and a deck published in a newer one', () => {
+  it('the older app is told "newer format" (not a failure to retry), and nothing is changed', async () => {
+    const newer = as('alice');
+    await newer.createDeck('d1', meta({ v: 2, title: 'From the newer app' }));
+    await newer.putCards('d1', cards(2).map((c) => ({ ...c, v: 2, verseText: 'newer' })));
+
+    const older = as('alice');
+    await expect(older.updateDeck('d1', meta({ v: 1, title: 'From the older app' }))).rejects.toBeInstanceOf(NewerFormatError);
+    await expect(older.putCards('d1', cards(2))).rejects.toBeInstanceOf(NewerFormatError);
+
+    const deck = (await getDoc(doc(reader(), 'publicDecks', 'd1'))).data()!;
+    expect(deck.title).toBe('From the newer app');
+    expect((await getDocs(collection(reader(), 'publicDecks', 'd1', 'cards'))).docs.every((d) => d.data().verseText === 'newer')).toBe(true);
+  });
+});
+
