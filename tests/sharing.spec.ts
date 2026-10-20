@@ -34,6 +34,14 @@ async function openPublish(page: Page, deckId: string) {
   await expect(drawer(page)).toBeVisible();
 }
 
+/** Agrees to the community rules (asked the first time only) and presses Publish. */
+const publish = async (page: Page) => {
+  const rules = drawer(page).getByRole('region', { name: 'Community rules' });
+  await expect(rules).toContainText('agree to the community rules'); // both the box and the reminder say this, once it is known which applies
+  const box = rules.getByRole('checkbox');
+  if (await box.count()) await box.check();
+  await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
+};
 const signInInDrawer = async (page: Page) => { await drawer(page).getByRole('button', { name: 'Continue with Google' }).click(); await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeVisible(); };
 
 test.describe('a card\'s note stays private', () => {
@@ -55,7 +63,7 @@ test.describe('a card\'s note stays private', () => {
 
     await openPublish(page, id);
     await signInInDrawer(page);
-    await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
+    await publish(page);
     await expect(page.getByText('Deck published')).toBeVisible();
     const [deck] = await published(page);
     expect(Object.values(deck!.cards)).toHaveLength(1);
@@ -92,7 +100,7 @@ test.describe('publishing', () => {
     await expect(drawer(page).getByText('Sign in with Google to publish')).toBeVisible();
     await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toHaveCount(0); // not until signed in
     await signInInDrawer(page);
-    await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
+    await publish(page);
     await expect(page.getByText('Deck published')).toBeVisible();
     await expect(drawer(page)).toHaveCount(0);
 
@@ -123,8 +131,9 @@ test.describe('publishing', () => {
     await signInInDrawer(page);
     await picker(page, 'Translation').click();
     await page.getByRole('dialog', { name: 'Select a translation' }).getByRole('button', { name: 'World English Bible (WEB)' }).click();
+    await drawer(page).getByRole('checkbox', { name: 'I agree to the community rules' }).check();
     await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeEnabled();
-    await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
+    await publish(page);
     await expect(page.getByText('Deck published')).toBeVisible();
     expect((await published(page))[0]!.meta.translation).toBe('WEB');
   });
@@ -145,7 +154,7 @@ test.describe('publishing', () => {
     const id = await psalmsDeck(page);
     await openPublish(page, id);
     await signInInDrawer(page);
-    await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
+    await publish(page);
     await expect(page.getByText('Deck published')).toBeVisible();
     await page.waitForTimeout(300);
 
@@ -167,7 +176,7 @@ test.describe('automatic syncing of a published deck', () => {
     const id = await psalmsDeck(page);
     await openPublish(page, id);
     await signInInDrawer(page);
-    await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
+    await publish(page);
     await expect(page.getByText('Deck published')).toBeVisible();
     await page.waitForTimeout(300); // the drawer's history clean-up, before the page is reloaded
     await page.reload(); // clears the toast
@@ -245,7 +254,7 @@ test.describe('the account in Settings', () => {
     const id = await psalmsDeck(page);
     await openPublish(page, id);
     await signInInDrawer(page);
-    await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
+    await publish(page);
     await expect(page.getByText('Deck published')).toBeVisible();
     await page.waitForTimeout(300);
     await page.reload();
@@ -300,7 +309,7 @@ test.describe('in Spanish, and accessibility', () => {
       await audit(); // signed in, nothing chosen yet
       await picker(page, 'Translation').click();
       await page.getByRole('dialog', { name: 'Select a translation' }).getByRole('button', { name: 'King James Version (KJV)' }).click();
-      await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
+      await publish(page);
       await expect(page.getByText('Deck published')).toBeVisible();
       await page.waitForTimeout(300);
       await page.reload();
@@ -309,4 +318,31 @@ test.describe('in Spanish, and accessibility', () => {
       await ctx.close();
     });
   }
+});
+
+test.describe('the community rules before publishing', () => {
+  test('the first time, the rules are shown and Publish waits for the box; afterwards it is a quiet reminder', async ({ page }) => {
+    const id = await psalmsDeck(page, 'KJV');
+    await openPublish(page, id);
+    await signInInDrawer(page);
+    const rules = drawer(page).getByRole('region', { name: 'Community rules' });
+    await expect(rules).toContainText('Only publish text you are allowed to share');
+    await expect(rules).toContainText('Keep it about Scripture');
+    await expect(rules).toContainText('No hateful, harassing, sexual, violent, illegal or spam content');
+    await expect(rules.getByRole('link', { name: 'Read the full terms' })).toHaveAttribute('href', 'https://simple-bible-memory.web.app/terms');
+    const box = rules.getByRole('checkbox', { name: 'I agree to the community rules' });
+    await expect(box).not.toBeChecked();
+    await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeDisabled();
+    await box.check();
+    await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeEnabled();
+    await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
+    await expect(page.getByText('Deck published')).toBeVisible();
+
+    // a second deck: already agreed, so no box, just the reminder
+    const second = await psalmsDeck(page, 'KJV');
+    await openPublish(page, second);
+    await expect(drawer(page).getByRole('checkbox')).toHaveCount(0);
+    await expect(drawer(page).getByRole('region', { name: 'Community rules' })).toContainText('By publishing you agree to the community rules.');
+    await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeEnabled();
+  });
 });

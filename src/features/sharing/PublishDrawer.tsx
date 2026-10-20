@@ -12,6 +12,9 @@ import { useI18n } from '../../i18n/I18nProvider';
 import type { MessageKey } from '../../i18n';
 import { TranslationFields, type TranslationValue } from './TranslationFields';
 import type { BlockReason } from './types';
+import { TERMS_KEY, TERMS_VERSION } from './terms';
+import { ExternalLink } from '../../components/ExternalLink';
+import { TERMS_URL } from '../../lib/site';
 
 const BLOCK_MESSAGE: Record<BlockReason, MessageKey> = {
   'no-translation': 'publish.pickTranslation',
@@ -28,7 +31,7 @@ const BLOCK_MESSAGE: Record<BlockReason, MessageKey> = {
  */
 export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: string } | null; onClose: () => void }) {
   const { t } = useI18n();
-  const { decks, cards, sharing } = useRepositories();
+  const { decks, cards, sharing, settings } = useRepositories();
   const share = useSharing();
   const open = deck !== null;
   usePopupHistory(open, onClose);
@@ -37,6 +40,8 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
   const [cardCount, setCardCount] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  const [accepted, setAccepted] = useState<boolean>(); // have the community rules been agreed to already? (undefined: not known yet)
+  const [agree, setAgree] = useState(false); // the box, for the first time
 
   const reload = useCallback(async () => {
     if (!deck) return;
@@ -50,7 +55,15 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
     setBusy(false);
     share.ensureLoaded();
     void reload();
-  }, [deck, reload, share]);
+  }, [deck, reload, share, settings]);
+
+  // The community rules: asked again only when a different deck is opened (not whenever sign-in or sync state changes, which would untick the box).
+  const deckId = deck?.id;
+  useEffect(() => {
+    if (!deckId) return;
+    setAgree(false);
+    void settings.get<number>(TERMS_KEY).then((v) => setAccepted((v ?? 0) >= TERMS_VERSION));
+  }, [deckId, settings]);
 
   if (!deck) return <Drawer open={false} onOpenChange={() => undefined}><DrawerContent><DrawerTitle className="sr-only">{t('publish.title')}</DrawerTitle></DrawerContent></Drawer>;
 
@@ -125,7 +138,25 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
               ) : (
                 <>
                   {reason && <p role="status" className="text-[0.9375rem] text-danger">{t(BLOCK_MESSAGE[reason])}</p>}
-                  <Button className="w-full" disabled={busy || reason !== null} onClick={() => void run(() => share.publish(deck.id), 'publish.failed', 'toast.published').then((ok) => { if (ok) onClose(); })}>{t('publish.button')}</Button>
+                  <section aria-label={t('terms.title')} className="space-y-2 rounded-lg bg-panel px-4 py-3 text-[0.9375rem]">
+                    <p className="font-medium">{t('terms.title')}</p>
+                    <ul className="list-disc space-y-1 pl-5">
+                      {(['terms.rule1', 'terms.rule2', 'terms.rule3', 'terms.rule4'] as const).map((k) => <li key={k}>{t(k)}</li>)}
+                    </ul>
+                    <p><ExternalLink href={TERMS_URL} className="font-medium underline underline-offset-4">{t('terms.read')}</ExternalLink></p>
+                    {accepted === false && (
+                      <label className="flex min-h-11 items-center gap-3 pt-1 font-medium">
+                        <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="size-5 shrink-0 accent-[var(--color-primary)]" />
+                        {t('terms.agree')}
+                      </label>
+                    )}
+                    {accepted === true && <p className="text-muted">{t('terms.agreed')}</p>}
+                  </section>
+                  <Button
+                    className="w-full"
+                    disabled={busy || reason !== null || accepted === undefined || (accepted === false && !agree)}
+                    onClick={() => void run(async () => { if (accepted === false) { await settings.set(TERMS_KEY, TERMS_VERSION); setAccepted(true); } await share.publish(deck.id); }, 'publish.failed', 'toast.published').then((ok) => { if (ok) onClose(); })}
+                  >{t('publish.button')}</Button>
                 </>
               )}
             </>

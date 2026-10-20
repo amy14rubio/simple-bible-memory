@@ -3,6 +3,8 @@ import { InfoLabel } from '../../components/InfoDrawer';
 import type { MessageKey } from '../../i18n';
 import { useI18n } from '../../i18n/I18nProvider';
 import { CONTACT_EMAIL } from '../discover/contact';
+import { ExternalLink } from '../../components/ExternalLink';
+import { DELETE_ACCOUNT_URL, PRIVACY_URL, TERMS_URL } from '../../lib/site';
 
 const SECTIONS = ['device', 'account', 'public', 'delete', 'others'] as const;
 
@@ -19,6 +21,11 @@ export function PrivacyPage() {
             <p>{t(`privacy.${s}.body` as MessageKey)}</p>
           </section>
         ))}
+        <ul className="space-y-1 font-medium">
+          <li><ExternalLink href={PRIVACY_URL} className="underline underline-offset-4">{t('privacy.policyLink')}</ExternalLink></li>
+          <li><ExternalLink href={TERMS_URL} className="underline underline-offset-4">{t('privacy.termsLink')}</ExternalLink></li>
+          <li><ExternalLink href={DELETE_ACCOUNT_URL} className="underline underline-offset-4">{t('privacy.deleteLink')}</ExternalLink></li>
+        </ul>
         <p className="text-muted">{t('privacy.contact')} <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4">{CONTACT_EMAIL}</a></p>
       </Page>
     </>
