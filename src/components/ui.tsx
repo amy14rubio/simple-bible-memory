@@ -185,8 +185,10 @@ export function GrowingTextarea({ className = '', value, ...props }: TextareaHTM
  * Built on real radio buttons, invisible and stretched across each row, so a tap anywhere on the row is a tap on the
  * real control, and keyboards and screen readers get the proper radio-group behaviour.
  */
-export function CheckList<T extends string>({ label, name, value, options, onChange }: {
+export function CheckList<T extends string>({ label, name, value, options, onChange, onSelect }: {
   label: string; name: string; value: T; onChange: (v: T) => void;
+  /** Called whenever an option is pressed, even the one already chosen (onChange only fires for a different one). */
+  onSelect?: (v: T) => void;
   options: { value: T; label: string; /** drawn before the label, e.g. a colour dot */ leading?: ReactNode }[];
 }) {
   return (
@@ -196,7 +198,7 @@ export function CheckList<T extends string>({ label, name, value, options, onCha
           key={o.value}
           className="relative flex min-h-14 cursor-pointer items-center gap-3 border-b border-border px-1 hover:bg-surface has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-inset has-[:focus-visible]:ring-ring"
         >
-          <input type="radio" name={name} value={o.value} checked={value === o.value} onChange={() => onChange(o.value)} className="peer absolute inset-0 size-full cursor-pointer opacity-0" />
+          <input type="radio" name={name} value={o.value} checked={value === o.value} onChange={() => onChange(o.value)} onClick={() => onSelect?.(o.value)} className="peer absolute inset-0 size-full cursor-pointer opacity-0" />
           {o.leading}
           <span className="min-w-0 flex-1 text-[1.0625rem] font-medium">{o.label}</span>
           <Check size={20} aria-hidden className="shrink-0 opacity-0 peer-checked:opacity-100" />

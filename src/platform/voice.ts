@@ -9,6 +9,9 @@ import { Capacitor } from '@capacitor/core';
  */
 export interface VoiceInfo { name: string; lang: string; isDefault: boolean }
 
+/** Some phones list the same voice several times (same name). They cannot be told apart, so only the first of each is kept. */
+export const uniqueByName = (voices: VoiceInfo[]): VoiceInfo[] => voices.filter((v, i) => voices.findIndex((w) => w.name === v.name) === i);
+
 /** The voice chosen for each language is remembered on this device (voices differ from phone to phone, so it is not synced). */
 const voiceKey = (lang: string) => `speak_voice_${lang.slice(0, 2).toLowerCase()}`;
 export const chosenVoice = (lang: string): string | undefined => { try { return localStorage.getItem(voiceKey(lang)) ?? undefined; } catch { return undefined; } };
@@ -59,7 +62,7 @@ function nativeVoice(): Voice {
   let all: Promise<VoiceInfo[]> | undefined;
   const list = () => (all ??= ttsPlugin().then(({ plugin }) => plugin.getSupportedVoices()).then((r) => r.voices.map((x) => ({ name: x.name, lang: x.lang, isDefault: x.default }))).catch(() => []));
   return {
-    async voices(lang) { return (await list()).filter((x) => x.lang.replace('_', '-').toLowerCase().startsWith(lang.slice(0, 2).toLowerCase())); },
+    async voices(lang) { return uniqueByName((await list()).filter((x) => x.lang.replace('_', '-').toLowerCase().startsWith(lang.slice(0, 2).toLowerCase()))); },
     async support() {
       const { plugin } = await speechPlugin();
       return { speak: true, listen: (await plugin.available().catch(() => ({ available: false }))).available };
@@ -145,7 +148,7 @@ function browserVoice(): Voice {
   let current: BrowserRecognition | null = null;
   const installed = (): VoiceInfo[] => ('speechSynthesis' in window ? window.speechSynthesis.getVoices() : []).map((x) => ({ name: x.name, lang: x.lang, isDefault: x.default }));
   return {
-    async voices(lang) { return installed().filter((x) => x.lang.replace('_', '-').toLowerCase().startsWith(lang.slice(0, 2).toLowerCase())); },
+    async voices(lang) { return uniqueByName(installed().filter((x) => x.lang.replace('_', '-').toLowerCase().startsWith(lang.slice(0, 2).toLowerCase()))); },
     async support() {
       return { speak: typeof window !== 'undefined' && 'speechSynthesis' in window, listen: !!recognitionCtor() };
     },

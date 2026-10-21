@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { isDone, normalize, parseCommand, parseRating } from './commands';
 import { spokenReference } from './reference';
+import { uniqueByName } from '../../platform/voice';
 import { SpeakRunner, type Phase, type RunnerOptions, type SpeakScript } from './runner';
 
 describe('how a reference is said', () => {
@@ -122,6 +123,13 @@ function setup(heard: string[][], options: Partial<RunnerOptions> = {}, during: 
   return { voice, runner, spoken, phases, say: () => spoken.map((s) => s.text), holdNextSpeech: () => { hold = true; }, rate: () => rate, remaining: () => queue.length };
 }
 const card = { reference: 'Philippians 4:6-7', verseText: 'Be careful for nothing.', kind: 'recall' as const };
+
+describe('the list of voices', () => {
+  it('keeps each voice once, even when the phone lists it several times', () => {
+    const v = (name: string, lang = 'es-ES') => ({ name, lang, isDefault: false });
+    expect(uniqueByName([v('a'), v('a'), v('b'), v('a', 'es-US')]).map((x) => x.name)).toEqual(['a', 'b']);
+  });
+});
 
 describe('one card, hands free', () => {
   it('a tap still works when the recogniser never reports back after being stopped', async () => {
