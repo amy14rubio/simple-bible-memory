@@ -208,7 +208,7 @@ test.describe('the app in Spanish', () => {
     await expect(page.getByRole('link', { name: 'Añadir tarjeta' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Ver tarjetas' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Práctica extra', exact: true })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Renombrar baraja' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Editar baraja' })).toBeVisible();
     await page.getByRole('button', { name: 'Eliminar baraja' }).click();
     await expect(page.getByRole('dialog')).toContainText('se eliminarán de forma permanente');
     await page.getByRole('dialog').getByRole('button', { name: 'Cancelar' }).dispatchEvent('click');
