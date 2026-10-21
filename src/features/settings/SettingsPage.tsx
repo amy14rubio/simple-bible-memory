@@ -107,6 +107,10 @@ export function SettingsPage() {
               <ChevronRight size={20} aria-hidden />
             </span>
           </Link>
+          <Link to="/settings/voice" className={`${row} hover:bg-surface`}>
+            <span>{t('settings.voice')}</span>
+            <ChevronRight size={20} aria-hidden className="text-muted" />
+          </Link>
           <div className={row}>
             <span id="encouragement-label" className="sr-only">{t('settings.encouragement')}</span>
             <InfoLabel title={t('settings.encouragement')} info={t('settings.encouragementHint')} />

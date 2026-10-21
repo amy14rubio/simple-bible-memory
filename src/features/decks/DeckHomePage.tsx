@@ -112,10 +112,10 @@ function StudyTiles({ id, practice = false }: { id: string; practice?: boolean }
         </li>
       ))}
       <li>
-        <div className={`${tile} border-dashed border-border text-muted`}>
-          <Mic size={22} aria-hidden />
-          <span><span className="block font-serif text-lg">{t('mode.speak')}</span><span className="text-sm">{t('mode.speakHint')}</span></span>
-        </div>
+        <Link to={`/decks/${id}/study/speak${practice ? '?practice=1' : ''}`} className={`${tile} border-border bg-background hover:bg-surface`}>
+          <Mic size={22} aria-hidden className="text-muted" />
+          <span><span className="block font-serif text-lg">{t('mode.speak')}</span><span className="text-sm text-muted">{t('mode.speakHint')}</span></span>
+        </Link>
       </li>
     </ul>
   );

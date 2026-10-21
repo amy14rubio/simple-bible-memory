@@ -19,6 +19,7 @@ import { LanguagePage } from './features/settings/LanguagePage';
 import { FontPage } from './features/settings/FontPage';
 import { CardKindsPage } from './features/settings/CardKindsPage';
 import { BlanksPage } from './features/settings/BlanksPage';
+import { VoicePage } from './features/settings/VoicePage';
 import { PrivacyPage } from './features/settings/PrivacyPage';
 import { OnboardingPage } from './features/onboarding/OnboardingPage';
 import { ImportPage } from './features/exchange/ImportPage';
@@ -78,6 +79,7 @@ export default function App() {
                     <Route path="settings/font" element={<FontPage />} />
                     <Route path="settings/card-kinds" element={<CardKindsPage />} />
                     <Route path="settings/blanks" element={<BlanksPage />} />
+                    <Route path="settings/voice" element={<VoicePage />} />
                     <Route path="settings/privacy" element={<PrivacyPage />} />
                     <Route path="welcome" element={<OnboardingPage />} />
                     <Route path="*" element={<NotFound />} />
