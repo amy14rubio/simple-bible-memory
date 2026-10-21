@@ -16,4 +16,5 @@ interface ImportMetaEnv {
   readonly VITE_FAKE_NOTIFICATIONS?: string;
   /** 'true' swaps in a stand-in for the phone's voice (browser tests only). */
   readonly VITE_FAKE_VOICE?: string;
+  readonly VITE_STABLE_ORDER?: string;
 }

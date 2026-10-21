@@ -205,13 +205,27 @@ test.describe('automatic syncing of a published deck', () => {
     await expect.poll(async () => Object.keys((await published(page))[0]!.cards).length, { timeout: 15_000 }).toBe(2);
   });
 
-  test('deleting a published deck removes its public copy', async ({ page }) => {
+  test('deleting a published deck warns that it is also unpublished, then removes its public copy', async ({ page }) => {
     const id = await publishedDeck(page);
     await openDeck(page, id);
     await page.getByRole('button', { name: 'Deck actions' }).click();
     await page.getByRole('button', { name: 'Delete deck' }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Delete deck' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText('This deck is published. Deleting it also removes it from Discover')).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Delete deck' })).toHaveCount(0); // the button says what it does instead
+    await dialog.getByRole('button', { name: 'Delete and unpublish' }).click();
     await expect.poll(async () => (await published(page)).length, { timeout: 15_000 }).toBe(0);
+  });
+
+  test('deleting a deck that is not published has no unpublish warning', async ({ page }) => {
+    const id = await createDeck(page, 'Private deck');
+    await openDeck(page, id);
+    await page.getByRole('button', { name: 'Deck actions' }).click();
+    await page.getByRole('button', { name: 'Delete deck' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText('permanently deleted')).toBeVisible();
+    await expect(dialog.getByText(/is published/)).toHaveCount(0);
+    await expect(dialog.getByRole('button', { name: 'Delete deck' })).toBeVisible();
   });
 
   test('edits made while offline are sent when the connection is back', async ({ page }) => {

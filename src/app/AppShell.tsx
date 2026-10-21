@@ -24,12 +24,12 @@ export function AppShell() {
 
   return (
     <div className="mx-auto min-h-dvh max-w-2xl sm:border-x sm:border-border">
-      <main ref={main} className={showNav ? 'pb-28' : ''}><Outlet /></main>
+      <main ref={main} className={showNav ? 'pb-[calc(8rem+var(--safe-bottom))]' : ''}><Outlet /></main>
       <AccountSwitchDialog />
 
       {showNav && (
         <>
-          <nav aria-label={t('nav.main')} className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background pb-[var(--safe-bottom)]">
+          <nav aria-label={t('nav.main')} className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background pb-[calc(0.75rem+var(--safe-bottom))]">
             <div className="mx-auto flex max-w-2xl items-center px-4">
               <NavLink to="/" end className={tab}><LibraryBig size={22} aria-hidden />{t('nav.decks')}</NavLink>
               <button

@@ -8,7 +8,7 @@ import type { Rating } from '../../domain/study/rating';
 import { useI18n } from '../../i18n/I18nProvider';
 import type { MessageKey } from '../../i18n';
 import { CardState } from '../../domain/scheduling/scheduler';
-import type { QueueEntry } from '../../data/repositories/reviewRepository';
+import { LEARN_AHEAD_MS, type QueueEntry } from '../../data/repositories/reviewRepository';
 import { FlashcardMode } from './FlashcardMode';
 import { TypeMode } from './TypeMode';
 import { BlanksMode } from './BlanksMode';
@@ -21,21 +21,14 @@ import { CardPositionProvider } from './cardPosition';
 import { RatingBanner, BANNER_MS } from './RatingBanner';
 import { encouragementDefault, pickEncouragement } from './encouragement';
 import { loadNewPerDay } from './newPerDay';
+import { promoteDue, shuffle, type SessionEntry } from './queueOrder';
 
 type Mode = 'flashcard' | 'type' | 'blanks' | 'speak';
 const MODES = ['flashcard', 'type', 'blanks', 'speak'];
 
-/** A card rated Again/Hard in learning comes due within minutes: show it again later in this session. */
-const REQUEUE_WITHIN_MS = 20 * 60_000;
+/** A card rated Again/Hard/Good in learning comes due within minutes: show it again later in this session. */
+const REQUEUE_WITHIN_MS = LEARN_AHEAD_MS;
 
-const shuffle = <T,>(items: T[]): T[] => {
-  const a = [...items];
-  for (let i = a.length - 1; i > 0; i--) {
-    const k = Math.floor(Math.random() * (i + 1));
-    [a[i], a[k]] = [a[k]!, a[i]!];
-  }
-  return a;
-};
 
 export function StudySessionPage() {
   const { t } = useI18n();
@@ -48,9 +41,10 @@ export function StudySessionPage() {
       const deckCards = await cards.listByDeck(id);
       return {
         deck: await decks.get(id),
-        queue: extraPractice
-          ? shuffle(await reviews.listForExtraPractice(id, kinds))
-          : await reviews.buildQueue(id, { newPerDay: await loadNewPerDay(settings), kinds }),
+        // Always in a random order, so a verse's two cards are not shown one after the other and the answer given away.
+        queue: shuffle(extraPractice
+          ? await reviews.listForExtraPractice(id, kinds)
+          : await reviews.buildQueue(id, { newPerDay: await loadNewPerDay(settings), kinds })),
         references: deckCards.map((c) => c.reference), // options for "which verse is this?"
         passages: deckCards.map((c) => c.verseText), // decoy words for the word bank
         difficulty: (await settings.get<Difficulty>('blank_difficulty')) ?? 'medium',
@@ -86,7 +80,7 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
   const { reviews, scheduler } = useRepositories();
   const navigate = useNavigate();
   const [started, setStarted] = useState(mode !== 'speak');
-  const [queue, setQueue] = useState(initialQueue);
+  const [queue, setQueue] = useState<SessionEntry[]>(initialQueue);
   const [index, setIndex] = useState(0);
   // Which cards were reviewed this session (a card seen twice in a learning step counts once).
   const [reviewedCards, setReviewedCards] = useState<ReadonlySet<string>>(new Set());
@@ -129,6 +123,12 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
     return c;
   }, [queue, index]);
 
+  // Moves to the next card; a card rated earlier whose time is up comes first.
+  const goOn = useCallback(() => {
+    setQueue((q) => promoteDue(q, index + 1, Date.now()));
+    setIndex((i) => i + 1);
+  }, [index]);
+
   const rate = useCallback(async (r: Rating) => {
     if (!entry || busy.current) return; // ignore double taps / key repeat while saving
     busy.current = true;
@@ -137,7 +137,7 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
       if (!extraPractice) {
         // Every regular rating is saved before we move on: if saving fails the card stays on screen so nothing is lost.
         const schedule = await reviews.record({ cardId: entry.card.id, kind: entry.kind, rating: r, mode: mode === 'speak' ? 'flashcard' : mode }); // spoken reviews count as flashcards (the saved formats know only three modes)
-        if (schedule.due - Date.now() < REQUEUE_WITHIN_MS) setQueue((q) => [...q, { card: entry.card, kind: entry.kind, schedule }]);
+        if (schedule.due - Date.now() < REQUEUE_WITHIN_MS) setQueue((q) => [...q, { card: entry.card, kind: entry.kind, schedule, again: true }]);
       }
       setReviewedCards((seen) => new Set(seen).add(`${entry.card.id}:${entry.kind}`));
       if (encouragement) {
@@ -145,14 +145,14 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
         lastMessage.current = text;
         setBanner({ id: ++bannerCount.current, rating: r, text });
       }
-      setIndex((i) => i + 1);
+      goOn();
     } catch (e) {
       setError(t('study.saveFailed', { message: describeError(e) }));
     } finally {
       busy.current = false;
     }
-  }, [entry, extraPractice, reviews, mode, t, describeError, encouragement]);
-  const skip = useCallback(() => setIndex((i) => i + 1), []);
+  }, [entry, extraPractice, reviews, mode, t, describeError, encouragement, goOn]);
+  const skip = goOn;
   const stop = useCallback(() => navigate(`/decks/${deckId}`), [navigate, deckId]);
   const bannerEl = banner && <RatingBanner key={banner.id} id={banner.id} rating={banner.rating} text={t(banner.text)} />;
 

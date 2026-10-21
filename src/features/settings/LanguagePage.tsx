@@ -17,7 +17,7 @@ export function LanguagePage() {
         title={<InfoLabel title={t('settings.language')} info={t('settings.languageHint')} />}
         back={<BackButton to="/settings" label={t('common.back')} />}
       />
-      <Page className="py-0">
+      <Page flush>
         <CheckList label={t('settings.language')} name="language" value={preference} options={options} onChange={(v) => void setPreference(v)} />
       </Page>
     </>

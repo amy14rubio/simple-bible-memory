@@ -17,7 +17,7 @@ const TONE: Record<Rating, string> = { 1: 'again', 2: 'hard', 3: 'good', 4: 'eas
  */
 export function RatingBanner({ id, rating, text }: { id: number; rating: Rating; text: string }) {
   return (
-    <div data-slot="rating-banner" data-id={id} data-rating={rating} aria-hidden="true" className="rating-banner fixed inset-x-4 bottom-[max(1rem,var(--safe-bottom))] z-50 mx-auto max-w-2xl">
+    <div data-slot="rating-banner" data-id={id} data-rating={rating} aria-hidden="true" className="rating-banner fixed inset-x-4 bottom-[calc(1rem+var(--safe-bottom))] z-50 mx-auto max-w-2xl">
       <div className="rating-banner-card flex w-full items-center gap-3 rounded-2xl bg-foreground px-5 py-4 shadow-lg" style={{ '--tone': `var(--toast-${TONE[rating]})` } as CSSProperties}>
         <CircleCheckIcon className="size-5 shrink-0" />
         <p className="text-[0.9375rem] font-medium">{text}</p>

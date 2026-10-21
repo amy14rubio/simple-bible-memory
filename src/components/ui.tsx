@@ -128,8 +128,12 @@ export function Switch({ checked, onChange, labelledBy, disabled }: { checked: b
   );
 }
 
-export function Page({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`px-5 py-6 ${className}`}>{children}</div>;
+/**
+ * The padding around a screen's content. The bottom leaves room for the phone's gesture bar (like the header does for the status
+ * bar), so the last item never sits against the edge. `flush` drops the top padding, for lists that start right under the header.
+ */
+export function Page({ children, className = '', flush = false }: { children: ReactNode; className?: string; flush?: boolean }) {
+  return <div className={`px-5 py-6 pb-[calc(2.5rem+var(--safe-bottom))] ${flush ? 'pt-0' : ''} ${className}`}>{children}</div>;
 }
 
 const fieldControl = 'w-full rounded-lg border border-border bg-surface px-3.5 py-3 text-base placeholder:text-muted';
@@ -278,13 +282,14 @@ export function Dialog({ open, onClose, title, children, closeOnBack = false, cl
   );
 }
 
-export function ConfirmDialog({ open, title, message, confirmLabel, onConfirm, onCancel }: {
-  open: boolean; title: string; message: string; confirmLabel: string; onConfirm: () => void; onCancel: () => void;
+export function ConfirmDialog({ open, title, message, warning, confirmLabel, onConfirm, onCancel }: {
+  open: boolean; title: string; message: string; /** An extra, stronger paragraph under the message (what else happens). */ warning?: string; confirmLabel: string; onConfirm: () => void; onCancel: () => void;
 }) {
   const { t } = useI18n();
   return (
     <Dialog open={open} onClose={onCancel} title={title}>
-      <p className="mb-6 text-muted">{message}</p>
+      <p className={warning ? 'mb-3 text-muted' : 'mb-6 text-muted'}>{message}</p>
+      {warning && <p className="mb-6 font-medium">{warning}</p>}
       <div className="flex justify-end gap-3">
         <Button variant="secondary" onClick={onCancel}>{t('common.cancel')}</Button>
         <Button variant="danger" onClick={onConfirm}>{confirmLabel}</Button>

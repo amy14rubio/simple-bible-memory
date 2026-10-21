@@ -37,7 +37,7 @@ export function CardKindsPage() {
         }
         back={<BackButton to="/settings" label={t('common.back')} />}
       />
-      <Page className="py-0">
+      <Page flush>
         <CheckList label={t('settings.kindsLegend')} name="card-kinds" value={kinds} options={KIND_ORDER.map((k) => ({ value: k, label: t(`kinds.${k}.title` as MessageKey) }))} onChange={change} />
       </Page>
     </>

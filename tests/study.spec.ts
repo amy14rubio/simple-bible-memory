@@ -231,3 +231,33 @@ test('regular study never mentions practice', async ({ page }) => {
   await study(page, id, 'flashcard');
   await expect(visiblePractice()).toHaveCount(0);
 });
+
+test('leaving a session early: cards still waiting (including ones rated Again) are still counted on the deck page', async ({ page }) => {
+  const id = await createDeck(page);
+  await addCard(page, id, 'John 3:16', 'First example passage.');
+  await addCard(page, id, 'Psalm 23:1', 'Second example passage.');
+  await addCard(page, id, 'Romans 8:28', 'Third example passage.');
+  await setCardKinds(page, 'Recall the passage');
+  await openDeck(page, id);
+  await expect(page.getByText('3 cards to study today.')).toBeVisible();
+
+  await study(page, id, 'flashcard');
+  await page.getByRole('button', { name: 'Show answer' }).click();
+  await page.getByRole('button', { name: /^Again/ }).click(); // comes back in a minute
+  await page.getByRole('link', { name: 'Exit study' }).click();
+
+  // two never seen, one coming back in a minute: all three are still to do, so the page must not say "all caught up"
+  await expect(page.getByText('3 cards to study today.')).toBeVisible();
+  await expect(page.getByText("You're all caught up")).toHaveCount(0);
+});
+
+test('finishing every card, with none waiting, says all caught up', async ({ page }) => {
+  const id = await createDeck(page);
+  await addCard(page, id, 'John 3:16', 'First example passage.');
+  await setCardKinds(page, 'Recall the passage');
+  await study(page, id, 'flashcard');
+  await page.getByRole('button', { name: 'Show answer' }).click();
+  await page.getByRole('button', { name: /^Easy/ }).click(); // Easy graduates the card: due in days
+  await page.getByRole('link', { name: 'Back to deck' }).click();
+  await expect(page.getByText("You're all caught up")).toBeVisible();
+});

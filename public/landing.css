@@ -1,0 +1,62 @@
+/* The landing page: the app's own look (ink on paper, one rose accent, serif for scripture) as a plain file: no build step, no scripts. */
+:root {
+  --bg: #f8f8f6; --fg: #17171a; --muted: #5e5e5a; --surface: #eeeeea; --border: #d9d8d3; --accent: #d96878; --link: #8a1f30;
+  --primary: #17171a; --primary-fg: #f8f8f6;
+  --again: #c62828; --hard: #b45309; --good: #15803d; --easy: #0369a1;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131312; --fg: #f1f0ec; --muted: #a4a29b; --surface: #1d1d1b; --border: #333330; --link: #e8909c;
+    --primary: #f1f0ec; --primary-fg: #131312;
+    --again: #f2837d; --hard: #f5a03a; --good: #5bc48a; --easy: #7cc6f2;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 1.0625rem/1.65 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.serif, h1, h2, h3 { font-family: Literata, Georgia, 'Times New Roman', serif; }
+header, main, footer { max-width: 44rem; margin: 0 auto; padding: 0 1.25rem; }
+header { padding-top: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+header img { width: 2.25rem; height: 2.25rem; }
+.brand { color: var(--fg); text-decoration: none; font-family: Literata, Georgia, serif; font-size: 1.15rem; font-weight: 600; }
+header nav { margin-left: auto; display: flex; gap: 1rem; align-items: center; font-size: 0.95rem; }
+a { color: var(--link); text-underline-offset: 3px; }
+a:focus-visible, .button:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; border-radius: 0.375rem; }
+
+.hero { text-align: center; padding: 4.5rem 0 3rem; }
+h1, h2, .lead { text-wrap: balance; }
+h1 { font-size: clamp(2rem, 6vw, 2.75rem); line-height: 1.15; letter-spacing: -0.01em; margin: 0 0 1rem; font-weight: 500; }
+.lead { color: var(--muted); font-size: 1.2rem; max-width: 30rem; margin: 0 auto 2rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; align-items: center; }
+.button { display: inline-flex; align-items: center; justify-content: center; min-height: 3rem; padding: 0 1.5rem; border-radius: 0.625rem; font-weight: 500; font-size: 0.9375rem; text-decoration: none; background: var(--primary); color: var(--primary-fg); }
+.button:hover { opacity: 0.9; }
+.button.secondary { background: transparent; color: var(--fg); border: 1px solid var(--border); }
+.button.secondary:hover { background: var(--surface); opacity: 1; }
+.soon { color: var(--muted); font-size: 0.95rem; margin: 1rem 0 0; }
+
+/* A picture of the app's flashcard, drawn with the page's own colours (decorative: hidden from screen readers). */
+.card { margin: 0 auto; max-width: 22rem; border: 1px solid var(--border); border-radius: 0.875rem; background: var(--bg); padding: 2rem 1.25rem 1.25rem; text-align: center; box-shadow: 0 1px 0 var(--border); }
+.card .ref { font-family: Literata, Georgia, serif; font-size: 1.9rem; font-weight: 500; letter-spacing: -0.01em; margin: 0.5rem 0 1.25rem; }
+.card .verse { font-family: Literata, Georgia, serif; line-height: 1.7; color: var(--muted); margin: 0 0 1.25rem; font-size: 1rem; }
+.card .rates { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+.card .rates span { border: 1px solid var(--border); border-radius: 0.625rem; padding: 0.5rem 0; font-size: 0.875rem; font-weight: 600; }
+.card .rates small { display: block; font-size: 0.7rem; font-weight: 400; color: var(--muted); }
+
+section { padding: 2.5rem 0 0.5rem; }
+h2 { font-size: 1.5rem; line-height: 1.25; font-weight: 500; margin: 0 0 1.25rem; text-align: center; }
+.steps, .grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+@media (min-width: 40rem) { .steps { grid-template-columns: repeat(3, 1fr); } .grid { grid-template-columns: repeat(2, 1fr); } }
+.steps li, .grid li { background: var(--surface); border: 1px solid var(--border); border-radius: 0.625rem; padding: 1rem 1.1rem; margin: 0; }
+.steps strong, .grid strong { display: block; font-family: Literata, Georgia, serif; font-size: 1.1rem; font-weight: 500; margin-bottom: 0.15rem; }
+.steps span, .grid span { color: var(--muted); font-size: 0.975rem; line-height: 1.5; display: block; }
+.facts { list-style: none; padding: 0; margin: 0 auto; max-width: 30rem; }
+.facts li { padding: 0.7rem 0; border-bottom: 1px solid var(--border); margin: 0; }
+.facts li:last-child { border-bottom: 0; }
+.note { color: var(--muted); font-size: 0.9rem; text-align: center; margin: 1rem auto 0; max-width: 30rem; }
+
+footer { border-top: 1px solid var(--border); margin-top: 3.5rem; padding-top: 1.25rem; padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px)); color: var(--muted); font-size: 0.95rem; text-align: center; }
+footer p { margin: 0.5rem 0; }
+footer .links a { display: inline-block; margin: 0.25rem 0.6rem; }

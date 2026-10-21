@@ -70,6 +70,9 @@ export const en = {
   'deckMenu.rename': 'Rename deck',
   'deckMenu.delete': 'Delete deck',
   'deckMenu.deleteTitle': 'Delete this deck?',
+  'deckMenu.deletePublished':
+    'This deck is published. Deleting it also removes it from Discover, so other people can no longer find or import it. Anyone who already imported a copy keeps theirs.',
+  'deckMenu.deleteAndUnpublish': 'Delete and unpublish',
   'deckMenu.deleteBody':
     '"{title}" and all of its cards will be permanently deleted, along with their review history.',
 
