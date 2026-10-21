@@ -8,7 +8,7 @@ import type { Rating } from '../../domain/study/rating';
 import { useI18n } from '../../i18n/I18nProvider';
 import type { MessageKey } from '../../i18n';
 import { CardState } from '../../domain/scheduling/scheduler';
-import type { QueueEntry } from '../../data/repositories/reviewRepository';
+import { LEARN_AHEAD_MS, type QueueEntry } from '../../data/repositories/reviewRepository';
 import { FlashcardMode } from './FlashcardMode';
 import { TypeMode } from './TypeMode';
 import { BlanksMode } from './BlanksMode';
@@ -26,8 +26,8 @@ import { promoteDue, shuffle, type SessionEntry } from './queueOrder';
 type Mode = 'flashcard' | 'type' | 'blanks' | 'speak';
 const MODES = ['flashcard', 'type', 'blanks', 'speak'];
 
-/** A card rated Again/Hard in learning comes due within minutes: show it again later in this session. */
-const REQUEUE_WITHIN_MS = 20 * 60_000;
+/** A card rated Again/Hard/Good in learning comes due within minutes: show it again later in this session. */
+const REQUEUE_WITHIN_MS = LEARN_AHEAD_MS;
 
 
 export function StudySessionPage() {

@@ -10,6 +10,12 @@ import type { Clock } from './util';
 export type StudyMode = 'flashcard' | 'type' | 'blanks';
 
 /** One study card: a verse seen in one direction, plus its schedule (null = never reviewed, i.e. new). */
+/**
+ * A card being learned (rated Again/Hard/Good a few minutes ago) counts as due if it comes up within this time, so leaving a
+ * session early does not make the deck look finished while such cards are still waiting (the same idea as Anki's "learn ahead").
+ */
+export const LEARN_AHEAD_MS = 20 * 60_000;
+
 export interface QueueEntry {
   card: Card;
   kind: CardKind;
@@ -88,9 +94,9 @@ export function createReviewRepository(db: Database, scheduler: Scheduler, now: 
     const due = (await db.query<Row>(
       `SELECT c.*, s.kind AS kind, ${SCHEDULE_COLUMNS}
          FROM cards c JOIN deck_cards dc ON dc.card_id = c.id JOIN card_schedule s ON s.card_id = c.id
-        WHERE dc.deck_id = ? AND s.due <= ? AND s.kind IN (${kinds.map(() => '?').join(', ')})
+        WHERE dc.deck_id = ? AND (s.due <= ? OR (s.state IN (1, 3) AND s.due <= ?)) AND s.kind IN (${kinds.map(() => '?').join(', ')})
         ORDER BY s.due, c.created_at`,
-      [deckId, t, ...kinds],
+      [deckId, t, t + LEARN_AHEAD_MS, ...kinds],
     )).map(toEntry);
     const fresh = (await db.query<Row>(
       `SELECT c.*, k.kind AS kind, ${SCHEDULE_COLUMNS}
