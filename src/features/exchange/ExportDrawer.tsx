@@ -53,7 +53,7 @@ export function ExportDrawer({ target, onClose }: { target: ExportTarget | null;
 
   return (
     <Drawer open={open} onOpenChange={(o) => { if (!o) onClose(); }} showSwipeHandle>
-      <DrawerContent className="mx-auto max-w-2xl pb-[var(--safe-bottom)]">
+      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]">
         <DrawerHeader className="px-6 pb-2 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
           <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{target?.ids === null ? t('export.titleAll') : t('export.title')}</DrawerTitle>
           <DrawerDescription className="sr-only">{target?.title}</DrawerDescription>

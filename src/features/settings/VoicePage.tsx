@@ -49,7 +49,7 @@ export function VoicePage() {
   return (
     <>
       <AppBar title={<InfoLabel title={t('settings.voice')} info={t('settings.voiceHint')} />} back={<BackButton to="/settings" label={t('common.back')} />} />
-      <Page className="py-0">
+      <Page flush>
         {/* Only the voices for the language the app is in (the verses are read in the deck's language, with that language's chosen voice). */}
         <VoiceChoice key={language} lang={language} />
       </Page>

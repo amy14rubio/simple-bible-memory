@@ -17,7 +17,7 @@ export function BlanksPage() {
   return (
     <>
       <AppBar title={<InfoLabel title={t('settings.blanks')} info={t('settings.blanksHint')} />} back={<BackButton to="/settings" label={t('common.back')} />} />
-      <Page className="py-0">
+      <Page flush>
         <CheckList label={t('settings.blanksGroup')} name="blank-difficulty" value={difficulty} options={DIFFICULTIES.map((d) => ({ value: d, label: t(`difficulty.${d}` as MessageKey) }))} onChange={change} />
       </Page>
     </>

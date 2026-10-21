@@ -16,7 +16,7 @@ export function CommunityRulesDrawer({ open, busy, onAgree, onClose, agreeLabel 
   usePopupHistory(open, onClose);
   return (
     <Drawer open={open} onOpenChange={(o) => { if (!o) onClose(); }} showSwipeHandle>
-      <DrawerContent className="mx-auto max-w-2xl pb-[var(--safe-bottom)]">
+      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]">
         <DrawerHeader className="px-6 pb-2 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
           <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{t('terms.title')}</DrawerTitle>
           <DrawerDescription className="text-base text-foreground">{t('terms.intro')}</DrawerDescription>
