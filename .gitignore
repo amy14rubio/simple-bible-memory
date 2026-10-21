@@ -31,6 +31,15 @@ playwright-report
 .env.*
 !.env.example
 
+# Android signing and Firebase files: never commit them (the upload key lives outside the project, in ~/keys).
+android/keystore.properties
+*.jks
+*.keystore
+*.p12
+*.pem
+google-services.json
+GoogleService-Info.plist
+
 # Firebase CLI cache
 .firebase/
 firebase-debug.log*
