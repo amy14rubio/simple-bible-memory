@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, Button, ButtonLink, EmptyState, ErrorMessage, Page } from '../../components/ui';
@@ -12,6 +12,7 @@ import type { QueueEntry } from '../../data/repositories/reviewRepository';
 import { FlashcardMode } from './FlashcardMode';
 import { TypeMode } from './TypeMode';
 import { BlanksMode } from './BlanksMode';
+import { SpeakMode, SpeakStart } from './SpeakMode';
 import { IdentifyChoice, IdentifyFlashcard, IdentifyType } from './IdentifyModes';
 import { loadCardKinds } from './cardKinds';
 import { VerseLangProvider, asLang } from './verseLang';
@@ -21,7 +22,8 @@ import { RatingBanner, BANNER_MS } from './RatingBanner';
 import { encouragementDefault, pickEncouragement } from './encouragement';
 import { loadNewPerDay } from './newPerDay';
 
-type Mode = 'flashcard' | 'type' | 'blanks';
+type Mode = 'flashcard' | 'type' | 'blanks' | 'speak';
+const MODES = ['flashcard', 'type', 'blanks', 'speak'];
 
 /** A card rated Again/Hard in learning comes due within minutes: show it again later in this session. */
 const REQUEUE_WITHIN_MS = 20 * 60_000;
@@ -61,9 +63,9 @@ export function StudySessionPage() {
   const exit = <BackButton to={`/decks/${id}`} label={t('study.exit')} />;
   if (loading || !data) return null;
   // The screen's name, for people who cannot see it: "Studying Psalms: Flashcard".
-  const heading = t('study.heading', { deck: data.deck?.title ?? '', mode: ['flashcard', 'type', 'blanks'].includes(mode) ? t(`mode.${mode}` as MessageKey) : '' });
+  const heading = t('study.heading', { deck: data.deck?.title ?? '', mode: MODES.includes(mode) ? t(`mode.${mode}` as MessageKey) : '' });
   if (!data.deck) return <><AppBar back={exit} title={t('study.exit')} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;
-  if (!['flashcard', 'type', 'blanks'].includes(mode)) return <><AppBar back={exit} title={t('study.exit')} /><Page><ErrorMessage error={t('error.unknownMode')} /></Page></>;
+  if (!MODES.includes(mode)) return <><AppBar back={exit} title={t('study.exit')} /><Page><ErrorMessage error={t('error.unknownMode')} /></Page></>;
   if (data.queue.length === 0) {
     return (
       <>
@@ -82,6 +84,8 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
 }) {
   const { t, formatInterval, formatIntervalSpoken, describeError } = useI18n();
   const { reviews, scheduler } = useRepositories();
+  const navigate = useNavigate();
+  const [started, setStarted] = useState(mode !== 'speak');
   const [queue, setQueue] = useState(initialQueue);
   const [index, setIndex] = useState(0);
   // Which cards were reviewed this session (a card seen twice in a learning step counts once).
@@ -132,7 +136,7 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
     try {
       if (!extraPractice) {
         // Every regular rating is saved before we move on: if saving fails the card stays on screen so nothing is lost.
-        const schedule = await reviews.record({ cardId: entry.card.id, kind: entry.kind, rating: r, mode });
+        const schedule = await reviews.record({ cardId: entry.card.id, kind: entry.kind, rating: r, mode: mode === 'speak' ? 'flashcard' : mode }); // spoken reviews count as flashcards (the saved formats know only three modes)
         if (schedule.due - Date.now() < REQUEUE_WITHIN_MS) setQueue((q) => [...q, { card: entry.card, kind: entry.kind, schedule }]);
       }
       setReviewedCards((seen) => new Set(seen).add(`${entry.card.id}:${entry.kind}`));
@@ -148,6 +152,8 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
       busy.current = false;
     }
   }, [entry, extraPractice, reviews, mode, t, describeError, encouragement]);
+  const skip = useCallback(() => setIndex((i) => i + 1), []);
+  const stop = useCallback(() => navigate(`/decks/${deckId}`), [navigate, deckId]);
   const bannerEl = banner && <RatingBanner key={banner.id} id={banner.id} rating={banner.rating} text={t(banner.text)} />;
 
   const exit = <BackButton to={`/decks/${deckId}`} label={t('study.exit')} />;
@@ -196,7 +202,9 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
           {counter('review', t('study.counterReview'))}
         </ul>
         {error && <div className="pt-3"><ErrorMessage error={error} /></div>}
-        {entry.kind === 'recall' ? (
+        {mode === 'speak' ? (
+          started ? <SpeakMode key={index} card={entry.card} kind={entry.kind} intervals={intervals} onRate={rate} onSkip={skip} onStop={stop} /> : <SpeakStart onStart={() => setStarted(true)} />
+        ) : entry.kind === 'recall' ? (
           <>
             {mode === 'flashcard' && <FlashcardMode key={index} card={entry.card} intervals={intervals} onRate={rate} />}
             {mode === 'type' && <TypeMode key={index} card={entry.card} intervals={intervals} onRate={rate} />}

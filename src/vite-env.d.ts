@@ -14,4 +14,6 @@ interface ImportMetaEnv {
   readonly VITE_SHARING_BACKEND?: string;
   /** 'true' swaps in a stand-in for phone notifications (browser tests only). */
   readonly VITE_FAKE_NOTIFICATIONS?: string;
+  /** 'true' swaps in a stand-in for the phone's voice (browser tests only). */
+  readonly VITE_FAKE_VOICE?: string;
 }

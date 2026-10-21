@@ -15,8 +15,7 @@ test('open deck view shows the study tiles and only the number of cards due', as
   await addCard(page, id, 'Example 1:1', 'Example text.');
   await openDeck(page, id);
   for (const name of ['Flashcard', 'Type', 'Blanks']) await expect(page.getByRole('link', { name })).toBeVisible();
-  await expect(page.getByText('Speak')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Speak' })).toHaveCount(0); // not available yet, so not a link
+  await expect(page.getByRole('link', { name: 'Speak' })).toBeVisible();
   await expect(page.getByText('2 cards to study today.')).toBeVisible(); // one verse, two study cards
   // none of the detailed counts are on this screen (they live in Statistics)
   await expect(page.getByText(/^(New|Young|Learning|Mature|Total cards)$/)).toHaveCount(0);
