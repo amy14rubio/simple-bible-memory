@@ -278,6 +278,8 @@ export const es: Dictionary = {
   'onboarding.schedule.title': 'Programación inteligente',
   'onboarding.schedule.body':
     'Califica cada tarjeta. FSRS, un método de repetición espaciada, la trae de vuelta justo antes de que la olvides.',
+  'starter.title': '¡Primera baraja!',
+  'starter.description': 'Si eres nuevo en la app, ¡empieza aquí!',
   'onboarding.starter.title': 'Prueba la baraja inicial',
   'onboarding.starter.body':
     'Ábrela desde la pantalla de inicio y empieza a practicar tus primeros versículos.',

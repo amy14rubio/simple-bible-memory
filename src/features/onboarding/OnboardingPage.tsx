@@ -4,6 +4,7 @@ import { Button } from '../../components/ui';
 import { useRepositories } from '../../app/repositories';
 import { useI18n } from '../../i18n/I18nProvider';
 import { ONBOARDING_CARDS, ONBOARDING_DONE } from './onboarding';
+import { addStarterDeck } from './starterDeck';
 
 const SWIPE_PX = 50;
 
@@ -13,9 +14,9 @@ const SWIPE_PX = 50;
  * It is shown once to someone new, and can be opened again from Settings.
  */
 export function OnboardingPage() {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const navigate = useNavigate();
-  const { settings } = useRepositories();
+  const { settings, decks, cards } = useRepositories();
   const [step, setStep] = useState(0);
   const heading = useRef<HTMLHeadingElement>(null);
   const swipeFrom = useRef<number | null>(null);
@@ -25,8 +26,12 @@ export function OnboardingPage() {
   const card = ONBOARDING_CARDS[step]!;
   const Icon = card.icon;
 
-  const finish = () => {
-    void settings.set(ONBOARDING_DONE, true);
+  const finish = async () => {
+    // The first time through (not when it is opened again from Settings), someone with no decks gets the starter deck, in the
+    // language the app is in. If anything goes wrong they still get to the home screen: the tour never gets in the way.
+    const first = !(await settings.get<boolean>(ONBOARDING_DONE));
+    await settings.set(ONBOARDING_DONE, true);
+    if (first && (await decks.list()).length === 0) await addStarterDeck({ decks, cards, settings }, language).catch(() => undefined);
     navigate('/', { replace: true });
   };
   const go = (to: number) => setStep(Math.min(Math.max(to, 0), ONBOARDING_CARDS.length - 1));
