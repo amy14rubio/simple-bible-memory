@@ -129,7 +129,11 @@ export function SpeakMode({ card, kind, intervals, onRate, onSkip, onStop }: {
           <span aria-hidden className={`flex size-16 items-center justify-center rounded-full border border-border ${listening ? 'bg-surface motion-safe:animate-pulse' : ''}`}>
             {listening ? <Mic size={28} /> : <Volume2 size={28} className="text-muted" />}
           </span>
-          <p role="status" aria-live="polite" className="text-lg font-medium">{failed ? t('speak.failed') : t(statusKey)}</p>
+          {/* One live region, so a screen reader announces "Listening… Say done when finished" together. */}
+          <div role="status" aria-live="polite" className="flex flex-col items-center gap-1">
+            <p className="text-lg font-medium">{failed ? t('speak.failed') : t(statusKey)}</p>
+            {phase === 'listening' && !failed && <p className="text-base text-muted">{t('speak.status.listeningHint')}</p>}
+          </div>
           {heard && <p className="max-w-xs truncate text-sm text-muted">{t('speak.heard', { text: heard })}</p>}
         </div>
       </div>
