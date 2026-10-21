@@ -42,4 +42,8 @@
     <!-- The reminders plugin adds this, but reminders use inexact alarms (a few minutes late is fine), so it is not needed, and Google Play
          asks for a declaration whenever an app asks for it. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" tools:node="remove" />
+
+    <!-- Speak mode uses the microphone, but the app works fully without one (reading aloud and the buttons still work). Without this line
+         Google Play treats the microphone permission as "a microphone is required" and hides the app from devices that have none. -->
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
 </manifest>
