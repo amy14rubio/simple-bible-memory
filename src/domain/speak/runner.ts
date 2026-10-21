@@ -63,6 +63,8 @@ export class SpeakRunner {
   private waiter: ((e: TapEvent) => void) | null = null;
   private buffered: TapEvent | null = null;
   private stopped = false;
+  /** The verse being studied, normalised: words the person says that are simply part of it must never be taken for a command. */
+  private verseNorm = '';
   /** Ends the listening that runs alongside speech (see sayListening) as soon as the speech is over or a tap arrives. */
   private gate: { over: boolean; cancelled: boolean } | null = null;
   private readonly o: RunnerOptions;
@@ -98,6 +100,12 @@ export class SpeakRunner {
     } finally {
       this.waiter = null;
     }
+  }
+
+  /** Is this (two words or more) just a piece of the verse itself? */
+  private partOfVerse(heard: string) {
+    const n = normalize(heard);
+    return n.includes(' ') && this.verseNorm.includes(` ${n} `);
   }
 
   /** Gives stopped voice work a moment to finish, but never waits on it for good (a stopped recogniser may never report back). */
@@ -201,6 +209,7 @@ export class SpeakRunner {
     const { uiLang, verseLang } = this.o;
     const ref = spokenReference(card.reference, verseLang);
     const recall = card.kind === 'recall';
+    this.verseNorm = ` ${normalize(card.verseText)} `;
 
     // 1. the prompt: just the reference (or the passage), with no instructions
     this.phase('prompt');
@@ -243,7 +252,9 @@ export class SpeakRunner {
       const heard = r.value;
       if (heard.length === 0) { await this.sleep(100); continue; }
       this.o.onHeard?.(heard[0]!);
-      if (isDone(heard, this.o.uiLang) || isDone(heard, this.o.verseLang)) return null;
+      // Said inside the verse ("well done, good and faithful servant", "thy will be done"), "done" is not a command.
+      const own = heard.filter((h) => !this.partOfVerse(h));
+      if (isDone(own, this.o.uiLang) || isDone(own, this.o.verseLang)) return null;
       const strict = parseCommand(heard, this.o.uiLang, false, ['skip', 'stop']);
       if (strict === 'skip') return { kind: 'skip' };
       if (strict === 'stop') return { kind: 'stop' };

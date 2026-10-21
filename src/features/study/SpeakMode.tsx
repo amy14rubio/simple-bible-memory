@@ -12,6 +12,7 @@ import { ActionBar, RatingBar } from './RatingBar';
 import { useVerseLang } from './verseLang';
 import { CardPrompt } from './cardPosition';
 
+const COMMANDS = ['done', 'rate', 'repeat', 'skip', 'stop', 'speed'] as const;
 const DEFAULT_RATE = 0.95;
 const asSpeakLang = (code: string | undefined, fallback: SpeakLanguage): SpeakLanguage => (code?.toLowerCase().startsWith('es') ? 'es' : code?.toLowerCase().startsWith('en') ? 'en' : fallback);
 
@@ -39,9 +40,15 @@ export function SpeakStart({ onStart }: { onStart: () => void }) {
     <div className="flex flex-1 flex-col items-center justify-center gap-6 py-8 text-center">
       <Mic size={40} aria-hidden className="text-muted" />
       <h1 className="font-serif text-3xl font-medium tracking-tight">{t('speak.title')}</h1>
-      <p className="max-w-sm text-muted">{t('speak.intro')}</p>
-      <p className="max-w-sm text-sm text-muted">{t('speak.commands')}</p>
-      <p className="max-w-sm text-sm font-medium">{t('speak.safety')}</p>
+      {/* What to say, in the words the app listens for. */}
+      <dl className="w-full max-w-sm divide-y divide-border rounded-lg border border-border text-left">
+        {COMMANDS.map((c) => (
+          <div key={c} className="flex flex-col gap-0.5 px-4 py-2.5">
+            <dt className="font-medium">{t(`speak.word.${c}` as MessageKey)}</dt>
+            <dd className="text-sm text-muted">{t(`speak.cmd.${c}` as MessageKey)}</dd>
+          </div>
+        ))}
+      </dl>
       {problem && <ErrorMessage error={problem} />}
       <Button className="w-full max-w-xs" onClick={start} disabled={busy} autoFocus>{t('speak.start')}</Button>
     </div>

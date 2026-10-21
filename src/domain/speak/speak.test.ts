@@ -122,6 +122,14 @@ function setup(heard: string[][], options: Partial<RunnerOptions> = {}, during: 
 }
 const card = { reference: 'Philippians 4:6-7', verseText: 'Be careful for nothing.', kind: 'recall' as const };
 
+describe('references across chapters', () => {
+  it('say both chapters', () => {
+    expect(spokenReference('John 3:16-4:2', 'en')).toBe('John 3, verse 16 to chapter 4, verse 2');
+    expect(spokenReference('1 Kings 8:60-9:3', 'en')).toBe('First Kings 8, verse 60 to chapter 9, verse 3');
+    expect(spokenReference('Juan 3:16-4:2', 'es')).toBe('Juan 3, versículo 16 al capítulo 4, versículo 2');
+  });
+});
+
 describe('the list of voices', () => {
   it('keeps each voice once, even when the phone lists it several times', () => {
     const v = (name: string, lang = 'es-ES') => ({ name, lang, isDefault: false });
@@ -167,6 +175,40 @@ describe('one card, hands free', () => {
     const verse = setup([['thy will be done in earth'], ['as it is in heaven'], ['done'], ['good']]);
     expect(await verse.runner.run(card)).toEqual({ kind: 'rated', rating: 3 });
     expect(verse.remaining()).toBe(0);
+  });
+
+  describe('a verse that contains the finish word', () => {
+    it('does not end the answer when a pause falls right after "done" in the verse', async () => {
+      const t = setup([['well done'], ['good and faithful servant'], ['done'], ['good']]);
+      expect(await t.runner.run({ reference: 'Matthew 25:21', verseText: 'Well done, good and faithful servant.', kind: 'recall' })).toEqual({ kind: 'rated', rating: 3 });
+      expect(t.remaining()).toBe(0); // all four turns were listened to: the first "well done" did not end it
+    });
+
+    it('does not end the answer on "thy will be done", but still ends on "done" said after it', async () => {
+      const verse = 'Thy will be done in earth, as it is in heaven.';
+      const t = setup([['thy will be done'], ['in earth as it is in heaven'], ['done'], ['easy']]);
+      expect(await t.runner.run({ reference: 'Matthew 6:10', verseText: verse, kind: 'recall' })).toEqual({ kind: 'rated', rating: 4 });
+      expect(t.remaining()).toBe(0);
+      const same = setup([['thy will be done done'], ['easy']]);
+      expect(await same.runner.run({ reference: 'Matthew 6:10', verseText: verse, kind: 'recall' })).toEqual({ kind: 'rated', rating: 4 });
+    });
+
+    it('a lone "done" always ends the answer, even if the verse contains the word', async () => {
+      const t = setup([['done'], ['good']]);
+      expect(await t.runner.run({ reference: 'Matthew 6:10', verseText: 'Thy will be done.', kind: 'recall' })).toEqual({ kind: 'rated', rating: 3 });
+    });
+
+    it('works the same in Spanish ("listos" inside the verse)', async () => {
+      const t = setup([['estad listos'], ['porque no sabéis'], ['listo'], ['bien']], { uiLang: 'es', verseLang: 'es' });
+      expect(await t.runner.run({ reference: 'Mateo 24:44', verseText: 'Estad listos, porque no sabéis el día ni la hora.', kind: 'recall' })).toEqual({ kind: 'rated', rating: 3 });
+      expect(t.remaining()).toBe(0);
+    });
+
+    it('ignores accents and punctuation when comparing with the verse', async () => {
+      const t = setup([['bien hecho'], ['siervo bueno y fiel'], ['listo'], ['bien']], { uiLang: 'es', verseLang: 'es' });
+      expect(await t.runner.run({ reference: 'Mateo 25:21', verseText: '¡Bien hecho, siervo bueno y fiel!', kind: 'recall' })).toEqual({ kind: 'rated', rating: 3 });
+      expect(t.remaining()).toBe(0);
+    });
   });
 
   it('never asks for the verse again, even if nothing at all was heard', async () => {
