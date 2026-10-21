@@ -1,0 +1,76 @@
+{
+  "app": "simple-bible-memory",
+  "format": 1,
+  "exportedAt": "2026-10-21T13:56:45.304Z",
+  "includesProgress": false,
+  "decks": [
+    {
+      "title": "Fe y confianza en Dios",
+      "description": "Una colección de pasajes bíblicos sobre la fe y la confianza en Dios, para el estudio personal y la memorización. Reina-Valera 1909.",
+      "bibleLanguage": "es",
+      "translationCode": "RV1909",
+      "cards": [
+        {
+          "reference": "Nahúm 1:7",
+          "verseText": "Bueno es Jehová para fortaleza en el día de la angustia; y conoce á los que en él confían.",
+          "note": null
+        },
+        {
+          "reference": "Jeremías 17:7-8",
+          "verseText": "Bendito el varón que se fía en Jehová, y cuya confianza es Jehová. Porque él será como el árbol plantado junto á las aguas, que junto á la corriente echará sus raices, y no verá cuando viniere el calor, sino que su hoja estará verde; y en el año de sequía no se fatigará, ni dejará de hacer fruto.",
+          "note": null
+        },
+        {
+          "reference": "1 Crónicas 16:11",
+          "verseText": "Buscad á Jehová y su fortaleza; buscad su rostro continuamente.",
+          "note": null
+        },
+        {
+          "reference": "Proverbios 3:5-6",
+          "verseText": "Fíate de Jehová de todo tu corazón, y no estribes en tu prudencia. Reconócelo en todos tus caminos, y él enderezará tus veredas.",
+          "note": null
+        },
+        {
+          "reference": "Isaías 12:2",
+          "verseText": "He aquí Dios es salud mía; aseguraréme, y no temeré; porque mi fortaleza y mi canción es JAH Jehová, el cual ha sido salud para mí.",
+          "note": null
+        },
+        {
+          "reference": "Marcos 11:23",
+          "verseText": "Porque de cierto os digo que cualquiera que dijere á este monte: Quítate, y échate en la mar, y no dudare en su corazón, mas creyere que será hecho lo que dice, lo que dijere le será hecho.",
+          "note": null
+        },
+        {
+          "reference": "Josué 1:9",
+          "verseText": "Mira que te mando que te esfuerces y seas valiente: no temas ni desmayes, porque Jehová tu Dios será contigo en donde quiera que fueres.",
+          "note": null
+        },
+        {
+          "reference": "Proverbios 16:3",
+          "verseText": "Encomienda á Jehová tus obras, y tus pensamientos serán afirmados.",
+          "note": null
+        },
+        {
+          "reference": "Salmos 9:10",
+          "verseText": "Y en ti confiarán los que conocen tu nombre; por cuanto tú, oh Jehová, no desamparaste á los que te buscaron.",
+          "note": null
+        },
+        {
+          "reference": "Salmos 73:26",
+          "verseText": "Mi carne y mi corazón desfallecen: mas la roca de mi corazón y mi porción es Dios para siempre.",
+          "note": null
+        },
+        {
+          "reference": "Romanos 10:17",
+          "verseText": "Luego la fe es por el oir; y el oir por la palabra de Dios.",
+          "note": null
+        },
+        {
+          "reference": "2 Corintios 5:7",
+          "verseText": "(Porque por fe andamos, no por vista;)",
+          "note": null
+        }
+      ]
+    }
+  ]
+}

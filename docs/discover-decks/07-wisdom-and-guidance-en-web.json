@@ -1,0 +1,76 @@
+{
+  "app": "simple-bible-memory",
+  "format": 1,
+  "exportedAt": "2026-10-21T13:56:45.304Z",
+  "includesProgress": false,
+  "decks": [
+    {
+      "title": "Wisdom & Guidance",
+      "description": "A collection of Bible passages about wisdom and guidance, for personal study and memorization. World English Bible.",
+      "bibleLanguage": "en",
+      "translationCode": "WEB",
+      "cards": [
+        {
+          "reference": "James 1:5",
+          "verseText": "But if any of you lacks wisdom, let him ask of God, who gives to all liberally and without reproach, and it will be given to him.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 32:8",
+          "verseText": "I will instruct you and teach you in the way which you shall go. I will counsel you with my eye on you.",
+          "note": null
+        },
+        {
+          "reference": "Proverbs 2:6-7",
+          "verseText": "For the LORD gives wisdom. Out of his mouth comes knowledge and understanding. He lays up sound wisdom for the upright. He is a shield to those who walk in integrity,",
+          "note": null
+        },
+        {
+          "reference": "Psalm 25:4-5",
+          "verseText": "Show me your ways, LORD. Teach me your paths. Guide me in your truth, and teach me, for you are the God of my salvation. I wait for you all day long.",
+          "note": null
+        },
+        {
+          "reference": "Proverbs 19:20-21",
+          "verseText": "Listen to counsel and receive instruction, that you may be wise in your latter end. There are many plans in a man’s heart, but the LORD’s counsel will prevail.",
+          "note": null
+        },
+        {
+          "reference": "Proverbs 22:17-19",
+          "verseText": "Turn your ear, and listen to the words of the wise. Apply your heart to my teaching. For it is a pleasant thing if you keep them within you, if all of them are ready on your lips. I teach you today, even you, so that your trust may be in the LORD.",
+          "note": null
+        },
+        {
+          "reference": "Proverbs 4:7",
+          "verseText": "Wisdom is supreme. Get wisdom. Yes, though it costs all your possessions, get understanding.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 119:105",
+          "verseText": "Your word is a lamp to my feet, and a light for my path.",
+          "note": null
+        },
+        {
+          "reference": "Proverbs 11:14",
+          "verseText": "Where there is no wise guidance, the nation falls, but in the multitude of counselors there is victory.",
+          "note": null
+        },
+        {
+          "reference": "Proverbs 13:20",
+          "verseText": "One who walks with wise men grows wise, but a companion of fools suffers harm.",
+          "note": null
+        },
+        {
+          "reference": "Micah 6:8",
+          "verseText": "He has shown you, O man, what is good. What does the LORD require of you, but to act justly, to love mercy, and to walk humbly with your God?",
+          "note": null
+        },
+        {
+          "reference": "Proverbs 14:15",
+          "verseText": "A simple man believes everything, but the prudent man carefully considers his ways.",
+          "note": null
+        }
+      ]
+    }
+  ]
+}

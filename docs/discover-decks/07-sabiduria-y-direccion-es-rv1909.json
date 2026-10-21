@@ -1,0 +1,76 @@
+{
+  "app": "simple-bible-memory",
+  "format": 1,
+  "exportedAt": "2026-10-21T13:56:45.304Z",
+  "includesProgress": false,
+  "decks": [
+    {
+      "title": "Sabiduría y dirección",
+      "description": "Una colección de pasajes bíblicos sobre la sabiduría y la dirección, para el estudio personal y la memorización. Reina-Valera 1909.",
+      "bibleLanguage": "es",
+      "translationCode": "RV1909",
+      "cards": [
+        {
+          "reference": "Santiago 1:5",
+          "verseText": "Y si alguno de vosotros tiene falta de sabiduría, demándela á Dios, el cual da á todos abundantemente, y no zahiere; y le será dada.",
+          "note": null
+        },
+        {
+          "reference": "Salmos 32:8",
+          "verseText": "Te haré entender, y te enseñaré el camino en que debes andar: sobre ti fijaré mis ojos.",
+          "note": null
+        },
+        {
+          "reference": "Proverbios 2:6-7",
+          "verseText": "Porque Jehová da la sabiduría, y de su boca viene el conocimiento y la inteligencia. El provee de sólida sabiduría á los rectos: es escudo á los que caminan rectamente.",
+          "note": null
+        },
+        {
+          "reference": "Salmos 25:4-5",
+          "verseText": "Muéstrame, oh Jehová, tus caminos; enséñame tus sendas. Encamíname en tu verdad, y enséñame; porque tú eres el Dios de mi salud: en ti he esperado todo el día.",
+          "note": null
+        },
+        {
+          "reference": "Proverbios 19:20-21",
+          "verseText": "Escucha el consejo, y recibe la corrección, para que seas sabio en tu vejez. Muchos pensamientos hay en el corazón del hombre; mas el consejo de Jehová permanecerá.",
+          "note": null
+        },
+        {
+          "reference": "Proverbios 22:17-19",
+          "verseText": "Inclina tu oído, y oye las palabras de los sabios, y pon tu corazón á mi sabiduría: Porque es cosa deleitable, si las guardares en tus entrañas; y que juntamente sean ordenadas en tus labios. Para que tu confianza sea en Jehová, te las he hecho saber hoy á ti también.",
+          "note": null
+        },
+        {
+          "reference": "Proverbios 4:7",
+          "verseText": "Sabiduría ante todo: adquiere sabiduría: y ante toda tu posesión adquiere inteligencia.",
+          "note": null
+        },
+        {
+          "reference": "Salmos 119:105",
+          "verseText": "Lámpara es á mis pies tu palabra, y lumbrera á mi camino.",
+          "note": null
+        },
+        {
+          "reference": "Proverbios 11:14",
+          "verseText": "Cuando faltaren las industrias, caerá el pueblo: mas en la multitud de consejeros hay salud.",
+          "note": null
+        },
+        {
+          "reference": "Proverbios 13:20",
+          "verseText": "El que anda con los sabios, sabio será; mas el que se allega á los necios, será quebrantado.",
+          "note": null
+        },
+        {
+          "reference": "Miqueas 6:8",
+          "verseText": "Oh hombre, él te ha declarado qué sea lo bueno, y qué pida de ti Jehová: solamente hacer juicio, y amar misericordia, y humillarte para andar con tu Dios.",
+          "note": null
+        },
+        {
+          "reference": "Proverbios 14:15",
+          "verseText": "El simple cree á toda palabra: mas el avisado entiende sus pasos.",
+          "note": null
+        }
+      ]
+    }
+  ]
+}

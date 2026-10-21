@@ -1,0 +1,76 @@
+{
+  "app": "simple-bible-memory",
+  "format": 1,
+  "exportedAt": "2026-10-21T13:56:45.304Z",
+  "includesProgress": false,
+  "decks": [
+    {
+      "title": "Faith & Trust in God",
+      "description": "A collection of Bible passages about faith and trust in God, for personal study and memorization. World English Bible.",
+      "bibleLanguage": "en",
+      "translationCode": "WEB",
+      "cards": [
+        {
+          "reference": "Nahum 1:7",
+          "verseText": "The LORD is good, a stronghold in the day of trouble; and he knows those who take refuge in him.",
+          "note": null
+        },
+        {
+          "reference": "Jeremiah 17:7-8",
+          "verseText": "“Blessed is the man who trusts in the LORD, and whose confidence is in the LORD. For he will be as a tree planted by the waters, who spreads out its roots by the river, and will not fear when heat comes, but its leaf will be green, and will not be concerned in the year of drought. It won’t cease from yielding fruit.",
+          "note": null
+        },
+        {
+          "reference": "1 Chronicles 16:11",
+          "verseText": "Seek the LORD and his strength. Seek his face forever more.",
+          "note": null
+        },
+        {
+          "reference": "Proverbs 3:5-6",
+          "verseText": "Trust in the LORD with all your heart, and don’t lean on your own understanding. In all your ways acknowledge him, and he will make your paths straight.",
+          "note": null
+        },
+        {
+          "reference": "Isaiah 12:2",
+          "verseText": "Behold, God is my salvation. I will trust, and will not be afraid; for the LORD, the LORD, is my strength and song; and he has become my salvation.”",
+          "note": null
+        },
+        {
+          "reference": "Mark 11:23",
+          "verseText": "For most certainly I tell you, whoever may tell this mountain, ‘Be taken up and cast into the sea,’ and doesn’t doubt in his heart, but believes that what he says is happening, he shall have whatever he says.",
+          "note": null
+        },
+        {
+          "reference": "Joshua 1:9",
+          "verseText": "Haven’t I commanded you? Be strong and courageous. Don’t be afraid. Don’t be dismayed, for the LORD your God is with you wherever you go.”",
+          "note": null
+        },
+        {
+          "reference": "Proverbs 16:3",
+          "verseText": "Commit your deeds to the LORD, and your plans shall succeed.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 9:10",
+          "verseText": "Those who know your name will put their trust in you, for you, LORD, have not forsaken those who seek you.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 73:26",
+          "verseText": "My flesh and my heart fails, but God is the strength of my heart and my portion forever.",
+          "note": null
+        },
+        {
+          "reference": "Romans 10:17",
+          "verseText": "So faith comes by hearing, and hearing by the word of God.",
+          "note": null
+        },
+        {
+          "reference": "2 Corinthians 5:7",
+          "verseText": "for we walk by faith, not by sight.",
+          "note": null
+        }
+      ]
+    }
+  ]
+}

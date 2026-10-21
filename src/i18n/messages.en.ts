@@ -283,6 +283,8 @@ export const en = {
   'onboarding.schedule.title': 'Smart scheduling',
   'onboarding.schedule.body':
     'Rate each card. FSRS, a spaced-repetition method, brings it back just before you forget.',
+  'starter.title': 'Starter deck!',
+  'starter.description': "If you're new to the app, start here!",
   'onboarding.starter.title': 'Try the starter deck',
   'onboarding.starter.body':
     'Open it from your home screen and start practicing your first verses.',

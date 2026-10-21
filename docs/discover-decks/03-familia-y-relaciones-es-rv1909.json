@@ -1,0 +1,81 @@
+{
+  "app": "simple-bible-memory",
+  "format": 1,
+  "exportedAt": "2026-10-21T13:56:45.304Z",
+  "includesProgress": false,
+  "decks": [
+    {
+      "title": "Familia y relaciones",
+      "description": "Una colección de pasajes bíblicos sobre la familia y las relaciones, para el estudio personal y la memorización. Reina-Valera 1909.",
+      "bibleLanguage": "es",
+      "translationCode": "RV1909",
+      "cards": [
+        {
+          "reference": "Josué 24:15",
+          "verseText": "Y si mal os parece servir á Jehová, escogeos hoy á quién sirváis; si á los dioses á quienes sirvieron vuestros padres, cuando estuvieron de esotra parte del río, ó á los dioses de los Amorrheos en cuya tierra habitáis: que yo y mi casa serviremos á Jehová.",
+          "note": null
+        },
+        {
+          "reference": "Colosenses 3:12-14",
+          "verseText": "Vestíos pues, como escogidos de Dios, santos y amados, de entrañas de misericordia, de benignidad, de humildad, de mansedumbre, de tolerancia; Sufriéndoos los unos á los otros, y perdonándoos los unos á los otros si alguno tuviere queja del otro: de la manera que Cristo os perdonó, así también hacedlo vosotros. Y sobre todas estas cosas vestíos de caridad, la cual es el vínculo de la perfección.",
+          "note": null
+        },
+        {
+          "reference": "Proverbios 17:17",
+          "verseText": "En todo tiempo ama el amigo; y el hermano para la angustia es nacido.",
+          "note": null
+        },
+        {
+          "reference": "Efesios 5:25",
+          "verseText": "Maridos, amad á vuestras mujeres, así como Cristo amó á la iglesia, y se entregó á sí mismo por ella,",
+          "note": null
+        },
+        {
+          "reference": "Efesios 5:33",
+          "verseText": "Cada uno empero de vosotros de por sí, ame también á su mujer como á sí mismo; y la mujer reverencie á su marido.",
+          "note": null
+        },
+        {
+          "reference": "Eclesiastés 4:9-10",
+          "verseText": "Mejores son dos que uno; porque tienen mejor paga de su trabajo. Porque si cayeren, el uno levantará á su compañero: mas ¡ay del solo! que cuando cayere, no habrá segundo que lo levante.",
+          "note": null
+        },
+        {
+          "reference": "Proverbios 15:1",
+          "verseText": "La blanda respuesta quita la ira: mas la palabra áspera hace subir el furor.",
+          "note": null
+        },
+        {
+          "reference": "Romanos 12:10",
+          "verseText": "Amándoos los unos á los otros con caridad fraternal; previniéndoos con honra los unos á los otros;",
+          "note": null
+        },
+        {
+          "reference": "Efesios 6:1-3",
+          "verseText": "Hijos, obedeced en el Señor á vuestros padres; porque esto es justo. Honra á tu padre y á tu madre, que es el primer mandamiento con promesa, Para que te vaya bien, y seas de larga vida sobre la tierra.",
+          "note": null
+        },
+        {
+          "reference": "Salmos 133:1",
+          "verseText": "¡Mirad cuán bueno y cuán delicioso es habitar los hermanos igualmente en uno!",
+          "note": null
+        },
+        {
+          "reference": "1 Pedro 4:8",
+          "verseText": "Y sobre todo, tened entre vosotros ferviente caridad; porque la caridad cubrirá multitud de pecados.",
+          "note": null
+        },
+        {
+          "reference": "Romanos 12:18",
+          "verseText": "Si se puede hacer, cuanto está en vosotros, tened paz con todos los hombres.",
+          "note": null
+        },
+        {
+          "reference": "1 Corintios 13:4-7",
+          "verseText": "La caridad es sufrida, es benigna; la caridad no tiene envidia, la caridad no hace sinrazón, no se ensancha; No es injuriosa, no busca lo suyo, no se irrita, no piensa el mal; No se huelga de la injusticia, mas se huelga de la verdad; Todo lo sufre, todo lo cree, todo lo espera, todo lo soporta.",
+          "note": null
+        }
+      ]
+    }
+  ]
+}

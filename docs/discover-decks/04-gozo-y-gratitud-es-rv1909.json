@@ -1,0 +1,76 @@
+{
+  "app": "simple-bible-memory",
+  "format": 1,
+  "exportedAt": "2026-10-21T13:56:45.304Z",
+  "includesProgress": false,
+  "decks": [
+    {
+      "title": "Gozo y gratitud",
+      "description": "Una colección de pasajes bíblicos sobre el gozo y la gratitud, para el estudio personal y la memorización. Reina-Valera 1909.",
+      "bibleLanguage": "es",
+      "translationCode": "RV1909",
+      "cards": [
+        {
+          "reference": "1 Tesalonicenses 5:16-18",
+          "verseText": "Estad siempre gozosos. Orad sin cesar. Dad gracias en todo; porque esta es la voluntad de Dios para con vosotros en Cristo Jesús.",
+          "note": null
+        },
+        {
+          "reference": "Salmos 118:24",
+          "verseText": "Este es el día que hizo Jehová: nos gozaremos y alegraremos en él.",
+          "note": null
+        },
+        {
+          "reference": "Filipenses 4:4",
+          "verseText": "Gozaos en el Señor siempre: otra vez digo: Que os gocéis.",
+          "note": null
+        },
+        {
+          "reference": "Salmos 100:4-5",
+          "verseText": "Entrad por sus puertas con reconocimiento, por sus atrios con alabanza: alabadle, bendecid su nombre. Porque Jehová es bueno: para siempre es su misericordia, y su verdad por todas las generaciones.",
+          "note": null
+        },
+        {
+          "reference": "Salmos 16:11",
+          "verseText": "Me mostrarás la senda de la vida: hartura de alegrías hay con tu rostro; deleites en tu diestra para siempre.",
+          "note": null
+        },
+        {
+          "reference": "Colosenses 3:16-17",
+          "verseText": "La palabra de Cristo habite en vosotros en abundancia en toda sabiduría, enseñándoos y exhortándoos los unos á los otros con salmos é himnos y canciones espirituales, con gracia cantando en vuestros corazones al Señor. Y todo lo que hacéis, sea de palabra, ó de hecho, hacedlo todo en el nombre del Señor Jesús, dando gracias á Dios Padre por él.",
+          "note": null
+        },
+        {
+          "reference": "Nehemías 8:10",
+          "verseText": "Díjoles luego: Id, comed grosuras, y bebed vino dulce, y enviad porciones á los que no tienen prevenido; porque día santo es á nuestro Señor: y no os entristezcáis, porque el gozo de Jehová es vuestra fortaleza.",
+          "note": null
+        },
+        {
+          "reference": "Salmos 103:1-5",
+          "verseText": "Bendice, alma mía, á Jehová; y bendigan todas mis entrañas su santo nombre. Bendice, alma mía á Jehová, y no olvides ninguno de sus beneficios. El es quien perdona todas tus iniquidades, el que sana todas tus dolencias; El que rescata del hoyo tu vida, el que te corona de favores y misericordias; El que sacia de bien tu boca de modo que te rejuvenezcas como el águila.",
+          "note": null
+        },
+        {
+          "reference": "Salmos 30:11-12",
+          "verseText": "Has tornado mi endecha en baile; desataste mi saco, y ceñísteme de alegría. Por tanto á ti cantaré, gloria mía, y no estaré callado. Jehová Dios mío, te alabaré para siempre.",
+          "note": null
+        },
+        {
+          "reference": "2 Corintios 9:7-8",
+          "verseText": "Cada uno dé como propuso en su corazón: no con tristeza, ó por necesidad; porque Dios ama el dador alegre. Y poderoso es Dios para hacer que abunde en vosotros toda gracia; á fin de que, teniendo siempre en todas las cosas todo lo que basta, abundéis para toda buena obra:",
+          "note": null
+        },
+        {
+          "reference": "Salmos 126:2-3",
+          "verseText": "Entonces nuestra boca se henchirá de risa, y nuestra lengua de alabanza; entonces dirán entre las gentes: Grandes cosas ha hecho Jehová con éstos. Grandes cosas ha hecho Jehová con nosotros; estaremos alegres.",
+          "note": null
+        },
+        {
+          "reference": "Santiago 1:2-3",
+          "verseText": "Hermanos míos, tened por sumo gozo cuando cayereis en diversas tentaciones; Sabiendo que la prueba de vuestra fe obra paciencia.",
+          "note": null
+        }
+      ]
+    }
+  ]
+}
