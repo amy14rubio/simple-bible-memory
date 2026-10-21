@@ -62,6 +62,9 @@ export const es: Dictionary = {
   'deckMenu.rename': 'Renombrar baraja',
   'deckMenu.delete': 'Eliminar baraja',
   'deckMenu.deleteTitle': '¿Eliminar esta baraja?',
+  'deckMenu.deletePublished':
+    'Esta baraja está publicada. Al eliminarla, también se retira de Descubrir, así que otras personas ya no podrán encontrarla ni importarla. Quien ya importó una copia la conserva.',
+  'deckMenu.deleteAndUnpublish': 'Eliminar y dejar de publicar',
   'deckMenu.deleteBody':
     '"{title}" y todas sus tarjetas se eliminarán de forma permanente, junto con su historial de repasos.',
 

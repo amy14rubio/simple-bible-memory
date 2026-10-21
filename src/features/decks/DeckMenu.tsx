@@ -57,7 +57,8 @@ export function DeckMenu({ deck, onClose, onDeleted }: {
         open={confirming}
         title={t('deckMenu.deleteTitle')}
         message={t('deckMenu.deleteBody', { title: deck?.title ?? '' })}
-        confirmLabel={t('deckMenu.delete')}
+        warning={published ? t('deckMenu.deletePublished') : undefined}
+        confirmLabel={published ? t('deckMenu.deleteAndUnpublish') : t('deckMenu.delete')}
         onConfirm={remove}
         onCancel={() => { setConfirming(false); onClose(); }}
       />

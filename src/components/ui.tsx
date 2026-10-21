@@ -282,13 +282,14 @@ export function Dialog({ open, onClose, title, children, closeOnBack = false, cl
   );
 }
 
-export function ConfirmDialog({ open, title, message, confirmLabel, onConfirm, onCancel }: {
-  open: boolean; title: string; message: string; confirmLabel: string; onConfirm: () => void; onCancel: () => void;
+export function ConfirmDialog({ open, title, message, warning, confirmLabel, onConfirm, onCancel }: {
+  open: boolean; title: string; message: string; /** An extra, stronger paragraph under the message (what else happens). */ warning?: string; confirmLabel: string; onConfirm: () => void; onCancel: () => void;
 }) {
   const { t } = useI18n();
   return (
     <Dialog open={open} onClose={onCancel} title={title}>
-      <p className="mb-6 text-muted">{message}</p>
+      <p className={warning ? 'mb-3 text-muted' : 'mb-6 text-muted'}>{message}</p>
+      {warning && <p className="mb-6 font-medium">{warning}</p>}
       <div className="flex justify-end gap-3">
         <Button variant="secondary" onClick={onCancel}>{t('common.cancel')}</Button>
         <Button variant="danger" onClick={onConfirm}>{confirmLabel}</Button>
