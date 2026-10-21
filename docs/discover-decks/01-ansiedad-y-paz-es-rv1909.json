@@ -1,0 +1,61 @@
+{
+  "app": "simple-bible-memory",
+  "format": 1,
+  "exportedAt": "2026-10-21T13:56:45.304Z",
+  "includesProgress": false,
+  "decks": [
+    {
+      "title": "Ansiedad y paz",
+      "description": "Una colección de pasajes bíblicos sobre la ansiedad y la paz, para el estudio personal y la memorización. Reina-Valera 1909.",
+      "bibleLanguage": "es",
+      "translationCode": "RV1909",
+      "cards": [
+        {
+          "reference": "Filipenses 4:6-7",
+          "verseText": "Por nada estéis afanosos; sino sean notorias vuestras peticiones delante de Dios en toda oración y ruego, con hacimiento de gracias. Y la paz de Dios, que sobrepuja todo entendimiento, guardará vuestros corazones y vuestros entendimientos en Cristo Jesús.",
+          "note": null
+        },
+        {
+          "reference": "Juan 14:27",
+          "verseText": "La paz os dejo, mi paz os doy: no como el mundo la da, yo os la doy. No se turbe vuestro corazón, ni tenga miedo.",
+          "note": null
+        },
+        {
+          "reference": "Juan 16:33",
+          "verseText": "Estas cosas os he hablado, para que en mí tengáis paz. En el mundo tendréis aflicción: mas confiad, yo he vencido al mundo.",
+          "note": null
+        },
+        {
+          "reference": "Salmos 94:19",
+          "verseText": "En la multitud de mis pensamientos dentro de mí, tus consolaciones alegraban mi alma.",
+          "note": null
+        },
+        {
+          "reference": "Isaías 26:3-4",
+          "verseText": "Tú le guardarás en completa paz, cuyo pensamiento en ti persevera; porque en ti se ha confiado. Confiad en Jehová perpetuamente: porque en el Señor Jehová está la fortaleza de los siglos.",
+          "note": null
+        },
+        {
+          "reference": "1 Pedro 5:7",
+          "verseText": "Echando toda vuestra solicitud en él, porque él tiene cuidado de vosotros.",
+          "note": null
+        },
+        {
+          "reference": "Mateo 11:28-30",
+          "verseText": "Venid á mí todos los que estáis trabajados y cargados, que yo os haré descansar. Llevad mi yugo sobre vosotros, y aprended de mí, que soy manso y humilde de corazón; y hallaréis descanso para vuestras almas. Porque mi yugo es fácil, y ligera mi carga.",
+          "note": null
+        },
+        {
+          "reference": "Salmos 46:10",
+          "verseText": "Estad quietos, y conoced que yo soy Dios: ensalzado he de ser entre las gentes, ensalzado seré en la tierra.",
+          "note": null
+        },
+        {
+          "reference": "2 Timoteo 1:7",
+          "verseText": "Porque no nos ha dado Dios el espíritu de temor, sino el de fortaleza, y de amor, y de templanza.",
+          "note": null
+        }
+      ]
+    }
+  ]
+}

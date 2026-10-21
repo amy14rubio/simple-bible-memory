@@ -1,0 +1,96 @@
+{
+  "app": "simple-bible-memory",
+  "format": 1,
+  "exportedAt": "2026-10-21T13:56:45.304Z",
+  "includesProgress": false,
+  "decks": [
+    {
+      "title": "Psalms",
+      "description": "A collection of Bible passages about the Psalms, for personal study and memorization. World English Bible.",
+      "bibleLanguage": "en",
+      "translationCode": "WEB",
+      "cards": [
+        {
+          "reference": "Psalm 23:1-6",
+          "verseText": "The LORD is my shepherd; I shall lack nothing. He makes me lie down in green pastures. He leads me beside still waters. He restores my soul. He guides me in the paths of righteousness for his name’s sake. Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me. Your rod and your staff, they comfort me. You prepare a table before me in the presence of my enemies. You anoint my head with oil. My cup runs over. Surely goodness and loving kindness shall follow me all the days of my life, and I will dwell in the LORD’s house forever.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 1:1-3",
+          "verseText": "Blessed is the man who doesn’t walk in the counsel of the wicked, nor stand on the path of sinners, nor sit in the seat of scoffers; but his delight is in the LORD’s law. On his law he meditates day and night. He will be like a tree planted by the streams of water, that produces its fruit in its season, whose leaf also does not wither. Whatever he does shall prosper.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 119:103-105",
+          "verseText": "How sweet are your promises to my taste, more than honey to my mouth! Through your precepts, I get understanding; therefore I hate every false way. Your word is a lamp to my feet, and a light for my path.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 27:1",
+          "verseText": "The LORD is my light and my salvation. Whom shall I fear? The LORD is the strength of my life. Of whom shall I be afraid?",
+          "note": null
+        },
+        {
+          "reference": "Psalm 42:11",
+          "verseText": "Why are you in despair, my soul? Why are you disturbed within me? Hope in God! For I shall still praise him, the saving help of my countenance, and my God.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 34:4",
+          "verseText": "I sought the LORD, and he answered me, and delivered me from all my fears.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 42:1-2",
+          "verseText": "As the deer pants for the water brooks, so my soul pants after you, God. My soul thirsts for God, for the living God. When shall I come and appear before God?",
+          "note": null
+        },
+        {
+          "reference": "Psalm 103:11-12",
+          "verseText": "For as the heavens are high above the earth, so great is his loving kindness toward those who fear him. As far as the east is from the west, so far has he removed our transgressions from us.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 121:1-2",
+          "verseText": "I will lift up my eyes to the hills. Where does my help come from? My help comes from the LORD, who made heaven and earth.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 73:25-26",
+          "verseText": "Whom do I have in heaven? There is no one on earth whom I desire besides you. My flesh and my heart fails, but God is the strength of my heart and my portion forever.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 91:1-2",
+          "verseText": "He who dwells in the secret place of the Most High will rest in the shadow of the Almighty. I will say of the LORD, “He is my refuge and my fortress; my God, in whom I trust.”",
+          "note": null
+        },
+        {
+          "reference": "Psalm 55:22",
+          "verseText": "Cast your burden on the LORD and he will sustain you. He will never allow the righteous to be moved.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 56:3-4",
+          "verseText": "When I am afraid, I will put my trust in you. In God, I praise his word. In God, I put my trust. I will not be afraid. What can flesh do to me?",
+          "note": null
+        },
+        {
+          "reference": "Psalm 12:6",
+          "verseText": "The LORD’s words are flawless words, as silver refined in a clay furnace, purified seven times.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 29:11",
+          "verseText": "The LORD will give strength to his people. The LORD will bless his people with peace.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 49:20",
+          "verseText": "A man who has riches without understanding, is like the animals that perish.",
+          "note": null
+        }
+      ]
+    }
+  ]
+}

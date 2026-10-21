@@ -1,0 +1,81 @@
+{
+  "app": "simple-bible-memory",
+  "format": 1,
+  "exportedAt": "2026-10-21T13:56:45.304Z",
+  "includesProgress": false,
+  "decks": [
+    {
+      "title": "Family & Relationships",
+      "description": "A collection of Bible passages about family and relationships, for personal study and memorization. World English Bible.",
+      "bibleLanguage": "en",
+      "translationCode": "WEB",
+      "cards": [
+        {
+          "reference": "Joshua 24:15",
+          "verseText": "If it seems evil to you to serve the LORD, choose today whom you will serve; whether the gods which your fathers served that were beyond the River, or the gods of the Amorites, in whose land you dwell; but as for me and my house, we will serve the LORD.”",
+          "note": null
+        },
+        {
+          "reference": "Colossians 3:12-14",
+          "verseText": "Put on therefore, as God’s chosen ones, holy and beloved, a heart of compassion, kindness, lowliness, humility, and perseverance; bearing with one another, and forgiving each other, if any man has a complaint against any; even as Christ forgave you, so you also do. Above all these things, walk in love, which is the bond of perfection.",
+          "note": null
+        },
+        {
+          "reference": "Proverbs 17:17",
+          "verseText": "A friend loves at all times; and a brother is born for adversity.",
+          "note": null
+        },
+        {
+          "reference": "Ephesians 5:25",
+          "verseText": "Husbands, love your wives, even as Christ also loved the assembly and gave himself up for her,",
+          "note": null
+        },
+        {
+          "reference": "Ephesians 5:33",
+          "verseText": "Nevertheless each of you must also love his own wife even as himself; and let the wife see that she respects her husband.",
+          "note": null
+        },
+        {
+          "reference": "Ecclesiastes 4:9-10",
+          "verseText": "Two are better than one, because they have a good reward for their labor. For if they fall, the one will lift up his fellow; but woe to him who is alone when he falls, and doesn’t have another to lift him up.",
+          "note": null
+        },
+        {
+          "reference": "Proverbs 15:1",
+          "verseText": "A gentle answer turns away wrath, but a harsh word stirs up anger.",
+          "note": null
+        },
+        {
+          "reference": "Romans 12:10",
+          "verseText": "In love of the brothers be tenderly affectionate to one another; in honor prefer one another,",
+          "note": null
+        },
+        {
+          "reference": "Ephesians 6:1-3",
+          "verseText": "Children, obey your parents in the Lord, for this is right. “Honor your father and mother,” which is the first commandment with a promise: “that it may be well with you, and you may live long on the earth.”",
+          "note": null
+        },
+        {
+          "reference": "Psalm 133:1",
+          "verseText": "See how good and how pleasant it is for brothers to live together in unity!",
+          "note": null
+        },
+        {
+          "reference": "1 Peter 4:8",
+          "verseText": "And above all things be earnest in your love among yourselves, for love covers a multitude of sins.",
+          "note": null
+        },
+        {
+          "reference": "Romans 12:18",
+          "verseText": "If it is possible, as much as it is up to you, be at peace with all men.",
+          "note": null
+        },
+        {
+          "reference": "1 Corinthians 13:4-7",
+          "verseText": "Love is patient and is kind. Love doesn’t envy. Love doesn’t brag, is not proud, doesn’t behave itself inappropriately, doesn’t seek its own way, is not provoked, takes no account of evil; doesn’t rejoice in unrighteousness, but rejoices with the truth; bears all things, believes all things, hopes all things, and endures all things.",
+          "note": null
+        }
+      ]
+    }
+  ]
+}

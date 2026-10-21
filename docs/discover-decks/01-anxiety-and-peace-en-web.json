@@ -1,0 +1,61 @@
+{
+  "app": "simple-bible-memory",
+  "format": 1,
+  "exportedAt": "2026-10-21T13:56:45.304Z",
+  "includesProgress": false,
+  "decks": [
+    {
+      "title": "Anxiety & Peace",
+      "description": "A collection of Bible passages about anxiety and peace, for personal study and memorization. World English Bible.",
+      "bibleLanguage": "en",
+      "translationCode": "WEB",
+      "cards": [
+        {
+          "reference": "Philippians 4:6-7",
+          "verseText": "In nothing be anxious, but in everything, by prayer and petition with thanksgiving, let your requests be made known to God. And the peace of God, which surpasses all understanding, will guard your hearts and your thoughts in Christ Jesus.",
+          "note": null
+        },
+        {
+          "reference": "John 14:27",
+          "verseText": "Peace I leave with you. My peace I give to you; not as the world gives, I give to you. Don’t let your heart be troubled, neither let it be fearful.",
+          "note": null
+        },
+        {
+          "reference": "John 16:33",
+          "verseText": "I have told you these things, that in me you may have peace. In the world you have trouble; but cheer up! I have overcome the world.”",
+          "note": null
+        },
+        {
+          "reference": "Psalm 94:19",
+          "verseText": "In the multitude of my thoughts within me, your comforts delight my soul.",
+          "note": null
+        },
+        {
+          "reference": "Isaiah 26:3-4",
+          "verseText": "You will keep whoever’s mind is steadfast in perfect peace, because he trusts in you. Trust in the LORD forever; for in the LORD, the LORD, is an everlasting Rock.",
+          "note": null
+        },
+        {
+          "reference": "1 Peter 5:7",
+          "verseText": "casting all your worries on him, because he cares for you.",
+          "note": null
+        },
+        {
+          "reference": "Matthew 11:28-30",
+          "verseText": "“Come to me, all you who labor and are heavily burdened, and I will give you rest. Take my yoke upon you and learn from me, for I am gentle and humble in heart; and you will find rest for your souls. For my yoke is easy, and my burden is light.”",
+          "note": null
+        },
+        {
+          "reference": "Psalm 46:10",
+          "verseText": "“Be still, and know that I am God. I will be exalted among the nations. I will be exalted on the earth.”",
+          "note": null
+        },
+        {
+          "reference": "2 Timothy 1:7",
+          "verseText": "For God didn’t give us a spirit of fear, but of power, love, and self-control.",
+          "note": null
+        }
+      ]
+    }
+  ]
+}

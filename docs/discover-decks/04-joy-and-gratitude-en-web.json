@@ -1,0 +1,76 @@
+{
+  "app": "simple-bible-memory",
+  "format": 1,
+  "exportedAt": "2026-10-21T13:56:45.304Z",
+  "includesProgress": false,
+  "decks": [
+    {
+      "title": "Joy & Gratitude",
+      "description": "A collection of Bible passages about joy and gratitude, for personal study and memorization. World English Bible.",
+      "bibleLanguage": "en",
+      "translationCode": "WEB",
+      "cards": [
+        {
+          "reference": "1 Thessalonians 5:16-18",
+          "verseText": "Always rejoice. Pray without ceasing. In everything give thanks, for this is the will of God in Christ Jesus toward you.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 118:24",
+          "verseText": "This is the day that the LORD has made. We will rejoice and be glad in it!",
+          "note": null
+        },
+        {
+          "reference": "Philippians 4:4",
+          "verseText": "Rejoice in the Lord always! Again I will say, “Rejoice!”",
+          "note": null
+        },
+        {
+          "reference": "Psalm 100:4-5",
+          "verseText": "Enter into his gates with thanksgiving, and into his courts with praise. Give thanks to him, and bless his name. For the LORD is good. His loving kindness endures forever, his faithfulness to all generations.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 16:11",
+          "verseText": "You will show me the path of life. In your presence is fullness of joy. In your right hand there are pleasures forever more.",
+          "note": null
+        },
+        {
+          "reference": "Colossians 3:16-17",
+          "verseText": "Let the word of Christ dwell in you richly; in all wisdom teaching and admonishing one another with psalms, hymns, and spiritual songs, singing with grace in your heart to the Lord. Whatever you do, in word or in deed, do all in the name of the Lord Jesus, giving thanks to God the Father through him.",
+          "note": null
+        },
+        {
+          "reference": "Nehemiah 8:10",
+          "verseText": "Then he said to them, “Go your way. Eat the fat, drink the sweet, and send portions to him for whom nothing is prepared, for today is holy to our Lord. Don’t be grieved, for the joy of the LORD is your strength.”",
+          "note": null
+        },
+        {
+          "reference": "Psalm 103:1-5",
+          "verseText": "Praise the LORD, my soul! All that is within me, praise his holy name! Praise the LORD, my soul, and don’t forget all his benefits, who forgives all your sins, who heals all your diseases, who redeems your life from destruction, who crowns you with loving kindness and tender mercies, who satisfies your desire with good things, so that your youth is renewed like the eagle’s.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 30:11-12",
+          "verseText": "You have turned my mourning into dancing for me. You have removed my sackcloth, and clothed me with gladness, to the end that my heart may sing praise to you, and not be silent. LORD my God, I will give thanks to you forever!",
+          "note": null
+        },
+        {
+          "reference": "2 Corinthians 9:7-8",
+          "verseText": "Let each man give according as he has determined in his heart, not grudgingly or under compulsion, for God loves a cheerful giver. And God is able to make all grace abound to you, that you, always having all sufficiency in everything, may abound to every good work.",
+          "note": null
+        },
+        {
+          "reference": "Psalm 126:2-3",
+          "verseText": "Then our mouth was filled with laughter, and our tongue with singing. Then they said among the nations, “The LORD has done great things for them.” The LORD has done great things for us, and we are glad.",
+          "note": null
+        },
+        {
+          "reference": "James 1:2-3",
+          "verseText": "Count it all joy, my brothers, when you fall into various temptations, knowing that the testing of your faith produces endurance.",
+          "note": null
+        }
+      ]
+    }
+  ]
+}

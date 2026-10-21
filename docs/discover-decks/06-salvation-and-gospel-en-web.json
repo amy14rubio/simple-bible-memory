@@ -1,0 +1,81 @@
+{
+  "app": "simple-bible-memory",
+  "format": 1,
+  "exportedAt": "2026-10-21T13:56:45.304Z",
+  "includesProgress": false,
+  "decks": [
+    {
+      "title": "Salvation & Gospel",
+      "description": "A collection of Bible passages about salvation and the gospel, for personal study and memorization. World English Bible.",
+      "bibleLanguage": "en",
+      "translationCode": "WEB",
+      "cards": [
+        {
+          "reference": "John 3:16-17",
+          "verseText": "For God so loved the world, that he gave his only born Son, that whoever believes in him should not perish, but have eternal life. For God didn’t send his Son into the world to judge the world, but that the world should be saved through him.",
+          "note": null
+        },
+        {
+          "reference": "Romans 3:23-24",
+          "verseText": "for all have sinned, and fall short of the glory of God; being justified freely by his grace through the redemption that is in Christ Jesus,",
+          "note": null
+        },
+        {
+          "reference": "Romans 5:8",
+          "verseText": "But God commends his own love toward us, in that while we were yet sinners, Christ died for us.",
+          "note": null
+        },
+        {
+          "reference": "Romans 6:23",
+          "verseText": "For the wages of sin is death, but the free gift of God is eternal life in Christ Jesus our Lord.",
+          "note": null
+        },
+        {
+          "reference": "Ephesians 2:8-10",
+          "verseText": "for by grace you have been saved through faith, and that not of yourselves; it is the gift of God, not of works, that no one would boast. For we are his workmanship, created in Christ Jesus for good works, which God prepared before that we would walk in them.",
+          "note": null
+        },
+        {
+          "reference": "Romans 10:9",
+          "verseText": "that if you will confess with your mouth that Jesus is Lord and believe in your heart that God raised him from the dead, you will be saved.",
+          "note": null
+        },
+        {
+          "reference": "John 14:6",
+          "verseText": "Jesus said to him, “I am the way, the truth, and the life. No one comes to the Father, except through me.",
+          "note": null
+        },
+        {
+          "reference": "Acts 4:12",
+          "verseText": "There is salvation in no one else, for there is no other name under heaven that is given among men, by which we must be saved!”",
+          "note": null
+        },
+        {
+          "reference": "John 1:12",
+          "verseText": "But as many as received him, to them he gave the right to become God’s children, to those who believe in his name:",
+          "note": null
+        },
+        {
+          "reference": "2 Corinthians 5:21",
+          "verseText": "For him who knew no sin he made to be sin on our behalf, so that in him we might become the righteousness of God.",
+          "note": null
+        },
+        {
+          "reference": "1 John 1:9",
+          "verseText": "If we confess our sins, he is faithful and righteous to forgive us the sins and to cleanse us from all unrighteousness.",
+          "note": null
+        },
+        {
+          "reference": "John 5:24",
+          "verseText": "“Most certainly I tell you, he who hears my word and believes him who sent me has eternal life, and doesn’t come into judgment, but has passed out of death into life.",
+          "note": null
+        },
+        {
+          "reference": "2 Corinthians 5:17",
+          "verseText": "Therefore if anyone is in Christ, he is a new creation. The old things have passed away. Behold, all things have become new.",
+          "note": null
+        }
+      ]
+    }
+  ]
+}

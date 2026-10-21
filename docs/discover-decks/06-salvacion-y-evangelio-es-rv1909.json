@@ -1,0 +1,81 @@
+{
+  "app": "simple-bible-memory",
+  "format": 1,
+  "exportedAt": "2026-10-21T13:56:45.304Z",
+  "includesProgress": false,
+  "decks": [
+    {
+      "title": "Salvación y evangelio",
+      "description": "Una colección de pasajes bíblicos sobre la salvación y el evangelio, para el estudio personal y la memorización. Reina-Valera 1909.",
+      "bibleLanguage": "es",
+      "translationCode": "RV1909",
+      "cards": [
+        {
+          "reference": "Juan 3:16-17",
+          "verseText": "Porque de tal manera amó Dios al mundo, que ha dado á su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna. Porque no envió Dios á su Hijo al mundo para que condene al mundo, mas para que el mundo sea salvo por él.",
+          "note": null
+        },
+        {
+          "reference": "Romanos 3:23-24",
+          "verseText": "Por cuanto todos pecaron, y están destituídos de la gloria de Dios; Siendo justificados gratuitamente por su gracia, por la redención que es en Cristo Jesús;",
+          "note": null
+        },
+        {
+          "reference": "Romanos 5:8",
+          "verseText": "Mas Dios encarece su caridad para con nosotros, porque siendo aún pecadores, Cristo murió por nosotros.",
+          "note": null
+        },
+        {
+          "reference": "Romanos 6:23",
+          "verseText": "Porque la paga del pecado es muerte: mas la dádiva de Dios es vida eterna en Cristo Jesús Señor nuestro.",
+          "note": null
+        },
+        {
+          "reference": "Efesios 2:8-10",
+          "verseText": "Porque por gracia sois salvos por la fe; y esto no de vosotros, pues es don de Dios: No por obras, para que nadie se gloríe. Porque somos hechura suya, criados en Cristo Jesús para buenas obras, las cuales Dios preparó para que anduviésemos en ellas.",
+          "note": null
+        },
+        {
+          "reference": "Romanos 10:9",
+          "verseText": "Que si confesares con tu boca al Señor Jesús, y creyeres en tu corazón que Dios le levantó de los muertos, serás salvo.",
+          "note": null
+        },
+        {
+          "reference": "Juan 14:6",
+          "verseText": "Jesús le dice: Yo soy el camino, y la verdad, y la vida: nadie viene al Padre, sino por mí.",
+          "note": null
+        },
+        {
+          "reference": "Hechos 4:12",
+          "verseText": "Y en ningún otro hay salud; porque no hay otro nombre debajo del cielo, dado á los hombres, en que podamos ser salvos.",
+          "note": null
+        },
+        {
+          "reference": "Juan 1:12",
+          "verseText": "Mas á todos los que le recibieron, dióles potestad de ser hechos hijos de Dios, á los que creen en su nombre:",
+          "note": null
+        },
+        {
+          "reference": "2 Corintios 5:21",
+          "verseText": "Al que no conoció pecado, hizo pecado por nosotros, para que nosotros fuésemos hechos justicia de Dios en él.",
+          "note": null
+        },
+        {
+          "reference": "1 Juan 1:9",
+          "verseText": "Si confesamos nuestros pecados, él es fiel y justo para que nos perdone nuestros pecados, y nos limpie de toda maldad.",
+          "note": null
+        },
+        {
+          "reference": "Juan 5:24",
+          "verseText": "De cierto, de cierto os digo: El que oye mi palabra, y cree al que me ha enviado, tiene vida eterna; y no vendrá á condenación, mas pasó de muerte á vida.",
+          "note": null
+        },
+        {
+          "reference": "2 Corintios 5:17",
+          "verseText": "De modo que si alguno está en Cristo, nueva criatura es: las cosas viejas pasaron; he aquí todas son hechas nuevas.",
+          "note": null
+        }
+      ]
+    }
+  ]
+}
