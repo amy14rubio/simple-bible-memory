@@ -116,8 +116,6 @@ export const es: Dictionary = {
   'speak.status.paused': 'Con calma. Di otra vez, difícil, bien o fácil, o toca.',
   'speak.status.confirming': 'Entendido',
   'speak.skip': 'Saltar',
-  'speak.say.askVerse': '{reference}.',
-  'speak.say.itWas': 'Era {reference}.',
   'speak.say.askRating': '¿Cómo te fue? ¿Otra vez, difícil, bien o fácil?',
   'speak.say.rated': 'Entendido: {label}.',
   'speak.say.slower': 'Más lento. Aquí está otra vez.',

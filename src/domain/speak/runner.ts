@@ -12,10 +12,6 @@ export interface RunnerVoice {
 
 /** Every phrase the app says by itself, in the app's language (the verse and its reference are read separately, in the verse's). */
 export interface SpeakScript {
-  /** "Philippians 4, verses 6 to 7. Say the verse." */
-  askVerse(spokenReference: string): string;
-  /** After the person said the reference of a passage that was read to them. */
-  itWas(spokenReference: string): string;
   /** "How did you do? Again, hard, good, or easy?" */
   askRating(): string;
   /** "Good." */
@@ -202,13 +198,14 @@ export class SpeakRunner {
   }
 
   async run(card: SpeakCard): Promise<CardResult> {
-    const { script, uiLang, verseLang } = this.o;
+    const { uiLang, verseLang } = this.o;
     const ref = spokenReference(card.reference, verseLang);
     const recall = card.kind === 'recall';
 
     // 1. the prompt: just the reference (or the passage), with no instructions
     this.phase('prompt');
-    const step = recall ? await this.say(script.askVerse(ref), uiLang) : await this.say(card.verseText, verseLang);
+    // (The reference, and the passage, are read in the deck's language: that is the language of the book names and of "verse".)
+    const step = await this.say(recall ? `${ref}.` : card.verseText, verseLang);
     if ('tap' in step) return SpeakRunner.fromTap(step.tap);
 
     // 2. listen to the answer (never graded)
@@ -219,8 +216,8 @@ export class SpeakRunner {
     // 3. read the correct answer (the person can cut in), then 4. ask for the rating
     for (;;) {
       this.phase('reading');
-      const reading = recall ? card.verseText : script.itWas(ref);
-      const read = await this.sayListening(reading, recall ? verseLang : uiLang, uiLang, this.acceptWhileReading(reading));
+      const reading = recall ? card.verseText : `${ref}.`;
+      const read = await this.sayListening(reading, verseLang, uiLang, this.acceptWhileReading(reading));
       if ('tap' in read) return SpeakRunner.fromTap(read.tap);
       if (read.value) {
         // they cut in: a rating or command is acted on; "done" just moves on to the question

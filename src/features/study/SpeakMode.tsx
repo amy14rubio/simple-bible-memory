@@ -68,8 +68,6 @@ export function SpeakMode({ card, kind, intervals, onRate, onSkip, onStop }: {
   tRef.current = t;
 
   const script = useMemo<SpeakScript>(() => ({
-    askVerse: (reference) => tRef.current('speak.say.askVerse', { reference }),
-    itWas: (reference) => tRef.current('speak.say.itWas', { reference }),
     askRating: () => tRef.current('speak.say.askRating'),
     rated: (label) => tRef.current('speak.say.rated', { label }),
     slower: () => tRef.current('speak.say.slower'),
@@ -102,6 +100,7 @@ export function SpeakMode({ card, kind, intervals, onRate, onSkip, onStop }: {
   }, []);
 
   const revealed = phase === 'reading' || phase === 'asking' || phase === 'rating' || phase === 'paused' || phase === 'confirming';
+  const showRatings = phase === 'asking' || phase === 'rating' || phase === 'paused' || phase === 'confirming';
   const recall = kind === 'recall';
   const lang = useVerseLang();
   const listening = phase === 'listening' || phase === 'rating' || phase === 'paused';
@@ -128,7 +127,10 @@ export function SpeakMode({ card, kind, intervals, onRate, onSkip, onStop }: {
         </div>
       </div>
       <ActionBar>
-        <RatingBar intervals={intervals} onRate={(r) => runner.current?.tap({ kind: 'rate', rating: r })} />
+        {/* Hidden (but keeping its space, so nothing jumps) until the verse has been read and the question asked. */}
+        <div className={showRatings ? '' : 'invisible'}>
+          <RatingBar intervals={intervals} onRate={(r) => runner.current?.tap({ kind: 'rate', rating: r })} />
+        </div>
         <Button variant="secondary" className="w-full" onClick={() => runner.current?.tap({ kind: 'skip' })}>{t('speak.skip')}</Button>
       </ActionBar>
     </>

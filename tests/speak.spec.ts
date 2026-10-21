@@ -29,14 +29,25 @@ test('speak: prompts, listens, reads the verse, asks, and records the spoken rat
   expect(spoken.at(-1)).toBe('Got it: Easy.');
 });
 
-test('speak: the buttons still work, and skipping records nothing', async ({ page }) => {
+test('speak: the rating buttons appear with the question, and tapping one works', async ({ page }) => {
+  await hear(page, ['done']);
+  const id = await setup(page);
+  await page.goto(`/#/decks/${id}/study/speak`);
+  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: /^Easy/ }).click(); // (clicking waits for it to appear)
+  await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
+  await expect(page.getByText('1 card reviewed')).toBeVisible();
+});
+
+test('speak: no rating buttons while the verse is being said', async ({ page }) => {
   await hear(page);
   const id = await setup(page);
   await page.goto(`/#/decks/${id}/study/speak`);
   await page.getByRole('button', { name: 'Start' }).click();
-  await page.getByRole('button', { name: /^Easy/ }).click();
+  await expect(page.getByText('Listening…')).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Easy/ })).toBeHidden();
+  await page.getByRole('button', { name: 'Skip' }).click();
   await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
-  await expect(page.getByText('1 card reviewed')).toBeVisible();
 });
 
 test('speak: saying "stop" leaves for the deck', async ({ page }) => {
@@ -55,7 +66,7 @@ test('speak: an identify card reads the passage and asks which verse', async ({ 
   await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
   const spoken = await said(page);
   expect(spoken[0]).toBe('Example verse text.');
-  expect(spoken).toContain('It was Example 1, verse 1.'); // (the dev server starts each card twice, hence not checking positions)
+  expect(spoken).toContain('Example 1, verse 1.'); // (the dev server starts each card twice, hence not checking positions)
   expect(spoken.at(-1)).toBe('Got it: Easy.');
 });
 

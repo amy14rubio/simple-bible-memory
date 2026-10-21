@@ -33,7 +33,7 @@ describe('dictionaries', () => {
 
   it('nothing was left untranslated, except words that are the same in both languages', () => {
     const sameInBoth = keys.filter((k) => JSON.stringify(en[k]) === JSON.stringify(es[k]));
-    expect(sameInBoth).toEqual(['speak.say.askVerse', 'settings.general']);
+    expect(sameInBoth).toEqual(['settings.general']);
   });
 
   it('the app and Bible Gateway keep their names and examples sensible in Spanish', () => {

@@ -77,8 +77,6 @@ describe('understanding what is said', () => {
 // ---- the runner, with a scripted voice ------------------------------------------------------------------------------------------
 
 const script: SpeakScript = {
-  askVerse: (ref) => `${ref}.`,
-  itWas: (ref) => `That was ${ref}.`,
   askRating: () => 'How did you do? Again, hard, good, or easy?',
   rated: (label) => `${label}.`,
   slower: () => 'Slower.',
@@ -272,12 +270,12 @@ describe('one card, hands free', () => {
     const t = setup([['Philippians four six'], ['done'], ['hard']]);
     const identify = { reference: 'Philippians 4:6', verseText: 'Be careful for nothing.', kind: 'identify' as const };
     expect(await t.runner.run(identify)).toEqual({ kind: 'rated', rating: 2 });
-    expect(t.say()).toEqual(['Be careful for nothing.', 'That was Philippians 4, verse 6.', 'How did you do? Again, hard, good, or easy?', 'Hard.']);
+    expect(t.say()).toEqual(['Be careful for nothing.', 'Philippians 4, verse 6.', 'How did you do? Again, hard, good, or easy?', 'Hard.']);
   });
 
   it('speaks the prompts in the app\'s language and the verse in the verse\'s language', async () => {
     const t = setup([['listo'], ['bien']], { uiLang: 'es', verseLang: 'en' });
     await t.runner.run(card);
-    expect(t.spoken.map((s) => s.lang)).toEqual(['es-ES', 'en-US', 'es-ES', 'es-ES']);
+    expect(t.spoken.map((s) => s.lang)).toEqual(['en-US', 'en-US', 'es-ES', 'es-ES']);
   });
 });

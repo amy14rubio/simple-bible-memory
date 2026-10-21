@@ -125,8 +125,6 @@ export const en = {
   'speak.status.paused': 'Take your time. Say again, hard, good or easy, or tap.',
   'speak.status.confirming': 'Got it',
   'speak.skip': 'Skip',
-  'speak.say.askVerse': '{reference}.',
-  'speak.say.itWas': 'It was {reference}.',
   'speak.say.askRating': 'How did you do? Again, hard, good, or easy?',
   'speak.say.rated': 'Got it: {label}.',
   'speak.say.slower': 'Slower. Here it is again.',
