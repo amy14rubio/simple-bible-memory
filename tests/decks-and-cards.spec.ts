@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { addCard, createDeck, deckIdFromUrl, closeWithEscape } from './helpers';
+import { addCard, createDeck, deckIdFromUrl, closeWithEscape, openDeck } from './helpers';
 
 test('empty state, then the full deck and card workflow persists across reload', async ({ page }) => {
   await page.goto('/');
@@ -33,7 +33,7 @@ test('empty state, then the full deck and card workflow persists across reload',
   await expect(page).toHaveURL(/#\/$/);
   await page.getByRole('link', { name: /Commute verses/ }).click();
   await page.getByRole('button', { name: 'Deck actions' }).click();
-  await page.getByRole('link', { name: 'Rename deck' }).click();
+  await page.getByRole('link', { name: 'Edit deck' }).click();
   await expect(page.getByLabel('Description')).toBeVisible();
   await page.getByLabel('Title').fill('Renamed');
   await page.getByRole('button', { name: 'Save' }).click();
@@ -303,7 +303,23 @@ test('the deck form is Title, then Translation, then a Description that grows as
 
   // the line breaks are kept
   await page.getByRole('button', { name: 'Deck actions' }).click();
-  await page.getByRole('link', { name: 'Rename deck' }).click();
+  await page.getByRole('link', { name: 'Edit deck' }).click();
   await expect(page.getByLabel('Description')).toHaveValue('Verses for the morning commute.\nA second line.\nAnd a third.\nA fourth.');
 });
 
+
+test('every deck menu item has a small icon before its name, and the menu keeps its plain look', async ({ page }) => {
+  const id = await createDeck(page, 'Icons');
+  await addCard(page, id, 'John 3:16', 'For God so loved the world.');
+  await openDeck(page, id);
+  await page.getByRole('button', { name: 'Deck actions' }).click();
+  const menu = page.getByRole('navigation', { name: 'Deck actions' });
+  for (const name of ['Add card', 'Browse cards', 'Extra practice', 'Edit deck', 'Export deck', 'Delete deck']) {
+    const item = menu.getByRole('link', { name }).or(menu.getByRole('button', { name }));
+    const icon = item.locator('svg');
+    await expect(icon, name).toHaveCount(1);
+    await expect(icon).toHaveAttribute('aria-hidden', 'true'); // decoration: the name says it
+    await expect(icon).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)'); // no circle or box behind it
+  }
+  await expect(menu.getByRole('button', { name: 'Delete deck' }).locator('svg')).toHaveCSS('color', await menu.getByRole('button', { name: 'Delete deck' }).evaluate((el) => getComputedStyle(el).color)); // the delete icon is the same red as its text
+});

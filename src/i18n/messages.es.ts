@@ -59,7 +59,7 @@ export const es: Dictionary = {
   'deckMenu.addCard': 'Añadir tarjeta',
   'deckMenu.browse': 'Ver tarjetas',
   'deckMenu.extraPractice': 'Práctica extra',
-  'deckMenu.rename': 'Renombrar baraja',
+  'deckMenu.rename': 'Editar baraja',
   'deckMenu.delete': 'Eliminar baraja',
   'deckMenu.deleteTitle': '¿Eliminar esta baraja?',
   'deckMenu.deletePublished':
@@ -69,7 +69,7 @@ export const es: Dictionary = {
     '"{title}" y todas sus tarjetas se eliminarán de forma permanente, junto con su historial de repasos.',
 
   'deckForm.new': 'Nueva baraja',
-  'deckForm.rename': 'Renombrar baraja',
+  'deckForm.rename': 'Editar baraja',
   'deckForm.title': 'Título',
   'deckForm.titlePlaceholder': 'Ej. Versículos del camino',
   'deckForm.description': 'Descripción',
@@ -312,7 +312,7 @@ export const es: Dictionary = {
   'translation.search': 'Buscar',
   'translation.noMatch': 'Nada coincide con "{query}".',
   'deckMenu.publish': 'Publicar baraja',
-  'deckMenu.published': 'Publicada',
+  'deckMenu.published': 'Dejar de publicar la baraja',
   'publish.title': 'Publicar baraja',
   'publish.titlePublished': 'Baraja publicada',
   'publish.unavailable': 'La función de compartir no está configurada en esta versión de la app.',

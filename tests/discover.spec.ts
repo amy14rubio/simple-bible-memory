@@ -181,3 +181,25 @@ test('a deck published by a newer version of the app can be looked at, but not i
   await links.nth(1).click();
   await expect(page.getByRole('button', { name: 'Import deck' })).toBeEnabled();
 });
+
+test('the list shows only the first line of a description, with "…" when there is more; the deck\'s page shows it all', async ({ page }) => {
+  const long = deck('Alpha', 'KJV', 'en', 3000);
+  const short = deck('Beta', 'KJV', 'en', 2000);
+  const wide = deck('Gamma', 'KJV', 'en', 1000);
+  await seed(page, {
+    a: { ...long, meta: { ...long.meta, description: 'A first line.\nA second line that is only on the deck page.' } },
+    b: { ...short, meta: { ...short.meta, description: 'Just one line' } },
+    c: { ...wide, meta: { ...wide.meta, description: 'This one line is so long that it cannot possibly fit across a phone screen without being cut off, and it goes on and on. '.repeat(3) } },
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openDiscover(page);
+  await expect(page.getByText('A first line.…')).toBeVisible();
+  await expect(page.getByText('only on the deck page')).toHaveCount(0);
+  await expect(page.getByText('Just one line', { exact: true })).toBeVisible(); // nothing more: no "…"
+  const cut = page.getByText(/^This one line is so long/);
+  await expect(cut).toHaveCSS('white-space', 'nowrap'); // one line, however long
+  await expect(cut).toHaveCSS('text-overflow', 'ellipsis');
+  expect((await cut.boundingBox())!.height).toBeLessThan(30);
+  await page.getByText('A first line.…').click();
+  await expect(page.getByText('only on the deck page')).toBeVisible();
+});

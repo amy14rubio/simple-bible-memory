@@ -67,7 +67,7 @@ export const en = {
   'deckMenu.addCard': 'Add card',
   'deckMenu.browse': 'Browse cards',
   'deckMenu.extraPractice': 'Extra practice',
-  'deckMenu.rename': 'Rename deck',
+  'deckMenu.rename': 'Edit deck',
   'deckMenu.delete': 'Delete deck',
   'deckMenu.deleteTitle': 'Delete this deck?',
   'deckMenu.deletePublished':
@@ -78,7 +78,7 @@ export const en = {
 
   // deck form
   'deckForm.new': 'New deck',
-  'deckForm.rename': 'Rename deck',
+  'deckForm.rename': 'Edit deck',
   'deckForm.title': 'Title',
   'deckForm.titlePlaceholder': 'Ex. Commute verses',
   'deckForm.description': 'Description',
@@ -311,7 +311,7 @@ export const en = {
   'translation.search': 'Search',
   'translation.noMatch': 'Nothing matches "{query}".',
   'deckMenu.publish': 'Publish deck',
-  'deckMenu.published': 'Published',
+  'deckMenu.published': 'Unpublish deck',
   'publish.title': 'Publish deck',
   'publish.titlePublished': 'Published deck',
   'publish.unavailable': "Sharing isn't set up in this version of the app.",

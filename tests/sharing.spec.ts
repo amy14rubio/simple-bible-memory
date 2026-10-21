@@ -30,7 +30,7 @@ async function psalmsDeck(page: Page, translation: string | null = 'King James V
 async function openPublish(page: Page, deckId: string) {
   await openDeck(page, deckId);
   await page.getByRole('button', { name: 'Deck actions' }).click();
-  await page.getByRole('button', { name: /^(Publish deck|Published)$/ }).click();
+  await page.getByRole('button', { name: /^(Publish deck|Unpublish deck)$/ }).click();
   await expect(drawer(page)).toBeVisible();
 }
 
@@ -148,7 +148,7 @@ test.describe('publishing', () => {
     await expect(why).toContainText('export any deck to a file');
   });
 
-  test('the deck menu says Published afterwards, with the status and an Unpublish button', async ({ page }) => {
+  test('the deck menu says Unpublish deck afterwards, with the status and an Unpublish button', async ({ page }) => {
     const id = await psalmsDeck(page);
     await openPublish(page, id);
     await signInInDrawer(page);
@@ -156,7 +156,7 @@ test.describe('publishing', () => {
     await expect(page.getByText('Deck published')).toBeVisible();
     await page.waitForTimeout(300);
 
-    await openPublish(page, id);
+    await openPublish(page, id); // (the menu item now says "Unpublish deck"; it opens the drawer)
     await expect(drawer(page)).toContainText('Published. Changes you make are sent automatically.');
     await drawer(page).getByRole('button', { name: 'Unpublish' }).click();
     await expect(page.getByText('Deck unpublished')).toBeVisible();
@@ -165,7 +165,7 @@ test.describe('publishing', () => {
     await openDeck(page, id);
     await page.getByRole('button', { name: 'Deck actions' }).click();
     await expect(page.getByRole('button', { name: 'Publish deck' })).toBeVisible(); // back to unpublished; the local deck is untouched
-    await expect(page.getByRole('button', { name: 'Published', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Unpublish deck' })).toHaveCount(0);
   });
 });
 
