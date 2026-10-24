@@ -20,12 +20,12 @@ test('new card shows interval hints; Good brings it back soon (learning); Easy g
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click();
 
-  await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   await expect(page.getByText('1 card reviewed')).toBeVisible();
 
   // open-deck view: nothing due now, and it says when the next review is
   await page.getByRole('link', { name: 'Back to deck' }).click();
-  await expect(page.getByRole('heading', { name: "You're all caught up" })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   await expect(page.getByText(/Your next review is in \d+(m|h|d|mo)/)).toBeVisible();
   await expect(page.getByRole('link', { name: /Flashcard/ })).toHaveCount(0); // nothing to study right now
 });
@@ -38,12 +38,12 @@ test('reviews persist across a reload', async ({ page }) => {
   await page.getByRole('link', { name: /Flashcard/ }).click();
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click();
-  await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   await page.getByRole('link', { name: 'Back to deck' }).click();
-  await expect(page.getByRole('heading', { name: "You're all caught up" })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
 
   await page.reload(); // the review was awaited before the session ended, so it is already saved
-  await expect(page.getByRole('heading', { name: "You're all caught up" })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   await expect(page.getByText(/Your next review is in/)).toBeVisible();
 });
 
@@ -59,7 +59,7 @@ test('the home list shows only how many cards are due, and it updates after stud
   await page.goto(`/#/decks/${id}/study/flashcard`);
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click();
-  await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   await page.goto('/');
   await expect(page.getByRole('link', { name: /Due list/ })).toContainText('0 due');
 });
@@ -88,5 +88,5 @@ test('"New cards per day" limits how many new cards are introduced', async ({ pa
   await setNewPerDay(page, '0');
   await page.getByRole('link', { name: 'Back to decks' }).click();
   await page.getByRole('link', { name: /Scheduled deck/ }).click();
-  await expect(page.getByText("You've reached today's limit for new cards.")).toBeVisible();
+  await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible(); // nothing new is allowed, and nothing else is due
 });

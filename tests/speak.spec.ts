@@ -22,7 +22,7 @@ test('speak: prompts, listens, reads the verse, asks, and records the spoken rat
   await page.goto(`/#/decks/${id}/study/speak`);
   await expect(page.getByRole('heading', { name: 'Hands-free study' })).toBeVisible();
   await page.getByRole('button', { name: 'Start' }).click();
-  await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   const spoken = await said(page);
   expect(spoken[0]).toBe('Example 1, verse 1.');
   expect(spoken.some((s) => s.includes('Example verse text.'))).toBe(true);
@@ -35,7 +35,7 @@ test('speak: the rating buttons appear with the question, and tapping one works'
   await page.goto(`/#/decks/${id}/study/speak`);
   await page.getByRole('button', { name: 'Start' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click(); // (clicking waits for it to appear)
-  await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   await expect(page.getByText('1 card reviewed')).toBeVisible();
 });
 
@@ -47,7 +47,7 @@ test('speak: no rating buttons while the verse is being said', async ({ page }) 
   await expect(page.getByText('Listening…')).toBeVisible();
   await expect(page.getByRole('button', { name: /^Easy/ })).toBeHidden();
   await page.getByRole('button', { name: 'Skip' }).click();
-  await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
 });
 
 test('speak: saying "stop" leaves for the deck', async ({ page }) => {
@@ -63,7 +63,7 @@ test('speak: an identify card reads the passage and asks which verse', async ({ 
   const id = await setup(page, 'Identify the verse');
   await page.goto(`/#/decks/${id}/study/speak`);
   await page.getByRole('button', { name: 'Start' }).click();
-  await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   const spoken = await said(page);
   expect(spoken[0]).toBe('Example verse text.');
   expect(spoken).toContain('Example 1, verse 1.'); // (the dev server starts each card twice, hence not checking positions)

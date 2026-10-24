@@ -129,7 +129,7 @@ describe('buildQueue()', () => {
     await reviews.record({ cardId: made[0]!.id, kind: 'recall', rating: 3, mode: 'flashcard' }); // due +10m
     await reviews.record({ cardId: made[1]!.id, kind: 'recall', rating: 1, mode: 'flashcard' }); // due +1m
     // both are learning cards due within the look-ahead, so they count already (leaving a session early must not hide them)
-    expect((await reviews.buildQueue(deck.id, { newPerDay: 0, kinds: ['recall'] })).map((e) => e.card.id)).toEqual([made[1]!.id, made[0]!.id]);
+    expect((await reviews.buildQueue(deck.id, { newPerDay: 2, kinds: ['recall'] })).map((e) => e.card.id)).toEqual([made[1]!.id, made[0]!.id]); // (2 started, so no new ones left)
     clock = NOON + 20 * MIN;
     const q = await reviews.buildQueue(deck.id, { newPerDay: 5, kinds: ['recall'] });
     expect(q.map((e) => e.card.id)).toEqual([made[1]!.id, made[0]!.id, made[2]!.id]); // due 1m, due 10m, then new
@@ -140,14 +140,14 @@ describe('buildQueue()', () => {
   it('counts a learning card that is due within 20 minutes, but not one further away, and not a card in review', async () => {
     const { deck, cards: made } = await mk(3);
     await reviews.record({ cardId: made[0]!.id, kind: 'recall', rating: 3, mode: 'flashcard' }); // learning, due +10m
-    const soon = await reviews.buildQueue(deck.id, { newPerDay: 0, kinds: ['recall'] });
+    const soon = await reviews.buildQueue(deck.id, { newPerDay: 1, kinds: ['recall'] });
     expect(soon.map((e) => e.card.id)).toEqual([made[0]!.id]);
     clock = NOON - 11 * MIN; // the same card is now 21 minutes away
-    expect(await reviews.buildQueue(deck.id, { newPerDay: 0, kinds: ['recall'] })).toEqual([]);
+    expect(await reviews.buildQueue(deck.id, { newPerDay: 1, kinds: ['recall'] })).toEqual([]);
     clock = NOON + 11 * MIN; // graduate it: now it is a review card, due in days
     await reviews.record({ cardId: made[0]!.id, kind: 'recall', rating: 3, mode: 'flashcard' });
     clock += MIN;
-    expect(await reviews.buildQueue(deck.id, { newPerDay: 0, kinds: ['recall'] })).toEqual([]);
+    expect(await reviews.buildQueue(deck.id, { newPerDay: 1, kinds: ['recall'] })).toEqual([]);
   });
 
   it('is scoped to the deck', async () => {
@@ -270,14 +270,18 @@ describe('two study cards per verse (recall and identify)', () => {
 });
 
 describe('dueCounts()', () => {
-  it('gives each deck its due-plus-new count and shares the new-card limit across decks', async () => {
+  it('gives each deck its due-plus-new count, as if it were opened first (the limit is one total, first come first served)', async () => {
     const a = await mk(2, 'A');
     const b = await mk(2, 'B');
     const empty = await decks.create({ title: 'C empty' });
     const kinds = ['recall'] as ('recall' | 'identify')[];
     expect(await reviews.dueCounts({ newPerDay: 10, kinds })).toEqual({ [a.deck.id]: 2, [b.deck.id]: 2, [empty.id]: 0 });
-    // a limit of 3 is shared: deck A (first by title) takes 2, deck B gets what is left
-    expect(await reviews.dueCounts({ newPerDay: 3, kinds })).toEqual({ [a.deck.id]: 2, [b.deck.id]: 1, [empty.id]: 0 });
+    // a limit of 1: each deck shows what it would give if opened first, the same number its own page and session show
+    expect(await reviews.dueCounts({ newPerDay: 1, kinds })).toEqual({ [a.deck.id]: 1, [b.deck.id]: 1, [empty.id]: 0 });
+    expect((await reviews.buildQueue(b.deck.id, { newPerDay: 1, kinds })).length).toBe(1);
+    // studying one new card in A uses the limit up for B as well
+    await reviews.record({ cardId: a.cards[0]!.id, kind: 'recall', rating: 3, mode: 'flashcard' });
+    expect(await reviews.dueCounts({ newPerDay: 1, kinds })).toEqual({ [a.deck.id]: 1, [b.deck.id]: 0, [empty.id]: 0 }); // A: its card, due again within minutes
   });
 
   it('counts due reviews and reflects what has been studied today', async () => {
@@ -292,5 +296,45 @@ describe('dueCounts()', () => {
   it('is zero everywhere when no card kinds are in use', async () => {
     const a = await mk(1, 'A');
     expect(await reviews.dueCounts({ newPerDay: 10, kinds: [] })).toEqual({ [a.deck.id]: 0 });
+  });
+});
+
+describe('lowering the daily new-card limit after starting cards', () => {
+  const kinds = ['recall'] as ('recall' | 'identify')[];
+  const start = async (cardIds: string[]) => { for (const id of cardIds) { clock += 1000; await reviews.record({ cardId: id, kind: 'recall', rating: 1, mode: 'flashcard' }); } };
+
+  it('moves the cards started beyond the new limit to tomorrow, and keeps the first ones', async () => {
+    const { deck, cards: made } = await mk(5);
+    await start(made.map((c) => c.id)); // five cards started today, all being learned
+    expect((await reviews.buildQueue(deck.id, { newPerDay: 5, kinds })).map((e) => e.card.id).sort()).toEqual(made.map((c) => c.id).sort());
+    const two = await reviews.buildQueue(deck.id, { newPerDay: 2, kinds });
+    expect(two.map((e) => e.card.id).sort()).toEqual([made[0]!.id, made[1]!.id].sort()); // the two started first stay
+    expect((await reviews.dueCounts({ newPerDay: 2, kinds }))[deck.id]).toBe(2); // the home list agrees
+  });
+
+  it('brings them back when the limit is raised again, with their progress', async () => {
+    const { deck, cards: made } = await mk(4);
+    await start(made.map((c) => c.id));
+    expect(await reviews.buildQueue(deck.id, { newPerDay: 1, kinds })).toHaveLength(1);
+    const back = await reviews.buildQueue(deck.id, { newPerDay: 4, kinds });
+    expect(back).toHaveLength(4);
+    expect(back.every((e) => e.schedule !== null && e.schedule.reps === 1)).toBe(true); // nothing was reset
+  });
+
+  it('they are on the list again the next day', async () => {
+    const { deck, cards: made } = await mk(3);
+    await start(made.map((c) => c.id));
+    expect(await reviews.buildQueue(deck.id, { newPerDay: 1, kinds })).toHaveLength(1);
+    clock = NOON + DAY; // tomorrow: the learning cards are due, and yesterday's starts no longer count against today
+    expect(await reviews.buildQueue(deck.id, { newPerDay: 1, kinds })).toHaveLength(3);
+  });
+
+  it('does not touch cards that were already learned, or cards that are simply due', async () => {
+    const { deck, cards: made } = await mk(2);
+    await start([made[0]!.id]);
+    clock += 11 * MIN;
+    await reviews.record({ cardId: made[0]!.id, kind: 'recall', rating: 3, mode: 'flashcard' }); // graduates: now in review, due in days
+    clock = NOON + 3 * DAY; // due again
+    expect((await reviews.buildQueue(deck.id, { newPerDay: 0, kinds })).map((e) => e.card.id)).toEqual([made[0]!.id]);
   });
 });

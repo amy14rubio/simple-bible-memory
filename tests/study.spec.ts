@@ -32,7 +32,7 @@ test('flashcard: reveal, rate Easy, finish; the review is recorded', async ({ pa
   await page.getByRole('button', { name: 'Show answer' }).click();
   await expect(page.getByText('Example verse text typed by the user.')).toBeVisible();
   await page.getByRole('button', { name: /^Easy/ }).click();
-  await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   await expect(page.getByText('1 card reviewed')).toBeVisible();
 });
 
@@ -246,12 +246,12 @@ test('leaving a session early: cards still waiting (including ones rated Again) 
   await page.getByRole('button', { name: /^Again/ }).click(); // comes back in a minute
   await page.getByRole('link', { name: 'Exit study' }).click();
 
-  // two never seen, one coming back in a minute: all three are still to do, so the page must not say "all caught up"
+  // two never seen, one coming back in a minute: all three are still to do, so the page must not say "done for today"
   await expect(page.getByText('3 cards to study today.')).toBeVisible();
-  await expect(page.getByText("You're all caught up")).toHaveCount(0);
+  await expect(page.getByText("You're done for today!")).toHaveCount(0);
 });
 
-test('finishing every card, with none waiting, says all caught up', async ({ page }) => {
+test('finishing every card, with none waiting, says you are done for today, with the next review', async ({ page }) => {
   const id = await createDeck(page);
   await addCard(page, id, 'John 3:16', 'First example passage.');
   await setCardKinds(page, 'Recall the passage');
@@ -259,5 +259,5 @@ test('finishing every card, with none waiting, says all caught up', async ({ pag
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click(); // Easy graduates the card: due in days
   await page.getByRole('link', { name: 'Back to deck' }).click();
-  await expect(page.getByText("You're all caught up")).toBeVisible();
+  await expect(page.getByText("You're done for today!")).toBeVisible();
 });

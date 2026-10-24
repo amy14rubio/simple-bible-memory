@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../../domain/types';
 import type { Schedule } from '../../domain/scheduling/scheduler';
-import { promoteDue, shuffle, type SessionEntry } from './queueOrder';
+import { orderForToday, promoteDue, shuffle, type SessionEntry } from './queueOrder';
 
 const entry = (id: string, due: number | null, again = false): SessionEntry => ({
   card: { id } as Card,
@@ -50,5 +50,77 @@ describe('promoteDue', () => {
     const q = [entry('current', 1), entry('again', now - 1, true)];
     expect(promoteDue(q, 1, now)).toBe(q);
     expect(promoteDue(q, 5, now)).toBe(q);
+  });
+});
+
+describe('orderForToday', () => {
+  const now = 1_000_000;
+  const mk = (id: string, due: number | null, kind: 'recall' | 'identify' = 'recall') => ({ card: { id } as Card, kind, schedule: due === null ? null : ({ due } as Schedule) });
+  const many = Array.from({ length: 12 }, (_, i) => mk(`c${i}`, null));
+  const ids = (q: { card: Card; kind: string }[]) => q.map((e) => `${e.card.id}:${e.kind}`);
+  const today = { deckId: 'deck', day: 20_000, now };
+
+  it('is the same every time it is asked for on the same day (the same in every study mode)', () => {
+    expect(ids(orderForToday(many, today))).toEqual(ids(orderForToday([...many].reverse(), today)));
+  });
+  it('keeps the remaining cards in the same order as cards are finished and drop out', () => {
+    const full = ids(orderForToday(many, today));
+    const left = many.filter((e) => !['c0', 'c3', 'c7'].includes(e.card.id));
+    expect(ids(orderForToday(left, today))).toEqual(full.filter((k) => !['c0:recall', 'c3:recall', 'c7:recall'].includes(k)));
+  });
+  it('is a different order on another day or for another deck, and not the order the cards were added in', () => {
+    const base = ids(orderForToday(many, today));
+    expect(ids(orderForToday(many, { ...today, day: 20_001 }))).not.toEqual(base);
+    expect(ids(orderForToday(many, { ...today, deckId: 'other' }))).not.toEqual(base);
+    expect(base).not.toEqual(ids(many));
+    expect([...base].sort()).toEqual(ids(many).sort()); // every card, once
+  });
+  it('treats the two cards of a verse as separate cards in the shuffle', () => {
+    const both = many.flatMap((e) => [e, { ...e, kind: 'identify' as const }]);
+    const order = ids(orderForToday(both, today));
+    expect(order).toHaveLength(24);
+    expect(new Set(order).size).toBe(24);
+  });
+  it('puts cards being learned that are not due yet after the rest, soonest first, marked to come back when due', () => {
+    const entries = [mk('learn-late', now + 600_000), ...many.slice(0, 4), mk('learn-soon', now + 60_000), mk('due', now - 5)];
+    const q = orderForToday(entries, today);
+    expect(ids(q).slice(-2)).toEqual(['learn-soon:recall', 'learn-late:recall']);
+    expect(q.slice(-2).every((e) => e.again)).toBe(true);
+    expect(q.slice(0, -2).some((e) => e.again)).toBe(false);
+    expect(ids(q)).toContain('due:recall'); // a card that is simply due is in the first group
+  });
+  it('never puts the two cards of a verse back to back, when other verses can go between them', () => {
+    let worst = 0;
+    for (let d = 0; d < 400; d++) {
+      const verses = 2 + (d % 9); // 2 to 10 verses
+      const both = Array.from({ length: verses }, (_, i) => i).flatMap((i) => [mk(`v${i}`, null), mk(`v${i}`, null, 'identify')]);
+      const q = orderForToday(both, { deckId: `deck${d}`, day: 20_000 + (d % 7), now });
+      for (let i = 1; i < q.length; i++) if (q[i]!.card.id === q[i - 1]!.card.id) worst++;
+    }
+    expect(worst).toBe(0);
+  });
+  it('also keeps them apart on a new person\'s first day (two verses with both cards, and a third with one)', () => {
+    let adjacent = 0;
+    for (let d = 0; d < 400; d++) {
+      const first5 = [mk('john', null), mk('john', null, 'identify'), mk('rom3', null), mk('rom3', null, 'identify'), mk('rom5', null)];
+      const q = orderForToday(first5, { deckId: `deck${d}`, day: 20_000, now });
+      for (let i = 1; i < q.length; i++) if (q[i]!.card.id === q[i - 1]!.card.id) adjacent++;
+    }
+    expect(adjacent).toBe(0);
+  });
+  it('still mixes fronts and backs of different verses (not all fronts, then all backs)', () => {
+    let mixed = 0;
+    for (let d = 0; d < 400; d++) {
+      const both = Array.from({ length: 6 }, (_, i) => i).flatMap((i) => [mk(`v${i}`, null), mk(`v${i}`, null, 'identify')]);
+      const firstHalf = orderForToday(both, { deckId: `deck${d}`, day: 20_000, now }).slice(0, 6).map((e) => e.kind);
+      if (firstHalf.includes('recall') && firstHalf.includes('identify')) mixed++;
+    }
+    expect(mixed).toBeGreaterThan(360); // 90% or more of the lists have both fronts and backs in their first half (the rest are chance)
+  });
+  it('stays the same as cards are finished: finishing the first four leaves the other eight in the same order', () => {
+    const both = Array.from({ length: 6 }, (_, i) => i).flatMap((i) => [mk(`v${i}`, null), mk(`v${i}`, null, 'identify')]);
+    const q = orderForToday(both, { deckId: 'deck', day: 20_000, now });
+    const rest = orderForToday(both.filter((e) => !q.slice(0, 4).some((d) => d.card.id === e.card.id && d.kind === e.kind)), { deckId: 'deck', day: 20_000, now });
+    expect(ids(rest)).toEqual(ids(q.slice(4)));
   });
 });
