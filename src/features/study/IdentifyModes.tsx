@@ -137,7 +137,11 @@ export function IdentifyChoice({ card, references, sessionSeed, intervals, onRat
       <div className="flex flex-1 flex-col gap-6 pt-6">
         <CardPrompt prompt={t('study.promptChoose')} />
         <Passage text={card.verseText} />
-        <div role="group" aria-label={t('identify.choose')} aria-describedby={CARD_PROMPT_ID} className="grid gap-2.5">
+      </div>
+      {picked !== undefined && <AnswerRegion label={correct ? `${t('common.correct')}. ${card.reference}` : t('identify.wrongChoice', { answer: card.reference })} />}
+      {/* The options are pinned at the bottom (like the word bank), so a long passage scrolls above them and they never sit against the edge. */}
+      <ActionBar>
+        <div role="group" aria-label={t('identify.choose')} aria-describedby={CARD_PROMPT_ID} className="grid max-h-[45dvh] gap-2 overflow-y-auto">
           {choices.map((c) => {
             const isRight = c === card.reference;
             const state = picked === undefined ? 'idle' : isRight ? 'right' : c === picked ? 'wrong' : 'other';
@@ -148,7 +152,7 @@ export function IdentifyChoice({ card, references, sessionSeed, intervals, onRat
                 disabled={picked !== undefined}
                 aria-pressed={c === picked}
                 onClick={() => setPicked(c)}
-                className={`flex min-h-14 items-center justify-between gap-3 rounded-lg border px-4 text-left font-serif text-lg disabled:opacity-100 ${
+                className={`flex min-h-12 items-center justify-between gap-3 rounded-lg border px-4 text-left font-serif text-lg disabled:opacity-100 ${
                   state === 'right' ? 'border-2 border-good text-good' : state === 'wrong' ? 'border-2 border-again text-again' : 'border-border'
                 } ${state === 'idle' ? 'hover:bg-surface' : ''} ${state === 'other' ? 'text-muted' : ''}`}
               >
@@ -160,13 +164,8 @@ export function IdentifyChoice({ card, references, sessionSeed, intervals, onRat
             );
           })}
         </div>
-      </div>
-      {picked !== undefined && <AnswerRegion label={correct ? `${t('common.correct')}. ${card.reference}` : t('identify.wrongChoice', { answer: card.reference })} />}
-      {picked !== undefined && (
-        <ActionBar>
-          <RatingBar suggested={correct ? 3 : 1} intervals={intervals} onRate={onRate} />
-        </ActionBar>
-      )}
+        {picked !== undefined && <RatingBar suggested={correct ? 3 : 1} intervals={intervals} onRate={onRate} />}
+      </ActionBar>
     </>
   );
 }

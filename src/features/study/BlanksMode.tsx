@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Card } from '../../domain/types';
 import { buildWordBank, checkCloze, generateCloze, hashSeed, isCorrectWord, wordsOf, type BankWord, type Difficulty } from '../../domain/study/cloze';
 import type { Rating } from '../../domain/study/rating';
@@ -6,6 +6,7 @@ import { ActionBar, RatingBar } from './RatingBar';
 import { AnswerRegion } from './AnswerRegion';
 import { useVerseLang } from './verseLang';
 import { useCardPosition } from './cardPosition';
+import { keepInView } from './keepInView';
 import { useI18n } from '../../i18n/I18nProvider';
 
 /**
@@ -29,6 +30,7 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
 
   const [picked, setPicked] = useState<string[]>([]); // the word tapped for each finished blank
   const [announcement, setAnnouncement] = useState('');
+  const activeBlank = useRef<HTMLSpanElement>(null);
   const lang = useVerseLang();
   const position = useCardPosition();
   const step = picked.length;
@@ -59,6 +61,12 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
+  // A long verse does not fit on the screen next to the word bank, so each time the blank moves on, the page follows it.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => keepInView(activeBlank.current)); // after the new bank has been drawn
+    return () => cancelAnimationFrame(frame);
+  }, [step]);
+
   const tap = (word: BankWord) => {
     const answer = blanks[step]!.answer;
     setPicked((p) => [...p, word.text]);
@@ -85,7 +93,7 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
               );
             }
             return s.id === step ? (
-              <span key={i} aria-current="step" style={width} className="mx-0.5 inline-block rounded-md border-2 border-foreground bg-surface align-baseline">
+              <span key={i} ref={activeBlank} aria-current="step" style={width} className="mx-0.5 inline-block rounded-md border-2 border-foreground bg-surface align-baseline">
                 &nbsp;<span className="sr-only">{t('blanks.current', { n: s.id + 1 })}</span>
               </span>
             ) : (
