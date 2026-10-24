@@ -89,4 +89,38 @@ describe('orderForToday', () => {
     expect(q.slice(0, -2).some((e) => e.again)).toBe(false);
     expect(ids(q)).toContain('due:recall'); // a card that is simply due is in the first group
   });
+  it('never puts the two cards of a verse back to back, when other verses can go between them', () => {
+    let worst = 0;
+    for (let d = 0; d < 400; d++) {
+      const verses = 2 + (d % 9); // 2 to 10 verses
+      const both = Array.from({ length: verses }, (_, i) => i).flatMap((i) => [mk(`v${i}`, null), mk(`v${i}`, null, 'identify')]);
+      const q = orderForToday(both, { deckId: `deck${d}`, day: 20_000 + (d % 7), now });
+      for (let i = 1; i < q.length; i++) if (q[i]!.card.id === q[i - 1]!.card.id) worst++;
+    }
+    expect(worst).toBe(0);
+  });
+  it('also keeps them apart on a new person\'s first day (two verses with both cards, and a third with one)', () => {
+    let adjacent = 0;
+    for (let d = 0; d < 400; d++) {
+      const first5 = [mk('john', null), mk('john', null, 'identify'), mk('rom3', null), mk('rom3', null, 'identify'), mk('rom5', null)];
+      const q = orderForToday(first5, { deckId: `deck${d}`, day: 20_000, now });
+      for (let i = 1; i < q.length; i++) if (q[i]!.card.id === q[i - 1]!.card.id) adjacent++;
+    }
+    expect(adjacent).toBe(0);
+  });
+  it('still mixes fronts and backs of different verses (not all fronts, then all backs)', () => {
+    let mixed = 0;
+    for (let d = 0; d < 400; d++) {
+      const both = Array.from({ length: 6 }, (_, i) => i).flatMap((i) => [mk(`v${i}`, null), mk(`v${i}`, null, 'identify')]);
+      const firstHalf = orderForToday(both, { deckId: `deck${d}`, day: 20_000, now }).slice(0, 6).map((e) => e.kind);
+      if (firstHalf.includes('recall') && firstHalf.includes('identify')) mixed++;
+    }
+    expect(mixed).toBeGreaterThan(360); // 90% or more of the lists have both fronts and backs in their first half (the rest are chance)
+  });
+  it('stays the same as cards are finished: finishing the first four leaves the other eight in the same order', () => {
+    const both = Array.from({ length: 6 }, (_, i) => i).flatMap((i) => [mk(`v${i}`, null), mk(`v${i}`, null, 'identify')]);
+    const q = orderForToday(both, { deckId: 'deck', day: 20_000, now });
+    const rest = orderForToday(both.filter((e) => !q.slice(0, 4).some((d) => d.card.id === e.card.id && d.kind === e.kind)), { deckId: 'deck', day: 20_000, now });
+    expect(ids(rest)).toEqual(ids(q.slice(4)));
+  });
 });

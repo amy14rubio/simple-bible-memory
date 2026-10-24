@@ -36,16 +36,29 @@ export function promoteDue(queue: SessionEntry[], from: number, now: number): Se
   return next;
 }
 
+/** Spreads a hash over the whole range, so texts that differ in only a character or two still land far apart (the murmur3 finalizer). */
+function spread(h: number): number {
+  h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b);
+  h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35);
+  h ^= h >>> 16;
+  return h >>> 0;
+}
+
 /**
  * The order of a deck's cards for today, the same in every study mode. It is a random-looking order that depends only on the day,
  * the deck and the card, so nothing has to be saved: leaving and coming back, or switching from Flashcard to Type, gives the cards
  * that are still left in the very same order. (A card done in one mode is simply no longer in the list in the others.)
- * Cards that are being learned and are not due for a few minutes yet go after the rest, soonest first, as they do during a session.
+ *
+ * A verse's two cards (reference to passage, and passage to reference) are placed half a list apart, so they are never back to back
+ * when the list has other verses to put between them (the second one would give the first one away), while fronts and backs of
+ * different verses mix freely. Cards that are being learned and are not due for a few minutes yet go after the rest, soonest first,
+ * as they do during a session.
  */
 export function orderForToday(entries: readonly QueueEntry[], { deckId, day, now }: { deckId: string; day: number; now: number }): SessionEntry[] {
-  const rank = (e: QueueEntry) => hashSeed(`${day}:${deckId}:${e.card.id}:${e.kind}`);
+  // Both cards of a verse start from the same random point on a circle; one is moved half way round.
+  const rank = (e: QueueEntry) => (spread(hashSeed(`${day}:${deckId}:${e.card.id}`)) / 2 ** 32 + (e.kind === 'identify' ? 0.5 : 0)) % 1;
   const ready = entries.filter((e) => !e.schedule || e.schedule.due <= now);
-  if (!keepGivenOrder()) ready.sort((a, b) => rank(a) - rank(b));
+  if (!keepGivenOrder()) ready.sort((a, b) => rank(a) - rank(b) || (a.kind === 'recall' ? -1 : 1));
   // Waiting ones are marked `again`, so during the session they come back when their time is up (see promoteDue).
   const waiting = entries.filter((e) => e.schedule && e.schedule.due > now).sort((a, b) => a.schedule!.due - b.schedule!.due || rank(a) - rank(b)).map((e): SessionEntry => ({ ...e, again: true }));
   return [...ready, ...waiting];
