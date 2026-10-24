@@ -71,7 +71,7 @@ test('statistics: with only recall cards in use, one studied card makes a verse 
   await page.goto(`/#/decks/${a}/study/flashcard`);
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click();
-  await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   await page.goto('/#/stats');
   await expect(number(page, 'Verses memorized')).toHaveText('1');
   await expect(page.getByRole('button', { name: 'Card counts', exact: true })).toBeVisible(); // the stage explanations apply whichever cards you study

@@ -2,7 +2,7 @@ import type { Database, SqlValue } from '../database/Database';
 import type { Card } from '../../domain/types';
 import type { Rating } from '../../domain/study/rating';
 import type { CardKind } from '../../domain/study/cardKind';
-import { SCHEDULER_VERSION, type CardState, type Schedule, type Scheduler } from '../../domain/scheduling/scheduler';
+import { SCHEDULER_VERSION, CardState, type Schedule, type Scheduler } from '../../domain/scheduling/scheduler';
 import { startOfLocalDay } from '../../domain/scheduling/format';
 import { toCard } from './cardRepository';
 import type { Clock } from './util';
@@ -109,6 +109,20 @@ export function createReviewRepository(db: Database, scheduler: Scheduler, now: 
     return { due, fresh };
   }
 
+  /**
+   * Cards that were started today beyond the daily new-card limit (the limit was lowered after they were started). They are being
+   * learned, so they would still be on the list; instead they wait until tomorrow, with their progress kept. The first
+   * `newPerDay` cards started today (across all decks) stay. Raising the limit again brings the rest back.
+   */
+  async function postponedToday(newPerDay: number, t: number): Promise<Set<string>> {
+    const started = await db.query<{ card_id: string; kind: string }>(
+      'SELECT card_id, kind FROM review_logs WHERE state_before = 0 AND reviewed_at >= ? ORDER BY reviewed_at, rowid',
+      [startOfLocalDay(t)],
+    );
+    return new Set(started.slice(newPerDay).map((r) => `${r.card_id}:${r.kind}`));
+  }
+  const isLearning = (e: QueueEntry) => e.schedule?.state === CardState.Learning || e.schedule?.state === CardState.Relearning;
+
   /** New study cards still allowed today. A new card's first review is the one logged with state_before = New (0). */
   async function newAllowance(newPerDay: number, t: number) {
     const [introduced] = await db.query<{ n: number }>('SELECT COUNT(*) AS n FROM review_logs WHERE state_before = 0 AND reviewed_at >= ?', [startOfLocalDay(t)]);
@@ -151,19 +165,21 @@ export function createReviewRepository(db: Database, scheduler: Scheduler, now: 
       if (kinds.length === 0) return [];
       const t = now();
       const { due, fresh } = await candidates(deckId, kinds, t);
-      return [...due, ...fresh.slice(0, await newAllowance(newPerDay, t))];
+      const postponed = await postponedToday(newPerDay, t);
+      return [...due.filter((e) => !(isLearning(e) && postponed.has(`${e.card.id}:${e.kind}`))), ...fresh.slice(0, await newAllowance(newPerDay, t))];
     },
 
     async dueCounts({ newPerDay, kinds }) {
       const t = now();
       const counts: Record<string, number> = {};
-      let allowance = await newAllowance(newPerDay, t);
+      // The daily new-card limit is one total for all decks, first come first served. Each deck is counted as if it were opened first,
+      // so the number on the home list is exactly what the deck's own page and its study session show.
+      const allowance = await newAllowance(newPerDay, t);
+      const postponed = await postponedToday(newPerDay, t);
       for (const { id } of await db.query<{ id: string }>('SELECT id FROM decks ORDER BY title COLLATE NOCASE')) {
         if (kinds.length === 0) { counts[id] = 0; continue; }
         const { due, fresh } = await candidates(id, kinds, t);
-        const used = Math.min(fresh.length, allowance);
-        allowance -= used; // the daily new-card limit is shared by all decks
-        counts[id] = due.length + used;
+        counts[id] = due.filter((e) => !(isLearning(e) && postponed.has(`${e.card.id}:${e.kind}`))).length + Math.min(fresh.length, allowance);
       }
       return counts;
     },

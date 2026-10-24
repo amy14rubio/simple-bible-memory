@@ -96,9 +96,7 @@ export const en = {
     one: '{count} card to study today.',
     other: '{count} cards to study today.',
   },
-  'deckHome.caughtUp': "You're all caught up",
   'deckHome.nextReview': 'Your next review is in {interval}.',
-  'deckHome.newLimit': "You've reached today's limit for new cards. You can raise it in Settings.",
   'deckHome.comeBack': 'Come back after you add more verses.',
   'mode.flashcard': 'Flashcard',
   'mode.flashcardHint': 'Flip it both ways',
@@ -563,8 +561,8 @@ export const en = {
 
   // studying
   'study.exit': 'Exit study',
-  'study.nothingDue': 'Nothing due right now',
-  'study.caughtUp': "You're all caught up for now.",
+  'study.doneToday': "You're done for today!",
+  'study.keepPracticing': 'Keep practicing',
   'study.saveFailed': 'Could not save your rating: {message}',
   'study.complete': 'Session complete',
   'study.summary': { one: '{count} card reviewed', other: '{count} cards reviewed' },

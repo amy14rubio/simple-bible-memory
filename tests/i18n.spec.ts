@@ -256,10 +256,10 @@ test.describe('the app in Spanish', () => {
     await page.getByRole('button', { name: 'Mostrar respuesta' }).click();
     await page.getByRole('button', { name: /^Fácil/ }).click();
 
-    await expect(page.getByRole('heading', { name: 'Sesión completada' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '¡Terminaste por hoy!' })).toBeVisible();
     await expect(page.getByText('2 tarjetas repasadas')).toBeVisible();
     await page.getByRole('link', { name: 'Volver a la baraja' }).click();
-    await expect(page.getByRole('heading', { name: 'Estás al día' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '¡Terminaste por hoy!' })).toBeVisible();
     await expect(page.getByText(/Tu próximo repaso es en \d+ (min|h|d|mes|meses)/)).toBeVisible();
     await ctx.close();
   });

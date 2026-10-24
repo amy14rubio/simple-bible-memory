@@ -10,6 +10,7 @@ import type { MessageKey } from '../../i18n';
 import { loadCardKinds } from '../study/cardKinds';
 import { loadNewPerDay } from '../study/newPerDay';
 import { DeckMenu } from './DeckMenu';
+import { DoneForToday } from '../study/DoneForToday';
 
 const MODES: { mode: string; title: MessageKey; hint: MessageKey; Icon: LucideIcon }[] = [
   { mode: 'flashcard', title: 'mode.flashcard', hint: 'mode.flashcardHint', Icon: Layers },
@@ -21,7 +22,7 @@ const tile = 'flex aspect-[5/4] flex-col justify-between rounded-lg border p-4';
 
 /** "Open deck view": how do you want to study? plus the deck's card counts. */
 export function DeckHomePage() {
-  const { t, formatInterval } = useI18n();
+  const { t } = useI18n();
   const { id = '' } = useParams();
   const { decks, reviews, settings } = useRepositories();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -78,16 +79,10 @@ export function DeckHomePage() {
               <StudyTiles id={id} />
             </>
           ) : (
-            <section aria-labelledby="caught-up" className="space-y-2 py-6 text-center">
-              <h2 id="caught-up" className="font-serif text-xl">{t('deckHome.caughtUp')}</h2>
-              <p role="status" className="mx-auto max-w-xs text-muted">
-                {nextDue !== null
-                  ? t('deckHome.nextReview', { interval: formatInterval(nextDue - Date.now()) })
-                  : stats.new > 0
-                    ? t('deckHome.newLimit')
-                    : t('deckHome.comeBack')}
-              </p>
-            </section>
+            <div className="py-6">
+              <DoneForToday deckId={id} nextDue={nextDue} as="h2" showBack={false} />
+              {nextDue === null && stats.new === 0 && <p className="mx-auto mt-4 max-w-xs text-center text-muted">{t('deckHome.comeBack')}</p>}
+            </div>
           )}
         </Page>
       )}

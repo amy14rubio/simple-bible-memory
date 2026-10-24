@@ -86,10 +86,7 @@ export const es: Dictionary = {
     one: '{count} tarjeta para estudiar hoy.',
     other: '{count} tarjetas para estudiar hoy.',
   },
-  'deckHome.caughtUp': 'Estás al día',
   'deckHome.nextReview': 'Tu próximo repaso es en {interval}.',
-  'deckHome.newLimit':
-    'Has llegado al límite de tarjetas nuevas de hoy. Puedes aumentarlo en Ajustes.',
   'deckHome.comeBack': 'Vuelve cuando añadas más versículos.',
   'mode.flashcard': 'Tarjeta',
   'mode.flashcardHint': 'Dale la vuelta en ambos sentidos',
@@ -572,8 +569,8 @@ export const es: Dictionary = {
   'stage.matureInfo': 'Se recuerdan muy bien, y el próximo repaso es en 3 semanas o más.',
 
   'study.exit': 'Salir del estudio',
-  'study.nothingDue': 'Nada pendiente por ahora',
-  'study.caughtUp': 'Estás al día por ahora.',
+  'study.doneToday': '¡Terminaste por hoy!',
+  'study.keepPracticing': 'Seguir practicando',
   'study.saveFailed': 'No se pudo guardar tu valoración: {message}',
   'study.complete': 'Sesión completada',
   'study.summary': { one: '{count} tarjeta repasada', other: '{count} tarjetas repasadas' },

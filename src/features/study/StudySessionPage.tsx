@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
-import { AppBar, BackButton, Button, ButtonLink, EmptyState, ErrorMessage, Page } from '../../components/ui';
+import { AppBar, BackButton, Button, ButtonLink, ErrorMessage, Page } from '../../components/ui';
 import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
 import type { Rating } from '../../domain/study/rating';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -21,7 +21,9 @@ import { CardPositionProvider } from './cardPosition';
 import { RatingBanner, BANNER_MS } from './RatingBanner';
 import { encouragementDefault, pickEncouragement } from './encouragement';
 import { loadNewPerDay } from './newPerDay';
-import { promoteDue, shuffle, type SessionEntry } from './queueOrder';
+import { orderForToday, promoteDue, shuffle, type SessionEntry } from './queueOrder';
+import { DoneForToday } from './DoneForToday';
+import { startOfLocalDay } from '../../domain/scheduling/format';
 
 type Mode = 'flashcard' | 'type' | 'blanks' | 'speak';
 const MODES = ['flashcard', 'type', 'blanks', 'speak'];
@@ -41,10 +43,12 @@ export function StudySessionPage() {
       const deckCards = await cards.listByDeck(id);
       return {
         deck: await decks.get(id),
-        // Always in a random order, so a verse's two cards are not shown one after the other and the answer given away.
-        queue: shuffle(extraPractice
-          ? await reviews.listForExtraPractice(id, kinds)
-          : await reviews.buildQueue(id, { newPerDay: await loadNewPerDay(settings), kinds })),
+        // Random-looking, but the same for the whole day in every mode: switching from Flashcard to Type continues the same list where
+        // it left off (see orderForToday). Extra practice is shuffled afresh each time.
+        queue: extraPractice
+          ? shuffle(await reviews.listForExtraPractice(id, kinds))
+          : orderForToday(await reviews.buildQueue(id, { newPerDay: await loadNewPerDay(settings), kinds }), { deckId: id, day: startOfLocalDay(Date.now()), now: Date.now() }),
+        nextDue: await reviews.nextDue(id, kinds),
         references: deckCards.map((c) => c.reference), // options for "which verse is this?"
         passages: deckCards.map((c) => c.verseText), // decoy words for the word bank
         difficulty: (await settings.get<Difficulty>('blank_difficulty')) ?? 'medium',
@@ -64,9 +68,7 @@ export function StudySessionPage() {
     return (
       <>
         <AppBar back={exit} title={<span className="sr-only">{heading}</span>} />
-        <EmptyState title={t('study.nothingDue')} action={<ButtonLink to={`/decks/${id}`} variant="secondary">{t('common.backToDeck')}</ButtonLink>}>
-          {t('study.caughtUp')}
-        </EmptyState>
+        <div className="px-5 py-20"><DoneForToday deckId={id} nextDue={data.nextDue} /></div>
       </>
     );
   }
@@ -77,7 +79,7 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
   encouragement: boolean; verseLang: string | undefined; heading: string; deckId: string; mode: Mode; extraPractice: boolean; references: string[]; passages: string[]; initialQueue: QueueEntry[]; initialDifficulty: Difficulty; seed: string;
 }) {
   const { t, formatInterval, formatIntervalSpoken, describeError } = useI18n();
-  const { reviews, scheduler } = useRepositories();
+  const { reviews, scheduler, settings } = useRepositories();
   const navigate = useNavigate();
   const [started, setStarted] = useState(mode !== 'speak');
   const [queue, setQueue] = useState<SessionEntry[]>(initialQueue);
@@ -99,6 +101,15 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
   }, [banner]);
 
   const entry = queue[index];
+  // When the list is finished: when the next review is, for the "You're done for today!" screen.
+  const [nextDue, setNextDue] = useState<number | null>(null);
+  const finished = !entry;
+  useEffect(() => {
+    if (!finished || extraPractice) return;
+    let live = true;
+    void loadCardKinds(settings).then((kinds) => reviews.nextDue(deckId, kinds)).then((t) => { if (live) setNextDue(t); });
+    return () => { live = false; };
+  }, [finished, extraPractice, reviews, settings, deckId]);
   const intervals = useMemo(() => {
     if (!entry || extraPractice) return undefined;
     const now = Date.now();
@@ -164,16 +175,20 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
       <div className="relative">
         {bannerEl}
         <AppBar back={exit} title={extraPractice ? t('study.extraTitle') : <span className="sr-only">{heading}</span>} />
-        <div className="space-y-8 px-5 py-20 text-center">
-          <div className="space-y-2">
-            <h1 className="font-serif text-3xl font-medium tracking-tight">{t('study.complete')}</h1>
-            <p className="text-muted">{t('study.summary', { count: reviewed })}</p>
+        {extraPractice ? (
+          <div className="space-y-8 px-5 py-20 text-center">
+            <div className="space-y-2">
+              <h1 className="font-serif text-3xl font-medium tracking-tight">{t('study.complete')}</h1>
+              <p className="text-muted">{t('study.summary', { count: reviewed })}</p>
+            </div>
+            <div className="mx-auto flex max-w-xs flex-col gap-3">
+              <Button variant="secondary" onClick={() => { setIndex(0); setReviewedCards(new Set()); setQueue(shuffle(initialQueue)); }}>{t('study.practiceAgain')}</Button>
+              <ButtonLink to={`/decks/${deckId}`}>{t('common.backToDeck')}</ButtonLink>
+            </div>
           </div>
-          <div className="mx-auto flex max-w-xs flex-col gap-3">
-            {extraPractice && <Button variant="secondary" onClick={() => { setIndex(0); setReviewedCards(new Set()); setQueue(shuffle(initialQueue)); }}>{t('study.practiceAgain')}</Button>}
-            <ButtonLink to={`/decks/${deckId}`}>{t('common.backToDeck')}</ButtonLink>
-          </div>
-        </div>
+        ) : (
+          <div className="px-5 py-20"><DoneForToday deckId={deckId} nextDue={nextDue} reviewed={reviewed} /></div>
+        )}
       </div>
     );
   }

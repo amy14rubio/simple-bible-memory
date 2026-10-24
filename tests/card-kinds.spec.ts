@@ -31,7 +31,7 @@ test('identify card, Flashcard: shows the passage first, then the verse', async 
   await page.getByRole('button', { name: 'Show answer' }).click();
   await expect(page.getByText('John 3:16', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: /^Easy/ }).click();
-  await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
 });
 
 test('recall card, Flashcard: shows the verse first, then the passage', async ({ page }) => {
