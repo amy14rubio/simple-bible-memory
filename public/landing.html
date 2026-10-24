@@ -4,68 +4,99 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Simple Bible Memory · Learn Scripture by heart</title>
-<meta name="description" content="Learn Bible verses by heart with spaced repetition. Free, private, and works offline.">
+<meta name="description" content="Memorize Bible verses with spaced repetition. No account, no ads, free. In English and Spanish.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preload" href="/fonts/literata-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/landing.css">
 <link rel="alternate" hreflang="en" href="/landing">
 <link rel="alternate" hreflang="es" href="/es/landing">
 </head>
 <body>
-<header>
-<img src="/logo.svg" alt="" width="36" height="36"><a class="brand" href="/landing">Simple Bible Memory</a>
-<nav aria-label="Language"><a href="/es/landing" hreflang="es" lang="es">Español</a></nav>
+<header class="top">
+<a class="brand" href="/landing"><img src="/logo.svg" alt="" width="32" height="32">Simple Bible Memory</a>
+<nav aria-label="Features">
+<a class="link" href="#try">Try it</a>
+<a class="link" href="#features">Features</a>
+<a class="link" href="#free">Free</a>
+<a class="button small" href="/">Start Practicing</a>
+</nav>
 </header>
 <main>
-<div class="hero">
-<h1>Learn Scripture by heart, and keep it.</h1>
-<p class="lead">Add the verses you want to learn and study them a few minutes a day. The app shows each one just before you would forget it.</p>
+<section class="hero">
+<h1>Simple Bible Memory</h1>
+<p class="lead">Learn scripture by heart</p>
 <div class="actions">
-<a class="button" href="/">Open the app</a>
-<a class="button secondary" href="#how">How it works</a>
+<a class="button" href="/">Start Practicing</a>
 </div>
-<p class="soon">Free, private, and works offline. Android app coming soon.</p>
+<div class="stores">
+<button type="button" class="button soon" disabled aria-disabled="true"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>Coming soon to Google Play</button>
+<button type="button" class="button soon" disabled aria-disabled="true"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>Coming soon to the App Store</button>
 </div>
-
-<div class="card" aria-hidden="true">
-<p class="ref">John 3:16</p>
-<p class="verse">For God so loved the world, that he gave his only begotten Son…</p>
-<div class="rates"><span style="color:var(--again)"><small>1m</small>Again</span><span style="color:var(--hard)"><small>6m</small>Hard</span><span style="color:var(--good)"><small>10m</small>Good</span><span style="color:var(--easy)"><small>2d</small>Easy</span></div>
-</div>
-
-<section id="how" aria-labelledby="how-title">
-<h2 id="how-title">How it works</h2>
-<ol class="steps">
-<li><strong>Add your verses</strong><span>One at a time, or a whole passage at once.</span></li>
-<li><strong>Study a little each day</strong><span>Rate how well you remembered each one.</span></li>
-<li><strong>Remember it for good</strong><span>Spaced repetition brings each verse back at the right time.</span></li>
-</ol>
 </section>
 
-<section aria-labelledby="ways-title">
-<h2 id="ways-title">Study it your way</h2>
+<section id="try" class="try" aria-labelledby="try-title">
+<h2 id="try-title">Try it right here</h2>
+<p class="sub">Pick a way to study and give it a go.</p>
+<div id="demo" class="demo" role="group" aria-label="Demo" hidden></div>
+<noscript><p class="note">The demo needs JavaScript. You can also open the app and try it there.</p></noscript>
+</section>
+
+<section class="screens" aria-labelledby="shots-title">
+<h2 id="shots-title">See it in the app</h2>
+<div class="shots" role="region" aria-label="Screenshots of the app" tabindex="0">
+<figure class="shot">
+<div class="phone"><picture><source media="(prefers-color-scheme: dark)" srcset="/landing/dark/04-decks.png"><img src="/landing/light/04-decks.png" alt="The app’s home screen: a list of decks with the number of verses to study today." width="540" height="1170" loading="lazy"></picture></div>
+<figcaption>Your decks</figcaption>
+</figure>
+<figure class="shot">
+<div class="phone"><picture><source media="(prefers-color-scheme: dark)" srcset="/landing/dark/02-spaced-repetition.png"><img src="/landing/light/02-spaced-repetition.png" alt="A verse with its reference and text, and four buttons (Again, Hard, Good, Easy) that show when it will come back." width="540" height="1170" loading="lazy"></picture></div>
+<figcaption>Rate each verse</figcaption>
+</figure>
+<figure class="shot">
+<div class="phone"><picture><source media="(prefers-color-scheme: dark)" srcset="/landing/dark/03-practice.png"><img src="/landing/light/03-practice.png" alt="Psalm 23 with some words missing and a bank of words to tap." width="540" height="1170" loading="lazy"></picture></div>
+<figcaption>Fill in the blanks</figcaption>
+</figure>
+</div>
+</section>
+
+<section id="features" class="features" aria-labelledby="feat-title">
+<h2 id="feat-title">Simple on purpose</h2>
 <ul class="grid">
-<li><strong>Flashcards</strong><span>See the reference and recall the passage, or the other way around.</span></li>
-<li><strong>Type it</strong><span>Write the verse and see exactly what you got right.</span></li>
-<li><strong>Fill in the blanks</strong><span>Choose from a word bank, at three difficulty levels.</span></li>
-<li><strong>Speak</strong><span>Study hands-free: say your answer out loud and rate yourself by voice.</span></li>
+<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" x2="22" y1="8" y2="13"/><line x1="22" x2="17" y1="8" y2="13"/></svg><div><h3>No account needed</h3><p>Open it and start. Your verses stay on your device.</p></div></li>
+<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><div><h3>English and Spanish</h3><p>The whole app, in both languages.</p></div></li>
+<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 14v2.2l1.6 1"/><path d="M16 2v3"/><path d="M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338"/><path d="M3 9h5.859"/><path d="M8 2v3"/><circle cx="16" cy="16" r="6"/></svg><div><h3>Spaced repetition</h3><p>Each verse returns just before you’d forget it.</p></div></li>
+<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 5H3"/><path d="M12 19H3"/><path d="M14 3v4"/><path d="M16 17v4"/><path d="M21 12h-9"/><path d="M21 19h-5"/><path d="M21 5h-7"/><path d="M8 10v4"/><path d="M8 12H3"/></svg><div><h3>Make it yours</h3><p>Colors, fonts, text size and how you study.</p></div></li>
 </ul>
 </section>
 
-<section aria-labelledby="private-title">
-<h2 id="private-title">Simple and private</h2>
-<ul class="facts">
-<li>No account needed. Your verses stay on your device.</li>
-<li>No ads, no tracking.</li>
-<li>Sign in with Google only if you want a backup on other devices.</li>
-<li>Share decks with others, or discover decks they have shared.</li>
-<li>In English and Spanish, and works with screen readers.</li>
-</ul>
-<p class="note">Speak mode uses your phone's own speech recognition, which may need an internet connection on some phones.</p>
+<section id="free" class="free" aria-labelledby="free-title">
+<h2 id="free-title">Free, and it stays that way</h2>
+<p>Simple Bible Memory costs nothing to use, and that won’t change. If it helps you, a small donation helps keep it free for everyone.</p>
+<!-- When the donation link is decided, replace this button with: <a class="button" href="THE-LINK">Support the app</a> -->
+<button type="button" class="button soon" disabled aria-disabled="true"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg>Donations coming soon</button>
 </section>
 </main>
 <footer>
-<p>Questions? Write to <a href="mailto:amyruth.rubio@gmail.com">amyruth.rubio@gmail.com</a>.</p>
-<p class="links"><a href="/privacy-policy">Privacy policy</a><a href="/terms">Terms</a><a href="/delete-account">Delete your account</a><a href="/es/landing" hreflang="es" lang="es">Español</a></p>
+<div class="foot">
+<div class="foot-brand">
+<a class="brand big" href="/landing"><img src="/logo.svg" alt="" width="40" height="40">Simple Bible Memory</a>
+</div>
+<div class="foot-col"><p class="foot-title">Legal</p>
+<a href="/privacy-policy">Privacy policy</a>
+<a href="/terms">Terms</a>
+<a href="/delete-account">Delete your account</a></div>
+<div class="foot-col"><p class="foot-title">Contact</p>
+<a href="mailto:amyruth.rubio@gmail.com">amyruth.rubio@gmail.com</a></div>
+</div>
+<details class="lang">
+<summary><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><span class="lang-name">English</span><svg class="chev" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m18 15-6-6-6 6"/></svg><span class="sr-only"> (Language)</span></summary>
+<ul class="lang-menu" aria-label="Language">
+<li><a href="/landing" hreflang="en" lang="en" aria-current="true">English<svg class="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg></a></li>
+<li><a href="/es/landing" hreflang="es" lang="es">Español<svg class="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg></a></li>
+</ul>
+</details>
 </footer>
+<script src="/landing.js" defer></script>
 </body>
 </html>

@@ -4,68 +4,99 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Simple Bible Memory · Aprende la Escritura de memoria</title>
-<meta name="description" content="Aprende versículos de la Biblia de memoria con repaso espaciado. Gratis, privado y funciona sin conexión.">
+<meta name="description" content="Memoriza versículos de la Biblia con repaso espaciado. Sin cuenta, sin anuncios, gratis. En español e inglés.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preload" href="/fonts/literata-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/landing.css">
 <link rel="alternate" hreflang="en" href="/landing">
 <link rel="alternate" hreflang="es" href="/es/landing">
 </head>
 <body>
-<header>
-<img src="/logo.svg" alt="" width="36" height="36"><a class="brand" href="/es/landing">Simple Bible Memory</a>
-<nav aria-label="Idioma"><a href="/landing" hreflang="en" lang="en">English</a></nav>
+<header class="top">
+<a class="brand" href="/es/landing"><img src="/logo.svg" alt="" width="32" height="32">Simple Bible Memory</a>
+<nav aria-label="Características">
+<a class="link" href="#try">Probar</a>
+<a class="link" href="#features">Características</a>
+<a class="link" href="#free">Gratis</a>
+<a class="button small" href="/">Empezar a practicar</a>
+</nav>
 </header>
 <main>
-<div class="hero">
-<h1>Aprende la Escritura de memoria, y consérvala.</h1>
-<p class="lead">Añade los versículos que quieres aprender y estudia unos minutos al día. La app te muestra cada uno justo antes de que lo olvides.</p>
+<section class="hero">
+<h1>Simple Bible Memory</h1>
+<p class="lead">Aprende la Escritura de memoria</p>
 <div class="actions">
-<a class="button" href="/">Abrir la app</a>
-<a class="button secondary" href="#how">Cómo funciona</a>
+<a class="button" href="/">Empezar a practicar</a>
 </div>
-<p class="soon">Gratis, privada y funciona sin conexión. App para Android próximamente.</p>
+<div class="stores">
+<button type="button" class="button soon" disabled aria-disabled="true"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>Próximamente en Google Play</button>
+<button type="button" class="button soon" disabled aria-disabled="true"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>Próximamente en la App Store</button>
 </div>
-
-<div class="card" aria-hidden="true">
-<p class="ref">Juan 3:16</p>
-<p class="verse">Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito…</p>
-<div class="rates"><span style="color:var(--again)"><small>1 min</small>Otra vez</span><span style="color:var(--hard)"><small>6 min</small>Difícil</span><span style="color:var(--good)"><small>10 min</small>Bien</span><span style="color:var(--easy)"><small>2 d</small>Fácil</span></div>
-</div>
-
-<section id="how" aria-labelledby="how-title">
-<h2 id="how-title">Cómo funciona</h2>
-<ol class="steps">
-<li><strong>Añade tus versículos</strong><span>Uno por uno, o un pasaje completo a la vez.</span></li>
-<li><strong>Estudia un poco cada día</strong><span>Califica qué tan bien recordaste cada uno.</span></li>
-<li><strong>Recuérdalo para siempre</strong><span>El repaso espaciado trae cada versículo de vuelta en el momento justo.</span></li>
-</ol>
 </section>
 
-<section aria-labelledby="ways-title">
-<h2 id="ways-title">Estudia a tu manera</h2>
+<section id="try" class="try" aria-labelledby="try-title">
+<h2 id="try-title">Pruébalo aquí mismo</h2>
+<p class="sub">Elige una forma de estudiar y pruébala.</p>
+<div id="demo" class="demo" role="group" aria-label="Demostración" hidden></div>
+<noscript><p class="note">La demostración necesita JavaScript. También puedes abrir la app y probarla allí.</p></noscript>
+</section>
+
+<section class="screens" aria-labelledby="shots-title">
+<h2 id="shots-title">Míralo en la app</h2>
+<div class="shots" role="region" aria-label="Capturas de pantalla de la app" tabindex="0">
+<figure class="shot">
+<div class="phone"><picture><source media="(prefers-color-scheme: dark)" srcset="/landing/dark/04-decks.png"><img src="/landing/light/04-decks.png" alt="La pantalla de inicio de la app (en inglés): una lista de barajas con el número de versículos para estudiar hoy." width="540" height="1170" loading="lazy"></picture></div>
+<figcaption>Tus barajas</figcaption>
+</figure>
+<figure class="shot">
+<div class="phone"><picture><source media="(prefers-color-scheme: dark)" srcset="/landing/dark/02-spaced-repetition.png"><img src="/landing/light/02-spaced-repetition.png" alt="Un versículo con su referencia y su texto (en inglés), y cuatro botones (Again, Hard, Good, Easy) que muestran cuándo volverá." width="540" height="1170" loading="lazy"></picture></div>
+<figcaption>Califica cada versículo</figcaption>
+</figure>
+<figure class="shot">
+<div class="phone"><picture><source media="(prefers-color-scheme: dark)" srcset="/landing/dark/03-practice.png"><img src="/landing/light/03-practice.png" alt="El Salmo 23 (en inglés) con algunas palabras ocultas y un banco de palabras para tocar." width="540" height="1170" loading="lazy"></picture></div>
+<figcaption>Completa los espacios</figcaption>
+</figure>
+</div>
+</section>
+
+<section id="features" class="features" aria-labelledby="feat-title">
+<h2 id="feat-title">Sencilla a propósito</h2>
 <ul class="grid">
-<li><strong>Tarjetas</strong><span>Ve la referencia y recuerda el pasaje, o al revés.</span></li>
-<li><strong>Escribir</strong><span>Escribe el versículo y mira exactamente qué acertaste.</span></li>
-<li><strong>Completar espacios</strong><span>Elige del banco de palabras, en tres niveles de dificultad.</span></li>
-<li><strong>Hablar</strong><span>Estudia sin manos: di tu respuesta en voz alta y califícate con tu voz.</span></li>
+<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" x2="22" y1="8" y2="13"/><line x1="22" x2="17" y1="8" y2="13"/></svg><div><h3>Sin cuenta</h3><p>Ábrela y empieza. Tus versículos se quedan en tu dispositivo.</p></div></li>
+<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><div><h3>Español e inglés</h3><p>Toda la app, en los dos idiomas.</p></div></li>
+<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 14v2.2l1.6 1"/><path d="M16 2v3"/><path d="M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338"/><path d="M3 9h5.859"/><path d="M8 2v3"/><circle cx="16" cy="16" r="6"/></svg><div><h3>Repaso espaciado</h3><p>Cada versículo vuelve justo antes de que lo olvides.</p></div></li>
+<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 5H3"/><path d="M12 19H3"/><path d="M14 3v4"/><path d="M16 17v4"/><path d="M21 12h-9"/><path d="M21 19h-5"/><path d="M21 5h-7"/><path d="M8 10v4"/><path d="M8 12H3"/></svg><div><h3>A tu manera</h3><p>Colores, letra, tamaño de texto y cómo estudias.</p></div></li>
 </ul>
 </section>
 
-<section aria-labelledby="private-title">
-<h2 id="private-title">Simple y privada</h2>
-<ul class="facts">
-<li>No necesitas cuenta. Tus versículos se quedan en tu dispositivo.</li>
-<li>Sin anuncios y sin rastreo.</li>
-<li>Inicia sesión con Google solo si quieres una copia de seguridad en otros dispositivos.</li>
-<li>Comparte barajas con otros, o descubre las que ellos han compartido.</li>
-<li>En español e inglés, y funciona con lectores de pantalla.</li>
-</ul>
-<p class="note">El modo Hablar usa el reconocimiento de voz de tu teléfono, que en algunos teléfonos puede necesitar conexión a internet.</p>
+<section id="free" class="free" aria-labelledby="free-title">
+<h2 id="free-title">Gratis, y así seguirá</h2>
+<p>Simple Bible Memory no cuesta nada, y eso no va a cambiar. Si te ayuda, una pequeña donación ayuda a mantenerla gratis para todos.</p>
+<!-- When the donation link is decided, replace this button with: <a class="button" href="THE-LINK">Support the app</a> -->
+<button type="button" class="button soon" disabled aria-disabled="true"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg>Donaciones próximamente</button>
 </section>
 </main>
 <footer>
-<p>¿Preguntas? Escribe a <a href="mailto:amyruth.rubio@gmail.com">amyruth.rubio@gmail.com</a>.</p>
-<p class="links"><a href="/es/privacy-policy">Política de privacidad</a><a href="/es/terms">Términos</a><a href="/es/delete-account">Eliminar tu cuenta</a><a href="/landing" hreflang="en" lang="en">English</a></p>
+<div class="foot">
+<div class="foot-brand">
+<a class="brand big" href="/es/landing"><img src="/logo.svg" alt="" width="40" height="40">Simple Bible Memory</a>
+</div>
+<div class="foot-col"><p class="foot-title">Legal</p>
+<a href="/es/privacy-policy">Política de privacidad</a>
+<a href="/es/terms">Términos</a>
+<a href="/es/delete-account">Eliminar tu cuenta</a></div>
+<div class="foot-col"><p class="foot-title">Contacto</p>
+<a href="mailto:amyruth.rubio@gmail.com">amyruth.rubio@gmail.com</a></div>
+</div>
+<details class="lang">
+<summary><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><span class="lang-name">Español</span><svg class="chev" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m18 15-6-6-6 6"/></svg><span class="sr-only"> (Idioma)</span></summary>
+<ul class="lang-menu" aria-label="Idioma">
+<li><a href="/landing" hreflang="en" lang="en">English<svg class="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg></a></li>
+<li><a href="/es/landing" hreflang="es" lang="es" aria-current="true">Español<svg class="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg></a></li>
+</ul>
+</details>
 </footer>
+<script src="/landing.js" defer></script>
 </body>
 </html>
