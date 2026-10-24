@@ -11,6 +11,7 @@ import type { MessageKey } from '../../i18n';
 import { ActionBar, RatingBar } from './RatingBar';
 import { useVerseLang } from './verseLang';
 import { CardPrompt } from './cardPosition';
+import { keepInView } from './keepInView';
 
 const COMMANDS = ['done', 'rate', 'repeat', 'skip', 'stop', 'speed'] as const;
 const DEFAULT_RATE = 0.95;
@@ -113,6 +114,13 @@ export function SpeakMode({ card, kind, intervals, onRate, onSkip, onStop }: {
   const listening = phase === 'listening' || phase === 'rating' || phase === 'paused';
   const statusKey = (`speak.status.${phase}`) as MessageKey;
   const heading = recall ? card.reference : card.verseText;
+  const revealedEl = useRef<HTMLParagraphElement>(null);
+  // When the answer appears below a long passage (or a long verse appears), bring it into view.
+  useEffect(() => {
+    if (!revealed) return;
+    const frame = requestAnimationFrame(() => keepInView(revealedEl.current));
+    return () => cancelAnimationFrame(frame);
+  }, [revealed]);
 
   return (
     <>
@@ -122,22 +130,25 @@ export function SpeakMode({ card, kind, intervals, onRate, onSkip, onStop }: {
           : <p lang={lang} className="scripture whitespace-pre-line text-xl">{heading}</p>}
         {revealed && (
           recall
-            ? <p lang={lang} className="scripture whitespace-pre-line text-xl">{card.verseText}</p>
-            : <p lang={lang} className="font-serif text-4xl font-medium tracking-tight">{card.reference}</p>
+            ? <p ref={revealedEl} lang={lang} className="scripture whitespace-pre-line text-xl">{card.verseText}</p>
+            : <p ref={revealedEl} lang={lang} className="font-serif text-4xl font-medium tracking-tight">{card.reference}</p>
         )}
-        <div className="flex flex-col items-center gap-3">
-          <span aria-hidden className={`flex size-16 items-center justify-center rounded-full border border-border ${listening ? 'bg-surface motion-safe:animate-pulse' : ''}`}>
-            {listening ? <Mic size={28} /> : <Volume2 size={28} className="text-muted" />}
-          </span>
-          {/* One live region, so a screen reader announces "Listening… Say done when finished" together. */}
-          <div role="status" aria-live="polite" className="flex flex-col items-center gap-1">
-            <p className="text-lg font-medium">{failed ? t('speak.failed') : t(statusKey)}</p>
-            {phase === 'listening' && !failed && <p className="text-base text-muted">{t('speak.status.listeningHint')}</p>}
-          </div>
-          {heard && <p className="max-w-xs truncate text-sm text-muted">{t('speak.heard', { text: heard })}</p>}
-        </div>
       </div>
       <ActionBar>
+        {/* What the app is doing, pinned here with the buttons so a long verse above can never push it off the screen. */}
+        <div className="flex items-center gap-4">
+          <span aria-hidden className={`flex size-14 shrink-0 items-center justify-center rounded-full border border-border ${listening ? 'bg-surface motion-safe:animate-pulse' : ''}`}>
+            {listening ? <Mic size={26} /> : <Volume2 size={26} className="text-muted" />}
+          </span>
+          <div className="min-w-0 flex-1">
+            {/* One live region, so a screen reader announces "Listening… Say done when finished" together. */}
+            <div role="status" aria-live="polite" className="flex flex-col gap-0.5">
+              <p className="text-lg font-medium leading-snug">{failed ? t('speak.failed') : t(statusKey)}</p>
+              {phase === 'listening' && !failed && <p className="text-base leading-snug text-muted">{t('speak.status.listeningHint')}</p>}
+            </div>
+            {heard && <p className="truncate text-sm text-muted">{t('speak.heard', { text: heard })}</p>}
+          </div>
+        </div>
         {/* Hidden (but keeping its space, so nothing jumps) until the verse has been read and the question asked. */}
         <div className={showRatings ? '' : 'invisible'}>
           <RatingBar intervals={intervals} onRate={(r) => runner.current?.tap({ kind: 'rate', rating: r })} />
