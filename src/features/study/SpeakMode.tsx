@@ -136,11 +136,11 @@ export function SpeakMode({ card, kind, intervals, onRate, onSkip, onStop }: {
       </div>
       <ActionBar>
         {/* What the app is doing, pinned here with the buttons so a long verse above can never push it off the screen. */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center gap-4">
           <span aria-hidden className={`flex size-14 shrink-0 items-center justify-center rounded-full border border-border ${listening ? 'bg-surface motion-safe:animate-pulse' : ''}`}>
             {listening ? <Mic size={26} /> : <Volume2 size={26} className="text-muted" />}
           </span>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 max-w-[16rem]">
             {/* One live region, so a screen reader announces "Listening… Say done when finished" together. */}
             <div role="status" aria-live="polite" className="flex flex-col gap-0.5">
               <p className="text-lg font-medium leading-snug">{failed ? t('speak.failed') : t(statusKey)}</p>

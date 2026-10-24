@@ -90,6 +90,24 @@ test.describe('Speak with a long verse', () => {
   });
 });
 
+test.describe('Speak status', () => {
+  test.use({ viewport: SIZES[0], reducedMotion: 'reduce' });
+
+  test('the mic and the status text sit in the horizontal centre of the screen', async ({ page }) => {
+    await page.addInitScript(() => { (window as unknown as { __fakeVoice: unknown }).__fakeVoice = { spoken: [], heard: [['x'], ['x'], ['x'], ['x'], ['x'], ['x']], micRequests: 0, micAllowed: true, speakMs: 100 }; });
+    const id = await deckWithLongVerse(page, 'Recall the passage');
+    await page.goto(`/#/decks/${id}/study/speak`);
+    await page.getByRole('button', { name: 'Start' }).click();
+    await expect(page.getByText('Listening…')).toBeVisible();
+    const gaps = await page.evaluate(() => {
+      const row = document.querySelector('[role=status]')!.parentElement!.parentElement!;
+      const kids = Array.from(row.children).map((c) => c.getBoundingClientRect());
+      return { left: kids[0]!.left, right: window.innerWidth - kids[kids.length - 1]!.right };
+    });
+    expect(Math.abs(gaps.left - gaps.right)).toBeLessThanOrEqual(2); // the same space on both sides
+  });
+});
+
 test('the study screens with a long verse have no accessibility violations', async ({ page }) => {
   const id = await deckWithLongVerse(page, 'Recall the passage');
   await page.goto(`/#/decks/${id}/study/blanks`);
