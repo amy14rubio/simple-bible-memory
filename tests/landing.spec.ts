@@ -5,14 +5,14 @@ import AxeBuilder from '@axe-core/playwright';
 const PAGES = [
   {
     lang: 'English', url: '/landing.html', other: '/es/landing', heading: 'Simple Bible Memory', tagline: 'Learn scripture by heart', open: 'Start Practicing',
-    play: 'Coming soon to Google Play', apple: 'Coming soon to the App Store', donate: 'Donations coming soon',
+    play: 'Coming soon to Google Play', apple: 'Coming soon to the App Store', donate: 'Support on Ko-fi',
     features: ['No account needed', 'English and Spanish', 'Spaced repetition', 'Make it yours'],
     show: 'Show answer', rates: ['Again', 'Hard', 'Good', 'Easy'], goodWhen: /10m/, next: 'Try another verse', first: 'Proverbs 3:5-6', second: 'Romans 5:8',
     typeTab: 'Type', speakTab: 'Speak', blanksTab: 'Fill in the blanks', typeFull: 'For God didn’t give us a spirit of fear, but of power, love, and self-control.', typePartial: 'For God give us a spirit of fear', typeAll: /You remembered 15 of 15 words/, typeSome: /You remembered 8 of 15 words/, check: 'Show answer', speakText: 'Recite verses hands-free while you drive or go about your day. The app reads them back, and you rate yourself for easy, relaxed practice.', langName: 'English', langOther: 'Español', langOtherHref: '/es/landing', langLabel: 'Language', words: ['fear', 'power', 'self-control'], done: /That’s it!/, wrongWord: 'love', wrongNote: /Not quite: the word was “fear”/,
   },
   {
     lang: 'Spanish', url: '/es/landing.html', other: '/landing', heading: 'Simple Bible Memory', tagline: 'Aprende la Escritura de memoria', open: 'Empezar a practicar',
-    play: 'Próximamente en Google Play', apple: 'Próximamente en la App Store', donate: 'Donaciones próximamente',
+    play: 'Próximamente en Google Play', apple: 'Próximamente en la App Store', donate: 'Apoyar en Ko-fi',
     features: ['Sin cuenta', 'Español e inglés', 'Repaso espaciado', 'A tu manera'],
     show: 'Mostrar respuesta', rates: ['Otra vez', 'Difícil', 'Bien', 'Fácil'], goodWhen: /10 min/, next: 'Probar otro versículo', first: 'Proverbios 3:5-6', second: 'Romanos 5:8',
     typeTab: 'Escribir', speakTab: 'Hablar', blanksTab: 'Completar espacios', typeFull: 'Porque no nos ha dado Dios el espíritu de temor, sino el de fortaleza, y de amor, y de templanza.', typePartial: 'Porque no nos ha dado Dios el espiritu de temor', typeAll: /Recordaste 20 de 20 palabras/, typeSome: /Recordaste 10 de 20 palabras/, check: 'Mostrar respuesta', speakText: 'Recita versículos sin manos mientras manejas o sigues con tu día. La app te los lee de vuelta, y tú te calificas para una práctica fácil y tranquila.', langName: 'Español', langOther: 'English', langOtherHref: '/landing', langLabel: 'Idioma', words: ['temor', 'fortaleza', 'templanza'], done: /¡Eso es!/, wrongWord: 'amor', wrongNote: /Casi: la palabra era “temor”/,
@@ -33,9 +33,14 @@ for (const p of PAGES) {
       await expect(page.locator(`link[rel="alternate"][href="${p.other}"]`)).toHaveCount(1); // points at the other language
     });
 
-    test('the store buttons and the donation button are placeholders: visible, labelled, and not links', async ({ page }) => {
+    test('the store buttons are placeholders, and the donation button links to Ko-fi without promising it is free forever', async ({ page }) => {
       await page.goto(p.url);
-      for (const label of [p.play, p.apple, p.donate]) {
+      const donate = page.getByRole('link', { name: p.donate });
+      await expect(donate).toHaveAttribute('href', 'https://ko-fi.com/simplebiblememory');
+      await expect(donate).toHaveAttribute('target', '_blank'); // opens in a new tab, so the visitor keeps the page
+      await expect(donate).toHaveAttribute('rel', /noopener/);
+      await expect(page.locator('body')).not.toContainText(/stays that way|así seguirá|won.t change|no va a cambiar|free forever|gratis para siempre/i);
+      for (const label of [p.play, p.apple]) {
         const b = page.getByRole('button', { name: label });
         await expect(b).toBeVisible();
         await expect(b).toBeDisabled();
