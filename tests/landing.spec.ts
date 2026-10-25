@@ -256,3 +256,12 @@ test('the demo does nothing until the visitor does: loading the page leaves the 
   await page.goto('/landing.html');
   expect(await page.evaluate(() => document.activeElement === document.body)).toBe(true);
 });
+
+test('the moving light behind the hero is decoration only: hidden from screen readers, never in the way of clicks', async ({ page }) => {
+  await page.goto('/landing.html');
+  const prism = page.locator('.hero .prism');
+  await expect(prism).toHaveAttribute('aria-hidden', 'true');
+  expect(await prism.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
+  await page.getByRole('link', { name: 'Start Practicing' }).last().click();
+  await expect(page).toHaveURL(/\/$|#\//);
+});

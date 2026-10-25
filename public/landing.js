@@ -2,6 +2,14 @@
    and read about speaking. Plain script, no libraries. The verses are copied from the app's own decks (World English Bible, Reina-Valera 1909).
    Nothing here is saved or sent anywhere. Only the flashcard offers another verse; the other three use one fixed verse. */
 (function () {
+  var top = document.querySelector('header.top');
+  if (top) {
+    var sync = function () { top.classList.toggle('scrolled', window.scrollY > 8); };
+    window.addEventListener('scroll', sync, { passive: true });
+    sync();
+  }
+})();
+(function () {
   // The language picker in the footer is a <details> (it works without any script); this only closes it with Escape or a click elsewhere.
   var lang = document.querySelector('details.lang');
   if (lang) {
