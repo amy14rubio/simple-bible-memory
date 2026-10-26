@@ -23,7 +23,9 @@ describe('the website pages (public/)', () => {
         expect(html).toContain(`mailto:${CONTACT_EMAIL}`);
         expect(html).toContain(lang === 'en' ? `href="/es/${page}"` : `href="/${page}"`); // the way to the other language
         expect(html).toContain('<link rel="stylesheet" href="/legal.css">');
-        expect(html).not.toMatch(/<script/i); // plain pages: no scripts
+        expect(html).toContain('<link rel="stylesheet" href="/footer.css">');
+        // plain pages: the only script is the shared one that closes the footer's language menu (no inline scripts)
+        expect(html.match(/<script[^>]*>/gi)).toEqual(['<script src="/landing.js" defer>']);
       });
     }
   }
@@ -57,12 +59,15 @@ describe('the website pages (public/)', () => {
     }
   });
 
-  it('the footer has the questions line first, then the links, and the email is only there on the terms page', () => {
+  it('the footer (the same as the landing page\'s) has the legal links first, then the contact email, and a language picker; the email is twice on the terms page', () => {
     for (const lang of ['en', 'es'] as const) {
       for (const page of PAGES) {
         const footer = read(lang, page).match(/<footer>([\s\S]*?)<\/footer>/)![1]!;
+        const base = lang === 'es' ? '/es/' : '/';
+        for (const p of PAGES) expect(footer, `${lang}/${page}`).toContain(`href="${base}${p}"`);
         expect(footer.indexOf('mailto:'), `${lang}/${page}`).toBeGreaterThan(-1);
-        expect(footer.indexOf('mailto:')).toBeLessThan(footer.indexOf('class="links"'));
+        expect(footer.indexOf(`href="${base}privacy-policy"`)).toBeLessThan(footer.indexOf('mailto:'));
+        expect(footer).toContain('<details class="lang">');
       }
       expect(read(lang, 'terms').match(/mailto:/g)).toHaveLength(2); // the copyright paragraph and the footer
     }
