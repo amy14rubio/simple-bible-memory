@@ -282,3 +282,17 @@ test('on a wide screen the four highlight cards line up with the three phone scr
   expect(Math.abs(edges.grid[0] - edges.phones[0])).toBeLessThanOrEqual(1);
   expect(Math.abs(edges.grid[1] - edges.phones[1])).toBeLessThanOrEqual(1);
 });
+
+for (const path of ['/privacy-policy.html', '/terms.html', '/delete-account.html', '/es/privacy-policy.html', '/es/terms.html', '/es/delete-account.html']) {
+  test(`${path}: on a wide screen the text column is 48rem wide and lines up with the header`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(path);
+    const box = await page.evaluate(() => {
+      const m = document.querySelector('main')!.getBoundingClientRect();
+      const h = document.querySelector('header')!.getBoundingClientRect();
+      return { main: m.width, mainLeft: m.left, headerLeft: h.left };
+    });
+    expect(box.main).toBe(768);
+    expect(box.headerLeft).toBe(box.mainLeft);
+  });
+}
