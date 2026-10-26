@@ -265,7 +265,7 @@ export const en = {
   'discover.alreadyHave': 'You already have a copy of this deck.',
   'discover.open': 'Open it',
   'discover.preview': 'Preview',
-  'settings.help': 'Help',
+  'settings.about': 'About & support',
   'onboarding.tour': 'Welcome tour',
   'onboarding.title': 'Welcome to Simple Bible Memory',
   'onboarding.skip': 'Skip',
@@ -286,7 +286,7 @@ export const en = {
   'onboarding.starter.title': 'Try the starter deck',
   'onboarding.starter.body':
     'Open it from your home screen and start practicing your first verses.',
-  'settings.contact': 'Contact',
+  'settings.contact': 'Contact support',
   'settings.contactBody':
     'Questions, or a copyright concern about a public deck? Write to us and we will respond and remove deck content when asked. You can also flag a deck on its page.',
   'toast.importedDeck': 'Imported {title}',
@@ -352,11 +352,9 @@ export const en = {
     "The decks on this device will be removed and replaced with the ones in {who}. This can't be undone. To keep a copy, cancel and use Export everything in Settings first.",
   'switch.replace': 'Replace the decks',
   'privacy.title': 'Privacy',
-  'privacy.settingsInfo':
-    'Find out what the app stores, where it goes, and who can see it. Your decks stay on your device unless you sign in.',
   'privacy.pageInfo':
     'The short version: your decks stay on your device unless you sign in or publish one. Published decks never show your name or email, and you can delete your account and its data any time.',
-  'privacy.row': 'How your data is used',
+  'privacy.row': 'Privacy & data',
   'privacy.device.title': 'On your device',
   'privacy.device.body':
     'Your decks, cards, study progress, review history and settings are stored on this device. The app works fully without an account.',
@@ -396,7 +394,7 @@ export const en = {
   'create.import': 'Import deck',
   'deckMenu.export': 'Export deck',
   'export.title': 'Export deck',
-  'export.titleAll': 'Export everything',
+  'export.titleAll': 'Export data',
   'export.everything': 'all decks',
   'export.progress': 'Include my progress',
   'export.progressInfo':
@@ -524,7 +522,7 @@ export const en = {
   'reminders.summary.daily': 'Every day at {time}',
   'reminders.summary.every2days': 'Every 2 days at {time}',
   'reminders.summary.weekly': 'Every {day} at {time}',
-  'settings.backup': 'Account and backup',
+  'settings.backup': 'Account',
   'settings.backupBody':
     "You don't need an account. Your decks and progress are stored on this device. Export a file to back them up or move them.\n\nSigning in with Google also backs up your decks, cards, study schedule and settings to your account, and brings them to any device you sign in on. Your study log (each time you studied a card, which powers your stats) stays on the device where you studied.",
 

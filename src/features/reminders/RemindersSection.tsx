@@ -11,7 +11,7 @@ import { loadReminderSettings, saveReminderSettings, syncReminders, type Reminde
 import { ReminderDrawer } from './ReminderDrawer';
 import { formatTime, weekdayName } from './format';
 
-const row = 'flex min-h-14 items-center justify-between gap-4 border-b border-border py-2';
+const row = 'flex min-h-13 items-center justify-between gap-4 border-b border-border py-1.5';
 
 /**
  * The Settings section for study reminders: a switch, then the reminders themselves (at most two) and a button to add one.

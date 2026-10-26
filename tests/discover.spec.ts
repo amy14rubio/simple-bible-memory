@@ -137,13 +137,13 @@ test('Settings has the one place to contact us', async ({ page }) => {
   await page.goto('/#/settings');
   await expect(page.getByRole('link', { name: 'amyruth.rubio@gmail.com' })).toHaveAttribute('href', /^mailto:amyruth\.rubio@gmail\.com/);
 
-  // the explanation sits behind the "i" next to the heading, not on the page
+  // the explanation sits behind the "i" next to the row, not on the page
   await expect(page.getByText('Questions, or a copyright concern')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Contact', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'Contact' })).toContainText('Questions, or a copyright concern');
+  await page.getByRole('button', { name: 'Contact support', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Contact support' })).toContainText('Questions, or a copyright concern');
   await closeWithEscape(page);
-  await page.getByRole('button', { name: 'Account and backup' }).click();
-  await expect(page.getByRole('dialog', { name: 'Account and backup' })).toContainText("You don't need an account");
+  await page.getByRole('button', { name: 'Account', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Account' })).toContainText("You don't need an account");
 });
 
 test('a public deck\'s description keeps its line breaks on its page', async ({ page }) => {
