@@ -318,6 +318,7 @@ export const en = {
   'publish.signInIntro':
     'Sign in with Google to publish. Your name and email are never shown. Signing in also backs up your decks and study schedule to your account.',
   'publish.signIn': 'Continue with Google',
+  'publish.signInApple': 'Continue with Apple',
   'publish.signInFailed': "Couldn't sign in. Try again.",
   'publish.button': 'Publish',
   'publish.pickTranslation': "Choose the translation of this deck's text to publish it.",
@@ -387,6 +388,7 @@ export const en = {
   'privacy.termsLink': 'Read the terms',
   'privacy.deleteLink': 'How to delete your account',
   'account.signIn': 'Sign in with Google',
+  'account.signInApple': 'Sign in with Apple',
   'account.signOut': 'Sign out',
   'account.delete': 'Delete my account',
   'account.deleteTitle': 'Delete your account?',

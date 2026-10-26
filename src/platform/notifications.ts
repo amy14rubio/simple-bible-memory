@@ -16,6 +16,8 @@ export interface ScheduledNotification {
 
 export interface Notifier {
   available: boolean;
+  /** How many upcoming notifications the phone can hold at once (iOS keeps only 64; Android roughly 500). */
+  maxPending: number;
   permission(): Promise<NotificationPermission>;
   /** Shows the phone's "Allow notifications?" question (once; after a refusal the person must use the phone's settings). */
   requestPermission(): Promise<NotificationPermission>;
@@ -25,12 +27,17 @@ export interface Notifier {
 
 const CHANNEL = 'study-reminders';
 
+/** iOS keeps only the soonest 64 pending local notifications and drops the rest, so ask for a bit fewer than that. */
+const IOS_MAX_PENDING = 60;
+
 function nativeNotifier(): Notifier {
   // Wrapped in an object on purpose: a Capacitor plugin must never be returned straight from a promise (JavaScript would try to call its .then()).
   const plugin = () => import('@capacitor/local-notifications').then((m) => ({ ln: m.LocalNotifications }));
   const toState = (s: string): NotificationPermission => (s === 'granted' ? 'granted' : s === 'denied' ? 'denied' : 'prompt');
+  const ios = Capacitor.getPlatform() === 'ios';
   return {
     available: true,
+    maxPending: ios ? IOS_MAX_PENDING : 400,
     async permission() {
       return toState((await (await plugin()).ln.checkPermissions()).display);
     },
@@ -43,7 +50,7 @@ function nativeNotifier(): Notifier {
       if (pending.notifications.length) await ln.cancel({ notifications: pending.notifications });
       if (!items.length) return;
       // Android 8+ groups notifications into channels the person can tune in the phone's settings.
-      await ln.createChannel({ id: CHANNEL, name: 'Study reminders', importance: 4 });
+      if (!ios) await ln.createChannel({ id: CHANNEL, name: 'Study reminders', importance: 4 }); // (channels are an Android idea; iOS has none)
       await ln.schedule({
         notifications: items.map((n, i) => ({
           id: i + 1,
@@ -68,6 +75,7 @@ function fakeNotifier(): Notifier {
   const read = (key: string) => { try { return localStorage.getItem(key); } catch { return null; } };
   return {
     available: read(FAKE_UNAVAILABLE_KEY) === null,
+    maxPending: 400,
     async permission() { return (read(FAKE_PERMISSION_KEY) as NotificationPermission | null) ?? 'prompt'; },
     async requestPermission() {
       const answer = (read(FAKE_PERMISSION_KEY) as NotificationPermission | null) === 'denied' ? 'denied' : 'granted';
@@ -82,6 +90,7 @@ function fakeNotifier(): Notifier {
 
 const unavailable: Notifier = {
   available: false,
+  maxPending: 0,
   permission: async () => 'denied',
   requestPermission: async () => 'denied',
   replaceAll: async () => {},

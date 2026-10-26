@@ -318,6 +318,7 @@ export const es: Dictionary = {
   'publish.signInIntro':
     'Inicia sesión con Google para publicar. Tu nombre y tu correo nunca se muestran. Al iniciar sesión también se respaldan en tu cuenta tus barajas y tu calendario de estudio.',
   'publish.signIn': 'Continuar con Google',
+  'publish.signInApple': 'Continuar con Apple',
   'publish.signInFailed': 'No se pudo iniciar sesión. Inténtalo de nuevo.',
   'publish.button': 'Publicar',
   'publish.pickTranslation': 'Elige la traducción del texto de esta baraja para poder publicarla.',
@@ -388,6 +389,7 @@ export const es: Dictionary = {
   'privacy.termsLink': 'Leer los términos',
   'privacy.deleteLink': 'Cómo eliminar tu cuenta',
   'account.signIn': 'Iniciar sesión con Google',
+  'account.signInApple': 'Iniciar sesión con Apple',
   'account.signOut': 'Cerrar sesión',
   'account.delete': 'Eliminar mi cuenta',
   'account.deleteTitle': '¿Eliminar tu cuenta?',

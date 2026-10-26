@@ -1,0 +1,3 @@
+"NSMicrophoneUsageDescription" = "Simple Bible Memory uses the microphone in Speak mode, so you can recite verses out loud.";
+"NSSpeechRecognitionUsageDescription" = "Speak mode uses Apple's speech recognition to hear when you have finished your answer. The app does not save your voice, and Apple may process it to turn speech into text.";
+"CFBundleDisplayName" = "Simple Bible Memory";

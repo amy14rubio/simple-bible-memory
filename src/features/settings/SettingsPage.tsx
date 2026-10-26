@@ -8,6 +8,8 @@ import { useSharing } from '../../app/sharing';
 import { ExportDrawer, type ExportTarget } from '../exchange/ExportDrawer';
 import { AppBar, BackButton, ConfirmDialog, Page, Switch } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
+import { AppleLogo } from '../../components/AppleLogo';
+import { appleSignInSupported } from '../../platform/apple';
 import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
 import type { CardKindSetting } from '../../domain/study/cardKind';
 import { LANGUAGES, type MessageKey } from '../../i18n';
@@ -144,10 +146,18 @@ export function SettingsPage() {
                   </button>
                 </>
               ) : (
-                <button type="button" disabled={!share.authLoaded} onClick={() => { setAccountError(undefined); share.signIn().catch(() => setAccountError(t('publish.signInFailed'))); }} className={`${row} w-full text-left hover:bg-surface disabled:opacity-60`}>
-                  <span>{t('account.signIn')}</span>
-                  <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
-                </button>
+                <>
+                  <button type="button" disabled={!share.authLoaded} onClick={() => { setAccountError(undefined); share.signIn().catch(() => setAccountError(t('publish.signInFailed'))); }} className={`${row} w-full text-left hover:bg-surface disabled:opacity-60`}>
+                    <span>{t('account.signIn')}</span>
+                    <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
+                  </button>
+                  {appleSignInSupported() && (
+                    <button type="button" disabled={!share.authLoaded} onClick={() => { setAccountError(undefined); share.signInWithApple().catch(() => setAccountError(t('publish.signInFailed'))); }} className={`${row} w-full text-left hover:bg-surface disabled:opacity-60`}>
+                      <span className="flex items-center gap-2"><AppleLogo />{t('account.signInApple')}</span>
+                      <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
+                    </button>
+                  )}
+                </>
               )}
             </>
           )}

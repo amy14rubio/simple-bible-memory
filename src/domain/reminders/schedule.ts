@@ -32,7 +32,8 @@ export interface PlannedNotification {
 /**
  * How many upcoming notifications are scheduled in all. Android allows roughly 500 pending alarms per app, so this stays
  * comfortably under; the budget is shared out between the reminders (10 reminders get 40 each, which is still 40 days of
- * a daily one). The plan is rebuilt every time the app opens, which tops it up.
+ * a daily one). The plan is rebuilt every time the app opens, which tops it up. (An iPhone or iPad keeps only 64 pending local
+ * notifications, so the iOS app asks for a smaller plan: see `Notifier.maxPending`.)
  */
 export const PLAN_TOTAL = 400;
 export const PLAN_PER_REMINDER_MAX = 100;
@@ -62,10 +63,10 @@ function activeOn(r: Reminder, day: Date): boolean {
 }
 
 /** The next moments each reminder should fire, soonest first. Moments already past (or in the next few seconds) are skipped. */
-export function planNotifications(reminders: Reminder[], now: Date, defaultMessage: string): PlannedNotification[] {
+export function planNotifications(reminders: Reminder[], now: Date, defaultMessage: string, total = PLAN_TOTAL): PlannedNotification[] {
   const planned: PlannedNotification[] = [];
   const earliest = now.getTime() + 5_000;
-  const perReminder = Math.min(PLAN_PER_REMINDER_MAX, Math.floor(PLAN_TOTAL / Math.max(1, reminders.length)));
+  const perReminder = Math.min(PLAN_PER_REMINDER_MAX, Math.floor(total / Math.max(1, reminders.length)));
   for (const r of reminders) {
     const body = r.message.trim() || defaultMessage;
     const [h, m] = r.time.split(':').map(Number);

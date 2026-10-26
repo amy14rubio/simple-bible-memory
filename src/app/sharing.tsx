@@ -17,6 +17,8 @@ interface SharingValue {
   /** Starts loading sign-in (it is loaded only when something needs it). */
   ensureLoaded: () => void;
   signIn: () => Promise<void>;
+  /** Sign in with Apple: only in the iPhone and iPad app. */
+  signInWithApple: () => Promise<void>;
   signOut: () => Promise<void>;
   /** Removes every public deck of this person, then deletes their account. Their local decks stay. */
   deleteAccount: () => Promise<void>;
@@ -128,6 +130,12 @@ export function SharingProvider({ children }: { children: ReactNode }) {
       ensureLoaded();
       const b = (backends.current ??= await loadBackends());
       await b.auth.signInWithGoogle();
+    },
+    async signInWithApple() {
+      ensureLoaded();
+      const b = (backends.current ??= await loadBackends());
+      if (!b.auth.signInWithApple) throw new Error('Sign in with Apple is not available here');
+      await b.auth.signInWithApple();
     },
     async signOut() {
       const b = (backends.current ??= await loadBackends());

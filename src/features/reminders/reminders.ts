@@ -46,6 +46,6 @@ export async function syncReminders(value: ReminderSettings, language: Language,
   const notifier = getNotifier();
   if (!notifier.available) return;
   const wanted = value.enabled && (await notifier.permission()) === 'granted';
-  const plan = wanted ? planNotifications(value.reminders, now, translate(language, 'reminders.defaultMessage')) : [];
+  const plan = wanted ? planNotifications(value.reminders, now, translate(language, 'reminders.defaultMessage'), notifier.maxPending) : [];
   await notifier.replaceAll(plan.map((n) => ({ title: translate(language, 'app.name'), body: n.body, at: n.at })));
 }

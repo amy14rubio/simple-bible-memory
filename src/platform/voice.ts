@@ -2,7 +2,7 @@ import { Capacitor } from '@capacitor/core';
 
 /**
  * The phone's voice: reading text aloud and listening to the person.
- * - In the Android app: Android's own text-to-speech and speech recognition (through two small Capacitor plugins).
+ * - In the Android app, and the iPhone and iPad app: the phone's own text-to-speech and speech recognition (through two small Capacitor plugins).
  * - In a browser: the browser's speech features, where it has them (Chrome does; many do not).
  * - In browser tests: a stand-in that logs what would be said and plays back scripted answers (see `FakeVoice`).
  * Nothing here ever stores or uploads audio.
@@ -70,8 +70,11 @@ function nativeVoice(): Voice {
     async requestMicrophone() {
       const { plugin } = await speechPlugin();
       const have = await plugin.checkPermissions();
-      if (have.speechRecognition === 'granted') return true;
-      return (await plugin.requestPermissions()).speechRecognition === 'granted';
+      const granted = have.speechRecognition === 'granted' || (await plugin.requestPermissions()).speechRecognition === 'granted';
+      // On an iPhone or iPad the app must set up its audio first, so it can read aloud and listen at once (and the person can speak
+      // over the voice). The listening code for iOS lives in the app itself: ios/App/App/SpeechRecognitionPlugin.swift.
+      if (granted && Capacitor.getPlatform() === 'ios') await (plugin as unknown as { prepareAudio(): Promise<void> }).prepareAudio().catch(() => undefined);
+      return granted;
     },
     async speak(text, { lang, rate }) {
       const { plugin } = await ttsPlugin();

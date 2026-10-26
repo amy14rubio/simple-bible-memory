@@ -48,6 +48,8 @@ export interface AuthBackend {
   /** Calls back now and whenever the person signs in or out. */
   subscribe(callback: (user: AuthUser | null) => void): () => void;
   signInWithGoogle(): Promise<AuthUser>;
+  /** Only in the iPhone and iPad app (see `appleSignInSupported`). */
+  signInWithApple?(): Promise<AuthUser>;
   signOut(): Promise<void>;
   /** Deletes the account itself (the caller removes the person's public decks first). */
   deleteAccount(): Promise<void>;

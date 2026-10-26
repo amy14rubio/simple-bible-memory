@@ -46,6 +46,13 @@ export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; 
       emit(s.user);
       return s.user;
     },
+    async signInWithApple() {
+      const s = load();
+      s.user = { uid: s.nextUid ?? 'fake-apple-user', email: `${s.nextUid ?? 'apple-reader'}@privaterelay.appleid.com`, displayName: null };
+      save(s);
+      emit(s.user);
+      return s.user;
+    },
     async signOut() { const s = load(); s.user = null; save(s); emit(null); },
     async deleteAccount() { const s = load(); s.user = null; s.decks = {}; save(s); emit(null); },
   };

@@ -14,6 +14,8 @@ import { TranslationFields, type TranslationValue } from './TranslationFields';
 import type { BlockReason } from './types';
 import { TERMS_KEY, TERMS_VERSION } from './terms';
 import { CommunityRulesDrawer } from './CommunityRulesDrawer';
+import { AppleLogo } from '../../components/AppleLogo';
+import { appleSignInSupported } from '../../platform/apple';
 
 const BLOCK_MESSAGE: Record<BlockReason, MessageKey> = {
   'no-translation': 'publish.pickTranslation',
@@ -138,6 +140,9 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
               <>
                 <p>{t('publish.signInIntro')}</p>
                 <Button className="w-full" disabled={busy || !share.authLoaded} onClick={() => void run(() => share.signIn(), 'publish.signInFailed', 'toast.signedIn')}>{t('publish.signIn')}</Button>
+                {appleSignInSupported() && (
+                  <Button className="w-full" disabled={busy || !share.authLoaded} onClick={() => void run(() => share.signInWithApple(), 'publish.signInFailed', 'toast.signedIn')}><AppleLogo />{t('publish.signInApple')}</Button>
+                )}
               </>
             ) : (
               <>
