@@ -205,7 +205,7 @@ for (const p of PAGES) {
           const rows = (a: number, b: number) => { let lo = h, hi = 0; for (let y = 0; y < h; y++) for (let x = a; x < b; x++) if (ink(x, y)) { lo = Math.min(lo, y); hi = Math.max(hi, y); } return (lo + hi) / 2; };
           return (rows(runs[at]![0], runs[at]![1]) - rows(runs[0]![0], runs[at - 1]![1])) / 3; // css pixels
         }, png);
-        expect(Math.abs(off), sel).toBeLessThanOrEqual(0.5);
+        expect(Math.abs(off), sel).toBeLessThanOrEqual(0.7); // text snaps to whole pixels, so a logo can land up to a pixel either way depending on the page height
       }
       await ctx.close();
     });
@@ -269,4 +269,16 @@ test('the moving light behind the hero is decoration only: hidden from screen re
   expect(await prism.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
   await page.getByRole('link', { name: 'Start Practicing' }).last().click();
   await expect(page).toHaveURL(/\/$|#\//);
+});
+
+test('on a wide screen the four highlight cards line up with the three phone screenshots', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/landing.html');
+  const edges = await page.evaluate(() => {
+    const phones = [...document.querySelectorAll('.shots .phone')].map((e) => e.getBoundingClientRect());
+    const grid = document.querySelector('.grid')!.getBoundingClientRect();
+    return { phones: [phones[0].left, phones[phones.length - 1].right], grid: [grid.left, grid.right] };
+  });
+  expect(Math.abs(edges.grid[0] - edges.phones[0])).toBeLessThanOrEqual(1);
+  expect(Math.abs(edges.grid[1] - edges.phones[1])).toBeLessThanOrEqual(1);
 });

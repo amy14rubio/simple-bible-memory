@@ -679,6 +679,13 @@ h1 {
   gap: 1.25rem;
   grid-template-columns: repeat(2, 1fr);
 }
+@media (min-width: 48rem) {
+  /* desktop: the cards line up with the phone screenshots above (the same 56rem, centered; both shrink together on smaller screens) */
+  .grid {
+    max-width: 56rem;
+    margin-inline: auto;
+  }
+}
 .grid li {
   display: flex;
   gap: 1.25rem;
@@ -687,6 +694,13 @@ h1 {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 0.75rem;
+  min-height: 8.4rem; /* as tall as on a phone, even where the text fits on one line */
+}
+@media (min-width: 40.01rem) {
+  .grid li {
+    padding-block: 3rem; /* taller cards on desktop */
+    justify-content: center; /* the icon and its text sit in the middle of the card, as one group */
+  }
 }
 .grid .icon {
   width: 2.5rem;
