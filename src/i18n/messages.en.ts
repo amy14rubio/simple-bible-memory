@@ -111,6 +111,8 @@ export const en = {
   'speak.voiceNone': 'No voices found on this device.',
   'speak.heard': 'Heard: “{text}”',
   'speak.title': 'Hands-free study',
+  'speak.info':
+    "Speak mode doesn't grade what you say. Speech recognition can mishear, and being marked wrong while the app reads the verse back would get frustrating. Listen, check yourself, and rate how you did.",
   'speak.cmd.done': 'You finished your answer',
   'speak.cmd.rate': 'Rate how you did',
   'speak.cmd.repeat': 'Hear the verse again',

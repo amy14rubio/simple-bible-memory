@@ -76,3 +76,13 @@ test('speak: start screen has no accessibility violations', async ({ page }) => 
   await expect(page.getByRole('heading', { name: 'Hands-free study' })).toBeVisible();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });
+
+test('speak: the "i" on the start screen says why what you say is not graded', async ({ page }) => {
+  await hear(page);
+  const id = await setup(page);
+  await page.goto(`/#/decks/${id}/study/speak`);
+  await expect(page.getByText("Speak mode doesn't grade what you say.")).toHaveCount(0); // behind the i, not printed
+  await page.getByRole('button', { name: 'Hands-free study' }).click();
+  await expect(page.getByRole('dialog', { name: 'Hands-free study' })).toContainText("Speak mode doesn't grade what you say. Speech recognition can mishear");
+  await expect(page.getByRole('dialog', { name: 'Hands-free study' })).toContainText('rate how you did');
+});
