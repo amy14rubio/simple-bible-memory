@@ -20,7 +20,8 @@ import { RemindersSection } from '../reminders/RemindersSection';
 
 const THEME_LABEL = { system: 'settings.themeSystem', light: 'settings.themeLight', dark: 'settings.themeDark', custom: 'settings.themeCustom' } as const;
 
-const row = 'flex min-h-14 items-center justify-between gap-4 border-b border-border py-2';
+const row = 'flex min-h-13 items-center justify-between gap-4 border-b border-border py-1.5';
+const heading = 'mb-1 font-serif text-xl';
 
 export function SettingsPage() {
   const { t, preference: languagePreference } = useI18n();
@@ -55,9 +56,9 @@ export function SettingsPage() {
   return (
     <>
       <AppBar title={t('settings.title')} back={<BackButton to="/" label={t('common.backToDecks')} />} />
-      <Page className="space-y-10">
+      <Page className="space-y-7">
         <section aria-labelledby="general">
-          <h2 id="general" className="mb-1 font-serif text-xl">{t('settings.general')}</h2>
+          <h2 id="general" className={heading}>{t('settings.general')}</h2>
           <Link to="/settings/language" className={`${row} hover:bg-surface`}>
             <span>{t('settings.language')}</span>
             <span className="flex items-center gap-1 text-muted">
@@ -79,20 +80,6 @@ export function SettingsPage() {
               <ChevronRight size={20} aria-hidden className="shrink-0" />
             </span>
           </Link>
-          <div className={row}>
-            <InfoLabel title={t('settings.newPerDay')} info={t('settings.newPerDayHint')} />
-            <input
-              id="new-per-day"
-              aria-label={t('settings.newPerDay')}
-              type="number"
-              inputMode="numeric"
-              min={0}
-              max={MAX_NEW_PER_DAY}
-              value={newPerDay}
-              onChange={(e) => changeNew(e.target.value)}
-              className="w-20 rounded-lg border border-border bg-surface px-3 py-2 text-center text-base"
-            />
-          </div>
           <Link to="/settings/card-kinds" className={`${row} hover:bg-surface`}>
             <span>{t('settings.kindsLegend')}</span>
             <span className="flex items-center gap-1 text-muted">
@@ -112,6 +99,20 @@ export function SettingsPage() {
             <ChevronRight size={20} aria-hidden className="text-muted" />
           </Link>
           <div className={row}>
+            <InfoLabel title={t('settings.newPerDay')} info={t('settings.newPerDayHint')} />
+            <input
+              id="new-per-day"
+              aria-label={t('settings.newPerDay')}
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={MAX_NEW_PER_DAY}
+              value={newPerDay}
+              onChange={(e) => changeNew(e.target.value)}
+              className="w-20 rounded-lg border border-border bg-surface px-3 py-2 text-center text-base"
+            />
+          </div>
+          <div className={row}>
             <span id="encouragement-label" className="sr-only">{t('settings.encouragement')}</span>
             <InfoLabel title={t('settings.encouragement')} info={t('settings.encouragementHint')} />
             <Switch checked={encouragement} labelledBy="encouragement-label" onChange={(on) => { encouragementTouched.current = true; setEncouragement(on); void settings.set('encouragement', on); }} />
@@ -121,7 +122,7 @@ export function SettingsPage() {
         <RemindersSection />
 
         <section aria-labelledby="backup">
-          <h2 id="backup" className="mb-1 font-serif text-xl"><InfoLabel title={t('settings.backup')} info={t('settings.backupBody')} className="py-2" /></h2>
+          <h2 id="backup" className={heading}><InfoLabel title={t('settings.backup')} info={t('settings.backupBody')} className="py-2" /></h2>
           {share.available && share.user && share.accountStatus.state !== 'off' && (
             <div role="status" className={`${row} text-muted`}><span>{t(`account.backup.${share.accountStatus.state}` as MessageKey)}</span></div>
           )}
@@ -134,11 +135,11 @@ export function SettingsPage() {
               {accountError && <p role="alert" className="py-2 text-danger">{accountError}</p>}
               {share.user ? (
                 <>
-                  <div className={row}><span className="min-w-0 truncate">{t('account.signedInAs', { name: share.user.displayName ?? share.user.email ?? '' })}</span></div>
+                  <div className="truncate border-b border-border py-3 text-sm text-muted">{t('account.signedInAs', { name: share.user.displayName ?? share.user.email ?? '' })}</div>
                   <button type="button" onClick={() => void share.signOut()} className={`${row} w-full text-left hover:bg-surface`}>
                     <span>{t('account.signOut')}</span>
                   </button>
-                  <button type="button" onClick={() => setConfirmingDelete(true)} className={`${row} w-full text-left text-danger hover:bg-surface`}>
+                  <button type="button" onClick={() => setConfirmingDelete(true)} className={`${row} mt-3 w-full text-left text-danger hover:bg-surface`}>
                     <span>{t('account.delete')}</span>
                   </button>
                 </>
@@ -151,29 +152,27 @@ export function SettingsPage() {
             </>
           )}
         </section>
-        <section aria-labelledby="help">
-          <h2 id="help" className="mb-1 font-serif text-xl">{t('settings.help')}</h2>
+        <section aria-labelledby="about">
+          <h2 id="about" className={heading}>{t('settings.about')}</h2>
           <Link to="/welcome" className={`${row} hover:bg-surface`}>
             <span>{t('onboarding.tour')}</span>
             <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
           </Link>
-        </section>
-        <section aria-labelledby="privacy">
-          <h2 id="privacy" className="mb-1 font-serif text-xl"><InfoLabel title={t('privacy.title')} info={t('privacy.settingsInfo')} className="py-2" /></h2>
           <Link to="/settings/privacy" className={`${row} hover:bg-surface`}>
             <span>{t('privacy.row')}</span>
             <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
           </Link>
+          {share.available && (
+            <div className={row}>
+              <InfoLabel title={t('settings.contact')} info={t('settings.contactBody')} className="whitespace-nowrap" />
+              {/* the address is shown where there is room; on a phone the row is just the label and the arrow (the link still says the address) */}
+              <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Simple Bible Memory')}`} aria-label={CONTACT_EMAIL} className="-my-2 flex min-w-0 items-center gap-1 py-2 pl-8 text-muted hover:text-foreground">
+                <span className="hidden truncate sm:inline">{CONTACT_EMAIL}</span>
+                <ChevronRight size={20} aria-hidden className="shrink-0" />
+              </a>
+            </div>
+          )}
         </section>
-        {share.available && (
-          <section aria-labelledby="contact">
-            <h2 id="contact" className="mb-1 font-serif text-xl"><InfoLabel title={t('settings.contact')} info={t('settings.contactBody')} className="py-2" /></h2>
-            <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Simple Bible Memory')}`} className={`${row} hover:bg-surface`}>
-              <span>{CONTACT_EMAIL}</span>
-              <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
-            </a>
-          </section>
-        )}
         <ExportDrawer target={exporting} onClose={() => setExporting(null)} />
         <ConfirmDialog
           open={confirmingDelete}

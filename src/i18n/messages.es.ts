@@ -261,7 +261,7 @@ export const es: Dictionary = {
   'discover.alreadyHave': 'Ya tienes una copia de esta baraja.',
   'discover.open': 'Abrirla',
   'discover.preview': 'Vista previa',
-  'settings.help': 'Ayuda',
+  'settings.about': 'Acerca de y ayuda',
   'onboarding.tour': 'Recorrido de bienvenida',
   'onboarding.title': 'Bienvenido a Memoria Bíblica Simple',
   'onboarding.skip': 'Omitir',
@@ -283,7 +283,7 @@ export const es: Dictionary = {
   'onboarding.starter.title': 'Prueba la baraja inicial',
   'onboarding.starter.body':
     'Ábrela desde la pantalla de inicio y empieza a practicar tus primeros versículos.',
-  'settings.contact': 'Contacto',
+  'settings.contact': 'Contactar a soporte',
   'settings.contactBody':
     '¿Preguntas, o una inquietud de derechos de autor sobre una baraja pública? Escríbenos y responderemos, y retiraremos el contenido cuando se pida. También puedes marcar una baraja en su página.',
   'toast.importedDeck': 'Se importó {title}',
@@ -353,11 +353,9 @@ export const es: Dictionary = {
     'Las barajas de este dispositivo se eliminarán y se reemplazarán con las de {who}. No se puede deshacer. Para conservar una copia, cancela y usa primero Exportar todo en Ajustes.',
   'switch.replace': 'Reemplazar las barajas',
   'privacy.title': 'Privacidad',
-  'privacy.settingsInfo':
-    'Descubre qué guarda la app, adónde va y quién puede verlo. Tus barajas se quedan en tu dispositivo a menos que inicies sesión.',
   'privacy.pageInfo':
     'En resumen: tus barajas se quedan en tu dispositivo a menos que inicies sesión o publiques una. Las barajas publicadas nunca muestran tu nombre ni tu correo, y puedes eliminar tu cuenta y sus datos cuando quieras.',
-  'privacy.row': 'Cómo se usan tus datos',
+  'privacy.row': 'Privacidad y datos',
   'privacy.device.title': 'En tu dispositivo',
   'privacy.device.body':
     'Tus barajas, tarjetas, progreso de estudio, historial de repasos y ajustes se guardan en este dispositivo. La app funciona por completo sin una cuenta.',
@@ -397,7 +395,7 @@ export const es: Dictionary = {
   'create.import': 'Importar baraja',
   'deckMenu.export': 'Exportar baraja',
   'export.title': 'Exportar baraja',
-  'export.titleAll': 'Exportar todo',
+  'export.titleAll': 'Exportar datos',
   'export.everything': 'todas las barajas',
   'export.progress': 'Incluir mi progreso',
   'export.progressInfo':
@@ -530,7 +528,7 @@ export const es: Dictionary = {
   'reminders.summary.daily': 'Cada día a las {time}',
   'reminders.summary.every2days': 'Cada 2 días a las {time}',
   'reminders.summary.weekly': 'Cada {day} a las {time}',
-  'settings.backup': 'Cuenta y copia de seguridad',
+  'settings.backup': 'Cuenta',
   'settings.backupBody':
     'No necesitas una cuenta. Tus barajas y tu progreso se guardan en este dispositivo. Exporta un archivo para guardarlos como copia de seguridad o pasarlos a otro dispositivo.\n\nIniciar sesión con Google también respalda tus barajas, tarjetas, calendario de estudio y ajustes en tu cuenta, y los lleva a cualquier dispositivo en el que inicies sesión. Tu registro de estudio (cada vez que estudiaste una tarjeta, que alimenta tus estadísticas) se queda en el dispositivo donde estudiaste.',
 

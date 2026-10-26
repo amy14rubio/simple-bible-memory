@@ -61,23 +61,21 @@ test('the Language explanation is behind the "i" in the Language page title', as
   await expect(page.getByRole('dialog', { name: 'Language' })).toContainText('Changes the text of the app only.');
 });
 
-test('Account and backup: Export everything comes first, then sign in, and there is no Import row', async ({ page }) => {
+test('Account: Export data comes first, then sign in, and there is no Import row', async ({ page }) => {
   await page.goto('/#/settings');
-  const section = page.getByRole('region', { name: 'Account and backup' });
-  const items = section.getByRole('button').filter({ hasNotText: /^Account and backup$/ });
-  await expect(items.nth(0)).toContainText('Export everything');
+  const section = page.getByRole('region', { name: 'Account' });
+  const items = section.getByRole('button').filter({ hasNotText: /^Account$/ });
+  await expect(items.nth(0)).toContainText('Export data');
   await expect(items.nth(1)).toContainText('Sign in');
   await expect(section.getByRole('link')).toHaveCount(0);
-  await section.getByRole('button', { name: 'Account and backup', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'Account and backup' })).toContainText('also backs up your decks, cards, study schedule and settings to your account');
+  await section.getByRole('button', { name: 'Account', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Account' })).toContainText('also backs up your decks, cards, study schedule and settings to your account');
 });
 
-test('the Settings Privacy "i" says what the Privacy page is for, and the page\'s own "i" gives its summary', async ({ page }) => {
+test('the Privacy page\'s own "i" gives its summary, and Settings has just a Privacy & data row', async ({ page }) => {
   await page.goto('/#/settings');
-  await expect(page.getByText('Find out what the app stores, where it goes, and who can see it.')).toHaveCount(0); // behind the i
-  await page.getByRole('button', { name: 'Privacy', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'Privacy' })).toContainText('Find out what the app stores, where it goes, and who can see it. Your decks stay on your device unless you sign in.');
-  await closeWithEscape(page);
+  await expect(page.getByRole('link', { name: 'Privacy & data' })).toBeVisible();
+  await expect(page.getByText('Find out what the app stores, where it goes, and who can see it.')).toHaveCount(0);
 
   await page.goto('/#/settings/privacy');
   await expect(page.getByText('The short version:')).toHaveCount(0); // the summary is behind the i, not printed

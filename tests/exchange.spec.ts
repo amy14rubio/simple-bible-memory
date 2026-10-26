@@ -5,7 +5,7 @@ import { addCard, closeWithEscape, createDeck, openDeck } from './helpers';
 import { parseExportFile, type ExportFile } from '../src/domain/exchange/format';
 
 const readDownload = async (d: Download) => readFileSync((await d.path())!, 'utf8');
-const exportDrawer = (page: Page) => page.getByRole('dialog', { name: /^Export (deck|everything)$/ });
+const exportDrawer = (page: Page) => page.getByRole('dialog', { name: /^Export (deck|data)$/ });
 
 async function exportDeck(page: Page, deckId: string, { progress = false } = {}) {
   await openDeck(page, deckId);
@@ -19,7 +19,7 @@ async function exportDeck(page: Page, deckId: string, { progress = false } = {})
   const text = await readDownload(download);
   const parsed = parseExportFile(text);
   expect(parsed.ok).toBe(true);
-  await expect(page.getByRole('dialog', { name: /^Export (deck|everything)$/ })).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: /^Export (deck|data)$/ })).toHaveCount(0);
   await page.waitForTimeout(250); // the drawer's history clean-up, before the test goes anywhere else
   return { download, file: (parsed as { ok: true; file: ExportFile }).file };
 }
@@ -50,7 +50,7 @@ test.describe('export', () => {
     expect(file.decks[0]!.cards.map((c) => c.reference)).toEqual(['Psalm 23:1', 'Psalm 23:2']);
     expect(file.includesProgress).toBe(false);
     await expect(page.getByText('Exported My Psalms')).toBeVisible(); // the toast
-    await expect(page.getByRole('dialog', { name: /^Export (deck|everything)$/ })).toHaveCount(0); // the drawer closed
+    await expect(page.getByRole('dialog', { name: /^Export (deck|data)$/ })).toHaveCount(0); // the drawer closed
   });
 
   test('"Include my progress" adds the study schedule and history', async ({ page }) => {
@@ -105,7 +105,7 @@ test.describe('export', () => {
     await twoVerseDeck(page, 'Second');
     await page.goto('/#/settings');
     await expect(page.getByText(/Backup and sync aren't available yet/)).toHaveCount(0); // the old "not available yet" note is gone
-    await page.getByRole('button', { name: 'Export everything' }).click();
+    await page.getByRole('button', { name: 'Export data' }).click();
     const drawer = exportDrawer(page);
     await expect(drawer.getByRole('switch', { name: 'Include my progress' })).toHaveAttribute('aria-checked', 'true');
     const [download] = await Promise.all([page.waitForEvent('download'), drawer.getByRole('button', { name: 'Export' }).click()]);
@@ -170,10 +170,10 @@ test.describe('import a deck file', () => {
     await twoVerseDeck(page, 'First');
     await twoVerseDeck(page, 'Second');
     await page.goto('/#/settings');
-    await page.getByRole('button', { name: 'Export everything' }).click();
+    await page.getByRole('button', { name: 'Export data' }).click();
     const [download] = await Promise.all([page.waitForEvent('download'), exportDrawer(page).getByRole('button', { name: 'Export' }).click()]);
     const backup = await readDownload(download);
-    await expect(page.getByRole('dialog', { name: /^Export (deck|everything)$/ })).toHaveCount(0);
+    await expect(page.getByRole('dialog', { name: /^Export (deck|data)$/ })).toHaveCount(0);
     await page.waitForTimeout(250);
     await page.reload();
 
@@ -281,8 +281,8 @@ test.describe('in Spanish, and accessibility', () => {
     const ctx = await browser.newContext({ locale: 'es-ES' });
     const page = await ctx.newPage();
     await page.goto('/#/settings');
-    await page.getByRole('button', { name: 'Exportar todo' }).click();
-    await expect(page.getByRole('dialog', { name: 'Exportar todo' }).getByRole('switch', { name: 'Incluir mi progreso' })).toBeVisible();
+    await page.getByRole('button', { name: 'Exportar datos' }).click();
+    await expect(page.getByRole('dialog', { name: 'Exportar datos' }).getByRole('switch', { name: 'Incluir mi progreso' })).toBeVisible();
     await closeWithEscape(page);
     await page.goto('/#/import');
     await expect(page.getByRole('heading', { name: 'Importar baraja' })).toBeVisible();

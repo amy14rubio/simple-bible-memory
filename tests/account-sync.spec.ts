@@ -38,10 +38,10 @@ test('signing in backs up decks, cards and the study schedule, and says so', asy
   expect(keys.some((k) => k.startsWith('schedule~'))).toBe(true);
   expect(keys.some((k) => k.startsWith('setting~theme'))).toBe(false); // looks are not backed up
 
-  // the backup message comes first in Account and backup, above the buttons
-  const section = page.getByRole('region', { name: 'Account and backup' });
+  // the backup message comes first in Account, above the buttons
+  const section = page.getByRole('region', { name: 'Account' });
   const message = (await section.getByRole('status').boundingBox())!.y;
-  expect(message).toBeLessThan((await section.getByRole('button', { name: 'Export everything' }).boundingBox())!.y);
+  expect(message).toBeLessThan((await section.getByRole('button', { name: 'Export data' }).boundingBox())!.y);
   expect(message).toBeLessThan((await section.getByRole('button', { name: 'Sign out' }).boundingBox())!.y);
 });
 
@@ -132,7 +132,7 @@ test('deleting the account removes the backup but keeps the decks on the device'
 test.describe('privacy note', () => {
   test('is a Settings page that says what is stored, and has no accessibility violations', async ({ page }) => {
     await page.goto('/#/settings');
-    await page.getByRole('link', { name: 'How your data is used' }).click();
+    await page.getByRole('link', { name: 'Privacy & data' }).click();
     await expect(page.getByRole('heading', { name: 'Privacy', level: 1 })).toBeVisible();
     for (const h of ['On your device', 'If you sign in', 'Public decks', 'Deleting your data', 'Other services']) await expect(page.getByRole('heading', { name: h })).toBeVisible();
     await expect(page.getByText('Your review history, theme, font and language are not copied.')).toBeVisible();
@@ -144,7 +144,7 @@ test.describe('privacy note', () => {
     test.use({ locale: 'es-ES' });
     test('the page and the sign-in status are in Spanish', async ({ page }) => {
       await page.goto('/#/settings');
-      await page.getByRole('link', { name: 'Cómo se usan tus datos' }).click();
+      await page.getByRole('link', { name: 'Privacidad y datos' }).click();
       await expect(page.getByRole('heading', { name: 'Si inicias sesión' })).toBeVisible();
     });
   });
