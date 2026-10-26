@@ -189,6 +189,7 @@ for (const p of PAGES) {
       const ctx = await browser.newContext({ viewport: { width: 1100, height: 900 }, colorScheme: 'light', deviceScaleFactor: 3 });
       const page = await ctx.newPage();
       await page.goto(p.url);
+      await page.addStyleTag({ content: '.rv-word { animation: none !important; } .rv-block { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }' }); // measure the finished footer, not one still fading in
       await page.evaluate(() => document.fonts.ready);
       for (const sel of ['header .brand', 'footer .brand']) {
         const png = (await page.locator(sel).screenshot()).toString('base64');
@@ -205,7 +206,7 @@ for (const p of PAGES) {
           const rows = (a: number, b: number) => { let lo = h, hi = 0; for (let y = 0; y < h; y++) for (let x = a; x < b; x++) if (ink(x, y)) { lo = Math.min(lo, y); hi = Math.max(hi, y); } return (lo + hi) / 2; };
           return (rows(runs[at]![0], runs[at]![1]) - rows(runs[0]![0], runs[at - 1]![1])) / 3; // css pixels
         }, png);
-        expect(Math.abs(off), sel).toBeLessThanOrEqual(0.5);
+        expect(Math.abs(off), sel).toBeLessThanOrEqual(0.7); // text snaps to whole pixels, so a logo can land up to a pixel either way depending on the page height
       }
       await ctx.close();
     });
@@ -248,6 +249,7 @@ for (const p of PAGES) {
         const ctx = await browser.newContext({ colorScheme: scheme });
         const page = await ctx.newPage();
         await page.goto(p.url);
+        await page.addStyleTag({ content: '.rv-word { animation: none !important; } .rv-block { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }' }); // check the finished page, not something caught halfway through its reveal
         await page.getByRole('button', { name: p.show }).click(); // the demo in its other state too
         const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
         expect(results.violations).toEqual([]);
@@ -270,3 +272,91 @@ test('the moving light behind the hero is decoration only: hidden from screen re
   await page.getByRole('link', { name: 'Start Practicing' }).last().click();
   await expect(page).toHaveURL(/\/$|#\//);
 });
+
+test('on a wide screen the four highlight cards line up with the three phone screenshots', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/landing.html');
+  const edges = await page.evaluate(() => {
+    const phones = [...document.querySelectorAll('.shots .phone')].map((e) => e.getBoundingClientRect());
+    const grid = document.querySelector('.grid')!.getBoundingClientRect();
+    return { phones: [phones[0].left, phones[phones.length - 1].right], grid: [grid.left, grid.right] };
+  });
+  expect(Math.abs(edges.grid[0] - edges.phones[0])).toBeLessThanOrEqual(1);
+  expect(Math.abs(edges.grid[1] - edges.phones[1])).toBeLessThanOrEqual(1);
+});
+
+for (const path of ['/privacy-policy.html', '/terms.html', '/delete-account.html', '/es/privacy-policy.html', '/es/terms.html', '/es/delete-account.html']) {
+  test(`${path}: on a wide screen the text column is 48rem wide and lines up with the header`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(path);
+    const box = await page.evaluate(() => {
+      const m = document.querySelector('main')!.getBoundingClientRect();
+      const h = document.querySelector('header')!.getBoundingClientRect();
+      return { main: m.width, mainLeft: m.left, headerLeft: h.left };
+    });
+    expect(box.main).toBe(768);
+    expect(box.headerLeft).toBe(box.mainLeft);
+  });
+}
+
+for (const [lang, path, title] of [['English', '/landing.html', 'Simple Bible Memory'], ['Spanish', '/es/landing.html', 'Simple Bible Memory']] as const) {
+  test.describe(`${lang}: text reveal`, () => {
+    test('the hero words blur in, and then every word is fully visible and the sentence is unchanged', async ({ page }) => {
+      await page.goto(path);
+      await expect(page.locator('.hero h1 .rv-word').first()).toBeAttached();
+      await expect(page.locator('.hero h1')).toHaveText(title);
+      await page.waitForTimeout(2200);
+      const opacities = await page.locator('.hero .rv-word').evaluateAll((els) => els.map((e) => getComputedStyle(e).opacity));
+      expect(opacities.length).toBeGreaterThan(3);
+      expect(opacities.every((o) => o === '1')).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.classList.contains('reveal-pending'))).toBe(false);
+    });
+
+    test('a section heading plays only once it scrolls into view', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.goto(path);
+      const feat = page.locator('#features h2');
+      await expect(feat).not.toHaveClass(/rv-go/);
+      await feat.scrollIntoViewIfNeeded();
+      await expect(feat).toHaveClass(/rv-go/);
+    });
+
+    test('cards, screenshots, the demo and the footer start hidden and fade in once scrolled into view', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.goto(path);
+      const card = page.locator('.grid li').first();
+      await expect(card).not.toHaveClass(/rv-go/);
+      expect(await card.evaluate((el) => getComputedStyle(el).opacity)).toBe('0');
+      await card.scrollIntoViewIfNeeded();
+      await expect(card).toHaveAttribute('data-revealed', ''); // it has finished appearing and is back to its normal styles
+      expect(await card.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+      const foot = page.locator('footer .foot-brand');
+      await foot.scrollIntoViewIfNeeded();
+      await expect(foot).toHaveAttribute('data-revealed', '');
+    });
+
+    test('the hero buttons are quick to appear and, once there, react to hover with no reveal delay', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.goto(path);
+      const start = page.locator('.hero .actions .button');
+      await expect(start).toHaveAttribute('data-revealed', '', { timeout: 2500 }); // all three buttons within about a second
+      await expect(page.locator('.hero .stores .button').last()).toHaveAttribute('data-revealed', '', { timeout: 2500 });
+      const before = await start.evaluate((el) => getComputedStyle(el).transitionDelay);
+      expect(before).toBe('0s'); // nothing left over from the reveal
+      await start.hover();
+      await expect(start).toBeEnabled();
+      await start.click();
+      await expect(page).toHaveURL(/\/$|#\//);
+    });
+
+    test('with reduced motion the text is plain: no split words, nothing hidden', async ({ browser }) => {
+      const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+      const page = await ctx.newPage();
+      await page.goto(path);
+      await expect(page.locator('.hero h1')).toBeVisible();
+      await expect(page.locator('.rv-word')).toHaveCount(0);
+      expect(await page.locator('.grid li').first().evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+      await ctx.close();
+    });
+  });
+}

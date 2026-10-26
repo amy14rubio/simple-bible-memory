@@ -679,6 +679,13 @@ h1 {
   gap: 1.25rem;
   grid-template-columns: repeat(2, 1fr);
 }
+@media (min-width: 48rem) {
+  /* desktop: the cards line up with the phone screenshots above (the same 56rem, centered; both shrink together on smaller screens) */
+  .grid {
+    max-width: 56rem;
+    margin-inline: auto;
+  }
+}
 .grid li {
   display: flex;
   gap: 1.25rem;
@@ -687,6 +694,13 @@ h1 {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 0.75rem;
+  min-height: 8.4rem; /* as tall as on a phone, even where the text fits on one line */
+}
+@media (min-width: 40.01rem) {
+  .grid li {
+    padding-block: 3rem; /* taller cards on desktop */
+    justify-content: center; /* the icon and its text sit in the middle of the card, as one group */
+  }
 }
 .grid .icon {
   width: 2.5rem;
@@ -721,4 +735,61 @@ h1 {
   color: var(--muted);
   max-width: 32rem;
   margin: 0 auto 2.5rem; /* room before the button, like the space under the other headings */
+}
+
+/* text reveal: each word blurs in from below, one after another, and stays (landing.js splits the headings into words) */
+.reveal-pending .hero h1,
+.reveal-pending .hero .lead,
+.reveal-pending main h2,
+.reveal-pending .top .brand,
+.reveal-pending .top nav .button,
+.reveal-pending .hero .button {
+  visibility: hidden;
+}
+.rv-word {
+  display: inline-block;
+  animation: rv-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards paused;
+  animation-delay: calc(var(--i) * 80ms + var(--base, 0ms));
+}
+.rv-go .rv-word {
+  animation-play-state: running;
+}
+@keyframes rv-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+/* cards, screenshots, the demo, the donation button and the footer: fade, rise and sharpen once they come into view */
+.rv-block {
+  opacity: 0 !important; /* beats a button's own :hover and disabled opacity while it is still hidden */
+  transform: translateY(16px);
+  filter: blur(6px);
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rv-block.rv-go {
+  opacity: 1 !important;
+  transform: none;
+  filter: none;
+  transition-delay: var(--d, 0ms); /* the delay applies only while it appears; landing.js removes these classes afterwards */
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv-word {
+    animation: none;
+  }
+  .rv-block {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
 }

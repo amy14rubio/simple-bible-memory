@@ -1,3 +1,66 @@
+(function () {
+  // Text reveal: the hero title and tagline play when the page opens; each section heading plays once when it scrolls into view.
+  // The words stay real text (spaces and all), so copying, searching and screen readers see the same sentence. Nothing runs for visitors who ask for less motion.
+  var root = document.documentElement;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { root.classList.remove('reveal-pending'); return; }
+  var split = function (el, base) {
+    var words = el.textContent.trim().split(/\s+/);
+    el.textContent = '';
+    words.forEach(function (w, i) {
+      if (i) el.appendChild(document.createTextNode(' '));
+      var s = document.createElement('span');
+      s.className = 'rv-word'; s.textContent = w; s.style.setProperty('--i', i); if (base) s.style.setProperty('--base', base + 'ms');
+      el.appendChild(s);
+    });
+    return words.length;
+  };
+  var title = document.querySelector('.hero h1'), lead = document.querySelector('.hero .lead');
+  var n = title ? split(title, 0) : 0;
+  if (lead) split(lead, n * 80 + 120); // the tagline starts right after the title
+  var heads = Array.prototype.slice.call(document.querySelectorAll('main h2'));
+  heads.forEach(function (h) { split(h, 0); });
+  // The lines under the headings reveal word by word too, just after their heading.
+  var subs = Array.prototype.slice.call(document.querySelectorAll('main .sub, .free p'));
+  subs.forEach(function (el) { split(el, 450); });
+  // Cards, screenshots, the demo, the donation button and the footer fade and rise in, one after another within their group.
+  var phoneStrip = matchMedia('(max-width: 48rem)').matches; // on a phone the screenshots are a swipeable strip, so it reveals as one piece
+  var groups = [
+    { sel: ['.top .brand', '.top nav .button'], base: 0 }, // the top bar and the hero buttons play on load, after the title
+    { sel: ['.hero .actions .button', '.hero .stores .button'], base: 420, step: 70 },
+    { sel: ['#demo'], base: 0 },
+    { sel: phoneStrip ? ['.shots'] : ['.shots .shot'], base: 0 },
+    { sel: ['.grid li'], base: 0 },
+    { sel: ['.free .button'], base: 0 },
+    { sel: ['footer .foot-brand', 'footer .foot-col', 'footer .lang'], base: 0 }
+  ];
+  var blocks = [];
+  groups.forEach(function (g) {
+    var els = Array.prototype.slice.call(document.querySelectorAll(g.sel.join(',')));
+    els.forEach(function (el, i) { el.classList.add('rv-block'); el.style.setProperty('--d', g.base + i * (g.step || 110) + 'ms'); blocks.push(el); });
+  });
+  // Once a block has finished appearing, hand it back to its normal styles, so a button's hover and focus transitions carry no reveal delay.
+  var settle = function (el) {
+    if (!el.classList.contains('rv-block')) return;
+    el.classList.remove('rv-block', 'rv-go'); el.style.removeProperty('--d'); el.setAttribute('data-revealed', '');
+  };
+  blocks.forEach(function (el) {
+    // the rise (transform) always changes, even for a button whose own styles keep its opacity fixed
+    el.addEventListener('transitionend', function (e) { if (e.target === el && e.propertyName === 'transform' && el.classList.contains('rv-go')) settle(el); });
+  });
+  root.classList.remove('reveal-pending');
+  if (title) title.classList.add('rv-go');
+  if (lead) lead.classList.add('rv-go');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('rv-go'); io.unobserve(e.target); } });
+    }, { threshold: 0.6 });
+    heads.concat(subs).forEach(function (h) { io.observe(h); });
+    var bo = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('rv-go'); bo.unobserve(e.target); } });
+    }, { threshold: 0.15 });
+    blocks.forEach(function (b) { bo.observe(b); });
+  } else heads.concat(subs, blocks).forEach(function (h) { h.classList.add('rv-go'); });
+})();
 /* The little demo on the landing page: it looks like the app's own study screens. Flip and rate a flashcard, type a verse, fill in the blanks,
    and read about speaking. Plain script, no libraries. The verses are copied from the app's own decks (World English Bible, Reina-Valera 1909).
    Nothing here is saved or sent anywhere. Only the flashcard offers another verse; the other three use one fixed verse. */
