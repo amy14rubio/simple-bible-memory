@@ -101,6 +101,8 @@ export const es: Dictionary = {
   'speak.voiceNone': 'No se encontraron voces en este dispositivo.',
   'speak.heard': 'Se oyó: “{text}”',
   'speak.title': 'Estudio sin manos',
+  'speak.info':
+    'El modo Hablar no califica lo que dices. El reconocimiento de voz puede confundirse, y que te marquen mal mientras la app te lee el versículo sería frustrante. Escucha, comprueba tú mismo y califica cómo te fue.',
   'speak.cmd.done': 'Terminaste tu respuesta',
   'speak.cmd.rate': 'Calificar cómo te fue',
   'speak.cmd.repeat': 'Oír el versículo otra vez',

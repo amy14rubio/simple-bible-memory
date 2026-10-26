@@ -5,6 +5,7 @@ import type { Rating } from '../../domain/study/rating';
 import { SpeakRunner, type Phase, type SpeakScript } from '../../domain/speak/runner';
 import type { SpeakLanguage } from '../../domain/speak/reference';
 import { Button, ErrorMessage } from '../../components/ui';
+import { InfoLabel } from '../../components/InfoDrawer';
 import { getVoice, keepScreenOn, speechCode } from '../../platform/voice';
 import { useI18n } from '../../i18n/I18nProvider';
 import type { MessageKey } from '../../i18n';
@@ -40,7 +41,8 @@ export function SpeakStart({ onStart }: { onStart: () => void }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 py-8 text-center">
       <Mic size={40} aria-hidden className="text-muted" />
-      <h1 className="font-serif text-3xl font-medium tracking-tight">{t('speak.title')}</h1>
+      {/* The "i" says why Speak never grades what you say. */}
+      <h1 className="flex justify-center font-serif text-3xl font-medium tracking-tight"><InfoLabel title={t('speak.title')} info={t('speak.info')} /></h1>
       {/* What to say, in the words the app listens for. */}
       <dl className="w-full max-w-sm divide-y divide-border rounded-lg border border-border text-left">
         {COMMANDS.map((c) => (
