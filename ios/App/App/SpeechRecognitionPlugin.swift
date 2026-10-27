@@ -40,7 +40,7 @@ public class SpeechRecognitionPlugin: CAPPlugin, CAPBridgedPlugin {
     /// speaker (not the tiny earpiece) when nothing is plugged in.
     private func configureAudioSession() throws {
         let session = AVAudioSession.sharedInstance()
-        try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetooth])
+        try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetoothHFP])
         try session.setActive(true, options: .notifyOthersOnDeactivation)
     }
 

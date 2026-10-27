@@ -10,7 +10,7 @@ const web = vi.hoisted(() => ({
 vi.mock('@capacitor-firebase/authentication', () => ({ FirebaseAuthentication: plugin }));
 vi.mock('firebase/auth', () => ({
   GoogleAuthProvider: { credential: web.credential },
-  OAuthProvider: class { constructor(public id: string) {} credential(o: { idToken: string; rawNonce?: string }) { return web.appleCredential(o); } },
+  OAuthProvider: class { credential(o: { idToken: string; rawNonce?: string }) { return web.appleCredential(o); } },
   revokeAccessToken: web.revokeAccessToken,
   signInWithCredential: web.signInWithCredential, signOut: web.signOut, deleteUser: web.deleteUser,
   reauthenticateWithCredential: web.reauthenticateWithCredential, onAuthStateChanged: web.onAuthStateChanged,
