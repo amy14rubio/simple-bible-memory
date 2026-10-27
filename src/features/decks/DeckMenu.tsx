@@ -25,11 +25,17 @@ export function DeckMenu({ deck, onClose, onDeleted }: {
   const share = useSharing();
   const { data: published } = useAsync(async () => (deck ? (await sharing.getDeck(deck.id))?.publishId != null : false), [deck?.id, sharing]);
   const [error, setError] = useState<string>();
+  // Signed out, a published deck can still be deleted here, but only here: its public copy is left alone, now and later.
+  const signedIn = share.user !== null;
 
   const remove = async () => {
     if (!deck) return;
     try {
+      const publishId = signedIn ? undefined : (await sharing.getDeck(deck.id))?.publishId;
       await decks.delete(deck.id);
+      // Deleting a published deck normally queues taking its public copy down. Signed out, the person chose to delete only here, so
+      // the queued removal is dropped: it must never run when they sign in again.
+      if (publishId) await sharing.clearDeckRemoval(publishId);
       setConfirming(false);
       onClose();
       onDeleted();
@@ -60,8 +66,8 @@ export function DeckMenu({ deck, onClose, onDeleted }: {
         open={confirming}
         title={t('deckMenu.deleteTitle')}
         message={t('deckMenu.deleteBody', { title: deck?.title ?? '' })}
-        warning={published ? t('deckMenu.deletePublished') : undefined}
-        confirmLabel={published ? t('deckMenu.deleteAndUnpublish') : t('deckMenu.delete')}
+        warning={published ? t(signedIn ? 'deckMenu.deletePublished' : 'deckMenu.deletePublishedSignedOut') : undefined}
+        confirmLabel={published && signedIn ? t('deckMenu.deleteAndUnpublish') : t('deckMenu.delete')}
         onConfirm={remove}
         onCancel={() => { setConfirming(false); onClose(); }}
       />

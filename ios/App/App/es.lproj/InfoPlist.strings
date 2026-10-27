@@ -1,0 +1,3 @@
+"NSMicrophoneUsageDescription" = "Simple Bible Memory usa el micrófono en el modo Hablar, para que puedas recitar versículos en voz alta.";
+"NSSpeechRecognitionUsageDescription" = "El modo Hablar usa el reconocimiento de voz de Apple para saber cuándo terminaste tu respuesta. La app no guarda tu voz, y Apple puede procesarla para convertir la voz en texto.";
+"CFBundleDisplayName" = "Simple Bible Memory";

@@ -10,6 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "ios:sync": "npm run build && npx cap sync ios",
+    "ios:open": "npx cap open ios",
     "test:rules": "PATH=\"/opt/homebrew/opt/openjdk@21/bin:$PATH\" firebase emulators:exec --only firestore --project demo-simple-bible-memory \"vitest run --config vitest.rules.config.ts\""
   },
   "dependencies": {
@@ -42,6 +44,7 @@
     "@axe-core/playwright": "^4.13.0",
     "@capacitor/android": "^8.5.3",
     "@capacitor/cli": "^8.5.3",
+    "@capacitor/ios": "^8.5.3",
     "@firebase/rules-unit-testing": "^5.0.2",
     "@playwright/test": "^1.64.0",
     "@tailwindcss/vite": "^4.3.3",

@@ -28,7 +28,8 @@ const COMMAND_WORDS: Record<SpeakLanguage, Record<Command, string[]>> = {
   },
 };
 const DONE_WORDS: Record<SpeakLanguage, string[]> = {
-  en: ['done', 'im done', 'i am done', 'i have finished', 'finished', 'im finished', 'i dont know', 'i dont remember', 'i forgot', 'no idea', 'thats it', 'that is it'],
+  // ("don" and "dun": what a Spanish recogniser writes when someone says the English "done" to a Spanish deck)
+  en: ['done', 'don', 'dun', 'don don', 'dun dun', 'done done', 'im done', 'i am done', 'i have finished', 'finished', 'im finished', 'i dont know', 'i dont remember', 'i forgot', 'no idea', 'thats it', 'that is it'],
   es: ['listo', 'lista', 'listos', 'ya listo', 'ya esta', 'terminado', 'termine', 'ya termine', 'hecho', 'ya hecho', 'ya', 'no se', 'no recuerdo', 'no me acuerdo', 'eso es todo'],
 };
 const MAX_WORDS_FOR_A_COMMAND = 5; // a long sentence is the verse being said, not a command

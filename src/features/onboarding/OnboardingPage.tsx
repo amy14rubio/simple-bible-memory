@@ -62,11 +62,7 @@ export function OnboardingPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-sm flex-col px-8 pb-[max(1.5rem,var(--safe-bottom))] pt-[max(0.75rem,var(--safe-top))]">
-      <div className="flex justify-end">
-        <Button variant="ghost" onClick={finish} className="-mr-5 text-muted">{t('onboarding.skip')}</Button>
-      </div>
-
+    <div className="mx-auto flex min-h-dvh max-w-sm flex-col px-8 pb-[calc(var(--safe-bottom)+1.5rem)] pt-[calc(var(--safe-top)+1rem)]">
       <section
         aria-label={t('onboarding.title')}
         onPointerDown={down}
@@ -100,6 +96,8 @@ export function OnboardingPage() {
           {step > 0 && <Button variant="secondary" onClick={() => go(step - 1)}>{t('onboarding.back')}</Button>}
           <Button className="flex-1" onClick={() => (last ? finish() : go(step + 1))}>{last ? t('onboarding.getStarted') : t('onboarding.next')}</Button>
         </div>
+        {/* Skip sits right under Next, where a thumb already is, instead of floating alone at the top of a big screen. */}
+        <Button variant="ghost" onClick={finish} className="w-full text-muted">{t('onboarding.skip')}</Button>
       </div>
     </div>
   );

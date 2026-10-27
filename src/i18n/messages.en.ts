@@ -72,6 +72,8 @@ export const en = {
   'deckMenu.deleteTitle': 'Delete this deck?',
   'deckMenu.deletePublished':
     'This deck is published. Deleting it also removes it from Discover, so other people can no longer find or import it. Anyone who already imported a copy keeps theirs.',
+  'deckMenu.deletePublishedSignedOut':
+    'This deck is published, and you are signed out. Deleting it only deletes it from this device: its public copy stays in Discover, and it is not taken down later either. Once it is gone from here the app cannot take it down (deleting your account does). To take it down first, cancel, sign in, and unpublish it.',
   'deckMenu.deleteAndUnpublish': 'Delete and unpublish',
   'deckMenu.deleteBody':
     '"{title}" and all of its cards will be permanently deleted, along with their review history.',
@@ -318,6 +320,7 @@ export const en = {
   'publish.signInIntro':
     'Sign in with Google to publish. Your name and email are never shown. Signing in also backs up your decks and study schedule to your account.',
   'publish.signIn': 'Continue with Google',
+  'publish.signInApple': 'Continue with Apple',
   'publish.signInFailed': "Couldn't sign in. Try again.",
   'publish.button': 'Publish',
   'publish.pickTranslation': "Choose the translation of this deck's text to publish it.",
@@ -387,6 +390,7 @@ export const en = {
   'privacy.termsLink': 'Read the terms',
   'privacy.deleteLink': 'How to delete your account',
   'account.signIn': 'Sign in with Google',
+  'account.signInApple': 'Sign in with Apple',
   'account.signOut': 'Sign out',
   'account.delete': 'Delete my account',
   'account.deleteTitle': 'Delete your account?',

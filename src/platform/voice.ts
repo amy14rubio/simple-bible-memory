@@ -2,7 +2,7 @@ import { Capacitor } from '@capacitor/core';
 
 /**
  * The phone's voice: reading text aloud and listening to the person.
- * - In the Android app: Android's own text-to-speech and speech recognition (through two small Capacitor plugins).
+ * - In the Android app, and the iPhone and iPad app: the phone's own text-to-speech and speech recognition (through two small Capacitor plugins).
  * - In a browser: the browser's speech features, where it has them (Chrome does; many do not).
  * - In browser tests: a stand-in that logs what would be said and plays back scripted answers (see `FakeVoice`).
  * Nothing here ever stores or uploads audio.
@@ -19,12 +19,20 @@ export const chooseVoice = (lang: string, name: string) => { try { localStorage.
 
 /**
  * Which voice reads in `lang`: the one chosen (in Settings, or picked here the first time and then kept), so the voice never
- * changes from one phrase to the next. Without a choice, the phone's own default for that language, else the first that fits.
+ * changes from one phrase to the next. Without a choice: in the iPhone and iPad app, the app's favourite (Australian English and
+ * Mexican Spanish: the first voice of that region on the device); everywhere, the device's own default for that language, else the
+ * first that fits. (Android and the website keep choosing by their own default: voice names and regions differ too much between devices.)
  */
-export function pickVoice(voices: VoiceInfo[], lang: string): VoiceInfo | undefined {
+const FAVOURITE_REGION: Record<string, string> = { en: 'en-au', es: 'es-mx' };
+const region = (v: VoiceInfo) => v.lang.replace('_', '-').toLowerCase();
+const platformFavourites = (): Record<string, string> => (Capacitor.getPlatform() === 'ios' ? FAVOURITE_REGION : {});
+
+export function pickVoice(voices: VoiceInfo[], lang: string, favourites: Record<string, string> = platformFavourites()): VoiceInfo | undefined {
   const fits = voices.filter((v) => v.lang.replace('_', '-').toLowerCase().startsWith(lang.slice(0, 2).toLowerCase()));
   const saved = chosenVoice(lang);
+  const favourite = favourites[lang.slice(0, 2).toLowerCase()];
   const found = fits.find((v) => v.name === saved)
+    ?? (favourite ? fits.find((v) => region(v) === favourite) : undefined)
     ?? fits.find((v) => v.isDefault && v.lang.replace('_', '-').toLowerCase() === lang.toLowerCase())
     ?? fits.find((v) => v.lang.replace('_', '-').toLowerCase() === lang.toLowerCase())
     ?? fits[0];
@@ -70,8 +78,11 @@ function nativeVoice(): Voice {
     async requestMicrophone() {
       const { plugin } = await speechPlugin();
       const have = await plugin.checkPermissions();
-      if (have.speechRecognition === 'granted') return true;
-      return (await plugin.requestPermissions()).speechRecognition === 'granted';
+      const granted = have.speechRecognition === 'granted' || (await plugin.requestPermissions()).speechRecognition === 'granted';
+      // On an iPhone or iPad the app must set up its audio first, so it can read aloud and listen at once (and the person can speak
+      // over the voice). The listening code for iOS lives in the app itself: ios/App/App/SpeechRecognitionPlugin.swift.
+      if (granted && Capacitor.getPlatform() === 'ios') await (plugin as unknown as { prepareAudio(): Promise<void> }).prepareAudio().catch(() => undefined);
+      return granted;
     },
     async speak(text, { lang, rate }) {
       const { plugin } = await ttsPlugin();

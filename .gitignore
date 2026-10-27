@@ -38,6 +38,12 @@ android/keystore.properties
 *.p12
 *.pem
 google-services.json
+# iOS: the Firebase file for the iPhone/iPad app and any Apple signing material (Xcode keeps signing in your Apple account and keychain)
+GoogleService-Info.plist
+*.mobileprovision
+*.p8
+*.cer
+*.certSigningRequest
 GoogleService-Info.plist
 
 # Firebase CLI cache

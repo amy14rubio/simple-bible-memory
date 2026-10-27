@@ -50,6 +50,14 @@ describe('planNotifications', () => {
     for (const r of ten) expect(plan.filter((n) => n.reminderId === r.id).length).toBe(PLAN_TOTAL / MAX_REMINDERS);
   });
 
+  it('on an iPhone or iPad (which keeps only 64 pending notifications) the same ten reminders stay under 64', () => {
+    const ten = Array.from({ length: MAX_REMINDERS }, (_, i) => base({ id: `r${i}`, time: `${String(8 + i).padStart(2, '0')}:00` }));
+    const plan = planNotifications(ten, at('2026-03-02T07:00:00'), 'hi', 60);
+    expect(plan.length).toBe(60);
+    expect(plan.length).toBeLessThanOrEqual(64);
+    for (const r of ten) expect(plan.filter((n) => n.reminderId === r.id).length).toBe(6);
+  });
+
   it('a single reminder is planned about a hundred firings ahead', () => {
     expect(planNotifications([base({})], at('2026-03-02T07:00:00'), 'hi').length).toBe(PLAN_PER_REMINDER_MAX);
   });

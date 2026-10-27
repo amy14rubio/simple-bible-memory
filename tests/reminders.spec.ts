@@ -228,3 +228,32 @@ test.describe('in Spanish', () => {
     await expect.poll(async () => (await scheduled(page))[0]?.body).toBe(es['reminders.defaultMessage']);
   });
 });
+
+test.describe('on an iPad', () => {
+  // Safari on iPhone and iPad only opens a time clock when the finger lands on the time field itself, so there the (invisible) field
+  // must be what is under the finger when the person taps the time button.
+  test.use({ userAgent: 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1', hasTouch: true });
+
+  test('the invisible clock field is on top of the time button, so a tap reaches it', async ({ page }) => {
+    await turnOn(page);
+    await page.getByRole('list', { name: 'Your reminders' }).getByRole('button').first().click();
+    const drawer = page.getByRole('dialog');
+    const button = drawer.getByRole('button', { name: /^Time, / });
+    await expect(button).toBeVisible();
+    await page.waitForTimeout(700); // the sheet slides up first
+    const box = (await button.boundingBox())!;
+    const topmost = await page.evaluate(([x, y]) => (document.elementFromPoint(x!, y!) as HTMLElement | null)?.getAttribute('data-time-for'), [box.x + box.width / 2, box.y + box.height / 2]);
+    expect(topmost).toBe('Time');
+  });
+});
+
+test('everywhere else the time button opens the clock from code, and the field underneath is left alone', async ({ page }) => {
+  await turnOn(page);
+  await page.getByRole('list', { name: 'Your reminders' }).getByRole('button').first().click();
+  const drawer = page.getByRole('dialog');
+  await expect(drawer.getByRole('button', { name: /^Time, / })).toBeVisible();
+  await page.waitForTimeout(700); // the sheet slides up first
+  const box = (await drawer.getByRole('button', { name: /^Time, / }).boundingBox())!;
+  const topmost = await page.evaluate(([x, y]) => (document.elementFromPoint(x!, y!) as HTMLElement | null)?.tagName, [box.x + box.width / 2, box.y + box.height / 2]);
+  expect(topmost).toBe('BUTTON');
+});

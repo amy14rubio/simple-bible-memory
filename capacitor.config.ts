@@ -10,10 +10,21 @@ const config: CapacitorConfig = {
       smallIcon: 'ic_stat_heart',
       iconColor: '#d96878',
     },
-    // Google sign-in is done by Android; Firebase sign-in itself stays with the web library (see src/features/sharing/firebaseAuthNative.ts).
+    // Google (and, on iPhone and iPad, Apple) sign-in is done by the phone; Firebase sign-in itself stays with the web library (see src/features/sharing/firebaseAuthNative.ts).
     FirebaseAuthentication: {
       skipNativeAuth: true,
-      providers: ['google.com'],
+      providers: ['google.com', 'apple.com'],
+    },
+  },
+  // iOS packages (Swift Package Manager): keep the Google sign-in library and leave out the Facebook one, which this app never uses;
+  // and link the Firebase plugin by symlink to avoid a package-name clash (see the plugin's README).
+  experimental: {
+    ios: {
+      spm: {
+        swiftToolsVersion: '6.1',
+        packageTraits: { '@capacitor-firebase/authentication': ['Google'] },
+        packageOptions: { '@capacitor-firebase/authentication': { symlink: true } },
+      },
     },
   },
 };
