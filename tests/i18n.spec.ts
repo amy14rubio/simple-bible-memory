@@ -406,6 +406,7 @@ test.describe('accessibility in Spanish', () => {
       await page.getByRole('button', { name: 'Añadir' }).click();
       await audit('menú añadir');
       await closeWithEscape(page);
+      await expect(page.getByRole('dialog')).toHaveCount(0); // the drawer has finished closing (its focus guards linger while it slides away)
       await page.goto(`/#/decks/${id}`);
       await expect(page.getByText(/tarjetas? para estudiar hoy/)).toBeVisible();
       await audit('baraja');

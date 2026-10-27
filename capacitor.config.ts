@@ -10,6 +10,11 @@ const config: CapacitorConfig = {
       smallIcon: 'ic_stat_heart',
       iconColor: '#d96878',
     },
+    // When the keyboard opens, the whole web view gets shorter (as on Android), so the pinned bar above the keyboard stays in view
+    // however far the page is scrolled, and the page is never left half behind the keyboard.
+    Keyboard: {
+      resize: 'native',
+    },
     // Google (and, on iPhone and iPad, Apple) sign-in is done by the phone; Firebase sign-in itself stays with the web library (see src/features/sharing/firebaseAuthNative.ts).
     FirebaseAuthentication: {
       skipNativeAuth: true,

@@ -1,5 +1,5 @@
 import type { Rating } from '../study/rating';
-import { isDone, normalize, parseCommand, parseRating } from './commands';
+import { isDone, isDoneAlone, normalize, parseCommand, parseRating } from './commands';
 import { spokenReference, type SpeakLanguage } from './reference';
 
 /** What the runner needs from the phone's voice (the real thing lives in src/platform/voice.ts). */
@@ -108,6 +108,34 @@ export class SpeakRunner {
     return n.includes(' ') && this.verseNorm.includes(` ${n} `);
   }
 
+  /**
+   * Listens like `hear`, but acts on guesses as they arrive. The phone decides that speech is over only after a pause (on an iPhone
+   * or iPad, a few seconds), and a person who has said "done" should not have to wait for that. `soon` says how long a guess must
+   * stay unchanged before it is acted on (null: not a finish): short for a whole-utterance command, longer when the word ends a
+   * longer sentence (a verse that merely ends in "done" keeps growing, and then the wait starts over).
+   */
+  private hearLive(lang: SpeakLanguage, maxMs: number, soon: (heard: string[]) => number | null) {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const work = new Promise<string[]>((resolve) => {
+      let early = false;
+      const finish = (heard: string[]) => { clearTimeout(timer); early = true; void this.o.voice.stopListening().catch(() => undefined); resolve(heard); };
+      this.o.voice
+        .listen({
+          lang: this.o.code(lang),
+          maxMs,
+          onPartial: (heard) => {
+            if (early || this.stopped) return;
+            clearTimeout(timer);
+            if (heard.length > 0) this.o.onHeard?.(heard[0]!);
+            const wait = soon(heard);
+            if (wait !== null) timer = setTimeout(() => finish(heard), wait);
+          },
+        })
+        .then((heard) => { clearTimeout(timer); resolve(heard); }, () => { clearTimeout(timer); resolve([]); });
+    });
+    return this.race(work);
+  }
+
   /** Gives stopped voice work a moment to finish, but never waits on it for good (a stopped recogniser may never report back). */
   private settle(work: Promise<unknown>) {
     return Promise.race([work.catch(() => undefined), this.sleep(400)]);
@@ -117,9 +145,6 @@ export class SpeakRunner {
   private say(text: string, lang: SpeakLanguage) {
     if (!text) return Promise.resolve({ value: undefined } as { value: void });
     return this.race(this.o.voice.speak(text, { lang: this.o.code(lang), rate: this.o.rate.get() }));
-  }
-  private hear(lang: SpeakLanguage, maxMs = this.o.listenMs ?? 7000) {
-    return this.race(this.o.voice.listen({ lang: this.o.code(lang), maxMs }));
   }
 
   /**
@@ -247,7 +272,11 @@ export class SpeakRunner {
    */
   private async listenToAnswer(lang: SpeakLanguage): Promise<CardResult | null> {
     while (!this.stopped) {
-      const r = await this.hear(lang, this.o.listenMs ?? 15_000);
+      const r = await this.hearLive(lang, this.o.listenMs ?? 15_000, (h) => {
+        const own = h.filter((x) => !this.partOfVerse(x));
+        if (isDoneAlone(own, this.o.uiLang) || isDoneAlone(own, this.o.verseLang) || parseCommand(h, this.o.uiLang, false, ['skip', 'stop'])) return 250;
+        return isDone(own, this.o.uiLang) || isDone(own, this.o.verseLang) ? 700 : null;
+      });
       if ('tap' in r) return SpeakRunner.fromTap(r.tap);
       const heard = r.value;
       if (heard.length === 0) { await this.sleep(100); continue; }
@@ -279,7 +308,7 @@ export class SpeakRunner {
     this.phase('rating');
     for (;;) {
       if (this.stopped) return { kind: 'stop' };
-      const r = await this.hear(uiLang, 12_000);
+      const r = await this.hearLive(uiLang, 12_000, (h) => (parseRating(h, uiLang) !== null || parseCommand(h, uiLang, true, ['repeat', 'slower', 'faster', 'skip', 'stop']) ? 250 : null));
       if ('tap' in r) return SpeakRunner.fromTap(r.tap);
       const heard = r.value;
       if (heard.length === 0) {

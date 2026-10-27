@@ -155,6 +155,39 @@ describe('one card, hands free', () => {
     expect(await done).toEqual({ kind: 'rated', rating: 4 });
   });
 
+  it('acts on "done" as it is heard, without waiting for the phone to decide that speech is over', async () => {
+    const t = setup([['good']]);
+    const listen = t.voice.listen as unknown as (o: { lang: string; maxMs: number; onPartial?: (g: string[]) => void }) => Promise<string[]>;
+    let first = true;
+    (t.voice as unknown as { listen: typeof listen }).listen = (o) => {
+      if (!first || !o.onPartial) return listen(o);
+      first = false;
+      o.onPartial(['done']); // a guess arrives, but the recogniser itself never finishes
+      return new Promise<string[]>(() => undefined);
+    };
+    expect(await t.runner.run(card)).toEqual({ kind: 'rated', rating: 3 });
+    expect(t.phases).toContain('reading');
+  });
+
+  it('a verse that only ends in "done" is not cut off the moment the word arrives', async () => {
+    const t = setup([['good']]);
+    const listen = t.voice.listen as unknown as (o: { lang: string; maxMs: number; onPartial?: (g: string[]) => void }) => Promise<string[]>;
+    let first = true;
+    (t.voice as unknown as { listen: typeof listen }).listen = (o) => {
+      if (!first || !o.onPartial) return listen(o);
+      first = false;
+      const partial = o.onPartial;
+      partial(['well done']); // more words follow straight away, so this must not end the answer
+      setTimeout(() => partial(['well done good and faithful']), 100);
+      return new Promise<string[]>(() => undefined);
+    };
+    const done = t.runner.run(card);
+    await new Promise((r) => setTimeout(r, 900));
+    expect(t.phases).not.toContain('reading'); // still listening
+    t.runner.tap({ kind: 'stop' });
+    expect(await done).toEqual({ kind: 'stop' });
+  });
+
   it('says the reference, listens, reads the verse, asks for the rating, and takes it', async () => {
     const t = setup([['Be careful for nothing'], ['done'], ['good']]);
     expect(await t.runner.run(card)).toEqual({ kind: 'rated', rating: 3 });

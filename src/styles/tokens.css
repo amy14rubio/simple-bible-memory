@@ -19,6 +19,13 @@
   --safe-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
   --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
 
+  /*
+    The screen's size class. The app is designed for a phone (1); on a tablet or a computer the same design is simply made bigger:
+    text, spacing, icons and the width of the column all grow together. Big enough in both directions, so a phone turned sideways
+    (wide but short) stays at phone size.
+  */
+  --ui-scale: 1;
+
   --background: #f8f8f6; /* paper */
   --foreground: #17171a; /* ink */
   --muted: #5e5e5a;
@@ -83,18 +90,27 @@
   --radius-lg: calc(var(--radius) + 0.25rem);
 }
 
+/* Wide screens (a tablet lying down, a computer): the bottom bar becomes a sidebar. Same size test as the 1.2 scale below, from 1000px up. */
+@custom-variant wide (@media (min-width: 1000px) and (min-height: 700px));
+
+@media (min-width: 700px) and (min-height: 700px) { :root { --ui-scale: 1.2; } } /* a tablet standing up, a small window */
+@media (min-width: 1000px) and (min-height: 800px) { :root { --ui-scale: 1.35; } } /* a tablet lying down, a computer */
+
 /* The two typefaces. Not `inline`, so the utilities (font-sans, font-serif) read the variable at run time and the
    Font settings can swap them without touching a component. */
 @theme {
-  /* Spacing in pixels, not rem, so the text-size setting (which scales rem) makes text bigger without stretching the layout. */
-  --spacing: 4px;
+  /* Spacing in pixels, not rem, so the text-size setting (which scales rem) makes text bigger without stretching the layout.
+     (The screen's size class scales both: it is the same design, bigger.) */
+  --spacing: calc(4px * var(--ui-scale, 1));
   --font-sans: 'Instrument Sans Variable', system-ui, sans-serif;
   --font-serif: 'Literata Variable', Georgia, 'Times New Roman', serif;
 }
 
 /* The Font page's text size: every rem (all the text) is multiplied by this, so every size grows by the same share and
    headings stay bigger than labels. 1 is the normal size. */
-html { font-size: calc(100% * var(--text-scale, 1)); }
+html { font-size: calc(100% * var(--text-scale, 1) * var(--ui-scale, 1)); }
+/* Icons are drawn in pixels (size={22}), so they follow the screen's size class here. */
+svg.lucide { zoom: var(--ui-scale, 1); }
 
 body {
   background: var(--background);

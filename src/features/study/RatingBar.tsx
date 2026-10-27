@@ -10,10 +10,10 @@ const LABEL_KEYS: Record<Rating, MessageKey> = { 1: 'rating.again', 2: 'rating.h
 /** Again red, Hard orange, Good green, Easy light blue, as in Anki. Only the text is colored; buttons stay plain. */
 export const RATING_TEXT: Record<Rating, string> = { 1: 'text-again', 2: 'text-hard', 3: 'text-good', 4: 'text-easy' };
 
-/** Pinned to the bottom of the screen so the thumb never has to reach, whatever the keyboard is doing. */
+/** Pinned to the bottom of the screen so the thumb never has to reach: above the keyboard when it is up (see useKeyboardInset). */
 export function ActionBar({ children }: { children: ReactNode }) {
   return (
-    <div data-action-bar className="sticky bottom-0 -mx-5 mt-6 space-y-3 bg-background px-5 pb-[calc(2rem+var(--safe-bottom))] pt-3">
+    <div data-action-bar className="sticky bottom-[var(--keyboard-inset,0px)] -mx-5 mt-6 space-y-3 bg-background px-5 pb-[calc(2rem+var(--safe-bottom))] pt-3 [[data-keyboard]_&]:pb-3">
       {children}
     </div>
   );
