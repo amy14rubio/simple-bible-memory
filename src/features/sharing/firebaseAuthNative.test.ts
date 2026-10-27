@@ -112,6 +112,13 @@ describe('Sign in with Apple inside the iPhone and iPad app', () => {
     expect(web.revokeAccessToken.mock.invocationCallOrder[0]).toBeLessThan(web.deleteUser.mock.invocationCallOrder[0]!);
   });
 
+  it('deleting an Apple account still deletes when telling Apple fails', async () => {
+    auth.currentUser = applePerson;
+    web.revokeAccessToken.mockRejectedValue(new Error('Apple is not reachable'));
+    await backend().deleteAccount();
+    expect(web.deleteUser).toHaveBeenCalledWith(applePerson);
+  });
+
   it('deleting an Apple account still deletes when Apple gives no authorization code', async () => {
     auth.currentUser = applePerson;
     plugin.signInWithApple.mockResolvedValue({ credential: { idToken: 'apple-id-token', nonce: 'raw-nonce' } });

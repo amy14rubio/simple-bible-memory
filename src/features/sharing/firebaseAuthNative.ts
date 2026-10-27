@@ -58,7 +58,10 @@ export function createNativeFirebaseAuth(auth: Auth): AuthBackend {
         // code, which only comes from signing in again, so ask once, revoke, and then delete.
         const { credential, authorizationCode } = await appleCredential();
         await reauthenticateWithCredential(user, credential);
-        if (authorizationCode) await revokeAccessToken(auth, authorizationCode);
+        // Best effort: if Apple cannot be told right now, the person's account is still deleted (being unable to delete is worse).
+        if (authorizationCode) {
+          try { await revokeAccessToken(auth, authorizationCode); } catch { /* see above */ }
+        }
         await deleteUser(user);
         return;
       }
