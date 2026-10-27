@@ -133,6 +133,7 @@ test.describe('the Settings switch', () => {
 });
 
 test('it is the toast\'s own look, and follows a custom theme: the pill is the text colour, the words are the theme\'s background colour', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 }); // phone size: 15px is 0.9375rem at the phone's 16px root
   await page.goto('/#/settings/theme');
   await page.getByRole('radio', { name: 'Custom' }).check();
   await page.getByLabel('Background, hex code').fill('#fff4e5');

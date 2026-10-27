@@ -6,7 +6,7 @@ import { SpeakRunner, type Phase, type SpeakScript } from '../../domain/speak/ru
 import type { SpeakLanguage } from '../../domain/speak/reference';
 import { Button, ErrorMessage } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
-import { getVoice, keepScreenOn, speechCode } from '../../platform/voice';
+import { getVoice, keepScreenOn, liveWindowMs, speechCode } from '../../platform/voice';
 import { useI18n } from '../../i18n/I18nProvider';
 import type { MessageKey } from '../../i18n';
 import { ActionBar, RatingBar } from './RatingBar';
@@ -89,7 +89,7 @@ export function SpeakMode({ card, kind, intervals, onRate, onSkip, onStop }: {
     let release: (() => void) | undefined;
     void keepScreenOn().then((r) => { if (live) release = r; else r(); });
     const r = new SpeakRunner({
-      voice: getVoice(), script, uiLang: language, verseLang, code: speechCode,
+      voice: getVoice(), script, uiLang: language, verseLang, code: speechCode, liveWindowMs: liveWindowMs(),
       labels: { 1: t('rating.again'), 2: t('rating.hard'), 3: t('rating.good'), 4: t('rating.easy') },
       rate: {
         get: () => { try { return Number(localStorage.getItem('speak_rate')) || DEFAULT_RATE; } catch { return DEFAULT_RATE; } },

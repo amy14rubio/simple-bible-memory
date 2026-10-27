@@ -48,10 +48,11 @@ export function DecksPage() {
         </EmptyState>
       )}
       {shown && data && data.length > 0 && shown.length === 0 && <p className="px-5 py-10 text-center text-muted">{t('decks.noMatch', { query })}</p>}
-      <ul>
+      {/* On a wide screen one deck takes the whole width; more sit two to a row. */}
+      <ul className={`wide:grid wide:gap-3 wide:p-5 ${shown && shown.length > 1 ? 'wide:grid-cols-2' : ''}`}>
         {shown?.map((d) => (
-          <li key={d.id} className="flex items-center border-b border-border pr-2">
-            <Link to={`/decks/${d.id}`} className="flex min-h-16 min-w-0 flex-1 items-center justify-between gap-4 py-3 pl-5 pr-2 hover:bg-surface">
+          <li key={d.id} className="flex items-center border-b border-border pr-2 wide:rounded-xl wide:border">
+            <Link to={`/decks/${d.id}`} className="flex min-h-16 min-w-0 flex-1 items-center justify-between gap-4 py-3 pl-5 pr-2 hover:bg-surface wide:rounded-l-xl">
               <span className="truncate font-serif text-lg">{d.title}</span>
               <span className={`shrink-0 text-sm tabular-nums ${d.due > 0 ? 'font-semibold' : 'text-muted'}`}>
                 {d.due}

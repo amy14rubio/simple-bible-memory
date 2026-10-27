@@ -50,7 +50,7 @@ test.describe('moving between screens', () => {
     await expect(page).toHaveTitle('Psalms · Simple Bible Memory');
     expect(await focused(page)).toMatchObject({ tag: 'h1', name: 'Psalms' });
     await page.getByRole('button', { name: 'Deck actions' }).click();
-    await page.getByRole('link', { name: 'Browse cards' }).click();
+    await page.getByRole('dialog').getByRole('link', { name: 'Browse cards' }).click();
     await expect(page).toHaveTitle('Cards in Psalms · Simple Bible Memory');
     expect(id).toBeTruthy();
   });

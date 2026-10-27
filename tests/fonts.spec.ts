@@ -230,6 +230,7 @@ test.describe('font', () => {
   });
 
   test('the text size slider scales the text across the whole app, and only the text', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 }); // phone size: the 100% size (16px) is the phone's; bigger screens scale up (see responsive.spec.ts)
     await page.goto('/#/settings');
     const height = async () => (await page.getByRole('link', { name: /^Font/ }).boundingBox())!.height;
     const rowBefore = await height();
@@ -259,6 +260,7 @@ test.describe('font', () => {
   });
 
   test('double-tapping the label, the slider or the percentage resets the size to 100%', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 }); // phone size: the 100% size (16px) is the phone's; bigger screens scale up (see responsive.spec.ts)
     await page.goto('/#/settings/font');
     const rootSize = () => page.evaluate(() => getComputedStyle(document.documentElement).fontSize);
     const row = page.locator('div').filter({ has: page.getByLabel('Text size') }).last();
@@ -288,6 +290,7 @@ test.describe('font', () => {
   });
 
   test('keyboard users reach 100% with the arrow keys (steps of 5%)', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 }); // phone size: the 100% size (16px) is the phone's; bigger screens scale up (see responsive.spec.ts)
     await page.goto('/#/settings/font');
     const slider = page.getByLabel('Text size');
     await slider.fill('110');
@@ -298,6 +301,7 @@ test.describe('font', () => {
   });
 
   test('the size range is 85% to 150%', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 }); // phone size: the 100% size (16px) is the phone's; bigger screens scale up (see responsive.spec.ts)
     await page.goto('/#/settings/font');
     const slider = page.getByLabel('Text size');
     await expect(slider).toHaveAttribute('min', '85');

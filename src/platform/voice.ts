@@ -1,4 +1,4 @@
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, registerPlugin } from '@capacitor/core';
 
 /**
  * The phone's voice: reading text aloud and listening to the person.
@@ -66,6 +66,16 @@ export const speechCode = (lang: 'en' | 'es') => (lang === 'es' ? 'es-ES' : 'en-
 const speechPlugin = () => import('@capacitor-community/speech-recognition').then((m) => ({ plugin: m.SpeechRecognition }));
 const ttsPlugin = () => import('@capacitor-community/text-to-speech').then((m) => ({ plugin: m.TextToSpeech }));
 
+/**
+ * How long one listening window lasts while the app is reading aloud. Android's recogniser gives up after a few seconds, so it is
+ * started again every 4. On iPhone and iPad it keeps going (about a minute), and starting it again only loses the words said in the gap.
+ */
+export const liveWindowMs = () => (Capacitor.getPlatform() === 'ios' ? 30_000 : 4000);
+
+/** iPhone and iPad read aloud through the app's own audio (ios/App/App/SpeechRecognitionPlugin.swift), so echo cancelling can hear it. */
+interface AppSpeechPlugin { speak(o: { text: string; lang: string; rate: number; volume: number; voice?: number }): Promise<void>; stop(): Promise<void> }
+const appSpeech = () => (Capacitor.getPlatform() === 'ios' ? registerPlugin<AppSpeechPlugin>('AppSpeech') : null);
+
 function nativeVoice(): Voice {
   let all: Promise<VoiceInfo[]> | undefined;
   const list = () => (all ??= ttsPlugin().then(({ plugin }) => plugin.getSupportedVoices()).then((r) => r.voices.map((x) => ({ name: x.name, lang: x.lang, isDefault: x.default }))).catch(() => []));
@@ -89,11 +99,13 @@ function nativeVoice(): Voice {
       const everything = await list();
       const picked = pickVoice(everything, lang);
       const index = picked ? everything.findIndex((x) => x.name === picked.name) : -1;
-      await plugin.speak({ text, lang, rate, pitch: 1, volume: 1, category: 'playback', ...(index >= 0 ? { voice: index } : {}) });
+      const own = appSpeech();
+      if (own) await own.speak({ text, lang, rate, volume: 1, ...(index >= 0 ? { voice: index } : {}) });
+      else await plugin.speak({ text, lang, rate, pitch: 1, volume: 1, category: 'playback', ...(index >= 0 ? { voice: index } : {}) });
     },
     async stopSpeaking() {
       const { plugin } = await ttsPlugin();
-      await plugin.stop().catch(() => undefined);
+      await (appSpeech()?.stop() ?? plugin.stop()).catch(() => undefined);
     },
     async listen({ lang, maxMs, onPartial }) {
       const { plugin } = await speechPlugin();

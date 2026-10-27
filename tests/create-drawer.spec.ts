@@ -178,7 +178,8 @@ test('on a wide screen the drawer is centered and not stretched across the whole
   await expect(drawer(page)).toBeVisible();
   await page.waitForTimeout(700);
   const box = (await drawer(page).boundingBox())!;
-  expect(box.width).toBeLessThanOrEqual(672 + 2);
+  expect(box.width).toBeLessThanOrEqual(672 * 1.35 + 2); // 42rem, and this window is big enough for the 1.35 size (see responsive.spec.ts)
+  expect(box.width).toBeLessThan(1280 / 1.3); // never stretched across the window
   expect(Math.abs(box.x + box.width / 2 - 640)).toBeLessThanOrEqual(2); // centered
 });
 

@@ -68,6 +68,10 @@ const TRAILING: Record<SpeakLanguage, { word: string[]; notAfter: string[] }> = 
   en: { word: ['done', 'finished'], notAfter: ['be', 'is', 'was', 'been', 'are', 'will', 'shall', 'it', 'get', 'being', 'have', 'has', 'had', 'be'] },
   es: { word: ['listo', 'lista', 'listos'], notAfter: [] },
 };
+/** Is the whole utterance a finishing phrase ("done", "I don't know")? Safe to act on while the person may still be speaking. */
+export function isDoneAlone(heard: string[], lang: SpeakLanguage): boolean {
+  return matches(heard, DONE_WORDS[lang], false);
+}
 export function isDone(heard: string[], lang: SpeakLanguage): boolean {
   if (matches(heard, DONE_WORDS[lang], false)) return true;
   return heard.some((h) => {
