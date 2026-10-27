@@ -72,6 +72,8 @@ export const en = {
   'deckMenu.deleteTitle': 'Delete this deck?',
   'deckMenu.deletePublished':
     'This deck is published. Deleting it also removes it from Discover, so other people can no longer find or import it. Anyone who already imported a copy keeps theirs.',
+  'deckMenu.deletePublishedSignedOut':
+    'This deck is published, and you are signed out. Deleting it only deletes it from this device: its public copy stays in Discover, and it is not taken down later either. Once it is gone from here the app cannot take it down (deleting your account does). To take it down first, cancel, sign in, and unpublish it.',
   'deckMenu.deleteAndUnpublish': 'Delete and unpublish',
   'deckMenu.deleteBody':
     '"{title}" and all of its cards will be permanently deleted, along with their review history.',

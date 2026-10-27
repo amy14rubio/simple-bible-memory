@@ -66,6 +66,10 @@ describe('understanding what is said', () => {
     expect(isDone(['done'], 'en')).toBe(true);
     expect(isDone(["I don't know"], 'en')).toBe(true);
     expect(isDone(['listo'], 'es')).toBe(true);
+    // the English "done" said to a Spanish deck: a Spanish recogniser writes it as "don"
+    expect(isDone(['Don don'], 'en')).toBe(true);
+    expect(isDone(['Don'], 'en')).toBe(true);
+    expect(isDone(['don quixote and the windmills'], 'en')).toBe(false); // only the whole utterance counts
     expect(isDone(["I don't know I'm done"], 'en')).toBe(true);
     expect(isDone(['en el principio creo Dios los cielos listo'], 'es')).toBe(true);
     expect(isDone(['thy will be done'], 'en')).toBe(false);

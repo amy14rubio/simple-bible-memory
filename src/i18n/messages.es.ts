@@ -64,6 +64,8 @@ export const es: Dictionary = {
   'deckMenu.deleteTitle': '¿Eliminar esta baraja?',
   'deckMenu.deletePublished':
     'Esta baraja está publicada. Al eliminarla, también se retira de Descubrir, así que otras personas ya no podrán encontrarla ni importarla. Quien ya importó una copia la conserva.',
+  'deckMenu.deletePublishedSignedOut':
+    'Esta baraja está publicada y no has iniciado sesión. Al eliminarla solo se elimina de este dispositivo: su copia pública sigue en Descubrir y tampoco se retira después. Cuando ya no esté aquí, la app no podrá retirarla (eliminar tu cuenta sí). Para retirarla antes, cancela, inicia sesión y deja de publicarla.',
   'deckMenu.deleteAndUnpublish': 'Eliminar y dejar de publicar',
   'deckMenu.deleteBody':
     '"{title}" y todas sus tarjetas se eliminarán de forma permanente, junto con su historial de repasos.',

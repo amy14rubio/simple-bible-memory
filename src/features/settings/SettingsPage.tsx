@@ -137,7 +137,7 @@ export function SettingsPage() {
               {accountError && <p role="alert" className="py-2 text-danger">{accountError}</p>}
               {share.user ? (
                 <>
-                  <div className="truncate border-b border-border py-3 text-sm text-muted">{t('account.signedInAs', { name: share.user.displayName ?? share.user.email ?? '' })}</div>
+                  <div className={row}><span className="min-w-0 truncate">{t('account.signedInAs', { name: share.user.displayName ?? share.user.email ?? '' })}</span></div>
                   <button type="button" onClick={() => void share.signOut()} className={`${row} w-full text-left hover:bg-surface`}>
                     <span>{t('account.signOut')}</span>
                   </button>

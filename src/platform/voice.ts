@@ -19,12 +19,20 @@ export const chooseVoice = (lang: string, name: string) => { try { localStorage.
 
 /**
  * Which voice reads in `lang`: the one chosen (in Settings, or picked here the first time and then kept), so the voice never
- * changes from one phrase to the next. Without a choice, the phone's own default for that language, else the first that fits.
+ * changes from one phrase to the next. Without a choice: in the iPhone and iPad app, the app's favourite (Australian English and
+ * Mexican Spanish: the first voice of that region on the device); everywhere, the device's own default for that language, else the
+ * first that fits. (Android and the website keep choosing by their own default: voice names and regions differ too much between devices.)
  */
-export function pickVoice(voices: VoiceInfo[], lang: string): VoiceInfo | undefined {
+const FAVOURITE_REGION: Record<string, string> = { en: 'en-au', es: 'es-mx' };
+const region = (v: VoiceInfo) => v.lang.replace('_', '-').toLowerCase();
+const platformFavourites = (): Record<string, string> => (Capacitor.getPlatform() === 'ios' ? FAVOURITE_REGION : {});
+
+export function pickVoice(voices: VoiceInfo[], lang: string, favourites: Record<string, string> = platformFavourites()): VoiceInfo | undefined {
   const fits = voices.filter((v) => v.lang.replace('_', '-').toLowerCase().startsWith(lang.slice(0, 2).toLowerCase()));
   const saved = chosenVoice(lang);
+  const favourite = favourites[lang.slice(0, 2).toLowerCase()];
   const found = fits.find((v) => v.name === saved)
+    ?? (favourite ? fits.find((v) => region(v) === favourite) : undefined)
     ?? fits.find((v) => v.isDefault && v.lang.replace('_', '-').toLowerCase() === lang.toLowerCase())
     ?? fits.find((v) => v.lang.replace('_', '-').toLowerCase() === lang.toLowerCase())
     ?? fits[0];

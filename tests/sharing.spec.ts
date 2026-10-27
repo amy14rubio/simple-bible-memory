@@ -217,6 +217,27 @@ test.describe('automatic syncing of a published deck', () => {
     await expect.poll(async () => (await published(page)).length, { timeout: 15_000 }).toBe(0);
   });
 
+  test('signed out, a published deck is deleted only on this device: its public copy stays, now and after signing in again', async ({ page }) => {
+    const id = await publishedDeck(page);
+    await page.goto('/#/settings');
+    await page.getByRole('button', { name: 'Sign out' }).click();
+    await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeVisible();
+    await openDeck(page, id);
+    await page.getByRole('button', { name: 'Deck actions' }).click();
+    await page.getByRole('button', { name: 'Delete deck' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText('Deleting it only deletes it from this device: its public copy stays in Discover')).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Delete and unpublish' })).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Delete deck' }).click();
+    await expect(page.getByRole('heading', { name: 'Delete this deck?' })).toHaveCount(0);
+    expect((await published(page)).length).toBe(1); // still public while signed out
+    await page.goto('/#/settings');
+    await page.getByRole('button', { name: 'Sign in with Google' }).click();
+    await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
+    await page.waitForTimeout(1500); // a sync would have run by now
+    expect((await published(page)).length).toBe(1); // signing in again must not take it down
+  });
+
   test('deleting a deck that is not published has no unpublish warning', async ({ page }) => {
     const id = await createDeck(page, 'Private deck');
     await openDeck(page, id);
