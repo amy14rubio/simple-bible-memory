@@ -54,6 +54,19 @@ test('typing a reference fills in the passage from the chosen translation, and i
   await expect(autofillSwitch(page)).toHaveAttribute('aria-checked', 'true');
 });
 
+test('turning autofill off and on again fills in the reference already written', async ({ page }) => {
+  const id = await createDeck(page, 'Verses');
+  await newCardForm(page, id);
+  await autofillSwitch(page).click();
+  await page.getByLabel('Verse(s)').fill('John 3:16');
+  const passage = page.getByLabel('Passage', { exact: true });
+  await expect(passage).toHaveValue('Fake WEB text of John 3:16.');
+  await autofillSwitch(page).click();
+  await passage.fill('my own words');
+  await autofillSwitch(page).click();
+  await expect(passage).toHaveValue('Fake WEB text of John 3:16.');
+});
+
 test('the picker has a Translation tab and a Language tab', async ({ page }) => {
   const id = await createDeck(page, 'Verses');
   await newCardForm(page, id);

@@ -18,6 +18,7 @@ export function useAutofill({ source, reference, skipFor, onText }: { source: Bi
   const key = source ? `${source.code}|${reference.trim()}` : '';
 
   useEffect(() => {
+    if (!source) have.current = ''; // turned off: whatever is in the form now is the person's own, so turning it on again fills it in
     if (!source || !parseReference(reference)) { setState({ kind: 'idle' }); return; }
     if (key === have.current) { setState({ kind: 'idle' }); return; }
     have.current = ''; // the text in the form (if any) is for another reference or translation now
