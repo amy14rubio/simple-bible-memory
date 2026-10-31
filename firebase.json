@@ -15,7 +15,12 @@
     "singleProjectMode": false
   },
   "hosting": {
-    "public": "dist",
+    "public": "dist-web",
+    "predeploy": ["npm run build:web"],
+    "redirects": [
+      { "source": "/landing", "destination": "/", "type": 301 },
+      { "source": "/es/landing", "destination": "/es", "type": 301 }
+    ],
     "cleanUrls": true,
     "trailingSlash": false,
     "ignore": [

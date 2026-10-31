@@ -15,16 +15,20 @@
 <header><img src="/logo.svg" alt="" width="36" height="36"><a href="/">Simple Bible Memory</a></header>
 <main>
 <h1>Privacy policy</h1>
-<p class="updated">Last updated October 19, 2026</p>
+<p class="updated">Last updated October 31, 2026</p>
 <h2>What stays on your device</h2>
-<p>Your decks, cards (including any private notes), study progress, review history and settings are stored on your device. The app works fully without an account, and we never receive this data unless you sign in or publish a deck, as described below. The app does not use Android's automatic cloud backup. If you want a copy of your data, use <em>Export everything</em> in Settings.</p>
+<p>Your decks, cards (including any private notes), study progress, review history and settings are stored on your device. The app works fully without an account, and we never receive this data unless you sign in or publish a deck, as described below. The app does not use Android's automatic cloud backup. If you want a copy of your data, use <em>Export everything</em> in Settings. Bible text you fill in from a copyrighted translation (see <em>Bible translations</em> below) is kept only on your device.</p>
 
 <h2>If you sign in</h2>
 <p>Signing in is optional. You sign in with your Google account, through Google Firebase Authentication. When you sign in, Firebase gives us your Google account's email address, display name, profile picture link and a unique account ID. We use them only to run your account.</p>
-<p>When you are signed in, your decks, cards (including private notes), study schedule (when each card is next due) and study settings (new cards per day, which card types to study, and fill-in-the-blanks difficulty) are copied to a private area of your account in Google Cloud Firestore, so they follow you to your other devices. Only you can read that area; our security rules do not allow anyone else to. Your review history, theme, font and language are not copied.</p>
+<p>When you are signed in, your decks, cards (including private notes), study schedule (when each card is next due) and study settings (new cards per day, which card types to study, and fill-in-the-blanks difficulty) are copied to a private area of your account in Google Cloud Firestore, so they follow you to your other devices. Only you can read that area; our security rules do not allow anyone else to. Your review history, theme, font and language are not copied. For cards in a copyrighted translation, only the verse reference and the translation's name are copied, never its text.</p>
 
 <h2>Public decks</h2>
-<p>You may choose to publish a deck. A published deck is public: anyone can see its title, description, translation, language, and each card's verse reference and text, and can import a copy. Your name and email are never shown, and a card's private note is never published. A published deck is tied to an anonymous identifier, not to your name. You can unpublish a deck, or delete your account, and the public copy is removed. Copies other people already imported stay with them.</p>
+<p>You may choose to publish a deck. A published deck is public: anyone can see its title, description, translation, language, and each card's verse reference and text, and can import a copy. For a deck in a copyrighted translation, only the references and the translation's name are published, not the text. Your name and email are never shown, and a card's private note is never published. A published deck is tied to an anonymous identifier, not to your name. You can unpublish a deck, or delete your account, and the public copy is removed. Copies other people already imported stay with them.</p>
+
+<h2>Bible translations (YouVersion)</h2>
+<p>You can turn on <em>Autofill</em> when you add a card, to fill in the passage from a Bible translation. The app then asks YouVersion's service (the YouVersion Platform, run by Life.Church) for that passage: the request contains the verse reference and the translation, plus the technical information any request carries, such as your device's IP address. It contains no account, name or email. The same happens in the background when you import a public deck whose cards are in such a translation. If you never turn on Autofill or import such a deck, the app sends nothing to YouVersion.</p>
+<p>Text from copyrighted translations belongs to its publishers. It is stored only on your device, shown with the publisher's notice, and is never backed up, exported or published. We may switch a translation off from our side, for example if its publisher asks. The app then removes its saved text from your device and stops fetching it; the references in your cards stay. See <a href="https://www.youversion.com/privacy">YouVersion's privacy policy</a>.</p>
 
 <h2>Reports</h2>
 <p>If you report a public deck, we store the deck, the reason you chose and any details you type (up to 500 characters). A report is not linked to your account.</p>
@@ -39,6 +43,7 @@
 <ul>
 <li><strong>Google Firebase</strong> (Authentication and Firestore) stores your sign-in and, if you sign in, your private backup and any decks you publish. See <a href="https://firebase.google.com/support/privacy">Firebase privacy</a> and <a href="https://policies.google.com/privacy">Google's privacy policy</a>.</li>
 <li><strong>Google Fonts:</strong> if you open the font list or choose a font other than the default, it is loaded from Google, which can see your device's IP address.</li>
+<li><strong>YouVersion:</strong> provides the text of Bible translations when you use Autofill or import a deck in such a translation (see <em>Bible translations</em> above).</li>
 <li><strong>Bible Gateway and eBible:</strong> if you tap a link to look up a passage, the link opens that website in your browser, and their privacy policies apply.</li>
 </ul>
 <p>The app has no analytics, no advertising and no third-party tracking.</p>
@@ -61,7 +66,7 @@
 <footer>
 <div class="foot">
 <div class="foot-brand">
-<a class="brand big" href="/landing"><img src="/logo.svg" alt="" width="40" height="40">Simple Bible Memory</a>
+<a class="brand big" href="/"><img src="/logo.svg" alt="" width="40" height="40">Simple Bible Memory</a>
 </div>
 <div class="foot-col"><p class="foot-title">Legal</p>
 <a href="/privacy-policy">Privacy policy</a>
