@@ -6,10 +6,14 @@ import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useI18n } from '../../i18n/I18nProvider';
 import { NO_FILTERS, type DiscoverFilters } from './types';
 import { LANGUAGE_NAME } from './names';
+import { autofillSources } from '../../domain/bible/sources';
+import { MIXED } from '../../domain/sharing/plan';
+import { useCatalogue } from '../bible/catalogue';
 
 /** Narrow Discover by language and translation. Choices apply straight away. */
 export function FilterDrawer({ open, onClose, filters, onChange }: { open: boolean; onClose: () => void; filters: DiscoverFilters; onChange: (f: DiscoverFilters) => void }) {
   const { t } = useI18n();
+  useCatalogue(); // the translations from the platform's list, for the ones decks can use
   usePopupHistory(open, onClose);
   const none = filters.language === 'all' && filters.translation === 'all';
 
@@ -29,7 +33,7 @@ export function FilterDrawer({ open, onClose, filters, onChange }: { open: boole
                   variant="field"
                   label={t('settings.language')}
                   value={filters.language}
-                  options={[{ value: 'all', label: t('discover.all') }, ...SHARING_LANGUAGES.map((l) => ({ value: l, label: LANGUAGE_NAME[l] }))]}
+                  options={[{ value: 'all', label: t('discover.all') }, ...SHARING_LANGUAGES.map((l) => ({ value: l, label: LANGUAGE_NAME[l] ?? l }))]}
                   onChange={(v) => onChange({ ...filters, language: v as DiscoverFilters['language'] })}
                   popupTitle={t('settings.language')}
                   searchLabel={t('translation.search')}
@@ -48,6 +52,8 @@ export function FilterDrawer({ open, onClose, filters, onChange }: { open: boole
                     { value: 'all', label: t('discover.all') },
                     ...OPEN_TRANSLATIONS.map((o) => ({ value: o.code, label: `${o.name} (${o.code})` })),
                     { value: OWN_WORDS, label: t('translation.own') },
+                    { value: MIXED, label: t('translation.mixed') },
+                    ...autofillSources().filter((o) => o.kind === 'licensed').map((o) => ({ value: o.code, label: `${o.name} (${o.tag})` })),
                   ]}
                   onChange={(v) => onChange({ ...filters, translation: v })}
                   popupTitle={t('translation.select')}

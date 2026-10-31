@@ -20,6 +20,7 @@ async function openDiscover(page: Page) {
   await page.getByRole('button', { name: 'Add' }).click();
   await page.getByRole('button', { name: 'Discover decks' }).click();
   await expect(page.getByRole('heading', { name: 'Newest' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Create new' })).toHaveCount(0); // the Add drawer has finished closing (the sidebar keeps it on the page)
 }
 
 const seeded = { a: deck('Alpha', 'KJV', 'en', 3000), b: deck('Beta', 'RV1909', 'es', 2000), c: deck('Gamma', 'OWN', 'en', 1000) };
@@ -160,7 +161,7 @@ test('a public deck\'s description keeps its line breaks on its page', async ({ 
 
 test('a deck published by a newer version of the app can be looked at, but not imported until the app is updated', async ({ page }) => {
   const newer = deck('Newer format', 'KJV', 'en', 5000);
-  (newer.meta as Record<string, unknown>).v = 2; // saved in a format this app does not know
+  (newer.meta as Record<string, unknown>).v = 3; // saved in a format this app does not know
   await seed(page, { n: newer, ...seeded });
   await openDiscover(page);
 

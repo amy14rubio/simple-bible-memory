@@ -1,4 +1,5 @@
 import { fingerprint } from '../../features/sharing/fingerprint';
+import { isLicensed } from '../bible/sources';
 
 /**
  * What is kept in a person's account: their decks, their cards (and which deck each is in), the study schedule of each
@@ -19,9 +20,11 @@ export const CARD_KINDS = ['recall', 'identify'] as const;
  * The version of the format items are saved in (the shape of each deck, card, schedule and setting). Every item sent to the
  * account carries it as `v`. An item saved before there was a `v` counts as version 1.
  * RAISE IT whenever an item's shape changes in a way an older app would misread (see docs/data-compatibility.md).
+ * 2: a card can carry its own `translation`, and a card in a licensed translation is saved WITHOUT its text (`verseText` is empty:
+ *    the text is fetched again on each device from the publisher, never kept in the account).
  * An app that meets an item with a higher `v` than its own leaves that item completely alone, so it can never damage it.
  */
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 /** Marks, in the "last agreed" record, an item the account holds in a newer format than this app understands ("newer:2"). */
 export const NEWER = 'newer:';
 
@@ -56,7 +59,11 @@ export function canonical(entity: Entity, id: string, raw: unknown): Doc | null 
     const decks = Array.isArray(raw.decks)
       ? raw.decks.map((d) => (isObj(d) && str(d.deckId) !== undefined && num(d.addedAt) !== undefined ? { deckId: d.deckId as string, addedAt: d.addedAt as number } : undefined))
       : undefined;
-    doc = { reference: str(raw.reference), verseText: str(raw.verseText), note: strOrNull(raw.note), createdAt: num(raw.createdAt), updatedAt: num(raw.updatedAt), decks: decks && !decks.includes(undefined) ? [...(decks as { deckId: string; addedAt: number }[])].sort((a, b) => (a.deckId < b.deckId ? -1 : a.deckId > b.deckId ? 1 : 0)) : undefined };
+    const translation = strOrNull(raw.translation);
+    // A licensed text is never part of the account, whatever the device (or the account) holds: only the reference and translation are.
+    const verseText = isLicensed(translation) ? '' : str(raw.verseText);
+    doc = { reference: str(raw.reference), verseText, note: strOrNull(raw.note), createdAt: num(raw.createdAt), updatedAt: num(raw.updatedAt), decks: decks && !decks.includes(undefined) ? [...(decks as { deckId: string; addedAt: number }[])].sort((a, b) => (a.deckId < b.deckId ? -1 : a.deckId > b.deckId ? 1 : 0)) : undefined };
+    if (translation) doc.translation = translation; // only when set, so cards saved before this existed keep their fingerprint
   } else if (entity === 'schedule') {
     const kind = str(raw.kind);
     doc = {

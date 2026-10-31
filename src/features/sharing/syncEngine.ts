@@ -1,6 +1,8 @@
 import type { SharingRepository } from '../../data/repositories/sharingRepository';
 import { PUBLIC_SCHEMA_VERSION } from '../../domain/sharing/version';
-import { LIMITS, canPublishTranslation, translationLanguage, SHARING_LANGUAGES, type SharingLanguage } from '../../domain/sharing/translations';
+import { planPublish } from '../../domain/sharing/plan';
+import { isLicensed } from '../../domain/bible/sources';
+import { loadCatalogue } from '../bible/catalogue';
 import { cardFingerprint, metaFingerprint } from './fingerprint';
 import { NewerFormatError, type BlockReason, type CloudBackend, type CloudCard, type CloudDeckMeta, type DeckSyncStatus } from './types';
 
@@ -17,18 +19,9 @@ export class PublishBlockedError extends Error {
 }
 
 /** The reason a deck can't be (or stay) published, or null if it can. */
-export function blockReason(deck: { translationCode: string | null; bibleLanguage: string | null }, cardCount: number): BlockReason | null {
-  if (!deck.translationCode) return 'no-translation';
-  if (!canPublishTranslation(deck.translationCode)) return 'copyrighted';
-  if (!languageOf(deck)) return 'no-language';
-  if (cardCount > LIMITS.cardsPerDeck) return 'too-many-cards';
-  return null;
-}
-
-function languageOf(deck: { translationCode: string | null; bibleLanguage: string | null }): SharingLanguage | null {
-  const fixed = deck.translationCode ? translationLanguage(deck.translationCode) : null;
-  if (fixed) return fixed;
-  return SHARING_LANGUAGES.find((l) => l === deck.bibleLanguage) ?? null;
+export function blockReason(deck: { translationCode: string | null; bibleLanguage: string | null; cardCodes?: (string | null)[] }, cardCount: number): BlockReason | null {
+  const plan = planPublish(deck, deck.cardCodes ?? Array<null>(cardCount).fill(null));
+  return plan.ok ? null : plan.reason;
 }
 
 export interface SyncEngine {
@@ -67,12 +60,14 @@ export function createSyncEngine({ sharing, cloud, ready, agreed = async () => t
     if (!deck?.publishId) return { state: 'synced' };
     const publishId = deck.publishId;
     const rows = await sharing.cardsOf(deckId);
-    const reason = blockReason(deck, rows.length);
-    if (reason) return { state: 'blocked', reason };
+    if (rows.some((r) => r.translationCode?.startsWith('YV'))) await loadCatalogue(); // (the language of such a translation comes from the list)
+    const plan = planPublish(deck, rows.map((r) => r.translationCode));
+    if (!plan.ok) return { state: 'blocked', reason: plan.reason };
 
-    const meta: CloudDeckMeta = { title: deck.title, description: deck.description, translation: deck.translationCode!, language: languageOf(deck)!, cardCount: rows.length, v: schemaVersion };
+    const meta: CloudDeckMeta = { title: deck.title, description: deck.description, translation: plan.translation, language: plan.language, cardCount: rows.length, v: schemaVersion };
     const cards: (CloudCard & { hash: string; syncedHash: string | null })[] = rows.map((r, position) => {
-      const card = { id: r.id, reference: r.reference, verseText: r.verseText, position };
+      // A licensed text is never published: only the reference and the translation (whoever imports the deck fetches the text).
+      const card: Pick<CloudCard, 'id' | 'reference' | 'verseText' | 'position' | 'translation'> = { id: r.id, reference: r.reference, verseText: isLicensed(r.translationCode) ? '' : r.verseText, position, ...(r.translationCode ? { translation: r.translationCode } : {}) };
       return { ...card, v: schemaVersion, hash: cardFingerprint(card), syncedHash: r.syncedHash };
     });
     const changed = cards.filter((c) => c.hash !== c.syncedHash);
@@ -82,7 +77,7 @@ export function createSyncEngine({ sharing, cloud, ready, agreed = async () => t
 
     if (firstTime) await cloud.createDeck(publishId, meta);
     for (let i = 0; i < changed.length; i += CHUNK) {
-      await cloud.putCards(publishId, changed.slice(i, i + CHUNK).map(({ id, reference, verseText, position, v }) => ({ id, reference, verseText, position, v })));
+      await cloud.putCards(publishId, changed.slice(i, i + CHUNK).map(({ id, reference, verseText, position, translation, v }) => ({ id, reference, verseText, position, ...(translation ? { translation } : {}), v })));
     }
     for (let i = 0; i < removals.length; i += CHUNK) await cloud.removeCards(publishId, removals.slice(i, i + CHUNK));
     if (!firstTime && deck.syncedMeta !== metaStamp) await cloud.updateDeck(publishId, meta);
@@ -114,7 +109,9 @@ export function createSyncEngine({ sharing, cloud, ready, agreed = async () => t
     async publish(deckId) {
       const deck = await sharing.getDeck(deckId);
       if (!deck) throw new Error('No such deck');
-      const reason = blockReason(deck, (await sharing.cardsOf(deckId)).length);
+      const cardRows = await sharing.cardsOf(deckId);
+      if (cardRows.some((r) => r.translationCode?.startsWith('YV'))) await loadCatalogue();
+      const reason = blockReason({ ...deck, cardCodes: cardRows.map((r) => r.translationCode) }, cardRows.length);
       if (reason) throw new PublishBlockedError(reason);
       if (!(await agreed())) throw new PublishBlockedError('rules');
       if (!deck.publishId) await sharing.publish(deckId, crypto.randomUUID());

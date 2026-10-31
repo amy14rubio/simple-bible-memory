@@ -3,6 +3,7 @@ import type { Card } from '../../domain/types';
 import type { Rating } from '../../domain/study/rating';
 import { Button } from '../../components/ui';
 import { ActionBar, RatingBar } from './RatingBar';
+import { Attribution } from '../bible/Attribution';
 import { AnswerRegion } from './AnswerRegion';
 import { useVerseLang } from './verseLang';
 import { CARD_PROMPT_ID, CardPrompt } from './cardPosition';
@@ -18,9 +19,13 @@ export function FlashcardMode({ card, intervals, onRate }: { card: Card; interva
       <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
         <p lang={lang} className="font-serif text-3xl font-medium tracking-tight">{card.reference}</p>
         {revealed && (
-          <AnswerRegion labelOnly label={`${t('study.answer')}: ${card.verseText}`} className="space-y-3">
-            <p lang={lang} className="scripture whitespace-pre-line text-xl">{card.verseText}</p>
-          </AnswerRegion>
+          <div className="space-y-3">
+            <AnswerRegion labelOnly label={`${t('study.answer')}: ${card.verseText}`}>
+              <p lang={lang} className="scripture whitespace-pre-line text-xl">{card.verseText}</p>
+            </AnswerRegion>
+            {/* outside the group above, which is hidden from screen readers (its name already reads the verse) */}
+            <Attribution code={card.translationCode} compact />
+          </div>
         )}
       </div>
       <ActionBar>

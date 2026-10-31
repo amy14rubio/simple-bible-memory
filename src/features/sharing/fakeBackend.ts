@@ -1,4 +1,4 @@
-import { NewerFormatError, type AuthBackend, type AuthUser, type CloudBackend, type CloudCard, type CloudDeckMeta } from './types';
+import { NewerFormatError, type AuthBackend, type AuthUser, type CloudBackend, type ConfigBackend, type CloudCard, type CloudDeckMeta } from './types';
 import { PAGE_SIZE, type DiscoverBackend, type PublicDeck } from '../discover/types';
 import type { AccountBackend } from '../account/types';
 import { createFakeAccount, emptyFakeAccount, type FakeAccountState } from '../account/fakeAccount';
@@ -13,6 +13,8 @@ interface State {
   user: AuthUser | null;
   decks: Record<string, { ownerId?: string; createdAt?: number; hidden?: boolean; meta: CloudDeckMeta; cards: Record<string, CloudCard> }>;
   reports?: { deckId: string; reason: string; details: string }[];
+  /** Tests: the off switch for licensed translations (the data of config/licensedTranslations), if any. */
+  licensedSwitch?: unknown;
   /** Tests: which account the next sign-in is (default one account). */
   nextUid?: string;
   offline: boolean;
@@ -23,7 +25,7 @@ const save = (s: State) => localStorage.setItem(KEY, JSON.stringify(s));
 
 const ACCOUNT_KEY = 'sbm-fake-account';
 
-export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; discover: DiscoverBackend; account: AccountBackend } {
+export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; discover: DiscoverBackend; account: AccountBackend; config: ConfigBackend } {
   const listeners = new Set<(u: AuthUser | null) => void>();
   const emit = (u: AuthUser | null) => listeners.forEach((l) => l(u));
   const edit = <T>(fn: (s: State) => T): T => {
@@ -85,7 +87,7 @@ export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; 
     async getCards(id) {
       const s = load();
       if (s.offline) throw new Error('offline');
-      return Object.values(s.decks[id]?.cards ?? {}).sort((a, b) => a.position - b.position).map((c) => ({ id: c.id, reference: c.reference, verseText: c.verseText, position: c.position }));
+      return Object.values(s.decks[id]?.cards ?? {}).sort((a, b) => a.position - b.position).map((c) => ({ id: c.id, reference: c.reference, verseText: c.verseText, position: c.position, ...(c.translation ? { translation: c.translation } : {}) }));
     },
     async report(deckId, reason, details) {
       const s = load();
@@ -105,5 +107,7 @@ export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; 
     () => load().user?.uid ?? null,
   );
   (window as unknown as { __fakeAccount: () => unknown }).__fakeAccount = () => JSON.parse(localStorage.getItem(ACCOUNT_KEY) ?? '{}');
-  return { auth, cloud, discover, account };
+  // Settings from the cloud: not part of "offline" (a test turns a translation off by putting `licensedSwitch` in the fake cloud's state).
+  const config: ConfigBackend = { async licensedSwitch() { const s = load(); if (s.offline) throw new Error('offline'); return s.licensedSwitch ?? null; } };
+  return { auth, cloud, discover, account, config };
 }

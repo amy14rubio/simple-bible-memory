@@ -7,6 +7,7 @@ import { AnswerRegion } from './AnswerRegion';
 import { useVerseLang } from './verseLang';
 import { useCardPosition } from './cardPosition';
 import { keepInView } from './keepInView';
+import { Attribution } from '../bible/Attribution';
 import { useI18n } from '../../i18n/I18nProvider';
 
 /**
@@ -103,6 +104,7 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
             );
           })}
         </p>
+        <Attribution code={card.translationCode} compact className="text-center" />
         <p role="status" className="sr-only">{announcement}</p>
         {result && <AnswerRegion label={t('blanks.done', { right: result.correctCount, total: result.total })} />}
       </div>

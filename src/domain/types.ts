@@ -16,8 +16,11 @@ export interface DeckSummary extends Deck {
 export interface Card {
   id: string;
   reference: string;
+  /** For a licensed translation: the text fetched to this device, or '' until it has been. */
   verseText: string;
   note: string | null;
+  /** This card's own translation (a code like KJV or NASB2020). Null: the deck's. */
+  translationCode: string | null;
   createdAt: number;
   updatedAt: number;
 }
@@ -33,6 +36,9 @@ export interface DeckInput {
 
 export interface CardInput {
   reference: string;
+  /** Required, except for a licensed translation, whose text is fetched later. */
   verseText: string;
   note?: string | null;
+  /** The card's own translation. On an update, left alone when omitted; null puts it back to the deck's. */
+  translationCode?: string | null;
 }

@@ -1,5 +1,7 @@
 import type { Database, SqlValue } from '../database/Database';
 import type { Card, CardInput } from '../../domain/types';
+import { isLicensed, licensedSql } from '../../domain/bible/sources';
+import { ValidationError } from '../../domain/errors';
 import { requireText, optionalText, type Clock } from './util';
 
 type Row = Record<string, SqlValue>;
@@ -9,15 +11,33 @@ export const toCard = (r: Row): Card => ({
   reference: r.reference as string,
   verseText: r.verse_text as string,
   note: r.note as string | null,
+  translationCode: (r.translation_code as string | null) ?? null,
   createdAt: r.created_at as number,
   updatedAt: r.updated_at as number,
 });
+
+/**
+ * The text of a card. Required, except for a licensed translation, whose text is fetched from the publisher later and is
+ * simply empty until then (and can never be typed in by hand: whatever is given is kept only if it was fetched).
+ */
+function cardText(value: string, translationCode: string | null | undefined): string {
+  if (isLicensed(translationCode)) return value.trim();
+  const v = value.trim();
+  if (!v) throw new ValidationError('verse-text-required', 'Verse text is required');
+  return v;
+}
 
 export interface CardRepository {
   listByDeck(deckId: string): Promise<Card[]>;
   /** Every card in every deck, each once (a card that lives in several decks is not repeated), oldest first. */
   listAll(): Promise<Card[]>;
   get(id: string): Promise<Card | undefined>;
+  /** Licensed cards whose text has not been fetched to this device yet (new, restored, imported, or emptied). */
+  listMissingText(): Promise<Card[]>;
+  /** Keeps text fetched from a publisher on this device. It is not an edit: it does not count as a change to sync. */
+  setFetchedText(id: string, text: string): Promise<void>;
+  /** Empties the saved text of licensed cards (all of them, or only these translations): "off" for a translation. */
+  clearFetchedText(codes?: string[]): Promise<number>;
   create(deckId: string, input: CardInput): Promise<Card>;
   /** Creates several cards in one go, in order. All of them are saved or none are. */
   createMany(deckId: string, inputs: CardInput[]): Promise<Card[]>;
@@ -82,22 +102,43 @@ export function createCardRepository(db: Database, now: Clock = Date.now): CardR
       return rows[0] ? toCard(rows[0]) : undefined;
     },
 
+    async listMissingText() {
+      const licensed = licensedSql('c.translation_code');
+      const rows = await db.query<Row>(`SELECT c.* FROM cards c WHERE c.verse_text = '' AND ${licensed.sql} ORDER BY c.created_at, c.id`, licensed.params);
+      return rows.map(toCard);
+    },
+
+    async setFetchedText(id, text) {
+      const licensed = licensedSql('translation_code');
+      await db.run(`UPDATE cards SET verse_text = ? WHERE id = ? AND ${licensed.sql}`, [text.trim(), id, ...licensed.params]);
+    },
+
+    async clearFetchedText(codes) {
+      const licensed = licensedSql('translation_code');
+      const only = codes ? ` AND translation_code IN (${codes.map(() => '?').join(', ')})` : '';
+      if (codes && codes.length === 0) return 0;
+      const before = await db.query<{ n: number }>(`SELECT COUNT(*) AS n FROM cards WHERE verse_text <> '' AND ${licensed.sql}${only}`, [...licensed.params, ...(codes ?? [])]);
+      await db.run(`UPDATE cards SET verse_text = '' WHERE ${licensed.sql}${only}`, [...licensed.params, ...(codes ?? [])]);
+      return Number(before[0]?.n ?? 0);
+    },
+
     async create(deckId, input) {
       const t = now();
       const card: Card = {
         id: crypto.randomUUID(),
         reference: requireText(input.reference, 'Reference', 'reference-required'),
         // Verse text is stored exactly as typed (only outer whitespace trimmed).
-        verseText: requireText(input.verseText, 'Verse text', 'verse-text-required'),
+        verseText: cardText(input.verseText, input.translationCode),
         note: optionalText(input.note),
+        translationCode: input.translationCode ?? null,
         createdAt: t,
         updatedAt: t,
       };
       // Card + membership succeed or fail together; the FK rejects an unknown deck.
       await db.transaction(async (tx) => {
         await tx.run(
-          'INSERT INTO cards (id, reference, verse_text, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-          [card.id, card.reference, card.verseText, card.note, t, t],
+          'INSERT INTO cards (id, reference, verse_text, note, translation_code, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [card.id, card.reference, card.verseText, card.note, card.translationCode, t, t],
         );
         await tx.run('INSERT INTO deck_cards (deck_id, card_id, added_at) VALUES (?, ?, ?)', [deckId, card.id, t]);
       });
@@ -111,16 +152,17 @@ export function createCardRepository(db: Database, now: Clock = Date.now): CardR
       const cards: Card[] = inputs.map((input, i) => ({
         id: crypto.randomUUID(),
         reference: requireText(input.reference, 'Reference', 'reference-required'),
-        verseText: requireText(input.verseText, 'Verse text', 'verse-text-required'),
+        verseText: cardText(input.verseText, input.translationCode),
         note: optionalText(input.note),
+        translationCode: input.translationCode ?? null,
         createdAt: t + i,
         updatedAt: t + i,
       }));
       await db.transaction(async (tx) => {
         for (const card of cards) {
           await tx.run(
-            'INSERT INTO cards (id, reference, verse_text, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-            [card.id, card.reference, card.verseText, card.note, card.createdAt, card.updatedAt],
+            'INSERT INTO cards (id, reference, verse_text, note, translation_code, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [card.id, card.reference, card.verseText, card.note, card.translationCode, card.createdAt, card.updatedAt],
           );
           await tx.run('INSERT INTO deck_cards (deck_id, card_id, added_at) VALUES (?, ?, ?)', [deckId, card.id, card.createdAt]);
         }
@@ -129,10 +171,12 @@ export function createCardRepository(db: Database, now: Clock = Date.now): CardR
     },
 
     async update(id, input) {
-      await db.run('UPDATE cards SET reference = ?, verse_text = ?, note = ?, updated_at = ? WHERE id = ?', [
+      const translationCode = input.translationCode === undefined ? ((await db.query<Row>('SELECT translation_code FROM cards WHERE id = ?', [id]))[0]?.translation_code as string | null | undefined) ?? null : input.translationCode;
+      await db.run('UPDATE cards SET reference = ?, verse_text = ?, note = ?, translation_code = ?, updated_at = ? WHERE id = ?', [
         requireText(input.reference, 'Reference', 'reference-required'),
-        requireText(input.verseText, 'Verse text', 'verse-text-required'),
+        cardText(input.verseText, translationCode),
         optionalText(input.note),
+        translationCode,
         now(),
         id,
       ]);

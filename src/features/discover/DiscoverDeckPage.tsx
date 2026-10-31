@@ -8,7 +8,10 @@ import { useRepositories } from '../../app/repositories';
 import { loadBackends } from '../sharing/backend';
 import { useI18n } from '../../i18n/I18nProvider';
 import { PUBLIC_SCHEMA_VERSION } from '../../domain/sharing/version';
-import { deckSummary } from './names';
+import { deckSummary, useLanguageNames } from './names';
+import { isLicensed } from '../../domain/bible/sources';
+import { MIXED } from '../../domain/sharing/plan';
+import { Attribution } from '../bible/Attribution';
 import { ReportDrawer } from './ReportDrawer';
 
 const PREVIEW = 5;
@@ -16,6 +19,7 @@ const PREVIEW = 5;
 /** One public deck: what it is, a taste of its cards, and Import (a copy that is yours alone) or Report. */
 export function DiscoverDeckPage() {
   const { t, describeError } = useI18n();
+  useLanguageNames();
   const { id = '' } = useParams();
   const { exchange } = useRepositories();
   const navigate = useNavigate();
@@ -42,9 +46,12 @@ export function DiscoverDeckPage() {
     setBusy(true);
     setError(undefined);
     try {
+      // A licensed text is not in the public deck: its cards come with the reference and the translation, and the text is fetched
+      // to this device from the publisher afterwards. (Such a deck's own label, a licensed code or "mixed", is not kept: the cards say it.)
+      const ownLabel = isLicensed(deck.translation) || deck.translation === MIXED ? null : deck.translation;
       const result = await exchange.importCards(
-        { title: deck.title, description: deck.description, translationCode: deck.translation, bibleLanguage: deck.language, importedFrom: deck.id },
-        cards.map((c) => ({ reference: c.reference, verseText: c.verseText })),
+        { title: deck.title, description: deck.description, translationCode: ownLabel, bibleLanguage: deck.language, importedFrom: deck.id },
+        cards.map((c) => ({ reference: c.reference, verseText: isLicensed(c.translation) ? '' : c.verseText, ...(c.translation ? { translationCode: c.translation } : {}) })),
       );
       toast.add({ title: t('toast.importedDeck', { title: deck.title }), type: 'success' });
       navigate(`/decks/${result.deckIds[0]}`, { replace: true });
@@ -63,7 +70,7 @@ export function DiscoverDeckPage() {
             <h1 className="min-w-0 font-serif text-2xl font-medium tracking-tight">{deck.title}</h1>
             <IconButton label={t('report.title')} onClick={() => setReporting(true)} className="-mr-3 -mt-1.5 shrink-0 text-muted"><Flag size={20} aria-hidden /></IconButton>
           </div>
-          <p className="text-muted">{deckSummary(deck, t('translation.own'), t('import.cards', { count: cards.length }))}</p>
+          <p className="text-muted">{deckSummary(deck, t('translation.own'), t('import.cards', { count: cards.length }), t('translation.mixed'))}</p>
           {deck.description && <p className="whitespace-pre-line pt-2">{deck.description}</p>}
         </div>
 
@@ -71,7 +78,9 @@ export function DiscoverDeckPage() {
           {(showAll ? cards : cards.slice(0, PREVIEW)).map((c) => (
             <div key={c.id}>
               <p lang={deck.language} className="font-serif font-medium">{c.reference}</p>
-              <p lang={deck.language} className={`scripture text-[0.9375rem] leading-normal text-muted ${showAll ? '' : 'line-clamp-2'}`}>{c.verseText}</p>
+              {isLicensed(c.translation)
+                ? <><p className="text-[0.9375rem] leading-normal text-muted">{t('discover.textAfterImport')}</p><Attribution code={c.translation} compact /></>
+                : <p lang={deck.language} className={`scripture text-[0.9375rem] leading-normal text-muted ${showAll ? '' : 'line-clamp-2'}`}>{c.verseText}</p>}
             </div>
           ))}
           {cards.length > PREVIEW && (

@@ -1,11 +1,13 @@
-import type { SharingLanguage } from '../../domain/sharing/translations';
 
 /** A card as it appears in the public copy of a deck. (A card's private note is never published.) */
 export interface CloudCard {
   id: string;
   reference: string;
+  /** Empty for a card in a licensed translation: whoever imports the deck fetches its text from the publisher. */
   verseText: string;
   position: number;
+  /** The card's own (licensed) translation, when it has one. */
+  translation?: string;
   /** The format version it is saved in. */
   v: number;
 }
@@ -14,8 +16,10 @@ export interface CloudCard {
 export interface CloudDeckMeta {
   title: string;
   description: string | null;
+  /** An open translation's code, "OWN", a licensed code, or "MIXED". */
   translation: string;
-  language: SharingLanguage;
+  /** The language's code ("en", "es", or any other for a licensed text). */
+  language: string;
   cardCount: number;
   /** The format version the deck and its cards are saved in. */
   v: number;
@@ -53,6 +57,12 @@ export interface AuthBackend {
   signOut(): Promise<void>;
   /** Deletes the account itself (the caller removes the person's public decks first). */
   deleteAccount(): Promise<void>;
+}
+
+/** Settings the app reads from the cloud (anyone can read them; only the owner writes them, in the Firebase console). */
+export interface ConfigBackend {
+  /** The off switch for licensed translations (see src/domain/bible/switch.ts): the document's data, or null if there is none. */
+  licensedSwitch(): Promise<unknown>;
 }
 
 /** Why a deck cannot be published or kept in sync. */

@@ -4,6 +4,7 @@ import { compareVerse, differences, paintComparison, type Comparison, type Segme
 import type { Rating } from '../../domain/study/rating';
 import { Button, GrowingTextarea } from '../../components/ui';
 import { ActionBar, RatingBar } from './RatingBar';
+import { Attribution } from '../bible/Attribution';
 import { useI18n } from '../../i18n/I18nProvider';
 import { PaintedText } from './PaintedText';
 import { AnswerRegion } from './AnswerRegion';
@@ -70,6 +71,8 @@ export function TypeMode({ card, intervals, onRate }: { card: Card; intervals?: 
             )}
           </AnswerRegion>
         )}
+        {/* after the result, outside the groups above (which are hidden from screen readers: their name already reads the verse) */}
+        {result && <Attribution code={card.translationCode} compact />}
       </div>
       <ActionBar>
         {!result ? (

@@ -19,6 +19,10 @@ export const OPEN_TRANSLATIONS: OpenTranslation[] = [
   { code: 'ASV', name: 'American Standard Version', language: 'en' },
   { code: 'YLT', name: "Young's Literal Translation", language: 'en' },
   { code: 'DARBY', name: 'Darby Translation', language: 'en' },
+  { code: 'BSB', name: 'Berean Standard Bible', language: 'en' },
+  { code: 'GNV', name: 'Geneva Bible', language: 'en' },
+  { code: 'CPDV', name: 'Catholic Public Domain Version', language: 'en' },
+  { code: 'WMB', name: 'World Messianic Bible', language: 'en' },
   { code: 'RV1909', name: 'Reina-Valera 1909', language: 'es' },
 ];
 

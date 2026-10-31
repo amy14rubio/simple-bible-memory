@@ -5,7 +5,9 @@ import { Button, ErrorMessage, HiddenClose } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { useRepositories } from '../../app/repositories';
 import { useSharing } from '../../app/sharing';
-import { LIMITS, publishBlock, translationLanguage } from '../../domain/sharing/translations';
+import { translationLanguage } from '../../domain/sharing/translations';
+import { planPublish } from '../../domain/sharing/plan';
+import { useCatalogue } from '../bible/catalogue';
 import type { PublishedDeckRow } from '../../data/repositories/sharingRepository';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -37,9 +39,9 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
   const share = useSharing();
   const open = deck !== null;
   usePopupHistory(open, onClose);
+  useCatalogue(); // (the language of a translation from the platform's list is needed to publish a deck that uses it)
 
   const [row, setRow] = useState<PublishedDeckRow>();
-  const [cardCount, setCardCount] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [accepted, setAccepted] = useState<boolean>(); // have the community rules been agreed to already? (undefined: not known yet)
@@ -48,7 +50,6 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
   const reload = useCallback(async () => {
     if (!deck) return;
     setRow(await sharing.getDeck(deck.id));
-    setCardCount((await cards.listByDeck(deck.id)).length);
   }, [deck, sharing, cards]);
 
   useEffect(() => {
@@ -71,11 +72,9 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
 
   const published = !!row?.publishId;
   const status = share.statusOf(deck.id);
-  const block = row ? publishBlock(row.translationCode) : null;
+  const plan = row ? planPublish(row, row.cardCodes) : null;
   const translation: TranslationValue = { translation: row?.translationCode ?? null, language: row?.bibleLanguage ?? null };
-  const ownLanguageMissing = row?.translationCode === 'OWN' && !(row.bibleLanguage === 'en' || row.bibleLanguage === 'es');
-  const tooMany = cardCount > LIMITS.cardsPerDeck;
-  const reason: BlockReason | null = block ?? (ownLanguageMissing ? 'no-language' : tooMany ? 'too-many-cards' : null);
+  const reason: BlockReason | null = plan && !plan.ok ? plan.reason : null;
 
   const changeTranslation = async (v: TranslationValue) => {
     if (!row) return;

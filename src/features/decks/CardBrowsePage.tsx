@@ -12,6 +12,7 @@ import { deleteCardsWithUndo } from '../cards/undoDelete';
 import { moveCardsWithUndo } from '../cards/undoMove';
 import { MoveDrawer } from './MoveDrawer';
 import { asLang } from '../study/verseLang';
+import { Attribution } from '../bible/Attribution';
 
 /** The id used in the address for "All decks": /decks/all/cards. */
 export const ALL_DECKS = 'all';
@@ -176,7 +177,7 @@ export function CardBrowsePage() {
                 <td className="px-5 py-3.5 align-top font-serif font-medium">
                   <Link lang={lang} to={`/cards/${c.id}/edit`} onClick={(e) => { if (selecting) e.preventDefault(); }} className="block focus-visible:outline-offset-4">{c.reference}</Link>
                 </td>
-                <td className="py-3.5 pr-5 align-top"><span lang={lang} className="scripture line-clamp-2 text-[0.9375rem] leading-normal text-muted">{c.verseText}</span></td>
+                <td className="py-3.5 pr-5 align-top"><span lang={lang} className="scripture line-clamp-2 text-[0.9375rem] leading-normal text-muted">{c.verseText}</span><Attribution code={c.translationCode} compact /></td>
               </tr>
             ))}
           </tbody>

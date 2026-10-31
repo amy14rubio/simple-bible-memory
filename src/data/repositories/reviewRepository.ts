@@ -83,6 +83,7 @@ const SCHEDULE_COLUMNS = `s.due AS s_due, s.stability AS s_stability, s.difficul
   s.reps AS s_reps, s.lapses AS s_lapses, s.learning_steps AS s_learning_steps,
   s.scheduled_days AS s_scheduled_days, s.last_review AS s_last_review`;
 
+// Cards without text (a licensed card whose text has not been fetched to this device yet) are left out of every list: there is nothing to study.
 /** Joins each verse with the kinds being studied, whether or not a schedule exists yet. */
 const KINDS_JOIN = (n: number) => `JOIN (SELECT 'recall' AS kind UNION ALL SELECT 'identify') k ON k.kind IN (${Array(n).fill('?').join(', ')})`;
 
@@ -94,7 +95,7 @@ export function createReviewRepository(db: Database, scheduler: Scheduler, now: 
     const due = (await db.query<Row>(
       `SELECT c.*, s.kind AS kind, ${SCHEDULE_COLUMNS}
          FROM cards c JOIN deck_cards dc ON dc.card_id = c.id JOIN card_schedule s ON s.card_id = c.id
-        WHERE dc.deck_id = ? AND (s.due <= ? OR (s.state IN (1, 3) AND s.due <= ?)) AND s.kind IN (${kinds.map(() => '?').join(', ')})
+        WHERE dc.deck_id = ? AND c.verse_text <> '' AND (s.due <= ? OR (s.state IN (1, 3) AND s.due <= ?)) AND s.kind IN (${kinds.map(() => '?').join(', ')})
         ORDER BY s.due, c.created_at`,
       [deckId, t, t + LEARN_AHEAD_MS, ...kinds],
     )).map(toEntry);
@@ -102,7 +103,7 @@ export function createReviewRepository(db: Database, scheduler: Scheduler, now: 
       `SELECT c.*, k.kind AS kind, ${SCHEDULE_COLUMNS}
          FROM cards c JOIN deck_cards dc ON dc.card_id = c.id ${KINDS_JOIN(kinds.length)}
          LEFT JOIN card_schedule s ON s.card_id = c.id AND s.kind = k.kind
-        WHERE dc.deck_id = ? AND s.card_id IS NULL
+        WHERE dc.deck_id = ? AND c.verse_text <> '' AND s.card_id IS NULL
         ORDER BY dc.added_at, c.created_at, (k.kind = 'identify')`,
       [...kinds, deckId],
     )).map(toEntry);
@@ -190,7 +191,7 @@ export function createReviewRepository(db: Database, scheduler: Scheduler, now: 
         `SELECT c.*, k.kind AS kind, ${SCHEDULE_COLUMNS}
            FROM cards c JOIN deck_cards dc ON dc.card_id = c.id ${KINDS_JOIN(kinds.length)}
            LEFT JOIN card_schedule s ON s.card_id = c.id AND s.kind = k.kind
-          WHERE dc.deck_id = ? ORDER BY dc.added_at, c.created_at, (k.kind = 'identify')`,
+          WHERE dc.deck_id = ? AND c.verse_text <> '' ORDER BY dc.added_at, c.created_at, (k.kind = 'identify')`,
         [...kinds, deckId],
       );
       return rows.map(toEntry);

@@ -6,7 +6,7 @@ import { loadBackends, sharingAvailable } from '../sharing/backend';
 import { useI18n } from '../../i18n/I18nProvider';
 import { NO_FILTERS, type DiscoverFilters, type PublicDeck } from './types';
 import { PUBLIC_SCHEMA_VERSION } from '../../domain/sharing/version';
-import { deckSummary } from './names';
+import { deckSummary, useLanguageNames } from './names';
 import { FilterDrawer } from './FilterDrawer';
 import { descriptionPreview } from './descriptionPreview';
 
@@ -16,6 +16,7 @@ import { descriptionPreview } from './descriptionPreview';
  */
 export function DiscoverPage() {
   const { t } = useI18n();
+  useLanguageNames(); // (the names of the less common languages, for the summaries)
   const available = sharingAvailable();
   const [filters, setFilters] = useState<DiscoverFilters>(NO_FILTERS);
   const [query, setQuery] = useState('');
@@ -92,7 +93,7 @@ export function DiscoverPage() {
                 <li key={d.id} className="border-b border-border">
                   <Link to={`/discover/${d.id}`} className="block px-5 py-4 hover:bg-surface">
                     <span className="block font-serif text-lg leading-snug">{d.title}</span>
-                    <span className="mt-0.5 block text-sm text-muted">{deckSummary(d, t('translation.own'), t('import.cards', { count: d.cardCount }))}{d.v > PUBLIC_SCHEMA_VERSION && ` · ${t('discover.needsUpdateShort')}`}</span>
+                    <span className="mt-0.5 block text-sm text-muted">{deckSummary(d, t('translation.own'), t('import.cards', { count: d.cardCount }), t('translation.mixed'))}{d.v > PUBLIC_SCHEMA_VERSION && ` · ${t('discover.needsUpdateShort')}`}</span>
                     {(() => {
                       const preview = descriptionPreview(d.description);
                       return preview && <span className="mt-1 block truncate text-[0.9375rem] text-muted">{preview.text}{preview.more && '…'}</span>;

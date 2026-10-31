@@ -50,7 +50,7 @@ export function StudySessionPage() {
           : orderForToday(await reviews.buildQueue(id, { newPerDay: await loadNewPerDay(settings), kinds }), { deckId: id, day: startOfLocalDay(Date.now()), now: Date.now() }),
         nextDue: await reviews.nextDue(id, kinds),
         references: deckCards.map((c) => c.reference), // options for "which verse is this?"
-        passages: deckCards.map((c) => c.verseText), // decoy words for the word bank
+        passages: deckCards.map((c) => c.verseText).filter(Boolean), // decoy words for the word bank
         difficulty: (await settings.get<Difficulty>('blank_difficulty')) ?? 'medium',
         encouragement: (await settings.get<boolean>('encouragement')) ?? encouragementDefault(),
         seed: crypto.randomUUID(),

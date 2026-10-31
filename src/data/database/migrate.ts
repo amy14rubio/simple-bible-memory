@@ -4,6 +4,7 @@ import cardKinds from '../migrations/0002_card_kinds.sql?raw';
 import sharing from '../migrations/0003_sharing.sql?raw';
 import importedFrom from '../migrations/0004_imported_from.sql?raw';
 import accountSync from '../migrations/0005_account_sync.sql?raw';
+import cardTranslation from '../migrations/0006_card_translation.sql?raw';
 
 /**
  * Migrations run in order, once each. SQLite keeps a built-in integer called
@@ -16,6 +17,7 @@ export const MIGRATIONS: { version: number; sql: string }[] = [
   { version: 3, sql: sharing },
   { version: 4, sql: importedFrom },
   { version: 5, sql: accountSync },
+  { version: 6, sql: cardTranslation },
 ];
 
 export async function migrate(db: Database, migrations = MIGRATIONS): Promise<number> {
