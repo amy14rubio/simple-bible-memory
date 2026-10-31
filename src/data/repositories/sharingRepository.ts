@@ -10,6 +10,8 @@ export interface PublishedDeckRow {
   bibleLanguage: string | null;
   publishId: string | null;
   syncedMeta: string | null;
+  /** Each card's own translation (null: the deck's), in order: what decides how the deck can be published. */
+  cardCodes: (string | null)[];
 }
 
 export interface SyncCardRow {
@@ -17,6 +19,8 @@ export interface SyncCardRow {
   reference: string;
   verseText: string;
   note: string | null;
+  /** The card's own translation (null: the deck's). */
+  translationCode: string | null;
   syncedHash: string | null;
 }
 
@@ -43,7 +47,10 @@ export function createSharingRepository(db: Database): SharingRepository {
   return {
     async getDeck(deckId) {
       const [r] = await db.query<Row>('SELECT id, title, description, translation_code, bible_language, publish_id, synced_meta FROM decks WHERE id = ?', [deckId]);
-      return r && {
+      if (!r) return undefined;
+      const codes = await db.query<Row>('SELECT c.translation_code FROM deck_cards dc JOIN cards c ON c.id = dc.card_id WHERE dc.deck_id = ? ORDER BY dc.added_at, c.created_at, c.id', [deckId]);
+      return {
+        cardCodes: codes.map((c) => (c.translation_code as string | null) ?? null),
         id: r.id as string, title: r.title as string, description: (r.description as string | null) ?? null,
         translationCode: (r.translation_code as string | null) ?? null, bibleLanguage: (r.bible_language as string | null) ?? null,
         publishId: (r.publish_id as string | null) ?? null, syncedMeta: (r.synced_meta as string | null) ?? null,
@@ -56,12 +63,12 @@ export function createSharingRepository(db: Database): SharingRepository {
 
     async cardsOf(deckId) {
       const rows = await db.query<Row>(
-        `SELECT c.id, c.reference, c.verse_text, c.note, dc.synced_hash
+        `SELECT c.id, c.reference, c.verse_text, c.note, c.translation_code, dc.synced_hash
            FROM cards c JOIN deck_cards dc ON dc.card_id = c.id
           WHERE dc.deck_id = ? ORDER BY dc.added_at, c.created_at, c.id`,
         [deckId],
       );
-      return rows.map((r) => ({ id: r.id as string, reference: r.reference as string, verseText: r.verse_text as string, note: (r.note as string | null) ?? null, syncedHash: (r.synced_hash as string | null) ?? null }));
+      return rows.map((r) => ({ id: r.id as string, reference: r.reference as string, verseText: r.verse_text as string, note: (r.note as string | null) ?? null, translationCode: (r.translation_code as string | null) ?? null, syncedHash: (r.synced_hash as string | null) ?? null }));
     },
 
     async publish(deckId, publishId) {

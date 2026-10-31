@@ -48,7 +48,7 @@ test.describe('first launch', () => {
     await page.getByText('Starter deck!').click();
     await expect(page.getByText('5 cards to study today.')).toBeVisible(); // 26 study cards, the first 5 new ones for today
     await page.getByRole('button', { name: 'Deck actions' }).click();
-    await page.getByRole('link', { name: 'Browse cards' }).click();
+    await page.getByRole('dialog').getByRole('link', { name: 'Browse cards' }).click();
     await expect(page.getByText('Romans 5:8')).toBeVisible();
     await page.goBack();
     await page.getByRole('button', { name: 'Deck actions' }).click();

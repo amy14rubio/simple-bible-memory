@@ -11,6 +11,7 @@ import { IconButton } from '../components/ui';
 import { Sidebar } from './Sidebar';
 import { useSidebarOpen, useWide } from './useWide';
 import { useKeyboardInset } from './useKeyboardInset';
+import { useLicensedText } from '../features/bible/useLicensedText';
 
 const tab = ({ isActive }: { isActive: boolean }) =>
   `flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-xs font-medium ${isActive ? 'text-foreground' : 'text-muted'}`;
@@ -25,6 +26,7 @@ export function AppShell() {
   useFirstLaunchTour();
   useReminderSync();
   useKeyboardInset();
+  useLicensedText();
   const wide = useWide();
   const [open, setOpen] = useSidebarOpen();
   // Studying (and the welcome tour) has the whole screen to itself, so nothing pulls attention away from the verse.

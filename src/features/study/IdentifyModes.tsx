@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Attribution } from '../bible/Attribution';
 import type { Card } from '../../domain/types';
 import { checkReference } from '../../domain/study/identify';
 import { paintComparison } from '../../domain/study/compare';
@@ -18,9 +19,14 @@ interface ModeProps {
   onRate: (r: Rating) => void;
 }
 
-const Passage = ({ text }: { text: string }) => {
+const Passage = ({ text, code }: { text: string; code: string | null }) => {
   const lang = useVerseLang();
-  return <blockquote lang={lang} className="scripture whitespace-pre-line text-center text-xl">{text}</blockquote>;
+  return (
+    <>
+      <blockquote lang={lang} className="scripture whitespace-pre-line text-center text-xl">{text}</blockquote>
+      <Attribution code={code} compact className="text-center" />
+    </>
+  );
 };
 
 /** Identify card, Flashcard mode: see the passage, recall the verse, reveal, rate. */
@@ -32,7 +38,7 @@ export function IdentifyFlashcard({ card, intervals, onRate }: ModeProps) {
     <>
       <CardPrompt prompt={t('study.promptName')} />
       <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
-        <Passage text={card.verseText} />
+        <Passage text={card.verseText} code={card.translationCode} />
         {revealed && (
           <AnswerRegion labelOnly label={`${t('study.answer')}: ${card.reference}`} className="space-y-1">
             <p lang={lang} className="font-serif text-3xl font-medium tracking-tight">{card.reference}</p>
@@ -61,7 +67,7 @@ export function IdentifyType({ card, intervals, onRate }: ModeProps) {
     <>
       <div className="flex flex-1 flex-col gap-6 pt-6">
         <CardPrompt prompt={t('study.promptName')} />
-        <Passage text={card.verseText} />
+        <Passage text={card.verseText} code={card.translationCode} />
         {!result ? (
           <div className="space-y-2">
             <label htmlFor="typed-reference" className="sr-only">{t('identify.inputLabel')}</label>
@@ -136,7 +142,7 @@ export function IdentifyChoice({ card, references, sessionSeed, intervals, onRat
     <>
       <div className="flex flex-1 flex-col gap-6 pt-6">
         <CardPrompt prompt={t('study.promptChoose')} />
-        <Passage text={card.verseText} />
+        <Passage text={card.verseText} code={card.translationCode} />
       </div>
       {picked !== undefined && <AnswerRegion label={correct ? `${t('common.correct')}. ${card.reference}` : t('identify.wrongChoice', { answer: card.reference })} />}
       {/* The options are pinned at the bottom (like the word bank), so a long passage scrolls above them and they never sit against the edge. */}

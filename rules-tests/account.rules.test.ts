@@ -55,6 +55,42 @@ describe('saving and listening', () => {
   });
 });
 
+describe('cards in a licensed translation are saved without their text', () => {
+  const licensed = (id: string, verseText: string, translation: string | null = 'NASB2020'): OutItem => ({
+    entity: 'card', id, deleted: false, updatedAt: 100, v: 2,
+    doc: { reference: 'John 3:16', verseText, note: null, ...(translation ? { translation } : {}), createdAt: 1, updatedAt: 100, decks: [{ deckId: 'd1', addedAt: 5 }] },
+  });
+
+  it('a licensed card with an empty text is accepted', async () => {
+    await expect(backend('alice').push([deck('d1', 100), licensed('c1', '')])).resolves.toEqual({ stale: [] });
+    expect((await heard('alice')).find((i) => i.id === 'c1')?.data).toMatchObject({ translation: 'NASB2020', verseText: '' });
+  });
+
+  it('a licensed card with the publisher\'s text in it is refused: the account never holds that text', async () => {
+    await expect(backend('alice').push([licensed('c1', 'For God so loved the world')])).rejects.toBeTruthy();
+  });
+
+  it('every licensed translation is held to it', async () => {
+    for (const code of ['NASB2020', 'NASB1995', 'AMP', 'EASY', 'LBLA', 'NBLA']) {
+      await expect(backend('alice').push([licensed(`x-${code}`, 'text', code)])).rejects.toBeTruthy();
+      await expect(backend('alice').push([licensed(`y-${code}`, '', code)])).resolves.toEqual({ stale: [] });
+    }
+  });
+
+  it('a translation from the platform\'s list (YV + its id), or any other name that is not an open one, is licensed too', async () => {
+    await expect(backend('alice').push([licensed('x1', 'text', 'YV2692')])).rejects.toBeTruthy();
+    await expect(backend('alice').push([licensed('x2', '', 'YV2692')])).resolves.toEqual({ stale: [] });
+    await expect(backend('alice').push([licensed('x3', 'text', 'SOMETHING')])).rejects.toBeTruthy();
+    await expect(backend('alice').push([licensed('x4', '', 'SOMETHING')])).resolves.toEqual({ stale: [] });
+  });
+
+  it('an ordinary card still needs its text, and may name its own open translation', async () => {
+    await expect(backend('alice').push([licensed('c1', '', null)])).rejects.toBeTruthy(); // no translation, no text
+    await expect(backend('alice').push([licensed('c2', '', 'KJV')])).rejects.toBeTruthy(); // an open translation keeps its text
+    await expect(backend('alice').push([licensed('c3', 'In the beginning', 'KJV')])).resolves.toEqual({ stale: [] });
+  });
+});
+
 describe('the newest edit wins', () => {
   it('an older version never replaces a newer one, and the app is told which', async () => {
     const b = backend('alice');

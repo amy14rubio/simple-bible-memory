@@ -213,3 +213,32 @@ describe('the format version (v) of a published deck', () => {
     await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'd1', 'cards', 'c2'), card({ v: 1 }))); // a new card is a new card
   });
 });
+
+
+describe('decks with licensed cards: published as references, without the publisher\'s text', () => {
+  const licensedCard = (over: Record<string, unknown> = {}) => ({ reference: 'John 3:16', verseText: '', position: 0, translation: 'NASB2020', v: 2, ...over });
+  const licensedDeck = (over: Record<string, unknown> = {}) => newDeck({ translation: 'NASB2020', language: 'en', v: 2, ...over });
+
+  it('a licensed card is accepted without text, and refused with it', async () => {
+    await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'a'), licensedDeck()));
+    await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'a', 'cards', 'c1'), licensedCard()));
+    await assertFails(setDoc(doc(alice(), 'publicDecks', 'a', 'cards', 'c2'), licensedCard({ verseText: 'For God so loved the world' })));
+    await assertFails(setDoc(doc(alice(), 'publicDecks', 'a', 'cards', 'c3'), licensedCard({ v: 1 }))); // only in the newer format
+    await assertFails(setDoc(doc(alice(), 'publicDecks', 'a', 'cards', 'c4'), licensedCard({ translation: 'YV2692', verseText: 'text' }))); // any licensed code
+    await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'a', 'cards', 'c5'), licensedCard({ translation: 'YV2692' })));
+  });
+
+  it('an open card keeps its text, and may name its own open translation', async () => {
+    await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'a'), licensedDeck({ translation: 'MIXED' })));
+    await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'a', 'cards', 'c1'), card({ translation: 'KJV', v: 2 })));
+    await assertFails(setDoc(doc(alice(), 'publicDecks', 'a', 'cards', 'c2'), card({ translation: 'KJV', v: 2, verseText: '' })));
+  });
+
+  it('a deck can be labelled with a licensed translation, or MIXED, in any language, but only in the newer format', async () => {
+    await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'a'), licensedDeck({ translation: 'YV93', language: 'fr' })));
+    await assertSucceeds(setDoc(doc(alice(), 'publicDecks', 'b'), licensedDeck({ translation: 'MIXED', language: 'es' })));
+    await assertFails(setDoc(doc(alice(), 'publicDecks', 'c'), licensedDeck({ v: 1 })));
+    await assertFails(setDoc(doc(alice(), 'publicDecks', 'd'), licensedDeck({ language: 'English' }))); // a language code
+    await assertFails(setDoc(doc(alice(), 'publicDecks', 'e'), licensedDeck({ language: 'fr', translation: 'KJV' }))); // an open translation keeps its own language
+  });
+});

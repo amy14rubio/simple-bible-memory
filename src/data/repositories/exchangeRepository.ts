@@ -2,6 +2,7 @@ import type { Database, SqlValue } from '../database/Database';
 import type { CardInput } from '../../domain/types';
 import { buildExportFile, type ExportFile, type ExportedCard, type ExportedDeck, type ExportedReview, type ExportedSchedule } from '../../domain/exchange/format';
 import { SCHEDULER_VERSION } from '../../domain/scheduling/scheduler';
+import { isLicensed } from '../../domain/bible/sources';
 import { requireText, optionalText, type Clock } from './util';
 
 type Row = Record<string, SqlValue>;
@@ -40,7 +41,11 @@ export function createExchangeRepository(db: Database, now: Clock = Date.now): E
     );
     const exported = new Map<string, ExportedCard>();
     const ordered: ExportedCard[] = cards.map((c) => {
-      const e: ExportedCard = { reference: c.reference as string, verseText: c.verse_text as string, note: (c.note as string | null) ?? null };
+      // A licensed text never leaves the device: the file holds the reference and the translation, and whoever opens it fetches the text.
+      const own = (c.translation_code as string | null) ?? null;
+      const licensed = isLicensed(own);
+      const e: ExportedCard = { reference: c.reference as string, verseText: licensed ? '' : (c.verse_text as string), note: (c.note as string | null) ?? null };
+      if (own) e.translationCode = own;
       if (progress) { e.schedules = []; e.reviews = []; }
       exported.set(c.id as string, e);
       return e;
@@ -92,8 +97,8 @@ export function createExchangeRepository(db: Database, now: Clock = Date.now): E
     for (const [i, card] of deck.cards.entries()) {
       const cardId = crypto.randomUUID();
       await tx.run(
-        'INSERT INTO cards (id, reference, verse_text, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-        [cardId, card.reference, card.verseText, card.note, t, t],
+        'INSERT INTO cards (id, reference, verse_text, note, translation_code, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [cardId, card.reference, isLicensed(card.translationCode) ? '' : card.verseText, card.note, card.translationCode ?? null, t, t],
       );
       // One millisecond apart, so the cards stay in the order they came in.
       await tx.run('INSERT INTO deck_cards (deck_id, card_id, added_at) VALUES (?, ?, ?)', [deckId, cardId, t + i]);
@@ -145,8 +150,9 @@ export function createExchangeRepository(db: Database, now: Clock = Date.now): E
         translationCode: optionalText(deck.translationCode),
         cards: cards.map((c) => ({
           reference: requireText(c.reference, 'Reference', 'reference-required'),
-          verseText: requireText(c.verseText, 'Verse text', 'verse-text-required'),
+          verseText: isLicensed(c.translationCode) ? '' : requireText(c.verseText, 'Verse text', 'verse-text-required'),
           note: optionalText(c.note),
+          ...(c.translationCode ? { translationCode: c.translationCode } : {}),
         })),
       };
       const id = await db.transaction((tx) => insertDeck(tx, exported, false, now(), deck.importedFrom ?? null));

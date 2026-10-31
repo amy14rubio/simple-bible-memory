@@ -1,5 +1,7 @@
 import { FormRow } from '../../components/ui';
 import { OptionPicker } from '../../components/OptionPicker';
+import { sourceFor } from '../../domain/bible/sources';
+import { TranslationPicker, type PickerExtra } from '../bible/TranslationPicker';
 import { OPEN_TRANSLATIONS, OWN_WORDS, SHARING_LANGUAGES, translationLanguage, type SharingLanguage } from '../../domain/sharing/translations';
 import { useI18n } from '../../i18n/I18nProvider';
 
@@ -8,49 +10,33 @@ export interface TranslationValue {
   language: string | null;
 }
 
-const NONE = '__none';
 const OTHER = 'OTHER';
 const LANGUAGE_NAMES: Record<SharingLanguage, string> = { en: 'English', es: 'Español' };
-
-/** What the picker shows for whatever code is stored: an open translation, own words, or "another translation". */
-const pickerValue = (code: string | null) => (!code ? NONE : code === OWN_WORDS || OPEN_TRANSLATIONS.some((t) => t.code === code) ? code : OTHER);
+/** Open texts the platform does not offer (the rest of the open ones are in the picker's list with every other translation). */
+const OPEN_EXTRAS = ['KJV', 'YLT', 'DARBY'];
 
 /**
- * The deck's Bible translation, and, for "my own words", the language. Only open translations (and your own words) can be
- * published; any other translation can still be chosen here, for your own records.
+ * The deck's Bible translation, and, for "my own words", the language. Any translation can be chosen: an open one is published
+ * with its text, a licensed one as references only (whoever imports the deck gets the text from its publisher). "Another
+ * translation" is only for your own records and can't be published.
  */
 export function TranslationFields({ value, onChange }: { value: TranslationValue; onChange: (v: TranslationValue) => void }) {
-  const { t } = useI18n();
-  const shown = pickerValue(value.translation);
-  const options = [
-    { value: NONE, label: t('translation.none') },
-    ...OPEN_TRANSLATIONS.map((o) => ({ value: o.code, label: `${o.name} (${o.code})` })),
-    { value: OWN_WORDS, label: t('translation.own') },
-    { value: OTHER, label: t('translation.other') },
+  const { t, language: appLanguage } = useI18n();
+  const extras: PickerExtra[] = [
+    { code: OWN_WORDS, label: t('translation.own') },
+    { code: OTHER, label: t('translation.other') },
+    ...OPEN_TRANSLATIONS.filter((o) => OPEN_EXTRAS.includes(o.code)).map((o) => ({ code: o.code, label: o.name, note: o.code, language: o.language })),
   ];
 
-  const choose = (v: string) => {
-    if (v === NONE) onChange({ translation: null, language: value.language });
-    else if (v === OTHER) onChange({ translation: OTHER, language: value.language });
-    else onChange({ translation: v, language: translationLanguage(v) ?? value.language });
+  const choose = (code: string) => {
+    if (code === OWN_WORDS || code === OTHER) onChange({ translation: code, language: value.language });
+    else onChange({ translation: code, language: translationLanguage(code) ?? sourceFor(code)?.language ?? value.language });
   };
 
   return (
     <>
       <FormRow label={t('translation.label')}>
-        {(id) => (
-          <OptionPicker
-            id={id}
-            variant="field"
-            label={t('translation.label')}
-            value={shown}
-            options={options}
-            onChange={choose}
-            popupTitle={t('translation.select')}
-            searchLabel={t('translation.search')}
-            noMatch={(query) => t('translation.noMatch', { query })}
-          />
-        )}
+        {(id) => <TranslationPicker id={id} value={value.translation ?? ''} onChange={choose} initialLanguage={SHARING_LANGUAGES.find((l) => l === value.language) ?? appLanguage} extras={extras} />}
       </FormRow>
       {value.translation === OWN_WORDS && (
         <FormRow label={t('settings.language')}>

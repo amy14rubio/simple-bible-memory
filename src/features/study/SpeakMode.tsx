@@ -13,6 +13,7 @@ import { ActionBar, RatingBar } from './RatingBar';
 import { useVerseLang } from './verseLang';
 import { CardPrompt } from './cardPosition';
 import { keepInView } from './keepInView';
+import { Attribution } from '../bible/Attribution';
 
 const COMMANDS = ['done', 'rate', 'repeat', 'skip', 'stop', 'speed'] as const;
 const DEFAULT_RATE = 0.95;
@@ -132,7 +133,7 @@ export function SpeakMode({ card, kind, intervals, onRate, onSkip, onStop }: {
           : <p lang={lang} className="scripture whitespace-pre-line text-xl">{heading}</p>}
         {revealed && (
           recall
-            ? <p ref={revealedEl} lang={lang} className="scripture whitespace-pre-line text-xl">{card.verseText}</p>
+            ? <><p ref={revealedEl} lang={lang} className="scripture whitespace-pre-line text-xl">{card.verseText}</p><Attribution code={card.translationCode} compact /></>
             : <p ref={revealedEl} lang={lang} className="font-serif text-4xl font-medium tracking-tight">{card.reference}</p>
         )}
       </div>

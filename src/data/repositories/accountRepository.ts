@@ -54,9 +54,9 @@ export function createAccountRepository(db: Database): AccountRepository {
         memberships.set(r.card_id as string, list);
       }
       const wc = where('id', 'card');
-      for (const r of await q.query<Row>(`SELECT id, reference, verse_text, note, created_at, updated_at FROM cards${wc.sql}`, wc.params)) {
+      for (const r of await q.query<Row>(`SELECT id, reference, verse_text, note, translation_code, created_at, updated_at FROM cards${wc.sql}`, wc.params)) {
         const decks = memberships.get(r.id as string);
-        if (decks) push('card', r.id as string, { reference: r.reference, verseText: r.verse_text, note: r.note, createdAt: r.created_at, updatedAt: r.updated_at, decks });
+        if (decks) push('card', r.id as string, { reference: r.reference, verseText: r.verse_text, note: r.note, translation: r.translation_code, createdAt: r.created_at, updatedAt: r.updated_at, decks });
       }
     }
 
@@ -148,9 +148,11 @@ export function createAccountRepository(db: Database): AccountRepository {
           }
           if (wanted.length === 0) { await tx.run('DELETE FROM cards WHERE id = ?', [id]); return; } // its decks are gone
           await tx.run(
-            `INSERT INTO cards (id, reference, verse_text, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)
-             ON CONFLICT(id) DO UPDATE SET reference = excluded.reference, verse_text = excluded.verse_text, note = excluded.note, created_at = excluded.created_at, updated_at = excluded.updated_at`,
-            [id, doc.reference as string, doc.verseText as string, doc.note as string | null, doc.createdAt as number, doc.updatedAt as number],
+            `INSERT INTO cards (id, reference, verse_text, note, translation_code, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)
+             ON CONFLICT(id) DO UPDATE SET reference = excluded.reference, note = excluded.note, translation_code = excluded.translation_code, created_at = excluded.created_at, updated_at = excluded.updated_at,
+               -- a licensed card arrives without its text: keep the text this device already fetched, unless the verse itself changed
+               verse_text = CASE WHEN excluded.verse_text = '' AND excluded.translation_code IS cards.translation_code AND excluded.reference = cards.reference THEN cards.verse_text ELSE excluded.verse_text END`,
+            [id, doc.reference as string, doc.verseText as string, doc.note as string | null, (doc.translation as string | undefined) ?? null, doc.createdAt as number, doc.updatedAt as number],
           );
           const have = new Map((await tx.query<Row>('SELECT deck_id, added_at FROM deck_cards WHERE card_id = ?', [id])).map((r) => [r.deck_id as string, r.added_at as number]));
           for (const deckId of have.keys()) if (!wanted.some((m) => m.deckId === deckId)) await tx.run('DELETE FROM deck_cards WHERE card_id = ? AND deck_id = ?', [id, deckId]);

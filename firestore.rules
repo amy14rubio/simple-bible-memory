@@ -13,13 +13,16 @@ service cloud.firestore {
     function isTextOrNull(v, max) { return v == null || (v is string && v.size() <= max); }
     function languageOf(translation) {
       return {
-        'KJV': 'en', 'WEB': 'en', 'ASV': 'en', 'YLT': 'en', 'DARBY': 'en', 'RV1909': 'es'
+        'KJV': 'en', 'WEB': 'en', 'ASV': 'en', 'YLT': 'en', 'DARBY': 'en', 'BSB': 'en', 'GNV': 'en', 'CPDV': 'en', 'WMB': 'en', 'RV1909': 'es'
       }.get(translation, null);
     }
     // An open translation must match its own language; "my own words" (OWN) may be either.
     function translationOk(d) {
       return (d.translation == 'OWN' && d.language in ['en', 'es'])
-          || (d.translation != 'OWN' && languageOf(d.translation) != null && languageOf(d.translation) == d.language);
+          || (d.translation != 'OWN' && languageOf(d.translation) != null && languageOf(d.translation) == d.language)
+          // A deck with licensed cards (published without their text, format 2 or later): labelled with their translation, or MIXED,
+          // and in that translation's language, which can be any.
+          || (d.get('v', 1) >= 2 && (d.translation == 'MIXED' || licensedCode(d.translation)) && d.language is string && d.language.matches('^[a-z]{2,3}$'));
     }
     function validDeck(d) {
       return d.keys().hasOnly(['ownerId', 'title', 'titleLower', 'description', 'translation', 'language', 'cardCount', 'createdAt', 'updatedAt', 'hidden', 'v'])
@@ -32,11 +35,13 @@ service cloud.firestore {
         && d.cardCount is int && d.cardCount >= 0 && d.cardCount <= 1000;
     }
     function validCard(c) {
-      return c.keys().hasOnly(['reference', 'verseText', 'position', 'v']) // a card's private note is never published
+      return c.keys().hasOnly(['reference', 'verseText', 'position', 'translation', 'v']) // a card's private note is never published
         && validVersion(c)
         && c.keys().hasAll(['reference', 'verseText', 'position'])
         && isText(c.reference, 1, 200)
-        && isText(c.verseText, 1, 20000)
+        && isTextOrNull(c.get('translation', null), 40)
+        // a card in a licensed translation is published WITHOUT its text (whoever imports the deck fetches it from the publisher)
+        && (licensedCode(c.get('translation', null)) ? (c.verseText == '' && c.get('v', 1) >= 2) : isText(c.verseText, 1, 20000))
         && c.position is int && c.position >= 0 && c.position < 1000;
     }
     function ownsDeck(deckId) {
@@ -78,11 +83,16 @@ service cloud.firestore {
         && isTextOrNull(d.translation, 40) && isTextOrNull(d.language, 40) && isTextOrNull(d.publishId, 100) && isTextOrNull(d.importedFrom, 100)
         && nonNegInt(d.createdAt);
     }
+    // Licensed translations (src/domain/bible/sources.ts: a test checks this list): their text is fetched from the publisher on each
+    // device and never kept in the account, so a card in one of them is saved with an EMPTY verseText, and only those cards may be.
+    // Anything that is not known to be open (or "my own words") counts as licensed, so a translation added later is safe by default.
+    function licensedCode(t) { return t != null && !(t in ['KJV', 'WEB', 'ASV', 'YLT', 'DARBY', 'BSB', 'GNV', 'CPDV', 'WMB', 'RV1909', 'OWN', 'OTHER']); }
     function liveCard(d) {
-      return d.keys().hasOnly(['entity', 'deleted', 'reference', 'verseText', 'note', 'createdAt', 'updatedAt', 'decks', 'v', 'syncedAt'])
+      return d.keys().hasOnly(['entity', 'deleted', 'reference', 'verseText', 'note', 'translation', 'createdAt', 'updatedAt', 'decks', 'v', 'syncedAt'])
         && d.keys().hasAll(['entity', 'deleted', 'reference', 'verseText', 'note', 'createdAt', 'updatedAt', 'decks', 'syncedAt'])
         && isText(d.reference, 1, 200)
-        && isText(d.verseText, 1, 20000)
+        && isTextOrNull(d.get('translation', null), 40)
+        && (licensedCode(d.get('translation', null)) ? d.verseText == '' : isText(d.verseText, 1, 20000))
         && isTextOrNull(d.note, 2000)
         && nonNegInt(d.createdAt)
         && d.decks is list && d.decks.size() >= 1 && d.decks.size() <= 50;
@@ -130,6 +140,13 @@ service cloud.firestore {
         && request.resource.data.updatedAt >= resource.data.updatedAt
         && request.resource.data.get('v', 1) >= resource.data.get('v', 1);
       allow delete: if signedIn() && request.auth.uid == uid; // used when the person deletes their account
+    }
+
+    // Settings the app reads (for example the off switch for licensed translations): anyone can read them, nobody can write them
+    // from the app. You change them in the Firebase console, which is not subject to these rules.
+    match /config/{doc} {
+      allow read: if true;
+      allow write: if false;
     }
 
     match /publicDecks/{deckId} {

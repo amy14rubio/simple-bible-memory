@@ -5,11 +5,16 @@ import { OPEN_TRANSLATIONS, OWN_WORDS, SHARING_LANGUAGES } from '../../domain/sh
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useI18n } from '../../i18n/I18nProvider';
 import { NO_FILTERS, type DiscoverFilters } from './types';
-import { LANGUAGE_NAME } from './names';
+import { LANGUAGE_NAME, languageLabel, translationLabel, useLanguageNames } from './names';
+import { autofillSources, sourceFor } from '../../domain/bible/sources';
+import { MIXED } from '../../domain/sharing/plan';
+import { useCatalogue } from '../bible/catalogue';
 
 /** Narrow Discover by language and translation. Choices apply straight away. */
-export function FilterDrawer({ open, onClose, filters, onChange }: { open: boolean; onClose: () => void; filters: DiscoverFilters; onChange: (f: DiscoverFilters) => void }) {
+export function FilterDrawer({ open, onClose, filters, onChange, seen = { translations: [], languages: [] } }: { open: boolean; onClose: () => void; filters: DiscoverFilters; onChange: (f: DiscoverFilters) => void; seen?: { translations: string[]; languages: string[] } }) {
   const { t } = useI18n();
+  useLanguageNames();
+  useCatalogue(); // the translations from the platform's list, for the ones decks can use
   usePopupHistory(open, onClose);
   const none = filters.language === 'all' && filters.translation === 'all';
 
@@ -29,7 +34,7 @@ export function FilterDrawer({ open, onClose, filters, onChange }: { open: boole
                   variant="field"
                   label={t('settings.language')}
                   value={filters.language}
-                  options={[{ value: 'all', label: t('discover.all') }, ...SHARING_LANGUAGES.map((l) => ({ value: l, label: LANGUAGE_NAME[l] }))]}
+                  options={[{ value: 'all', label: t('discover.all') }, ...[...new Set<string>([...SHARING_LANGUAGES, ...seen.languages, ...(filters.language === 'all' ? [] : [filters.language])])].map((l) => ({ value: l, label: LANGUAGE_NAME[l] ?? languageLabel(l) }))]}
                   onChange={(v) => onChange({ ...filters, language: v as DiscoverFilters['language'] })}
                   popupTitle={t('settings.language')}
                   searchLabel={t('translation.search')}
@@ -48,6 +53,12 @@ export function FilterDrawer({ open, onClose, filters, onChange }: { open: boole
                     { value: 'all', label: t('discover.all') },
                     ...OPEN_TRANSLATIONS.map((o) => ({ value: o.code, label: `${o.name} (${o.code})` })),
                     { value: OWN_WORDS, label: t('translation.own') },
+                    { value: MIXED, label: t('translation.mixed') },
+                    ...autofillSources().filter((o) => o.kind === 'licensed').map((o) => ({ value: o.code, label: `${o.name} (${o.tag})` })),
+                    // whatever else decks use (a translation from the platform's list), and the one chosen
+                    ...[...new Set([...seen.translations, filters.translation])]
+                      .filter((c) => c !== 'all' && c !== MIXED && c !== OWN_WORDS && !OPEN_TRANSLATIONS.some((o) => o.code === c) && !autofillSources().some((o) => o.kind === 'licensed' && o.code === c))
+                      .map((c) => ({ value: c, label: sourceFor(c) ? `${sourceFor(c)!.name} (${translationLabel(c, '')})` : c })),
                   ]}
                   onChange={(v) => onChange({ ...filters, translation: v })}
                   popupTitle={t('translation.select')}

@@ -6,7 +6,7 @@ import { loadBackends, sharingAvailable } from '../sharing/backend';
 import { useI18n } from '../../i18n/I18nProvider';
 import { NO_FILTERS, type DiscoverFilters, type PublicDeck } from './types';
 import { PUBLIC_SCHEMA_VERSION } from '../../domain/sharing/version';
-import { deckSummary } from './names';
+import { deckSummary, useLanguageNames } from './names';
 import { FilterDrawer } from './FilterDrawer';
 import { descriptionPreview } from './descriptionPreview';
 
@@ -16,6 +16,7 @@ import { descriptionPreview } from './descriptionPreview';
  */
 export function DiscoverPage() {
   const { t } = useI18n();
+  useLanguageNames(); // (the names of the less common languages, for the summaries)
   const available = sharingAvailable();
   const [filters, setFilters] = useState<DiscoverFilters>(NO_FILTERS);
   const [query, setQuery] = useState('');
@@ -25,6 +26,7 @@ export function DiscoverPage() {
   const [cursor, setCursor] = useState<unknown | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [more, setMore] = useState(false);
+  const [seen, setSeen] = useState<{ translations: string[]; languages: string[] }>({ translations: [], languages: [] }); // what decks have used so far (the filter offers those too)
   const request = useRef(0); // only the newest request may change the screen
 
   const search = useDebounced(query, 350);
@@ -37,6 +39,7 @@ export function DiscoverPage() {
       const page = await (await loadBackends()).discover.listDecks(f, after);
       if (mine !== request.current) return;
       setDecks((d) => (after === undefined ? page.decks : [...d, ...page.decks]));
+      setSeen((v) => ({ translations: [...new Set([...v.translations, ...page.decks.map((d) => d.translation)])], languages: [...new Set([...v.languages, ...page.decks.map((d) => d.language)])] }));
       setCursor(page.cursor);
       setState('ready');
     } catch {
@@ -92,7 +95,7 @@ export function DiscoverPage() {
                 <li key={d.id} className="border-b border-border">
                   <Link to={`/discover/${d.id}`} className="block px-5 py-4 hover:bg-surface">
                     <span className="block font-serif text-lg leading-snug">{d.title}</span>
-                    <span className="mt-0.5 block text-sm text-muted">{deckSummary(d, t('translation.own'), t('import.cards', { count: d.cardCount }))}{d.v > PUBLIC_SCHEMA_VERSION && ` · ${t('discover.needsUpdateShort')}`}</span>
+                    <span className="mt-0.5 block text-sm text-muted">{deckSummary(d, t('translation.own'), t('import.cards', { count: d.cardCount }), t('translation.mixed'))}{d.v > PUBLIC_SCHEMA_VERSION && ` · ${t('discover.needsUpdateShort')}`}</span>
                     {(() => {
                       const preview = descriptionPreview(d.description);
                       return preview && <span className="mt-1 block truncate text-[0.9375rem] text-muted">{preview.text}{preview.more && '…'}</span>;
@@ -106,7 +109,7 @@ export function DiscoverPage() {
         </Page>
       )}
 
-      <FilterDrawer open={filtering} onClose={() => setFiltering(false)} filters={filters} onChange={setFilters} />
+      <FilterDrawer open={filtering} onClose={() => setFiltering(false)} filters={filters} onChange={setFilters} seen={seen} />
     </>
   );
 }

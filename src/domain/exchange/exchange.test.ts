@@ -12,6 +12,40 @@ const deck = (over: Partial<ExportedDeck> = {}): ExportedDeck => ({
 });
 const file = (decks: ExportedDeck[], extra: Record<string, unknown> = {}) => JSON.stringify({ ...buildExportFile(decks, false), ...extra });
 
+describe('deck file: licensed translations', () => {
+  const licensedDeck = (over: Partial<ExportedDeck> = {}) => deck({ translationCode: 'KJV', cards: [{ reference: 'John 3:16', verseText: '', note: null, translationCode: 'NASB2020' }], ...over });
+
+  it('a file with a card in its own translation is written as format 2; any other as format 1', () => {
+    expect(buildExportFile([licensedDeck()], false).format).toBe(2);
+    expect(buildExportFile([deck()], false).format).toBe(1);
+    expect(FORMAT_VERSION).toBe(2);
+  });
+
+  it('reads a licensed card without text, and keeps its translation', () => {
+    const r = parseExportFile(file([licensedDeck()]));
+    expect(r.ok && r.file.decks[0]!.cards[0]).toMatchObject({ reference: 'John 3:16', verseText: '', translationCode: 'NASB2020' });
+  });
+
+  it('never takes a licensed text from a file, whatever the file holds', () => {
+    const r = parseExportFile(file([licensedDeck({ cards: [{ reference: 'John 3:16', verseText: 'For God so loved the world', note: null, translationCode: 'AMP' }] })]));
+    expect(r.ok && r.file.decks[0]!.cards[0]!.verseText).toBe('');
+  });
+
+  it('an ordinary card still needs its text, even in a file that has licensed cards', () => {
+    const r = parseExportFile(file([licensedDeck({ cards: [{ reference: 'John 3:16', verseText: '', note: null }] })]));
+    expect(r).toMatchObject({ ok: false, code: 'invalid', where: 'decks[0].cards[0].verseText' });
+  });
+
+  it('a deck\'s own translation is only a label: its cards keep their text', () => {
+    const r = parseExportFile(file([deck({ translationCode: 'NIV' })]));
+    expect(r.ok && r.file.decks[0]!.cards[0]!.verseText).toBe('The Lord is my shepherd; I shall not want.');
+  });
+
+  it('a file from a newer app than this one is refused politely', () => {
+    expect(parseExportFile(file([deck()], { format: 3 }))).toMatchObject({ ok: false, code: 'newer' });
+  });
+});
+
 describe('deck file', () => {
   it('round-trips a deck', () => {
     const r = parseExportFile(file([deck()]));
@@ -19,7 +53,7 @@ describe('deck file', () => {
     if (r.ok) {
       expect(r.file.decks[0]!.title).toBe('Psalms');
       expect(r.file.decks[0]!.cards[0]!.reference).toBe('Psalm 23:1');
-      expect(r.file.format).toBe(FORMAT_VERSION);
+      expect(r.file.format).toBe(1); // an ordinary deck is still written in the first format, so an older app can open it
     }
   });
 

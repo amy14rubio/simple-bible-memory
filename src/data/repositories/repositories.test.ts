@@ -151,3 +151,56 @@ describe('cards', () => {
     expect(await db.query('SELECT 1 FROM deck_cards')).toHaveLength(0);
   });
 });
+
+
+describe('cards in their own translation', () => {
+  it('start as the deck\'s translation, can name their own, and keep it when edited without naming one', async () => {
+    const d = await decks.create({ title: 'D' });
+    const plain = await cards.create(d.id, card);
+    expect(plain.translationCode).toBeNull();
+    const own = await cards.create(d.id, { ...card, translationCode: 'KJV' });
+    expect((await cards.get(own.id))!.translationCode).toBe('KJV');
+    await cards.update(own.id, { reference: 'John 3:17', verseText: 'Edited.' }); // naming no translation leaves it alone
+    expect((await cards.get(own.id))!.translationCode).toBe('KJV');
+    await cards.update(own.id, { reference: 'John 3:17', verseText: 'Edited.', translationCode: null }); // null: the deck's again
+    expect((await cards.get(own.id))!.translationCode).toBeNull();
+  });
+
+  it('a licensed card may be saved without text (it is fetched later); an ordinary one may not', async () => {
+    const d = await decks.create({ title: 'D' });
+    const licensed = await cards.create(d.id, { reference: 'John 3:16', verseText: '', translationCode: 'NASB2020' });
+    expect(licensed.verseText).toBe('');
+    await expect(cards.create(d.id, { reference: 'John 3:16', verseText: '', translationCode: 'KJV' })).rejects.toBeInstanceOf(ValidationError);
+    await expect(cards.create(d.id, { reference: 'John 3:16', verseText: '' })).rejects.toBeInstanceOf(ValidationError);
+    await expect(cards.createMany(d.id, [{ reference: 'John 3:16', verseText: '', translationCode: 'WEB' }])).rejects.toBeInstanceOf(ValidationError); // an open one needs its text
+  });
+
+  it('lists the licensed cards still waiting for their text, keeps what is fetched, and can empty it again', async () => {
+    const d = await decks.create({ title: 'D' });
+    const a = await cards.create(d.id, { reference: 'John 3:16', verseText: '', translationCode: 'NASB2020' });
+    clock = 1001;
+    const b = await cards.create(d.id, { reference: 'John 1:1', verseText: '', translationCode: 'AMP' });
+    clock = 1002;
+    await cards.create(d.id, card);
+    expect((await cards.listMissingText()).map((c) => c.id)).toEqual([a.id, b.id]);
+
+    clock = 5000;
+    await cards.setFetchedText(a.id, '  For God so loved the world.  ');
+    expect((await cards.get(a.id))).toMatchObject({ verseText: 'For God so loved the world.', updatedAt: 1000 }); // not an edit: the time of the last real change
+    expect((await cards.listMissingText()).map((c) => c.id)).toEqual([b.id]);
+
+    await cards.setFetchedText(b.id, 'In the beginning was the Word.');
+    expect(await cards.clearFetchedText(['AMP'])).toBe(1); // only that translation
+    expect((await cards.get(a.id))!.verseText).not.toBe('');
+    expect((await cards.get(b.id))!.verseText).toBe('');
+    expect(await cards.clearFetchedText()).toBe(1); // all of them
+    expect((await cards.listMissingText()).map((c) => c.id)).toEqual([a.id, b.id]);
+  });
+
+  it('fetched text can only be kept on a licensed card (never typed onto an ordinary one by this route)', async () => {
+    const d = await decks.create({ title: 'D' });
+    const plain = await cards.create(d.id, card);
+    await cards.setFetchedText(plain.id, 'something else');
+    expect((await cards.get(plain.id))!.verseText).toBe('Example verse text.');
+  });
+});

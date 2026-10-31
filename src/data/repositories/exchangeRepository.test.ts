@@ -164,3 +164,46 @@ describe('importing a public deck', () => {
   });
 });
 
+
+
+describe('licensed translations never leave the device in a file', () => {
+  it('exports the reference and the translation, not the text; importing makes cards that wait for their text', async () => {
+    const d = await decks.create({ title: 'Mixed' });
+    await db.run("UPDATE decks SET bible_language = 'en', translation_code = 'KJV' WHERE id = ?", [d.id]);
+    const [kjv, nasb] = await cards.createMany(d.id, [
+      { reference: 'John 3:16', verseText: 'For God so loved the world, that he gave his only begotten Son.' },
+      { reference: 'Romans 8:28', verseText: '', translationCode: 'NASB2020' },
+    ]);
+    await cards.setFetchedText(nasb!.id, 'And we know that God causes all things to work together for good.');
+    expect((await cards.get(nasb!.id))!.verseText).toContain('God causes');
+
+    const out = await exchange.exportDecks(null, { progress: false });
+    expect(out.format).toBe(2);
+    const json = JSON.stringify(out);
+    expect(json).not.toContain('God causes'); // the licensed text is nowhere in the file
+    expect(json).toContain('only begotten Son'); // an open text is
+    expect(out.decks[0]!.cards.map((c) => [c.reference, c.verseText === '', c.translationCode ?? null])).toEqual([['John 3:16', false, null], ['Romans 8:28', true, 'NASB2020']]);
+    expect(kjv).toBeTruthy();
+
+    const parsed = parseExportFile(json);
+    if (!parsed.ok) throw new Error('should parse');
+    const result = await exchange.importFile(parsed.file, { progress: false });
+    const imported = await cards.listByDeck(result.deckIds[0]!);
+    expect(imported.map((c) => [c.reference, c.translationCode, c.verseText === ''])).toEqual([['John 3:16', null, false], ['Romans 8:28', 'NASB2020', true]]);
+    expect((await cards.listMissingText()).map((c) => c.reference)).toContain('Romans 8:28');
+  });
+
+  it('a deck file of ordinary decks is unchanged: format 1, with all text', async () => {
+    await seed();
+    const out = await exchange.exportDecks(null, { progress: false });
+    expect(out.format).toBe(1);
+    expect(out.decks[0]!.cards.every((c) => c.verseText.length > 0 && !('translationCode' in c))).toBe(true);
+  });
+
+  it('importing cards by hand (a public deck, Anki) can hold licensed cards without text too', async () => {
+    const r = await exchange.importCards({ title: 'From a friend', translationCode: 'KJV', bibleLanguage: 'en' }, [
+      { reference: 'John 3:16', verseText: '', translationCode: 'NBLA' },
+    ]);
+    expect((await cards.listByDeck(r.deckIds[0]!))[0]).toMatchObject({ translationCode: 'NBLA', verseText: '' });
+  });
+});

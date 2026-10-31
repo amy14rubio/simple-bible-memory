@@ -1,12 +1,13 @@
-import type { SharingLanguage } from '../../domain/sharing/translations';
 
 /** A public deck as shown in the Discover list. */
 export interface PublicDeck {
   id: string;
   title: string;
   description: string | null;
+  /** An open translation's code, "OWN", a licensed code, or "MIXED". */
   translation: string;
-  language: SharingLanguage;
+  /** The language's code ("en", "es", or any other for a licensed text). */
+  language: string;
   cardCount: number;
   /** When it was first published (milliseconds). */
   createdAt: number;
@@ -17,12 +18,15 @@ export interface PublicDeck {
 export interface PublicCard {
   id: string;
   reference: string;
+  /** Empty for a card in a licensed translation (see `translation`): its text is fetched by whoever imports the deck. */
   verseText: string;
   position: number;
+  /** The card's own translation, when it has one. */
+  translation?: string;
 }
 
 export interface DiscoverFilters {
-  language: 'all' | SharingLanguage;
+  language: string; // 'all', or a language code (the filter offers English and Spanish)
   /** A translation code (KJV, OWN, ...) or 'all'. */
   translation: string;
   /** Searches the start of the title, ignoring case. */

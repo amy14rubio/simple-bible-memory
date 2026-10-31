@@ -3,8 +3,15 @@
  * future version of the app can still read old files (and refuse, politely, files made by a newer one).
  * Importing never trusts a file: every field is checked, sizes are capped, and anything odd is rejected as a whole.
  */
+import { isLicensed } from '../bible/sources';
+
 export const APP_ID = 'simple-bible-memory';
-export const FORMAT_VERSION = 1;
+/**
+ * The newest file format this app reads. 1: decks, cards and progress. 2: a card can name its own `translationCode`, and a card in a
+ * licensed translation has NO text (it is fetched again by whoever opens the file). A file is written as 1 unless it needs 2, so
+ * ordinary decks still open in an older app.
+ */
+export const FORMAT_VERSION = 2;
 
 export const LIMITS = {
   decks: 200,
@@ -52,8 +59,11 @@ export interface ExportedReview {
 
 export interface ExportedCard {
   reference: string;
+  /** Empty for a card in a licensed translation: its text never leaves the device it was fetched to. */
   verseText: string;
   note: string | null;
+  /** The card's own translation, when it has one (otherwise the deck's). */
+  translationCode?: string | null;
   /** Only when the file includes progress. */
   schedules?: ExportedSchedule[];
   reviews?: ExportedReview[];
@@ -79,7 +89,8 @@ export type ParseErrorCode = 'too-big' | 'not-json' | 'not-ours' | 'newer' | 'in
 export type ParseResult = { ok: true; file: ExportFile } | { ok: false; code: ParseErrorCode; /** Where the problem is, for example "decks[0].cards[3].reference". */ where?: string };
 
 export function buildExportFile(decks: ExportedDeck[], includesProgress: boolean, now: Date = new Date()): ExportFile {
-  return { app: APP_ID, format: FORMAT_VERSION, exportedAt: now.toISOString(), includesProgress, decks };
+  const needsV2 = decks.some((d) => d.cards.some((c) => c.translationCode));
+  return { app: APP_ID, format: needsV2 ? 2 : 1, exportedAt: now.toISOString(), includesProgress, decks };
 }
 
 class Invalid extends Error {
@@ -149,11 +160,15 @@ function review(v: unknown, where: string): ExportedReview {
 
 function card(v: unknown, where: string): ExportedCard {
   if (!isObject(v)) throw new Invalid(where);
+  const translationCode = optionalText(v.translationCode, `${where}.translationCode`, LIMITS.translationCode);
+  // A licensed text is never taken from a file, whatever it holds: it is fetched from the publisher.
+  const licensed = isLicensed(translationCode);
   const out: ExportedCard = {
     reference: text(v.reference, `${where}.reference`, LIMITS.reference, true),
-    verseText: text(v.verseText, `${where}.verseText`, LIMITS.verseText, true),
+    verseText: licensed ? '' : text(v.verseText, `${where}.verseText`, LIMITS.verseText, true),
     note: optionalText(v.note, `${where}.note`, LIMITS.note),
   };
+  if (translationCode) out.translationCode = translationCode;
   if (v.schedules !== undefined) {
     out.schedules = list(v.schedules, `${where}.schedules`, 2).map((s, i) => schedule(s, `${where}.schedules[${i}]`));
     if (new Set(out.schedules.map((s) => s.kind)).size !== out.schedules.length) throw new Invalid(`${where}.schedules`);
@@ -175,11 +190,12 @@ export function parseExportFile(source: string): ParseResult {
     const decks = list(data.decks, 'decks', LIMITS.decks).map((d, i): ExportedDeck => {
       const where = `decks[${i}]`;
       if (!isObject(d)) throw new Invalid(where);
+      const translationCode = optionalText(d.translationCode, `${where}.translationCode`, LIMITS.translationCode);
       return {
         title: text(d.title, `${where}.title`, LIMITS.title, true),
         description: optionalText(d.description, `${where}.description`, LIMITS.description),
         bibleLanguage: optionalText(d.bibleLanguage, `${where}.bibleLanguage`, LIMITS.language),
-        translationCode: optionalText(d.translationCode, `${where}.translationCode`, LIMITS.translationCode),
+        translationCode,
         cards: list(d.cards, `${where}.cards`, LIMITS.cardsPerDeck).map((c, j) => card(c, `${where}.cards[${j}]`)),
       };
     });

@@ -44,7 +44,7 @@ export function createFirestoreDiscover(db: Firestore): DiscoverBackend {
 
     async getCards(id) {
       const snap = await getDocs(query(collection(db, 'publicDecks', id, 'cards'), orderBy('position')));
-      return snap.docs.map((d) => ({ id: d.id, reference: d.data().reference, verseText: d.data().verseText, position: d.data().position }));
+      return snap.docs.map((d) => ({ id: d.id, reference: d.data().reference, verseText: d.data().verseText, position: d.data().position, ...(typeof d.data().translation === 'string' ? { translation: d.data().translation as string } : {}) }));
     },
 
     async report(deckId, reason, details) {

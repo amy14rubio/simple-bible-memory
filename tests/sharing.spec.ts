@@ -11,15 +11,15 @@ const published = async (page: Page) => Object.values((await cloud(page)).decks)
 const picker = (page: Page, label: string) => page.getByRole('button', { name: new RegExp(`^${label}:`) });
 const drawer = (page: Page) => page.getByRole('dialog', { name: /^(Publish deck|Published deck)$/ });
 
-async function setTranslation(page: Page, deckId: string, option: string) {
+async function setTranslation(page: Page, deckId: string, option: string | RegExp) {
   await page.goto(`/#/decks/${deckId}/edit`);
   await picker(page, 'Translation').click();
-  await page.getByRole('dialog', { name: 'Select a translation' }).getByRole('button', { name: option }).click();
+  await page.getByRole('dialog', { name: 'Choose a translation' }).getByRole('button', { name: option }).click();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page).toHaveURL(new RegExp(`#/decks/${deckId}$`));
 }
 
-async function psalmsDeck(page: Page, translation: string | null = 'King James Version (KJV)') {
+async function psalmsDeck(page: Page, translation: string | RegExp | null = /King James Version/) {
   const id = await createDeck(page, 'Psalm 23');
   await addCard(page, id, 'Psalm 23:1', 'The Lord is my shepherd; I shall not want.');
   await addCard(page, id, 'Psalm 23:2', 'He maketh me to lie down in green pastures.');
@@ -58,7 +58,7 @@ test.describe('a card\'s note stays private', () => {
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByText('Psalm 23:1 added')).toBeVisible();
     await page.waitForTimeout(300);
-    await setTranslation(page, id, 'King James Version (KJV)');
+    await setTranslation(page, id, /King James Version/);
 
     await openPublish(page, id);
     await signInInDrawer(page);
@@ -77,8 +77,12 @@ test.describe('a deck\'s translation', () => {
     await expect(picker(page, 'Translation')).toContainText('Not set');
     await expect(page.getByRole('button', { name: /^Language:/ })).toHaveCount(0);
     await picker(page, 'Translation').click();
-    const list = page.getByRole('dialog', { name: 'Select a translation' });
-    for (const name of ['King James Version (KJV)', 'World English Bible (WEB)', 'American Standard Version (ASV)', "Young's Literal Translation (YLT)", 'Darby Translation (DARBY)', 'Reina-Valera 1909 (RV1909)', 'My own words']) await expect(list.getByRole('button', { name })).toBeVisible();
+    const list = page.getByRole('dialog', { name: 'Choose a translation' });
+    for (const name of ['My own words', "Another translation (can't be published)", /King James Version/, /Young's Literal Translation/, /Darby Translation/, /World English Bible/, /American Standard Version/, /New American Standard Bible 2020/]) await expect(list.getByRole('button', { name })).toBeVisible();
+    await list.getByRole('tab', { name: 'Language' }).click();
+    await list.getByRole('button', { name: /^Spanish/ }).click();
+    await expect(list.getByRole('button', { name: /King James Version/ })).toHaveCount(0); // English texts only with English
+    await expect(list.getByRole('button', { name: 'My own words' })).toBeVisible();
     await list.getByRole('button', { name: 'My own words' }).click();
     await expect(page.getByRole('button', { name: /^Language:/ })).toBeVisible();
     await page.getByRole('button', { name: /^Language:/ }).click();
@@ -129,19 +133,19 @@ test.describe('publishing', () => {
     await openPublish(page, id);
     await signInInDrawer(page);
     await picker(page, 'Translation').click();
-    await page.getByRole('dialog', { name: 'Select a translation' }).getByRole('button', { name: 'World English Bible (WEB)' }).click();
+    await page.getByRole('dialog', { name: 'Choose a translation' }).getByRole('button', { name: /World English Bible/ }).click();
     await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeEnabled();
     await publish(page);
     await expect(page.getByText('Deck published')).toBeVisible();
     expect((await published(page))[0]!.meta.translation).toBe('WEB');
   });
 
-  test('"Why only some translations?" explains the copyright rule in plain words', async ({ page }) => {
+  test('"What gets published?" explains the copyright rule in plain words', async ({ page }) => {
     const id = await psalmsDeck(page);
     await openPublish(page, id);
     await signInInDrawer(page);
-    await drawer(page).getByRole('button', { name: 'Why only some translations?' }).click();
-    const why = page.getByRole('dialog', { name: 'Why only some translations?' });
+    await drawer(page).getByRole('button', { name: 'What gets published?' }).click();
+    const why = page.getByRole('dialog', { name: 'What gets published?' });
     await expect(why).toContainText('copyrighted');
     await expect(why).toContainText('taken down');
     await expect(why).toContainText('free to share');
@@ -321,8 +325,8 @@ test.describe('in Spanish, and accessibility', () => {
     const d = page.getByRole('dialog', { name: 'Publicar baraja' });
     await expect(d).toContainText('Inicia sesión con Google para publicar');
     await d.getByRole('button', { name: 'Continuar con Google' }).click();
-    await d.getByRole('button', { name: '¿Por qué solo algunas traducciones?' }).click();
-    await expect(page.getByRole('dialog', { name: '¿Por qué solo algunas traducciones?' })).toContainText('derechos de autor');
+    await d.getByRole('button', { name: '¿Qué se publica?' }).click();
+    await expect(page.getByRole('dialog', { name: '¿Qué se publica?' })).toContainText('derechos de autor');
     await ctx.close();
   });
 
@@ -341,7 +345,7 @@ test.describe('in Spanish, and accessibility', () => {
       await signInInDrawer(page);
       await audit(); // signed in, nothing chosen yet
       await picker(page, 'Translation').click();
-      await page.getByRole('dialog', { name: 'Select a translation' }).getByRole('button', { name: 'King James Version (KJV)' }).click();
+      await page.getByRole('dialog', { name: 'Choose a translation' }).getByRole('button', { name: /King James Version/ }).click();
       await publish(page);
       await expect(page.getByText('Deck published')).toBeVisible();
       await page.waitForTimeout(300);
