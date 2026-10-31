@@ -17,13 +17,14 @@ const languageCode = (v: string | null | undefined) => (v && /^[a-z]{2,3}$/.test
  * - With licensed cards, they are published as references only (no text, their translation named), so what is published is allowed as
  *   long as every OTHER card is open text or the author's own words. The deck is labelled with its cards' translation if they all
  *   share one, and "MIXED" if not; its language is that translation's, or (mixed) the deck's own.
- * `cardCodes` are the cards' own translations (null: the deck's).
+ * `cardCodes` are the cards' own translations (null: the deck's). A deck labelled with a licensed translation publishes its cards
+ * as references only too (whatever was typed stays on the device; whoever imports the deck gets the text from the platform).
  */
 export function planPublish(deck: { translationCode: string | null; bibleLanguage: string | null }, cardCodes: (string | null)[]): PublishPlan {
   if (cardCodes.length > LIMITS.cardsPerDeck) return { ok: false, reason: 'too-many-cards' };
   const effective = cardCodes.map((c) => c ?? deck.translationCode);
-  // Only a card's OWN translation can be licensed (a deck's own translation is just a label for text that was typed).
-  if (!cardCodes.some((c) => isLicensed(c))) {
+  // A licensed translation (a card's own, or the one the deck is labelled with) is published as references only.
+  if (!effective.some((c) => isLicensed(c))) {
     if (!deck.translationCode) return { ok: false, reason: 'no-translation' };
     if (!canPublishTranslation(deck.translationCode)) return { ok: false, reason: 'copyrighted' };
     const fixed: SharingLanguage | null = translationLanguage(deck.translationCode);
@@ -32,7 +33,7 @@ export function planPublish(deck: { translationCode: string | null; bibleLanguag
   }
   for (const [i, code] of effective.entries()) {
     if (!code) return { ok: false, reason: 'no-translation' };
-    if (!isLicensed(cardCodes[i]) && !canPublishTranslation(code)) return { ok: false, reason: 'copyrighted' }; // text typed from a copyrighted translation
+    if (!isLicensed(code) && !canPublishTranslation(code)) return { ok: false, reason: 'copyrighted' }; // text typed from a copyrighted translation
   }
   const codes = new Set(effective as string[]);
   const translation = codes.size === 1 ? [...codes][0]! : MIXED;

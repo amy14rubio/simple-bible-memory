@@ -43,7 +43,7 @@ describe('who may publish what', () => {
     expect(blockReason({ translationCode: 'RV1909', bibleLanguage: null }, 3)).toBeNull();
     expect(blockReason({ translationCode: 'OWN', bibleLanguage: 'es' }, 3)).toBeNull();
     expect(blockReason({ translationCode: null, bibleLanguage: null }, 3)).toBe('no-translation');
-    expect(blockReason({ translationCode: 'NIV', bibleLanguage: 'en' }, 3)).toBe('copyrighted');
+    expect(blockReason({ translationCode: 'OTHER', bibleLanguage: 'en' }, 3)).toBe('copyrighted');
     expect(blockReason({ translationCode: 'OWN', bibleLanguage: null }, 3)).toBe('no-language');
     expect(blockReason({ translationCode: 'OWN', bibleLanguage: 'fr' }, 3)).toBe('no-language');
     expect(blockReason({ translationCode: 'KJV', bibleLanguage: null }, 1001)).toBe('too-many-cards');
@@ -51,7 +51,7 @@ describe('who may publish what', () => {
   });
 
   it('refuses to publish a copyrighted or untranslated deck, and marks nothing', async () => {
-    for (const code of ['NIV', null]) {
+    for (const code of ['OTHER', null]) {
       const { deck } = await psalms(code);
       await expect(engine.publish(deck.id)).rejects.toBeInstanceOf(PublishBlockedError);
       expect((await sharing.getDeck(deck.id))!.publishId).toBeNull();
@@ -137,7 +137,7 @@ describe('keeping the copy in step', () => {
     const { deck } = await psalms();
     await engine.publish(deck.id);
     cloud.log.length = 0;
-    await decks.update(deck.id, { title: 'Psalms', translationCode: 'NIV' });
+    await decks.update(deck.id, { title: 'Psalms', translationCode: 'OTHER' });
     await engine.syncAll();
     expect(cloud.log).toEqual([]);
     expect(engine.status(deck.id)).toEqual({ state: 'blocked', reason: 'copyrighted' });
@@ -338,6 +338,7 @@ describe('licensed text is published as references only', () => {
     expect(blockReason({ translationCode: 'KJV', bibleLanguage: 'en', cardCodes: ['NASB2020', null] }, 2)).toBeNull();
     expect(blockReason({ translationCode: null, bibleLanguage: 'en', cardCodes: ['NASB2020', 'NASB2020'] }, 2)).toBeNull();
     expect(blockReason({ translationCode: null, bibleLanguage: 'en', cardCodes: ['NASB2020', null] }, 2)).toBe('no-translation'); // a card with no translation at all
+    expect(blockReason({ translationCode: 'NASB2020', bibleLanguage: 'en' }, 2)).toBeNull(); // a deck labelled with a licensed translation goes out as references only
     expect(blockReason({ translationCode: 'OTHER', bibleLanguage: 'en', cardCodes: ['NASB2020', null] }, 2)).toBe('copyrighted'); // typed text from a copyrighted translation
     expect(blockReason({ translationCode: 'KJV', bibleLanguage: 'en' }, 3)).toBeNull();
   });

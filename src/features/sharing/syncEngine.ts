@@ -67,7 +67,9 @@ export function createSyncEngine({ sharing, cloud, ready, agreed = async () => t
     const meta: CloudDeckMeta = { title: deck.title, description: deck.description, translation: plan.translation, language: plan.language, cardCount: rows.length, v: schemaVersion };
     const cards: (CloudCard & { hash: string; syncedHash: string | null })[] = rows.map((r, position) => {
       // A licensed text is never published: only the reference and the translation (whoever imports the deck fetches the text).
-      const card: Pick<CloudCard, 'id' | 'reference' | 'verseText' | 'position' | 'translation'> = { id: r.id, reference: r.reference, verseText: isLicensed(r.translationCode) ? '' : r.verseText, position, ...(r.translationCode ? { translation: r.translationCode } : {}) };
+      const code = r.translationCode ?? deck.translationCode; // (a card without its own translation is in the deck's)
+      const licensed = isLicensed(code);
+      const card: Pick<CloudCard, 'id' | 'reference' | 'verseText' | 'position' | 'translation'> = { id: r.id, reference: r.reference, verseText: licensed ? '' : r.verseText, position, ...(licensed ? { translation: code! } : r.translationCode ? { translation: r.translationCode } : {}) };
       return { ...card, v: schemaVersion, hash: cardFingerprint(card), syncedHash: r.syncedHash };
     });
     const changed = cards.filter((c) => c.hash !== c.syncedHash);

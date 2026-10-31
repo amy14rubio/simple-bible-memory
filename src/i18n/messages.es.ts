@@ -354,9 +354,9 @@ export const es: Dictionary = {
   'publish.noLanguage': 'Elige el idioma de tus propias palabras para publicar esta baraja.',
   'publish.newerFormat': 'Esta baraja fue publicada con una versión más reciente de la app. Actualiza la app para mantenerla sincronizada.',
   'publish.tooMany': 'Las barajas con más de 1000 tarjetas no se pueden publicar.',
-  'publish.why': '¿Por qué solo algunas traducciones?',
+  'publish.why': '¿Qué se publica?',
   'publish.whyBody':
-    'La mayoría de las traducciones de la Biblia, como la NVI, la ESV o la RVR1960, tienen derechos de autor. Si su texto se comparte públicamente sin permiso, sus dueños pueden presentar reclamaciones y la app podría ser retirada para todos. Por eso las barajas públicas solo pueden usar traducciones libres de compartir, o tus propias palabras. Tus otras barajas siguen siendo privadas y puedes exportar cualquiera a un archivo para ti.',
+    'La mayoría de las traducciones de la Biblia, como la NVI, la ESV o la RVR1960, tienen derechos de autor. Si su texto se comparte públicamente sin permiso, sus dueños pueden presentar reclamaciones y la app podría ser retirada para todos. Por eso el texto de una traducción con derechos de autor nunca se publica: una baraja en una de ellas se comparte solo con las referencias, y quien la importa recibe el texto de su editor. El texto de traducciones libres de compartir, o tus propias palabras, se publica completo. Tus otras barajas siguen siendo privadas y puedes exportar cualquiera a un archivo para ti.',
   'publish.status.synced': 'Publicada. Los cambios que hagas se envían automáticamente.',
   'publish.status.syncing': 'Enviando tus cambios…',
   'publish.status.signedOut': 'Inicia sesión para mantener al día la copia publicada.',

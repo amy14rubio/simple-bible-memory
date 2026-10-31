@@ -49,6 +49,34 @@ test('a deck of licensed cards is published as references only, labelled with it
   expect(JSON.stringify(published)).not.toContain('Fake NASB2020 text'); // the publisher's text is nowhere in the cloud
 });
 
+test('a deck labelled with a licensed translation in the Publish screen is published as references only', async ({ page }) => {
+  test.setTimeout(90_000);
+  const id = await createDeck(page, 'My NASB verses');
+  await page.goto(`/#/cards/new?deck=${id}`);
+  await page.getByLabel('Verse(s)').fill('John 3:16');
+  await page.getByLabel('Passage', { exact: true }).fill('typed from my own Bible');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByText('John 3:16 added')).toBeVisible();
+  await openDeck(page, id);
+  await page.getByRole('button', { name: 'Deck actions' }).click();
+  await page.getByRole('button', { name: 'Publish deck' }).click();
+  await drawer(page).getByRole('button', { name: 'Continue with Google' }).click();
+  await drawer(page).getByRole('button', { name: /^Translation:/ }).click();
+  const list = page.getByRole('dialog', { name: 'Choose a translation' });
+  await expect(list.getByRole('listitem').first()).toHaveText(/My own words/); // the two choices for a deck's own text come first
+  await expect(list.getByRole('listitem').nth(1)).toHaveText(/Another translation/);
+  await list.getByRole('button', { name: /New American Standard Bible 2020/ }).click();
+  await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
+  await expect(rulesDrawer(page).or(page.getByText('Deck published'))).toBeVisible();
+  if (await rulesDrawer(page).isVisible()) await rulesDrawer(page).getByRole('button', { name: 'Agree and publish' }).click();
+  await expect(page.getByText('Deck published')).toBeVisible();
+
+  const [deck] = Object.values((await cloud(page)).decks);
+  expect(deck!.meta).toMatchObject({ translation: 'NASB2020', language: 'en' });
+  expect(Object.values(deck!.cards).map((c) => [c.reference, c.verseText, c.translation])).toEqual([['John 3:16', '', 'NASB2020']]);
+  expect(JSON.stringify(deck)).not.toContain('typed from my own Bible');
+});
+
 test('a deck with licensed and open cards is published as MIXED, with the open text and the licensed references', async ({ page }) => {
   test.setTimeout(90_000);
   const id = await createDeck(page, 'Both');

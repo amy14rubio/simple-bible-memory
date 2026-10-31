@@ -13,7 +13,10 @@ import { usePopupHistory } from '../../lib/usePopupHistory';
  * A form row's value that opens a popup with two tabs, like YouVersion's: the translations (of the language chosen) and the
  * languages. Choosing a language switches to its translations. Closed like the app's other popups: tap outside, Escape or Back.
  */
-export function TranslationPicker({ id, value, onChange, initialLanguage }: { id?: string; value: string; onChange: (code: string) => void; initialLanguage: string }) {
+/** A choice listed above the translations (for a deck: "my own words", a translation that is not on the platform...). */
+export interface PickerExtra { code: string; label: string; note?: string; /** Listed only with the translations of this language (always, when searching). */ language?: string }
+
+export function TranslationPicker({ id, value, onChange, initialLanguage, extras = [], emptyLabel }: { id?: string; value: string; onChange: (code: string) => void; initialLanguage: string; extras?: PickerExtra[]; emptyLabel?: string }) {
   const { t, language: appLanguage } = useI18n();
   const [namesLoaded, setNamesLoaded] = useState(false);
   useEffect(() => { void loadLanguageNames().then(() => setNamesLoaded(true)); }, []);
@@ -22,6 +25,8 @@ export function TranslationPicker({ id, value, onChange, initialLanguage }: { id
   const ref = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
   const current = sourceFor(value);
+  const extra = extras.find((e) => e.code === value);
+  const shownName = extra ? (extra.note ? `${extra.label} (${extra.note})` : extra.label) : current ? `${current.name} (${current.tag})` : emptyLabel ?? t('translation.none');
   const [language, setLanguage] = useState<string>(current?.language ?? initialLanguage);
   const [tab, setTab] = useState<'translation' | 'language'>('translation');
   const [searching, setSearching] = useState(false);
@@ -41,6 +46,7 @@ export function TranslationPicker({ id, value, onChange, initialLanguage }: { id
   // search by name: "NASB", "Reina"); on the Language tab it is the languages.
   const q = query.trim().toLowerCase();
   const offered = (list: ReturnType<typeof autofillSources>) => list.filter((o) => !isSwitchedOff(o.code, switchState)); // a translation switched off is not offered
+  const shownExtras = tab === 'translation' ? extras.filter((e) => (q ? `${e.label} ${e.note ?? ''} ${e.code}`.toLowerCase().includes(q) : !e.language || e.language === language)) : [];
   const shown = offered(tab === 'translation' && q ? autofillSources().filter((o) => `${o.name} ${o.tag} ${o.code}`.toLowerCase().includes(q)) : autofillSources(language));
   // English and Spanish first, then the rest by name (names are in the app's language, once they are loaded).
   const languages = [...new Set(offered(autofillSources()).map((o) => o.language))]
@@ -56,13 +62,13 @@ export function TranslationPicker({ id, value, onChange, initialLanguage }: { id
       <button
         id={id}
         type="button"
-        aria-label={`${t('translation.label')}: ${current?.name ?? ''}`}
+        aria-label={`${t('translation.label')}: ${extra?.label ?? current?.name ?? shownName}`}
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => { setLanguage(current?.language ?? initialLanguage); setOpen(true); }}
         className="flex w-full min-w-0 items-center justify-between gap-2 py-2.5 text-left text-base font-medium"
       >
-        <span className="truncate">{current ? `${current.name} (${current.tag})` : t('translation.none')}</span>
+        <span className="truncate">{shownName}</span>
         <ChevronDown size={18} aria-hidden className="shrink-0 text-muted" />
       </button>
 
@@ -114,6 +120,22 @@ export function TranslationPicker({ id, value, onChange, initialLanguage }: { id
           </div>
           <div id="tabpanel-picker" role="tabpanel" aria-labelledby={`tab-${tab}`} className="min-h-0 flex-1 overflow-y-auto">
           <ul>
+            {shownExtras.map((e) => (
+              <li key={e.code} className="border-b border-border">
+                <button
+                  type="button"
+                  aria-current={e.code === value || undefined}
+                  onClick={() => { close(); onChange(e.code); }}
+                  className="flex min-h-14 w-full items-center justify-between gap-3 px-5 py-2 text-left hover:bg-surface"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate font-serif text-lg">{e.label}</span>
+                    {e.note && <span className="block text-sm text-muted">{e.note}</span>}
+                  </span>
+                  {e.code === value && <Check size={18} aria-hidden className="shrink-0" />}
+                </button>
+              </li>
+            ))}
             {tab === 'translation'
               ? shown.map((o) => (
                   <li key={o.code} className="border-b border-border last:border-b-0">
@@ -144,7 +166,7 @@ export function TranslationPicker({ id, value, onChange, initialLanguage }: { id
                     </button>
                   </li>
                 ))}
-            {tab === 'translation' && shown.length === 0 && <li className="px-5 py-6 text-center text-muted">{q ? t('translation.noMatch', { query }) : listState === 'idle' ? t('autofill.loadingList') : t('autofill.noneInLanguage')}</li>}
+            {tab === 'translation' && shown.length === 0 && shownExtras.length === 0 && <li className="px-5 py-6 text-center text-muted">{q ? t('translation.noMatch', { query }) : listState === 'idle' ? t('autofill.loadingList') : t('autofill.noneInLanguage')}</li>}
             {tab === 'language' && shownLanguages.length === 0 && <li className="px-5 py-6 text-center text-muted">{t('translation.noMatch', { query })}</li>}
           </ul>
           </div>

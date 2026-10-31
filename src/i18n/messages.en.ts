@@ -354,9 +354,9 @@ export const en = {
   'publish.noLanguage': 'Choose the language of your own words to publish this deck.',
   'publish.newerFormat': 'This deck was published by a newer version of the app. Update the app to keep it in sync.',
   'publish.tooMany': "Decks with more than 1,000 cards can't be published.",
-  'publish.why': 'Why only some translations?',
+  'publish.why': 'What gets published?',
   'publish.whyBody':
-    'Most Bible translations, like the NIV, ESV and RVR1960, are copyrighted. If their text is shared publicly without permission, the owners can file copyright claims, and the app could be taken down for everyone. So public decks can only use translations that are free to share, or your own words. Your other decks stay private, and you can still export any deck to a file for yourself.',
+    'Most Bible translations, like the NIV, ESV and RVR1960, are copyrighted. If their text is shared publicly without permission, the owners can file copyright claims, and the app could be taken down for everyone. So the text of a copyrighted translation is never published: a deck in one is shared as references only, and whoever imports it gets the text from its publisher. Text in translations that are free to share, or your own words, is published in full. Your other decks stay private, and you can still export any deck to a file for yourself.',
   'publish.status.synced': 'Published. Changes you make are sent automatically.',
   'publish.status.syncing': 'Sending your changes…',
   'publish.status.signedOut': 'Sign in to keep the published copy up to date.',
