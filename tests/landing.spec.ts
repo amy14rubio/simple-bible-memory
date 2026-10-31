@@ -4,18 +4,18 @@ import AxeBuilder from '@axe-core/playwright';
 /** The landing page is a plain file (like the privacy policy), with a small script for the demo. */
 const PAGES = [
   {
-    lang: 'English', url: '/landing.html', other: '/es/landing', heading: 'Simple Bible Memory', tagline: 'Learn scripture by heart', open: 'Start Practicing',
+    lang: 'English', url: '/landing.html', other: '/es', heading: 'Simple Bible Memory', tagline: 'Learn scripture by heart', open: 'Start Practicing',
     play: 'Coming soon to Google Play', apple: 'Coming soon to the App Store', donate: 'Support on Ko-fi',
     features: ['No account needed', 'English and Spanish', 'Spaced repetition', 'Make it yours'],
     show: 'Show answer', rates: ['Again', 'Hard', 'Good', 'Easy'], goodWhen: /10m/, next: 'Try another verse', first: 'Proverbs 3:5-6', second: 'Romans 5:8',
-    typeTab: 'Type', speakTab: 'Speak', blanksTab: 'Fill in the blanks', typeFull: 'For God didn’t give us a spirit of fear, but of power, love, and self-control.', typePartial: 'For God give us a spirit of fear', typeAll: /You remembered 15 of 15 words/, typeSome: /You remembered 8 of 15 words/, check: 'Show answer', speakText: 'Recite verses hands-free while you drive or go about your day. The app reads them back, and you rate yourself for easy, relaxed practice.', langName: 'English', langOther: 'Español', langOtherHref: '/es/landing', langLabel: 'Language', words: ['fear', 'power', 'self-control'], done: /That’s it!/, wrongWord: 'love', wrongNote: /Not quite: the word was “fear”/,
+    typeTab: 'Type', speakTab: 'Speak', blanksTab: 'Fill in the blanks', typeFull: 'For God didn’t give us a spirit of fear, but of power, love, and self-control.', typePartial: 'For God give us a spirit of fear', typeAll: /You remembered 15 of 15 words/, typeSome: /You remembered 8 of 15 words/, check: 'Show answer', speakText: 'Recite verses hands-free while you drive or go about your day. The app reads them back, and you rate yourself for easy, relaxed practice.', langName: 'English', langOther: 'Español', langOtherHref: '/es', langLabel: 'Language', words: ['fear', 'power', 'self-control'], done: /That’s it!/, wrongWord: 'love', wrongNote: /Not quite: the word was “fear”/,
   },
   {
-    lang: 'Spanish', url: '/es/landing.html', other: '/landing', heading: 'Simple Bible Memory', tagline: 'Aprende la Escritura de memoria', open: 'Empezar a practicar',
+    lang: 'Spanish', url: '/es/landing.html', other: '/', heading: 'Simple Bible Memory', tagline: 'Aprende la Escritura de memoria', open: 'Empezar a practicar',
     play: 'Próximamente en Google Play', apple: 'Próximamente en la App Store', donate: 'Apoyar en Ko-fi',
     features: ['Sin cuenta', 'Español e inglés', 'Repaso espaciado', 'A tu manera'],
     show: 'Mostrar respuesta', rates: ['Otra vez', 'Difícil', 'Bien', 'Fácil'], goodWhen: /10 min/, next: 'Probar otro versículo', first: 'Proverbios 3:5-6', second: 'Romanos 5:8',
-    typeTab: 'Escribir', speakTab: 'Hablar', blanksTab: 'Completar espacios', typeFull: 'Porque no nos ha dado Dios el espíritu de temor, sino el de fortaleza, y de amor, y de templanza.', typePartial: 'Porque no nos ha dado Dios el espiritu de temor', typeAll: /Recordaste 20 de 20 palabras/, typeSome: /Recordaste 10 de 20 palabras/, check: 'Mostrar respuesta', speakText: 'Recita versículos sin manos mientras manejas o sigues con tu día. La app te los lee de vuelta, y tú te calificas para una práctica fácil y tranquila.', langName: 'Español', langOther: 'English', langOtherHref: '/landing', langLabel: 'Idioma', words: ['temor', 'fortaleza', 'templanza'], done: /¡Eso es!/, wrongWord: 'amor', wrongNote: /Casi: la palabra era “temor”/,
+    typeTab: 'Escribir', speakTab: 'Hablar', blanksTab: 'Completar espacios', typeFull: 'Porque no nos ha dado Dios el espíritu de temor, sino el de fortaleza, y de amor, y de templanza.', typePartial: 'Porque no nos ha dado Dios el espiritu de temor', typeAll: /Recordaste 20 de 20 palabras/, typeSome: /Recordaste 10 de 20 palabras/, check: 'Mostrar respuesta', speakText: 'Recita versículos sin manos mientras manejas o sigues con tu día. La app te los lee de vuelta, y tú te calificas para una práctica fácil y tranquila.', langName: 'Español', langOther: 'English', langOtherHref: '/', langLabel: 'Idioma', words: ['temor', 'fortaleza', 'templanza'], done: /¡Eso es!/, wrongWord: 'amor', wrongNote: /Casi: la palabra era “temor”/,
   },
 ] as const;
 
@@ -25,7 +25,7 @@ for (const p of PAGES) {
       await page.goto(p.url);
       await expect(page.getByRole('heading', { level: 1, name: p.heading })).toBeVisible();
       await expect(page.locator('.hero .lead')).toHaveText(p.tagline); // the title, and the tagline under it
-      await expect(page.getByRole('link', { name: p.open }).first()).toHaveAttribute('href', '/');
+      await expect(page.getByRole('link', { name: p.open }).first()).toHaveAttribute('href', '/app');
       for (const f of p.features) await expect(page.getByRole('heading', { level: 3, name: f })).toBeVisible();
       await expect(page.getByRole('heading', { level: 3 })).toHaveCount(4); // four short highlights; "free" has its own section below
       await expect(page.locator('footer a[href$="privacy-policy"]')).toHaveCount(1);
@@ -270,7 +270,7 @@ test('the moving light behind the hero is decoration only: hidden from screen re
   await expect(prism).toHaveAttribute('aria-hidden', 'true');
   expect(await prism.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
   await page.getByRole('link', { name: 'Start Practicing' }).last().click();
-  await expect(page).toHaveURL(/\/$|#\//);
+  await expect(page).toHaveURL(/\/app$|#\//);
 });
 
 test('on a wide screen the four highlight cards line up with the three phone screenshots', async ({ page }) => {
@@ -346,7 +346,7 @@ for (const [lang, path, title] of [['English', '/landing.html', 'Simple Bible Me
       await start.hover();
       await expect(start).toBeEnabled();
       await start.click();
-      await expect(page).toHaveURL(/\/$|#\//);
+      await expect(page).toHaveURL(/\/app$|#\//);
     });
 
     test('with reduced motion the text is plain: no split words, nothing hidden', async ({ browser }) => {
