@@ -31,7 +31,7 @@ export function planPublish(deck: { translationCode: string | null; bibleLanguag
     const language = fixed ?? SHARING_LANGUAGES.find((l) => l === deck.bibleLanguage) ?? null;
     return language ? { ok: true, translation: deck.translationCode, language, licensed: false } : { ok: false, reason: 'no-language' };
   }
-  for (const [i, code] of effective.entries()) {
+  for (const code of effective) {
     if (!code) return { ok: false, reason: 'no-translation' };
     if (!isLicensed(code) && !canPublishTranslation(code)) return { ok: false, reason: 'copyrighted' }; // text typed from a copyrighted translation
   }
