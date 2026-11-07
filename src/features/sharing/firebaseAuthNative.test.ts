@@ -76,8 +76,8 @@ describe('deleting the account', () => {
   });
 
   it('passes on any other failure, and does nothing when nobody is signed in', async () => {
-    web.deleteUser.mockRejectedValueOnce({ code: 'auth/network-request-failed' });
-    await expect(backend().deleteAccount()).rejects.toEqual({ code: 'auth/network-request-failed' });
+    web.deleteUser.mockRejectedValueOnce({ code: 'auth/internal-error' });
+    await expect(backend().deleteAccount()).rejects.toEqual({ code: 'auth/internal-error' });
     auth.currentUser = null;
     web.deleteUser.mockClear();
     await backend().deleteAccount();
@@ -110,6 +110,26 @@ describe('Sign in with Apple inside the iPhone and iPad app', () => {
     expect(web.deleteUser).toHaveBeenCalledWith(applePerson);
     // revoked before deleted: once the account is gone there is nobody to revoke for
     expect(web.revokeAccessToken.mock.invocationCallOrder[0]).toBeLessThan(web.deleteUser.mock.invocationCallOrder[0]!);
+  });
+
+  it('deleting an Apple account asks for the confirmation BEFORE anything is erased, and erases nothing if it fails', async () => {
+    auth.currentUser = applePerson;
+    const erase = vi.fn().mockResolvedValue(undefined);
+    plugin.signInWithApple.mockRejectedValueOnce({ code: 'auth/network-request-failed' });
+    await expect(backend().deleteAccount(erase)).rejects.toEqual({ code: 'auth/network-request-failed' });
+    expect(erase).not.toHaveBeenCalled();
+    expect(web.deleteUser).not.toHaveBeenCalled();
+
+    await backend().deleteAccount(erase); // and when it works: confirm, erase, delete
+    expect(plugin.signInWithApple.mock.invocationCallOrder.at(-1)).toBeLessThan(erase.mock.invocationCallOrder[0]!);
+    expect(erase.mock.invocationCallOrder[0]).toBeLessThan(web.deleteUser.mock.invocationCallOrder[0]!);
+  });
+
+  it('a dropped connection at the very end is tried once more', async () => {
+    auth.currentUser = applePerson;
+    web.deleteUser.mockRejectedValueOnce({ code: 'auth/network-request-failed' });
+    await backend().deleteAccount();
+    expect(web.deleteUser).toHaveBeenCalledTimes(2);
   });
 
   it('deleting an Apple account still deletes when telling Apple fails', async () => {

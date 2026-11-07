@@ -55,8 +55,12 @@ export interface AuthBackend {
   /** Only in the iPhone and iPad app (see `appleSignInSupported`). */
   signInWithApple?(): Promise<AuthUser>;
   signOut(): Promise<void>;
-  /** Deletes the account itself (the caller removes the person's public decks first). */
-  deleteAccount(): Promise<void>;
+  /**
+   * Deletes the account. Whatever the sign-in needs (a fresh confirmation) comes FIRST, so a person who cancels or loses the
+   * connection there loses nothing; then `beforeDelete` runs (the caller removes the person's data and public decks), and the
+   * account itself goes last.
+   */
+  deleteAccount(beforeDelete?: () => Promise<void>): Promise<void>;
 }
 
 /** Settings the app reads from the cloud (anyone can read them; only the owner writes them, in the Firebase console). */

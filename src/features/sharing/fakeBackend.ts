@@ -56,7 +56,7 @@ export function createFakeBackends(): { auth: AuthBackend; cloud: CloudBackend; 
       return s.user;
     },
     async signOut() { const s = load(); s.user = null; save(s); emit(null); },
-    async deleteAccount() { const s = load(); s.user = null; s.decks = {}; save(s); emit(null); },
+    async deleteAccount(beforeDelete) { await beforeDelete?.(); const s = load(); s.user = null; s.decks = {}; save(s); emit(null); },
   };
 
   const cloud: CloudBackend = {

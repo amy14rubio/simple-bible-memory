@@ -143,10 +143,13 @@ export function SharingProvider({ children }: { children: ReactNode }) {
     },
     async deleteAccount() {
       const b = (backends.current ??= await loadBackends());
-      await b.cloud.removeAllMine(); // first: if this fails (offline), the account stays so it can be tried again
-      await account.eraseAccountData(); // the backup of decks, cards and study schedules goes too
-      for (const id of await sharing.publishedDeckIds()) await sharing.unpublish(id);
-      await b.auth.deleteAccount();
+      // The person's confirmation (signing in again) comes first, inside deleteAccount, so cancelling or a dropped connection there
+      // loses nothing. Then their data goes (if removing it fails, e.g. offline, the account stays so it can be tried again).
+      await b.auth.deleteAccount(async () => {
+        await b.cloud.removeAllMine();
+        await account.eraseAccountData(); // the backup of decks, cards and study schedules goes too
+        for (const id of await sharing.publishedDeckIds()) await sharing.unpublish(id);
+      });
       bump((n) => n + 1);
     },
     async publish(deckId) {

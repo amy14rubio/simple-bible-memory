@@ -300,6 +300,7 @@ test.describe('the account in Settings', () => {
     await expect(page.getByText('Signed in as Reader')).toBeVisible();
     await page.getByRole('button', { name: 'Delete my account' }).click();
     await page.getByRole('dialog', { name: 'Delete your account?' }).getByRole('button', { name: 'Delete my account' }).click();
+    await expect(page.getByText('Your account was deleted. The decks on this device are still here.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeVisible();
     expect(await published(page)).toHaveLength(0);
     expect((await cloud(page)).user).toBeNull();
