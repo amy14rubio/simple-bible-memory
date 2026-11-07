@@ -6,7 +6,7 @@ import { createDeck } from './helpers';
 const forceGuide = (page: Page) => page.addInitScript(() => localStorage.setItem('sbm-force-onboarding', '1'));
 const guide = (page: Page) => page.getByRole('dialog').filter({ has: page.locator('#coach-title') });
 const title = (page: Page) => guide(page).getByRole('heading', { level: 2 });
-const STEPS = ['Choose a deck', 'Type the verse', 'Or let the app fill it in', 'Add the passage', 'Save it'];
+const STEPS = ['Choose a deck', 'Type the reference', 'Autofill the verse', 'Add it yourself', 'Save'];
 
 async function openAdd(page: Page) {
   const id = await createDeck(page, 'Psalms');
@@ -20,7 +20,7 @@ test('the first time Add card opens, a guide points at the real fields, one by o
   await openAdd(page);
   for (const [i, text] of STEPS.entries()) {
     await expect(title(page)).toHaveText(text);
-    await expect(guide(page)).toContainText(`Step ${i + 1} of ${STEPS.length}`);
+    await expect(guide(page).locator('p.sr-only')).toHaveText(`Step ${i + 1} of ${STEPS.length}`); // read aloud, not shown
     if (i < STEPS.length - 1) await guide(page).getByRole('button', { name: 'Next' }).click();
   }
   await guide(page).getByRole('button', { name: 'Got it' }).click();
@@ -30,22 +30,22 @@ test('the first time Add card opens, a guide points at the real fields, one by o
 test('it never blocks the form: you can type in the highlighted field while it is shown', async ({ page }) => {
   await openAdd(page);
   await guide(page).getByRole('button', { name: 'Next' }).click(); // the verse step
-  await expect(title(page)).toHaveText('Type the verse');
+  await expect(title(page)).toHaveText('Type the reference');
   await page.getByLabel('Verse(s)').fill('John 3:16');
   await expect(page.getByLabel('Verse(s)')).toHaveValue('John 3:16');
 });
 
-test('it has no Skip button; Escape closes it, it is not shown again, and the ? button on the screen starts it again', async ({ page }) => {
+test('it has no Skip button; the X closes it, it is not shown again, and the ? button on the screen starts it again', async ({ page }) => {
   await openAdd(page);
   await expect(guide(page).getByRole('button', { name: 'Skip' })).toHaveCount(0);
-  await page.keyboard.press('Escape');
+  await guide(page).getByRole('button', { name: 'Close' }).click();
   await expect(guide(page)).toHaveCount(0);
   await page.reload();
   await expect(page.getByLabel('Verse(s)')).toBeVisible();
   await expect(guide(page)).toHaveCount(0); // remembered
   await page.getByRole('button', { name: 'How to add a verse' }).click();
   await expect(title(page)).toHaveText('Choose a deck');
-  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape'); // a keyboard closes it too
   await expect(guide(page)).toHaveCount(0);
 });
 
@@ -93,7 +93,7 @@ test.describe('in Spanish', () => {
     await page.goto(`/#/cards/new?deck=${id}`);
     await expect(title(page)).toHaveText('Elige una baraja');
     await expect(guide(page).getByRole('button', { name: 'Omitir' })).toHaveCount(0);
-    await page.keyboard.press('Escape');
+    await guide(page).getByRole('button', { name: 'Cerrar' }).click();
     await page.getByRole('button', { name: 'Cómo agregar un versículo' }).click();
     await expect(title(page)).toHaveText('Elige una baraja');
   });

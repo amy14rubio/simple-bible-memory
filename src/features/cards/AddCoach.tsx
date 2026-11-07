@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useRepositories } from '../../app/repositories';
-import { Button } from '../../components/ui';
+import { X } from 'lucide-react';
+import { Button, IconButton } from '../../components/ui';
 import type { MessageKey } from '../../i18n';
 import { useI18n } from '../../i18n/I18nProvider';
 import { onboardingDisabledForTests } from '../onboarding/onboarding';
@@ -22,7 +23,7 @@ const find = (anchor: string) => document.querySelector<HTMLElement>(`#card-form
 
 /**
  * The first time someone opens "Add card", a short guide points at the real fields: the deck, the verse, Autofill, the passage and
- * Save. It is five short steps with no Skip button (Escape still closes it, for keyboards); the last button ends it, and it is remembered.
+ * Save. It is five short steps with no Skip button: the X (or Escape) closes it, the last button ends it, and it is remembered.
  * The "?" on the screen starts it again.
  */
 export function useAddCoach(isNewCard: boolean) {
@@ -99,11 +100,12 @@ export function AddCoach({ onClose }: { onClose: () => void }) {
         role="dialog"
         aria-labelledby="coach-title"
         aria-describedby="coach-body"
-        className="fixed left-1/2 z-50 w-[min(21rem,calc(100vw-2rem))] -translate-x-1/2 space-y-3 rounded-2xl border border-border bg-background p-4 shadow-lg"
+        className="fixed left-1/2 z-50 w-[min(21rem,calc(100vw-2rem))] -translate-x-1/2 space-y-5 rounded-2xl border border-border bg-background px-5 pb-5 pt-6 shadow-lg"
         style={{ top }}
       >
-        <div className="space-y-1">
-          <p className="text-xs font-medium text-muted">{t('onboarding.step', { n: i + 1, total: steps.length })}</p>
+        <IconButton label={t('common.close')} onClick={onClose} className="absolute right-2 top-2"><X size={20} aria-hidden /></IconButton>
+        <div className="space-y-2 pr-8">
+          <p className="sr-only">{t('onboarding.step', { n: i + 1, total: steps.length })}</p> {/* not shown: five short steps do not need a counter, but a screen reader still hears where it is */}
           <h2 id="coach-title" className="font-serif text-lg font-medium leading-tight">{t(step.title)}</h2>
           <p id="coach-body" className="text-[0.9375rem] leading-snug text-muted">{t(step.body)}</p>
         </div>
