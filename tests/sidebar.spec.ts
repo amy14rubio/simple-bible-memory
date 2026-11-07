@@ -10,7 +10,7 @@ test('a wide screen has a sidebar with the main places, and no bottom bar', asyn
   await page.goto('/');
   const nav = sidebar(page);
   await expect(nav).toBeVisible();
-  for (const name of ['Decks', 'Browse cards', 'Statistics']) await expect(nav.getByRole('link', { name, exact: true })).toBeVisible();
+  for (const name of ['Decks', 'View cards', 'Statistics']) await expect(nav.getByRole('link', { name, exact: true })).toBeVisible();
   await expect(nav.getByRole('link', { name: 'Decks', exact: true })).toHaveAttribute('aria-current', 'page');
   const box = (await nav.boundingBox())!;
   expect(box.x).toBeLessThan(40); // down the left side
@@ -20,12 +20,12 @@ test('a wide screen has a sidebar with the main places, and no bottom bar', asyn
   await expect(nav.getByRole('link', { name: 'Statistics', exact: true })).toHaveAttribute('aria-current', 'page');
 });
 
-test('Browse cards opens the cards of all decks, and is the highlighted place there', async ({ page }) => {
+test('View cards opens the cards of all decks, and is the highlighted place there', async ({ page }) => {
   await page.setViewportSize(WIDE);
   await page.goto('/');
-  await sidebar(page).getByRole('link', { name: 'Browse cards' }).click();
+  await sidebar(page).getByRole('link', { name: 'View cards' }).click();
   await expect(page).toHaveURL(/#\/decks\/all\/cards$/);
-  await expect(sidebar(page).getByRole('link', { name: 'Browse cards' })).toHaveAttribute('aria-current', 'page');
+  await expect(sidebar(page).getByRole('link', { name: 'View cards' })).toHaveAttribute('aria-current', 'page');
   await expect(sidebar(page).getByRole('link', { name: 'Decks', exact: true })).not.toHaveAttribute('aria-current', 'page');
 });
 
@@ -70,7 +70,7 @@ test('on a phone or a tablet standing up there is no sidebar: the bottom bar is 
     await page.goto('/');
     await expect(page.getByRole('button', { name: 'Hide sidebar' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Statistics' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Browse cards' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'View cards' })).toHaveCount(0);
   }
 });
 

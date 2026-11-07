@@ -241,7 +241,7 @@ test.describe('import from Anki', () => {
     await expect(page.getByRole('heading', { name: 'Memory verses' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Deck actions' }).click();
-    await page.getByRole('dialog').getByRole('link', { name: 'Browse cards' }).click();
+    await page.getByRole('dialog').getByRole('link', { name: 'View cards' }).click();
     await expect(page.getByRole('link', { name: 'John 3:16' })).toBeVisible();
     await expect(page.getByRole('row')).toHaveCount(4); // header + 3 cards
     await page.getByRole('link', { name: 'Psalm 1:1' }).click();
