@@ -366,6 +366,7 @@ export const es: Dictionary = {
     'No se pudo dejar de publicar. Revisa tu conexión e inténtalo de nuevo.',
   'publish.failed': 'No se pudo publicar. Revisa tu conexión e inténtalo de nuevo.',
   'toast.published': 'Baraja publicada',
+  'toast.accountDeleted': 'Se eliminó tu cuenta. Las barajas de este dispositivo siguen aquí.',
   'toast.unpublished': 'Baraja retirada',
   'toast.signedIn': 'Sesión iniciada',
   'account.signedInAs': 'Sesión iniciada como {name}',

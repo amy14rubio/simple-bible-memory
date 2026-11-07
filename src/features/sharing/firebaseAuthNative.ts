@@ -4,7 +4,7 @@ import {
   type Auth, type AuthCredential,
 } from 'firebase/auth';
 import type { AuthBackend } from './types';
-import { toUser } from './firebaseAuth';
+import { RECENT_MS, toUser } from './firebaseAuth';
 
 /**
  * Google sign-in inside the Android and iPhone/iPad apps, and Sign in with Apple inside the iPhone/iPad app. Google refuses to sign
@@ -50,28 +50,33 @@ export function createNativeFirebaseAuth(auth: Auth): AuthBackend {
       await signOut(auth);
       await FirebaseAuthentication.signOut().catch(() => undefined); // forget the Google account too, so the next sign-in asks which one
     },
-    async deleteAccount() {
+    async deleteAccount(beforeDelete) {
       const user = auth.currentUser;
       if (!user) return;
+      // Whatever is asked of the person (signing in again) comes first, before anything is erased: if they cancel or the
+      // connection drops there, nothing has been lost and the account is still whole.
+      let authorizationCode: string | undefined;
       if (usesApple()) {
         // Apple requires that deleting an account also revokes the person's Sign in with Apple link. That needs a fresh authorization
-        // code, which only comes from signing in again, so ask once, revoke, and then delete.
-        const { credential, authorizationCode } = await appleCredential();
-        await reauthenticateWithCredential(user, credential);
-        // Best effort: if Apple cannot be told right now, the person's account is still deleted (being unable to delete is worse).
-        if (authorizationCode) {
-          try { await revokeAccessToken(auth, authorizationCode); } catch { /* see above */ }
-        }
-        await deleteUser(user);
-        return;
+        // code, which only comes from signing in again.
+        const apple = await appleCredential();
+        authorizationCode = apple.authorizationCode;
+        await reauthenticateWithCredential(user, apple.credential);
+      } else if (Date.now() - Date.parse(user.metadata?.lastSignInTime ?? '') > RECENT_MS) {
+        await reauthenticateWithCredential(user, (await googleCredential()).credential);
+      }
+      await beforeDelete?.();
+      // Best effort: if Apple cannot be told right now, the person's account is still deleted (being unable to delete is worse).
+      if (authorizationCode) {
+        try { await revokeAccessToken(auth, authorizationCode); } catch { /* see above */ }
       }
       try {
         await deleteUser(user);
       } catch (e) {
-        // Deleting an account asks for a recent sign-in: ask again, then retry once.
-        if ((e as { code?: string }).code !== 'auth/requires-recent-login') throw e;
-        await reauthenticateWithCredential(user, (await googleCredential()).credential);
-        await deleteUser(user);
+        const code = (e as { code?: string }).code;
+        if (code === 'auth/requires-recent-login' && !usesApple()) { await reauthenticateWithCredential(user, (await googleCredential()).credential); await deleteUser(user); }
+        else if (code === 'auth/network-request-failed') await deleteUser(user); // the connection dropped for a moment: once more
+        else throw e;
       }
     },
   };

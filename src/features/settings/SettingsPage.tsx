@@ -5,6 +5,7 @@ import { useRepositories } from '../../app/repositories';
 import { useTheme } from '../../app/theme';
 import { useFont } from '../../app/fonts';
 import { useSharing } from '../../app/sharing';
+import { toast } from '../../components/shadcn/toast';
 import { ExportDrawer, type ExportTarget } from '../exchange/ExportDrawer';
 import { AppBar, BackButton, ConfirmDialog, Page, Switch } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
@@ -189,7 +190,7 @@ export function SettingsPage() {
           title={t('account.deleteTitle')}
           message={t('account.deleteBody')}
           confirmLabel={t('account.delete')}
-          onConfirm={() => { setConfirmingDelete(false); share.deleteAccount().catch(() => setAccountError(t('account.deleteFailed'))); }}
+          onConfirm={() => { setConfirmingDelete(false); share.deleteAccount().then(() => toast.add({ title: t('toast.accountDeleted'), type: 'success' })).catch(() => setAccountError(t('account.deleteFailed'))); }}
           onCancel={() => setConfirmingDelete(false)}
         />
       </Page>

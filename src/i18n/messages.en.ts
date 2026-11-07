@@ -365,6 +365,7 @@ export const en = {
   'publish.unpublishFailed': "Couldn't unpublish. Check your connection and try again.",
   'publish.failed': "Couldn't publish. Check your connection and try again.",
   'toast.published': 'Deck published',
+  'toast.accountDeleted': 'Your account was deleted. The decks on this device are still here.',
   'toast.unpublished': 'Deck unpublished',
   'toast.signedIn': 'Signed in',
   'account.signedInAs': 'Signed in as {name}',
