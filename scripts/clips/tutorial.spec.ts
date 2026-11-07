@@ -137,13 +137,12 @@ for (const lang of ['en', 'es'] as const) {
 
   test(`${lang}: decks and cards`, async ({ browser }) => {
     await clip(browser, lang, 'decks-cards', (p) => setupDeck(p, lang, deckTitle), async (p) => {
-      await pause(p, 1200);
-      await p.getByRole('link', { name: new RegExp(deckTitle) }).click();
-      await pause(p, 1300);
-      await p.getByRole('button', { name: T('deckMenu.actions') }).click();
-      await pause(p, 700);
+      await pause(p, 1000);
+      // The three dots on the deck, straight from the Decks list: the menu, a moment to read it, then "View cards".
+      await p.getByRole('button', { name: new RegExp(deckTitle) }).click();
+      await pause(p, 900);
       await p.getByRole('dialog').getByRole('link', { name: T('deckMenu.browse') }).click();
-      await pause(p, 2200);
+      await pause(p, 1800); // the deck's verse cards
     });
   });
 
