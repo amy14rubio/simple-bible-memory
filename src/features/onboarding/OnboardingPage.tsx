@@ -11,7 +11,7 @@ const SWIPE_PX = 50;
 
 /**
  * The welcome tour: a few cards, one at a time. Next, Back, Skip, or swipe; the arrow keys work too. It is one screen
- * with real headings, so a screen reader hears each card as its heading and "Step 2 of 4". Skipping counts as seeing it.
+ * with real headings, so a screen reader hears each card as its heading and "Step 2 of 4". Skip is on the first card only; skipping counts as seeing it.
  * It is shown once to someone new, and can be opened again from Settings.
  */
 export function OnboardingPage() {
@@ -99,8 +99,8 @@ export function OnboardingPage() {
           {step > 0 && <Button variant="secondary" onClick={() => go(step - 1)}>{t('onboarding.back')}</Button>}
           <Button className="flex-1" onClick={() => (last ? finish() : go(step + 1))}>{last ? t('onboarding.getStarted') : t('onboarding.next')}</Button>
         </div>
-        {/* Skip sits right under Next, where a thumb already is, instead of floating alone at the top of a big screen. */}
-        <Button variant="ghost" onClick={finish} className="w-full text-muted">{t('onboarding.skip')}</Button>
+        {/* Skip is offered on the welcome card only, right under Next where a thumb already is. After that the tour is short enough to finish. */}
+        {step === 0 && <Button variant="ghost" onClick={finish} className="w-full text-muted">{t('onboarding.skip')}</Button>}
       </div>
     </div>
   );

@@ -22,7 +22,8 @@ const find = (anchor: string) => document.querySelector<HTMLElement>(`#card-form
 
 /**
  * The first time someone opens "Add card", a short guide points at the real fields: the deck, the verse, Autofill, the passage and
- * Save. Never forced: Skip, Escape or the last button end it, and it is remembered. The "?" on the screen starts it again.
+ * Save. It is five short steps with no Skip button (Escape still closes it, for keyboards); the last button ends it, and it is remembered.
+ * The "?" on the screen starts it again.
  */
 export function useAddCoach(isNewCard: boolean) {
   const { settings } = useRepositories();
@@ -107,7 +108,6 @@ export function AddCoach({ onClose }: { onClose: () => void }) {
           <p id="coach-body" className="text-[0.9375rem] leading-snug text-muted">{t(step.body)}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" className="text-muted" onClick={onClose}>{t('onboarding.skip')}</Button>
           <Button className="flex-1" onClick={() => (last ? onClose() : setI(i + 1))}>{last ? t('coach.add.done') : t('onboarding.next')}</Button>
         </div>
       </div>

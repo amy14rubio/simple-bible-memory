@@ -33,6 +33,22 @@ test.describe('first launch', () => {
     await expect(page.getByText('Starter deck!')).toHaveCount(1);
   });
 
+  test('Skip is only on the welcome card: every other card has Next (and Back) and nothing under them', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('button', { name: 'Skip' })).toBeVisible();
+    for (let i = 0; i < 5; i++) {
+      await next(page).click();
+      await expect(page.getByRole('button', { name: 'Skip' })).toHaveCount(0);
+    }
+    await expect(page.getByRole('button', { name: 'Get started' })).toBeVisible(); // the way out is the end
+    await page.getByRole('button', { name: 'Back' }).click();
+    await page.getByRole('button', { name: 'Back' }).click();
+    await page.getByRole('button', { name: 'Back' }).click();
+    await page.getByRole('button', { name: 'Back' }).click();
+    await page.getByRole('button', { name: 'Back' }).click();
+    await expect(page.getByRole('button', { name: 'Skip' })).toBeVisible(); // back on the first card
+  });
+
   test('Skip counts as seeing it, and also gives the starter deck', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Skip' }).click();
@@ -213,7 +229,7 @@ test.describe('for screen readers and small screens', () => {
       await page.getByRole('button', { name: 'Siguiente' }).click();
       await expect(heading(page)).toHaveText('Barajas y tarjetas');
       await expect(heading(page)).toHaveAccessibleDescription('Paso 2 de 6');
-      await expect(page.getByRole('button', { name: 'Omitir' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Omitir' })).toHaveCount(0); // Skip is on the welcome card only
     });
   });
 });

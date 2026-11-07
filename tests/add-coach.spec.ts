@@ -35,9 +35,10 @@ test('it never blocks the form: you can type in the highlighted field while it i
   await expect(page.getByLabel('Verse(s)')).toHaveValue('John 3:16');
 });
 
-test('Skip ends it, and it is not shown again; the ? button on the screen starts it again', async ({ page }) => {
+test('it has no Skip button; Escape closes it, it is not shown again, and the ? button on the screen starts it again', async ({ page }) => {
   await openAdd(page);
-  await guide(page).getByRole('button', { name: 'Skip' }).click();
+  await expect(guide(page).getByRole('button', { name: 'Skip' })).toHaveCount(0);
+  await page.keyboard.press('Escape');
   await expect(guide(page)).toHaveCount(0);
   await page.reload();
   await expect(page.getByLabel('Verse(s)')).toBeVisible();
@@ -51,7 +52,8 @@ test('Skip ends it, and it is not shown again; the ? button on the screen starts
 test('editing a card never shows it', async ({ page }) => {
   const id = await createDeck(page, 'Psalms');
   await page.goto(`/#/cards/new?deck=${id}`);
-  await guide(page).getByRole('button', { name: 'Skip' }).click();
+  await expect(guide(page)).toBeVisible();
+  await page.keyboard.press('Escape');
   await page.getByLabel('Verse(s)').fill('Psalm 23:1');
   await page.getByLabel('Passage', { exact: true }).fill('The Lord is my shepherd.');
   await page.getByRole('button', { name: 'Save' }).click();
@@ -90,7 +92,8 @@ test.describe('in Spanish', () => {
     const id = page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1];
     await page.goto(`/#/cards/new?deck=${id}`);
     await expect(title(page)).toHaveText('Elige una baraja');
-    await guide(page).getByRole('button', { name: 'Omitir' }).click();
+    await expect(guide(page).getByRole('button', { name: 'Omitir' })).toHaveCount(0);
+    await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Cómo agregar un versículo' }).click();
     await expect(title(page)).toHaveText('Elige una baraja');
   });
