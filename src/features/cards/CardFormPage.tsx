@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Check } from 'lucide-react';
+import { Check, CircleHelp } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, Button, ButtonLink, ConfirmDialog, EmptyState, ErrorMessage, FormRow, GrowingTextarea, IconButton, Page, Switch, rowInput } from '../../components/ui';
@@ -15,6 +15,7 @@ import { asLang } from '../study/verseLang';
 import { useI18n } from '../../i18n/I18nProvider';
 import { deleteCardsWithUndo } from './undoDelete';
 import { FindPassageHelper } from './FindPassageHelper';
+import { AddCoach, useAddCoach } from './AddCoach';
 import { autofillSources, sourceFor } from '../../domain/bible/sources';
 import { getPassageSource } from '../../platform/youversion';
 import { Attribution } from '../bible/Attribution';
@@ -63,6 +64,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
   const [splitBusy, setSplitBusy] = useState(false);
   const [splitError, setSplitError] = useState<string>();
   const referenceInput = useRef<HTMLInputElement>(null);
+  const coach = useAddCoach(!card);
   const lang = asLang(deckList.find((d) => d.id === deckId)?.bibleLanguage); // so verses typed here are read in their own language
 
   // Autofill: the passage fills in from a translation the app can look up. Off unless the person turns it on (or the card already uses one).
@@ -137,19 +139,19 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
         titleId="form-heading"
         title={card ? t('cardForm.edit') : t('cardForm.add')}
         back={<BackButton label={t('common.cancel')} />}
-        actions={<IconButton type="submit" label={t('common.save')}><Check size={22} aria-hidden /></IconButton>}
+        actions={<>{!card && <IconButton label={t('coach.add.replay')} onClick={coach.start}><CircleHelp size={22} aria-hidden /></IconButton>}<IconButton type="submit" data-coach="save" label={t('common.save')}><Check size={22} aria-hidden /></IconButton></>}
       />
       <Page className="space-y-5 pt-2">
         {error && <ErrorMessage id="form-error" error={error} />}
         <div>
           {!card && (
-            <FormRow label={t('cardForm.deck')}>
+            <FormRow label={t('cardForm.deck')} coach="deck">
               {(fid) => (
                 <DeckPicker id={fid} variant="field" label={t('cardForm.deck')} value={deckId} options={deckList.map((d) => ({ value: d.id, label: d.title }))} onChange={setDeckId} />
               )}
             </FormRow>
           )}
-          <FormRow label={t('cardForm.verses')}>{(fid) => <input id={fid} ref={referenceInput} lang={lang} aria-invalid={invalid === 'reference' || undefined} aria-describedby={invalid === 'reference' ? 'form-heading form-error' : 'form-heading'} className={rowInput} value={reference} onChange={(e) => { setReference(e.target.value); if (licensed) setVerseText(''); setInvalid(undefined); setError(undefined); }} placeholder={t('cardForm.versesPlaceholder')} autoFocus={!card} />}</FormRow>
+          <FormRow label={t('cardForm.verses')} coach="verse">{(fid) => <input id={fid} ref={referenceInput} lang={lang} aria-invalid={invalid === 'reference' || undefined} aria-describedby={invalid === 'reference' ? 'form-heading form-error' : 'form-heading'} className={rowInput} value={reference} onChange={(e) => { setReference(e.target.value); if (licensed) setVerseText(''); setInvalid(undefined); setError(undefined); }} placeholder={t('cardForm.versesPlaceholder')} autoFocus={!card} />}</FormRow>
           <FormRow
             label={t('cardForm.note')}
             labelNode={<InfoLabel title={t('cardForm.note')} info={t('cardForm.noteInfo')} className="w-24 shrink-0 text-[0.9375rem] font-medium" />}
@@ -159,6 +161,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
           {canAutofill && (
             <>
               <FormRow
+                coach="autofill"
                 label={t('autofill.label')}
                 labelNode={<span id="autofill-label" className="w-24 shrink-0"><InfoLabel title={t('autofill.label')} info={t('autofill.info')} className="text-[0.9375rem] font-medium" /></span>}
               >
@@ -195,7 +198,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
           )}
         </div>
 
-        <div className="space-y-2">
+        <div data-coach="passage" className="space-y-2">
           <div className="flex min-h-11 items-center justify-between gap-3">
             <label htmlFor="passage" className="text-[0.9375rem] font-medium">{t('cardForm.passage')}</label>
             <FindPassageHelper reference={reference} language={lang} />
@@ -229,6 +232,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
           </div>
         )}
       </Page>
+      {coach.open && <AddCoach onClose={coach.close} />}
       <SplitDialog result={split} studyCardsPerVerse={studyCardsPerVerse} busy={splitBusy} error={splitError} onCancel={() => setSplit(null)} onConfirm={confirmSplit} />
       <ConfirmDialog
         open={confirming}

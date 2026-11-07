@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { BookOpen, CalendarClock, Layers, ListChecks, Sparkles } from 'lucide-react';
+import { BookOpen, CalendarClock, Compass, FilePlus, Layers, Sparkles } from 'lucide-react';
 import type { MessageKey } from '../../i18n';
 
 /** The setting that remembers the welcome tour was seen (finished or skipped). */
@@ -23,17 +23,26 @@ export function onboardingDisabledForTests(): boolean {
   }
 }
 
-export interface OnboardingCard { key: 'welcome' | 'decks' | 'practice' | 'schedule' | 'starter'; icon: LucideIcon; title: MessageKey; /** The welcome card has no text under its title. */ body?: MessageKey }
+export interface OnboardingCard {
+  key: 'welcome' | 'decks' | 'add' | 'discover' | 'schedule' | 'starter';
+  icon: LucideIcon;
+  title: MessageKey;
+  /** The welcome card has no text under its title. */
+  body?: MessageKey;
+  /** A short looping clip of the real app (public/tutorial/<language>/<clip>.mp4, with a still <clip>.jpg), made by `npm run clips`. Cards without one show their icon. */
+  clip?: string;
+}
 
 /**
- * Five short cards, nothing assumed (no Anki, no jargon): a welcome (title only), what a deck and a card are, the ways to
- * practice, how the scheduling works, and a push to try the starter deck. Nobody wants a long tour before they can start, so it stops there. The empty home
- * screen takes it from here.
+ * Short cards, nothing assumed (no Anki, no jargon): a welcome (title only), what a deck and a card are, adding your own verse,
+ * finding decks other people shared, how the scheduling works, and a push to try the starter deck. Most show a short clip of the
+ * real app. The last one says where to find the tour again.
  */
 export const ONBOARDING_CARDS: OnboardingCard[] = [
   { key: 'welcome', icon: BookOpen, title: 'onboarding.welcome.title' },
-  { key: 'decks', icon: Layers, title: 'onboarding.decks.title', body: 'onboarding.decks.body' },
-  { key: 'practice', icon: ListChecks, title: 'onboarding.practice.title', body: 'onboarding.practice.body' },
-  { key: 'schedule', icon: CalendarClock, title: 'onboarding.schedule.title', body: 'onboarding.schedule.body' },
+  { key: 'decks', icon: Layers, title: 'onboarding.decks.title', body: 'onboarding.decks.body', clip: 'decks-cards' },
+  { key: 'add', icon: FilePlus, title: 'onboarding.add.title', body: 'onboarding.add.body', clip: 'add' },
+  { key: 'discover', icon: Compass, title: 'onboarding.discover.title', body: 'onboarding.discover.body', clip: 'discover' },
+  { key: 'schedule', icon: CalendarClock, title: 'onboarding.schedule.title', body: 'onboarding.schedule.body', clip: 'schedule' },
   { key: 'starter', icon: Sparkles, title: 'onboarding.starter.title', body: 'onboarding.starter.body' },
 ];

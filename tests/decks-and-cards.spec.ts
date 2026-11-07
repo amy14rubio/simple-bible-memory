@@ -54,7 +54,7 @@ test('deck menu: browse cards and the deck switcher', async ({ page }) => {
 
   await page.goto(`/#/decks/${b}`);
   await page.getByRole('button', { name: 'Deck actions' }).click();
-  await page.getByRole('dialog').getByRole('link', { name: 'Browse cards' }).click();
+  await page.getByRole('dialog').getByRole('link', { name: 'View cards' }).click();
   await expect(page.getByRole('link', { name: /Psalm 23:1/ })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Verse' })).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Passage' })).toBeVisible();
@@ -314,7 +314,7 @@ test('every deck menu item has a small icon before its name, and the menu keeps 
   await openDeck(page, id);
   await page.getByRole('button', { name: 'Deck actions' }).click();
   const menu = page.getByRole('navigation', { name: 'Deck actions' });
-  for (const name of ['Add card', 'Browse cards', 'Extra practice', 'Edit deck', 'Export deck', 'Delete deck']) {
+  for (const name of ['Add card', 'View cards', 'Extra practice', 'Edit deck', 'Export deck', 'Delete deck']) {
     const item = menu.getByRole('link', { name }).or(menu.getByRole('button', { name }));
     const icon = item.locator('svg');
     await expect(icon, name).toHaveCount(1);

@@ -164,7 +164,7 @@ test('extra practice: from the deck menu, covers every card, and changes nothing
   await expect(page.getByRole('heading', { name: 'Session complete' })).toBeVisible();
   await expect(page.getByText('2 cards reviewed')).toBeVisible();
   await expect(page.getByText(/schedule and statistics/)).toHaveCount(0);
-  await expect(page.getByRole('link', { name: 'Browse cards' })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'View cards' })).toHaveCount(0);
   const again = page.getByRole('button', { name: 'Practice again' });
   const back = page.getByRole('link', { name: 'Back to deck' });
   const [a, b] = [await again.boundingBox(), await back.boundingBox()];

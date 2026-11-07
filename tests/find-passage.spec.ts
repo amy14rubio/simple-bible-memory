@@ -136,7 +136,10 @@ test.describe('eBible, the second source', () => {
     await page.goto('/#/decks/new');
     await page.getByLabel('Title').fill('Salmos');
     await page.getByRole('button', { name: /^Translation/ }).click();
-    await page.getByRole('dialog', { name: 'Select a translation' }).getByRole('button', { name: /RV1909/ }).click();
+    const list = page.getByRole('dialog', { name: 'Choose a translation' });
+    await list.getByRole('tab', { name: 'Language' }).click();
+    await list.getByRole('button', { name: /^Spanish/ }).click();
+    await list.getByRole('button', { name: /Reina-Valera 1909/ }).click();
     await page.getByRole('button', { name: 'Save' }).click();
     await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
     const id = page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1]!;

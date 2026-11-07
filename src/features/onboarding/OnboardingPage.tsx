@@ -5,6 +5,7 @@ import { useRepositories } from '../../app/repositories';
 import { useI18n } from '../../i18n/I18nProvider';
 import { ONBOARDING_CARDS, ONBOARDING_DONE } from './onboarding';
 import { addStarterDeck } from './starterDeck';
+import { TourClip } from './TourClip';
 
 const SWIPE_PX = 50;
 
@@ -68,19 +69,21 @@ export function OnboardingPage() {
         onPointerDown={down}
         onPointerUp={up}
         onPointerCancel={() => { swipeFrom.current = null; }}
-        className="flex flex-1 touch-pan-y select-none flex-col items-center justify-center text-center"
+        className="flex flex-1 touch-pan-y select-none flex-col items-center justify-center pb-4 text-center"
       >
-        <div key={card.key} className="onboarding-card flex flex-col items-center gap-5">
+        <div key={card.key} className="onboarding-card flex w-full flex-col items-center gap-5">
           {step === 0 ? (
             <img src="/logo.svg" alt="" aria-hidden draggable={false} className="pointer-events-none size-44" /> // the logo greets you on the first card; the icons take over after it
+          ) : card.clip ? (
+            <TourClip key={card.clip} name={card.clip} language={language} />
           ) : (
             <div aria-hidden className="grid size-28 place-items-center rounded-full bg-panel text-accent">
               <Icon size={48} strokeWidth={1.4} />
             </div>
           )}
-          <div className="mx-auto max-w-[20rem] space-y-3">
+          <div className="w-full space-y-3">
             <h1 ref={heading} tabIndex={-1} aria-describedby="onboarding-step" className="text-balance font-serif text-3xl font-medium leading-tight tracking-tight">{t(card.title)}</h1>
-            {card.body && <p className="mx-auto max-w-[17rem] text-lg leading-snug text-muted">{t(card.body)}</p>}
+            {card.body && <p className="text-lg leading-snug text-muted">{t(card.body)}</p>}
           </div>
         </div>
       </section>
