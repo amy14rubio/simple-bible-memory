@@ -85,7 +85,7 @@ export const en = {
   'deckForm.new': 'New deck',
   'deckForm.rename': 'Edit deck',
   'deckForm.title': 'Title',
-  'deckForm.titlePlaceholder': 'Ex. Commute verses',
+  'deckForm.titlePlaceholder': 'Ex. Verses about grace',
   'deckForm.description': 'Description',
 
   // open deck
@@ -317,6 +317,13 @@ export const en = {
   'coach.add.passage.body': 'Look up the verse and paste it here.',
   'coach.add.save.title': 'Save',
   'coach.add.save.body': 'Tap the check mark.',
+  'coach.deck.replay': 'How to make a deck',
+  'coach.deck.name.title': 'Name your deck',
+  'coach.deck.name.body': 'Choose a name you will recognize.',
+  'coach.deck.publish.title': 'Only for publishing',
+  'coach.deck.publish.body': 'The translation and description are optional. Fill them in only if you want to make this deck public.',
+  'coach.deck.save.title': 'Create the deck',
+  'coach.deck.save.body': 'Tap the check mark.',
   'onboarding.add.title': 'Add your own verse',
   'onboarding.add.body': 'Add any verse you want to memorize as a new card.',
   'onboarding.discover.title': 'Discover decks',

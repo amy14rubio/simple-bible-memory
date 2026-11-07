@@ -115,15 +115,15 @@ test.describe('Spanish', () => {
 });
 });
 
-test('a long deck previews 5 cards and Show more reveals the rest', async ({ page }) => {
+test('a long deck previews 3 cards and Show more reveals the rest', async ({ page }) => {
   await seed(page, { long: deck('Long', 'KJV', 'en', 1000, 8) });
   await openDiscover(page);
   await page.locator('a[href*="/discover/"]').first().click();
-  await expect(page.getByText(/^John 3:\d+$/)).toHaveCount(5);
-  await page.getByRole('button', { name: 'Show 3 more cards' }).click();
+  await expect(page.getByText(/^John 3:\d+$/)).toHaveCount(3);
+  await page.getByRole('button', { name: 'Show 5 more cards' }).click();
   await expect(page.getByText(/^John 3:\d+$/)).toHaveCount(8);
   await page.getByRole('button', { name: 'Show less' }).click();
-  await expect(page.getByText(/^John 3:\d+$/)).toHaveCount(5);
+  await expect(page.getByText(/^John 3:\d+$/)).toHaveCount(3);
 });
 
 test('a deck you hid after a report is no longer listed', async ({ page }) => {
