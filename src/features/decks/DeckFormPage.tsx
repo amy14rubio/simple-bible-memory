@@ -1,6 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Check } from 'lucide-react';
+import { Check, CircleHelp } from 'lucide-react';
+import { DeckCoach, useDeckCoach } from '../cards/AddCoach';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, ErrorMessage, FormRow, GrowingTextarea, IconButton, Page, rowInput } from '../../components/ui';
@@ -29,6 +30,7 @@ function DeckForm({ id, initialTitle, initialDescription, initialTranslation, no
   const [error, setError] = useState<string>();
   const [titleInvalid, setTitleInvalid] = useState(false);
   const titleInput = useRef<HTMLInputElement>(null);
+  const coach = useDeckCoach(!id);
 
   if (notFound) return <><AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;
 
@@ -57,18 +59,21 @@ function DeckForm({ id, initialTitle, initialDescription, initialTranslation, no
         titleId="form-heading"
         title={id ? t('deckForm.rename') : t('deckForm.new')}
         back={<BackButton label={t('common.cancel')} />}
-        actions={<IconButton type="submit" label={t('common.save')}><Check size={22} aria-hidden /></IconButton>}
+        actions={<>{!id && <IconButton label={t('coach.deck.replay')} onClick={coach.start}><CircleHelp size={22} aria-hidden /></IconButton>}<IconButton type="submit" data-coach="save" label={t('common.save')}><Check size={22} aria-hidden /></IconButton></>}
       />
       <Page className="space-y-4 pt-2">
         {error && <ErrorMessage id="form-error" error={error} />}
-        <FormRow label={t('deckForm.title')}>{(fid) => <input id={fid} ref={titleInput} aria-invalid={titleInvalid || undefined} aria-describedby={titleInvalid ? 'form-heading form-error' : 'form-heading'} className={rowInput} value={title} onChange={(e) => { setTitle(e.target.value); setTitleInvalid(false); setError(undefined); }} autoFocus placeholder={t('deckForm.titlePlaceholder')} />}</FormRow>
+        <FormRow label={t('deckForm.title')} coach="name">{(fid) => <input id={fid} ref={titleInput} aria-invalid={titleInvalid || undefined} aria-describedby={titleInvalid ? 'form-heading form-error' : 'form-heading'} className={rowInput} value={title} onChange={(e) => { setTitle(e.target.value); setTitleInvalid(false); setError(undefined); }} autoFocus placeholder={t('deckForm.titlePlaceholder')} />}</FormRow>
+        <div data-coach="publish" className="space-y-4"> {/* the two optional fields the guide points at together */}
         <TranslationFields value={translation} onChange={setTranslation} />
         {/* The description is a growing box under the other fields, like the Passage on the card form. */}
         <div className="space-y-2">
           <label htmlFor="deck-description" className="flex min-h-11 items-center text-[0.9375rem] font-medium">{t('deckForm.description')}</label>
           <GrowingTextarea id="deck-description" value={description} maxLength={LIMITS.description} onChange={(e) => setDescription(e.target.value)} placeholder={t('common.optional')} />
         </div>
+        </div>
       </Page>
+      {coach.open && <DeckCoach onClose={coach.close} />}
     </form>
   );
 }

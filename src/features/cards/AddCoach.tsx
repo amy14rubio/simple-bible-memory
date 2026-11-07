@@ -6,12 +6,13 @@ import type { MessageKey } from '../../i18n';
 import { useI18n } from '../../i18n/I18nProvider';
 import { onboardingDisabledForTests } from '../onboarding/onboarding';
 
-/** The setting that remembers the "add a verse" guide was seen (finished or skipped). */
+/** The settings that remember a guide was seen (finished or closed). */
 export const COACH_ADD_DONE = 'coach_add_done';
+export const COACH_DECK_DONE = 'coach_deck_done';
 
-interface Step { anchor: string; title: MessageKey; body: MessageKey }
+export interface CoachStep { anchor: string; title: MessageKey; body: MessageKey }
 /** In order down the screen. A step whose field is not on the screen (Autofill, when it is not offered) is left out. */
-const STEPS: Step[] = [
+const ADD_STEPS: CoachStep[] = [
   { anchor: 'deck', title: 'coach.add.deck.title', body: 'coach.add.deck.body' },
   { anchor: 'verse', title: 'coach.add.verse.title', body: 'coach.add.verse.body' },
   { anchor: 'autofill', title: 'coach.add.autofill.title', body: 'coach.add.autofill.body' },
@@ -19,30 +20,42 @@ const STEPS: Step[] = [
   { anchor: 'save', title: 'coach.add.save.title', body: 'coach.add.save.body' },
 ];
 
-const find = (anchor: string) => document.querySelector<HTMLElement>(`#card-form [data-coach="${anchor}"], header [data-coach="${anchor}"]`);
+/** The steps of the "New deck" guide: the name, the two optional fields that are only for publishing, then the check mark. */
+export const DECK_STEPS: CoachStep[] = [
+  { anchor: 'name', title: 'coach.deck.name.title', body: 'coach.deck.name.body' },
+  { anchor: 'publish', title: 'coach.deck.publish.title', body: 'coach.deck.publish.body' },
+  { anchor: 'save', title: 'coach.deck.save.title', body: 'coach.deck.save.body' },
+];
+
+const find = (form: string, anchor: string) => document.querySelector<HTMLElement>(`#${form} [data-coach="${anchor}"], header [data-coach="${anchor}"]`);
 
 /**
  * The first time someone opens "Add card", a short guide points at the real fields: the deck, the verse, Autofill, the passage and
  * Save. It is five short steps with no Skip button: the X (or Escape) closes it, the last button ends it, and it is remembered.
  * The "?" on the screen starts it again.
  */
-export function useAddCoach(isNewCard: boolean) {
+export function useCoach(isNew: boolean, doneSetting: string) {
   const { settings } = useRepositories();
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    if (!isNewCard || onboardingDisabledForTests()) return;
+    if (!isNew || onboardingDisabledForTests()) return;
     let cancelled = false;
-    void settings.get<boolean>(COACH_ADD_DONE).then((done) => { if (!cancelled && !done) setOpen(true); });
+    void settings.get<boolean>(doneSetting).then((done) => { if (!cancelled && !done) setOpen(true); });
     return () => { cancelled = true; };
-  }, [isNewCard, settings]);
+  }, [isNew, settings, doneSetting]);
   const start = useCallback(() => setOpen(true), []);
-  const close = useCallback(() => { setOpen(false); void settings.set(COACH_ADD_DONE, true); }, [settings]);
+  const close = useCallback(() => { setOpen(false); void settings.set(doneSetting, true); }, [settings, doneSetting]);
   return { open, start, close };
 }
+export const useAddCoach = (isNewCard: boolean) => useCoach(isNewCard, COACH_ADD_DONE);
+export const useDeckCoach = (isNewDeck: boolean) => useCoach(isNewDeck, COACH_DECK_DONE);
 
-export function AddCoach({ onClose }: { onClose: () => void }) {
+export const AddCoach = ({ onClose }: { onClose: () => void }) => <Coach form="card-form" all={ADD_STEPS} doneLabel="coach.add.done" onClose={onClose} />;
+export const DeckCoach = ({ onClose }: { onClose: () => void }) => <Coach form="deck-form" all={DECK_STEPS} doneLabel="coach.add.done" onClose={onClose} />;
+
+function Coach({ form, all, doneLabel, onClose }: { form: string; all: CoachStep[]; doneLabel: MessageKey; onClose: () => void }) {
   const { t } = useI18n();
-  const [steps] = useState(() => STEPS.filter((s) => find(s.anchor)));
+  const [steps] = useState(() => all.filter((s) => find(form, s.anchor)));
   const [i, setI] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [tipHeight, setTipHeight] = useState(0);
@@ -51,16 +64,16 @@ export function AddCoach({ onClose }: { onClose: () => void }) {
   const last = i === steps.length - 1;
 
   const measure = useCallback(() => {
-    const el = step && find(step.anchor);
+    const el = step && find(form, step.anchor);
     if (!el) return;
     const r = el.getBoundingClientRect();
     setRect(r);
     if (tip.current) setTipHeight(tip.current.offsetHeight);
-  }, [step]);
+  }, [step, form]);
 
   // Bring the field into view, then keep the highlight on it (the screen can scroll or resize, e.g. when a keyboard opens).
   useLayoutEffect(() => {
-    const el = step && find(step.anchor);
+    const el = step && find(form, step.anchor);
     el?.scrollIntoView({ block: 'center', behavior: 'instant' as ScrollBehavior });
     measure();
     window.addEventListener('resize', measure);
@@ -110,7 +123,7 @@ export function AddCoach({ onClose }: { onClose: () => void }) {
           <p id="coach-body" className="text-[0.9375rem] leading-snug text-muted">{t(step.body)}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button className="flex-1" onClick={() => (last ? onClose() : setI(i + 1))}>{last ? t('coach.add.done') : t('onboarding.next')}</Button>
+          <Button className="flex-1" onClick={() => (last ? onClose() : setI(i + 1))}>{last ? t(doneLabel) : t('onboarding.next')}</Button>
         </div>
       </div>
     </>

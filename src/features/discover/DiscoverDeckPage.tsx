@@ -14,7 +14,7 @@ import { MIXED } from '../../domain/sharing/plan';
 import { Attribution } from '../bible/Attribution';
 import { ReportDrawer } from './ReportDrawer';
 
-const PREVIEW = 5;
+const PREVIEW = 3;
 
 /** One public deck: what it is, a taste of its cards, and Import (a copy that is yours alone) or Report. */
 export function DiscoverDeckPage() {
