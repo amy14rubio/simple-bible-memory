@@ -323,12 +323,12 @@ export const en = {
   'onboarding.discover.body': 'Find decks other people have shared and add them to yours.',
   'onboarding.schedule.title': 'Smart scheduling',
   'onboarding.schedule.body':
-    'Tell the app how well you remembered. Spaced repetition brings each card back just before you forget.',
+    'Rate each card, and it comes back just before you forget.',
   'starter.title': 'Starter deck!',
   'starter.description': "If you're new to the app, start here!",
   'onboarding.starter.title': 'Try the starter deck',
   'onboarding.starter.body':
-    'Open it from your home screen and start practicing your first verses. You can replay this guide any time in Settings.',
+    'Open it on your home screen and start practicing. Find this guide again in Settings.',
   'settings.contact': 'Contact support',
   'settings.contactBody':
     'Questions, or a copyright concern about a public deck? Write to us and we will respond and remove deck content when asked. You can also flag a deck on its page.',

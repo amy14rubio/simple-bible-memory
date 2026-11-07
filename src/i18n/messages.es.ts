@@ -320,12 +320,12 @@ export const es: Dictionary = {
   'onboarding.discover.body': 'Encuentra barajas que otras personas compartieron y agrégalas a las tuyas.',
   'onboarding.schedule.title': 'Programación inteligente',
   'onboarding.schedule.body':
-    'Dile a la app qué tan bien lo recordaste. La repetición espaciada trae cada tarjeta de vuelta justo antes de que la olvides.',
+    'Califica cada tarjeta y volverá justo antes de que la olvides.',
   'starter.title': '¡Primera baraja!',
   'starter.description': 'Si eres nuevo en la app, ¡empieza aquí!',
   'onboarding.starter.title': 'Prueba la baraja inicial',
   'onboarding.starter.body':
-    'Ábrela desde la pantalla de inicio y empieza a practicar tus primeros versículos. Puedes volver a ver esta guía cuando quieras en Ajustes.',
+    'Ábrela en la pantalla de inicio y empieza a practicar. Vuelve a ver esta guía en Ajustes.',
   'settings.contact': 'Contactar a soporte',
   'settings.contactBody':
     '¿Preguntas, o una inquietud de derechos de autor sobre una baraja pública? Escríbenos y responderemos, y retiraremos el contenido cuando se pida. También puedes marcar una baraja en su página.',

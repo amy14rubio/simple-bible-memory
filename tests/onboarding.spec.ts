@@ -165,7 +165,9 @@ test.describe('the clips', () => {
     }
     await next(page).click();
     await expect(heading(page)).toHaveText('Try the starter deck');
-    await expect(page.locator('video')).toHaveCount(0); // no clip for this one: its icon
+    await expect(page.locator('video')).toHaveCount(0); // no clip for this one, and no icon either: just its words
+    await expect(page.locator('section svg')).toHaveCount(0);
+    await expect(page.locator('section img')).toHaveCount(0);
   });
 
   test('with "reduce motion" on, a still picture is shown instead of the moving clip', async ({ page }) => {

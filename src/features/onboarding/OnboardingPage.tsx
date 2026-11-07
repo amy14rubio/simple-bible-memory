@@ -76,11 +76,11 @@ export function OnboardingPage() {
             <img src="/logo.svg" alt="" aria-hidden draggable={false} className="pointer-events-none size-44" /> // the logo greets you on the first card; the icons take over after it
           ) : card.clip ? (
             <TourClip key={card.clip} name={card.clip} language={language} />
-          ) : (
+          ) : Icon ? (
             <div aria-hidden className="grid size-28 place-items-center rounded-full bg-panel text-accent">
               <Icon size={48} strokeWidth={1.4} />
             </div>
-          )}
+          ) : null}
           <div className="w-full space-y-3">
             <h1 ref={heading} tabIndex={-1} aria-describedby="onboarding-step" className="text-balance font-serif text-3xl font-medium leading-tight tracking-tight">{t(card.title)}</h1>
             {card.body && <p className="text-lg leading-snug text-muted">{t(card.body)}</p>}
