@@ -328,7 +328,7 @@ export const en = {
   'starter.description': "If you're new to the app, start here!",
   'onboarding.starter.title': 'Try the starter deck',
   'onboarding.starter.body':
-    'Open it on your home screen and start practicing. Find this guide again in Settings.',
+    'Find this guide again in Settings.',
   'settings.contact': 'Contact support',
   'settings.contactBody':
     'Questions, or a copyright concern about a public deck? Write to us and we will respond and remove deck content when asked. You can also flag a deck on its page.',

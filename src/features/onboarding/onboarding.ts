@@ -25,7 +25,7 @@ export function onboardingDisabledForTests(): boolean {
 
 export interface OnboardingCard {
   key: 'welcome' | 'decks' | 'add' | 'discover' | 'schedule' | 'starter';
-  /** Shown when a card has no clip. The welcome card has the logo, and the last card has neither: just its words. */
+  /** Shown when a card has no clip. The welcome card has the logo. */
   icon?: LucideIcon;
   title: MessageKey;
   /** The welcome card has no text under its title. */
@@ -45,5 +45,5 @@ export const ONBOARDING_CARDS: OnboardingCard[] = [
   { key: 'add', icon: FilePlus, title: 'onboarding.add.title', body: 'onboarding.add.body', clip: 'add' },
   { key: 'discover', icon: Compass, title: 'onboarding.discover.title', body: 'onboarding.discover.body', clip: 'discover' },
   { key: 'schedule', icon: CalendarClock, title: 'onboarding.schedule.title', body: 'onboarding.schedule.body', clip: 'schedule' },
-  { key: 'starter', title: 'onboarding.starter.title', body: 'onboarding.starter.body' },
+  { key: 'starter', title: 'onboarding.starter.title', body: 'onboarding.starter.body', clip: 'starter' },
 ];

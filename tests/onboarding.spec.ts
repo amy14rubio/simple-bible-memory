@@ -147,9 +147,9 @@ test.describe('opening it again', () => {
 
 test.describe('the clips', () => {
   test.beforeEach(({ page }) => forceTour(page));
-  const clips = [['Decks and cards', 'decks-cards'], ['Add your own verse', 'add'], ['Discover decks', 'discover'], ['Smart scheduling', 'schedule']];
+  const clips = [['Decks and cards', 'decks-cards'], ['Add your own verse', 'add'], ['Discover decks', 'discover'], ['Smart scheduling', 'schedule'], ['Try the starter deck', 'starter']];
 
-  test('the cards that teach something play a short silent clip of the app, and the others show an icon', async ({ page }) => {
+  test('every card after the welcome plays a short silent clip of the app', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('video, main img[src*="tutorial"]')).toHaveCount(0); // the welcome card has the logo
     for (const [title, clip] of clips) {
@@ -163,11 +163,7 @@ test.describe('the clips', () => {
       expect((await page.request.get(`/tutorial/en/${clip}.mp4`)).ok()).toBe(true);
       expect((await page.request.get(`/tutorial/en/${clip}.jpg`)).ok()).toBe(true);
     }
-    await next(page).click();
-    await expect(heading(page)).toHaveText('Try the starter deck');
-    await expect(page.locator('video')).toHaveCount(0); // no clip for this one, and no icon either: just its words
-    await expect(page.locator('section svg')).toHaveCount(0);
-    await expect(page.locator('section img')).toHaveCount(0);
+    await expect(next(page)).toHaveCount(0); // the last card: Get started
   });
 
   test('with "reduce motion" on, a still picture is shown instead of the moving clip', async ({ page }) => {

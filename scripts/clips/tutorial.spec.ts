@@ -206,7 +206,34 @@ for (const lang of ['en', 'es'] as const) {
     await clip(browser, lang, 'schedule', async (p) => { deckId = await setupDeck(p, lang, deckTitle); await p.goto(`/#/decks/${deckId}/study/flashcard`); await p.getByRole('button', { name: T('study.showAnswer') }).waitFor(); await p.waitForTimeout(400); }, async (p) => {
       await pause(p, 700);
       await p.getByRole('button', { name: T('study.showAnswer') }).click();
-      await pause(p, 2300); // the four ratings, each with when the card comes back
+      await pause(p, 600);
+      // A red outline moves over the four ratings, so when each one brings the card back (a minute ... days) can be read.
+      await p.addStyleTag({ content: '.clip-highlight { outline: 3px solid #e11d48; outline-offset: 2px; border-radius: 12px; }' });
+      const buttons = p.locator('[data-rating-keys] button');
+      for (let i = 0; i < 4; i++) {
+        await buttons.nth(i).evaluate((el) => el.classList.add('clip-highlight'));
+        await pause(p, 900);
+        await buttons.nth(i).evaluate((el) => el.classList.remove('clip-highlight'));
+      }
     });
+  });
+
+  test(`${lang}: the starter deck`, async ({ browser }) => {
+    await clip(
+      browser, lang, 'starter',
+      async (p) => {
+        // The real thing: the tour's Skip adds the starter deck (in the language of the phone), and lands on the home screen.
+        await p.addInitScript(() => localStorage.setItem('sbm-force-onboarding', '1'));
+        await p.goto('/');
+        await p.getByRole('button', { name: T('onboarding.skip') }).click();
+        await p.getByRole('link', { name: new RegExp(T('starter.title')) }).waitFor();
+        await p.waitForTimeout(600);
+      },
+      async (p) => {
+        await pause(p, 1300);
+        await p.getByRole('link', { name: new RegExp(T('starter.title')) }).click();
+        await pause(p, 2200); // the practice screen, and that is all
+      },
+    );
   });
 }

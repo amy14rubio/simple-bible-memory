@@ -325,7 +325,7 @@ export const es: Dictionary = {
   'starter.description': 'Si eres nuevo en la app, ¡empieza aquí!',
   'onboarding.starter.title': 'Prueba la baraja inicial',
   'onboarding.starter.body':
-    'Ábrela en la pantalla de inicio y empieza a practicar. Vuelve a ver esta guía en Ajustes.',
+    'Vuelve a ver esta guía en Ajustes.',
   'settings.contact': 'Contactar a soporte',
   'settings.contactBody':
     '¿Preguntas, o una inquietud de derechos de autor sobre una baraja pública? Escríbenos y responderemos, y retiraremos el contenido cuando se pida. También puedes marcar una baraja en su página.',
