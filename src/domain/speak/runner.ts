@@ -153,11 +153,19 @@ export class SpeakRunner {
    * as they arrive (not only when the phone decides speech is over, which never happens while the app itself is talking).
    * Anything that merely repeats the words being spoken is the app hearing itself, and is ignored.
    */
-  private sayListening(text: string, speakLang: SpeakLanguage, listenLang: SpeakLanguage, accept: (heard: string[]) => boolean) {
+  private sayListening(text: string, speakLang: SpeakLanguage, listenLang: SpeakLanguage, accept: (heard: string[]) => boolean, ownWords = false) {
     const gate = { over: false, cancelled: false };
     this.gate = gate;
     const spoken = normalize(text);
-    const echo = (heard: string[]) => heard.every((h) => { const n = normalize(h); return n.split(' ').length >= 2 && spoken.includes(n); });
+    const padded = ` ${spoken} `;
+    // Two words or more that are in the text being said are the app hearing itself. For the verse (`ownWords`) so is a single word of it:
+    // the microphone catches the voice one word at a time too, and a verse is full of words that are also commands ("bueno", "bien",
+    // "dos", "ya", "good", "one"), which used to cut the reading off and take it for a rating. (Not for the rating question, whose own words
+    // are the answers a person says over it.)
+    const echo = (heard: string[]) => heard.every((h) => {
+      const n = normalize(h);
+      return n.split(' ').length >= 2 ? spoken.includes(n) : ownWords && n !== '' && padded.includes(` ${n} `);
+    });
     let hit: string[] | null = null;
     let signalHit: () => void = () => undefined;
     const hitSignal = new Promise<void>((resolve) => { signalHit = resolve; });
@@ -251,7 +259,7 @@ export class SpeakRunner {
     for (;;) {
       this.phase('reading');
       const reading = recall ? card.verseText : `${ref}.`;
-      const read = await this.sayListening(reading, verseLang, uiLang, this.acceptWhileReading(reading));
+      const read = await this.sayListening(reading, verseLang, uiLang, this.acceptWhileReading(reading), true);
       if ('tap' in read) return SpeakRunner.fromTap(read.tap);
       if (read.value) {
         // they cut in: a rating or command is acted on; "done" just moves on to the question

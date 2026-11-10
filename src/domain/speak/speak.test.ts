@@ -141,6 +141,59 @@ describe('the list of voices', () => {
   });
 });
 
+describe('the app hearing its own voice while it reads the verse back', () => {
+  /** A voice that really "talks" for a while: while it does, the microphone picks up `echoes` (one entry per listening turn), as a phone's does. */
+  function talking(answers: string[][], echoes: string[][], speechMs = 200, lang: 'en' | 'es' = 'es') {
+    const spoken: string[] = [];
+    let speaking = 0;
+    let stops = 0;
+    let cut: (() => void) | null = null;
+    let generation = 0; // stopping the recogniser ends the listening that is under way, as it does on a phone
+    const voice = {
+      speak: (text: string) => {
+        spoken.push(text);
+        speaking++;
+        return new Promise<void>((resolve) => {
+          const timer = setTimeout(() => { speaking--; resolve(); }, speechMs);
+          cut = () => { clearTimeout(timer); speaking--; resolve(); };
+        });
+      },
+      stopSpeaking: async () => { stops++; cut?.(); },
+      // (Answers are given when the person would give them: after the reference, and after the question; not while the verse is read.)
+      listen: async () => { const mine = generation; await new Promise((r) => setTimeout(r, 25)); if (mine !== generation) return []; return (speaking > 0 ? echoes : spoken.length === 2 ? [] : answers).shift() ?? []; },
+      stopListening: async () => { generation++; },
+    };
+    const runner = new SpeakRunner({
+      voice, script, uiLang: lang, verseLang: lang, code: (l) => (l === 'es' ? 'es-ES' : 'en-US'), labels,
+      rate: { get: () => 1, set: () => undefined }, sleep: (ms) => new Promise<void>((r) => setTimeout(r, Math.min(ms, 5))), ratingWaitMs: 30,
+    });
+    return { runner, spoken, stops: () => stops, answers };
+  }
+  const verse = 'Ya sabéis que el Señor es bueno, y que dos cosas bien hechas son mejor que una.';
+
+  it('single words of the verse heard back ("bueno", "dos", "bien", "ya") are not taken for a rating or "done", so the verse is read to the end', async () => {
+    const t = talking([['listo'], ['bien']], [['bueno'], ['dos'], ['bien'], ['ya'], ['sabéis']]);
+    expect(await t.runner.run({ reference: 'Salmo 1:1', verseText: verse, kind: 'recall' })).toEqual({ kind: 'rated', rating: 3 });
+    expect(t.stops()).toBe(0); // the reading was never cut off
+    expect(t.spoken).toContain(verse);
+    expect(t.spoken.some((x) => x.startsWith('How did you do'))).toBe(true); // and the question followed it (it used to skip straight to "Good.")
+    expect(t.answers).toHaveLength(0);
+  });
+
+  it('a real rating or "listo" said over the verse still cuts in', async () => {
+    const t = talking([['listo']], [['fácil']], 500);
+    expect(await t.runner.run({ reference: 'Salmo 1:1', verseText: verse, kind: 'recall' })).toEqual({ kind: 'rated', rating: 4 });
+    expect(t.stops()).toBeGreaterThan(0);
+  });
+
+  it('the same in English (a verse with "good" and "one")', async () => {
+    const english = { reference: 'Psalm 1:1', verseText: 'The Lord is good, and his mercy is one with his truth.', kind: 'recall' as const };
+    const t = talking([['done'], ['easy']], [['good'], ['one']], 200, 'en');
+    expect(await t.runner.run(english)).toEqual({ kind: 'rated', rating: 4 });
+    expect(t.stops()).toBe(0);
+  });
+});
+
 describe('one card, hands free', () => {
   it('a tap still works when the recogniser never reports back after being stopped', async () => {
     const t = setup([['Be careful for nothing'], ['done']], { ratingWaitMs: 5 });
