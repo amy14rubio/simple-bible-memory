@@ -55,7 +55,20 @@
                 android:ellipsize="end"
                 android:fontFamily="serif"
                 android:lineSpacingMultiplier="1.12"
-                android:textSize="17sp" />
+                android:autoSizeMaxTextSize="30sp"
+                android:autoSizeMinTextSize="13sp"
+                android:autoSizeStepGranularity="1sp"
+                android:autoSizeTextType="uniform"
+                android:textSize="19sp" />
+
+            <TextView
+                android:id="@+id/verse_note"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:fontFamily="serif"
+                android:textSize="15sp"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/verse_ref"

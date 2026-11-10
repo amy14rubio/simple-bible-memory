@@ -4,7 +4,7 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.TypedValue;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import org.json.JSONArray;
@@ -72,9 +72,11 @@ public class VersePreviewWidget extends AppWidgetProvider {
         if (verses == null || verses.length() == 0) {
             // The deck is gone, or has no verses that may be shown (licensed text): say so instead of showing nothing.
             boolean licensed = !chosen.isEmpty() && deck == null && inList(snapshot.optJSONArray("licensedDecks"), chosen);
-            v.setTextViewTextSize(R.id.verse_text, TypedValue.COMPLEX_UNIT_SP, 15);
-            v.setInt(R.id.verse_text, "setMaxLines", 6);
-            v.setTextViewText(R.id.verse_text, licensed
+            // (a short note in a fixed size, so it is not blown up like a verse)
+            v.setViewVisibility(R.id.verse_text, View.GONE);
+            v.setViewVisibility(R.id.verse_note, View.VISIBLE);
+            v.setTextColor(R.id.verse_note, p.foreground);
+            v.setTextViewText(R.id.verse_note, licensed
                 ? WidgetData.label(context, "licensedDeck", context.getString(R.string.widget_licensed_deck))
                 : WidgetData.label(context, "noVerses", context.getString(R.string.widget_no_verses)));
             v.setTextViewText(R.id.verse_ref, "");
@@ -83,12 +85,8 @@ public class VersePreviewWidget extends AppWidgetProvider {
         }
 
         JSONObject verse = verses.optJSONObject((int) (dayNumber() % verses.length()));
-        String text = verse.optString("text");
-        int sp = text.length() > 240 ? 13 : text.length() > 160 ? 14 : text.length() > 90 ? 16 : 19;
-        int lines = Math.max(2, (int) ((heightDp - 60) / (sp * 1.55)));
-        v.setTextViewTextSize(R.id.verse_text, TypedValue.COMPLEX_UNIT_SP, sp);
-        v.setInt(R.id.verse_text, "setMaxLines", lines);
-        v.setTextViewText(R.id.verse_text, text);
+        // The verse is as big as fits the widget (the text view sizes itself, between 13sp and 30sp).
+        v.setTextViewText(R.id.verse_text, verse.optString("text"));
         String translation = verse.optString("tr", "");
         v.setTextViewText(R.id.verse_ref, translation.isEmpty() ? verse.optString("ref") : verse.optString("ref") + " · " + translation);
         v.setOnClickPendingIntent(R.id.widget_root, AddCardWidget.open(context, "simplebiblememory://deck/" + deck.optString("id"), 60 + widgetId));

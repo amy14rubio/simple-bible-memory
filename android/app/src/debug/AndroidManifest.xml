@@ -6,5 +6,9 @@
             android:name="app.simplebiblememory.widgets.WidgetPreviewActivity"
             android:exported="true"
             android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+        <activity
+            android:name="app.simplebiblememory.widgets.PreviewExportActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
     </application>
 </manifest>

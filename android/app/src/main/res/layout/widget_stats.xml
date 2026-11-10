@@ -24,43 +24,64 @@
         android:src="@drawable/widget_card" />
 
     <LinearLayout
+        android:id="@+id/stats_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="16dp"
-        android:paddingEnd="16dp">
+        android:paddingTop="18dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="18dp">
 
+        <!-- as big as there is room for, up to 150dp: it gets smaller when the widget is made shorter -->
         <ImageView
             android:id="@+id/stats_pie"
-            android:layout_width="84dp"
-            android:layout_height="84dp"
-            android:layout_marginEnd="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:adjustViewBounds="true"
             android:contentDescription="@null"
+            android:maxWidth="150dp"
+            android:maxHeight="150dp"
             android:scaleType="fitCenter"
             android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
+            android:gravity="center_vertical"
             android:orientation="vertical">
 
+            <!-- takes whatever height the label leaves, and sizes the number to fit it -->
             <TextView
                 android:id="@+id/stats_number"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="3"
+                android:gravity="bottom"
                 android:fontFamily="serif"
                 android:includeFontPadding="false"
                 android:maxLines="1"
-                android:textSize="44sp"
+                android:autoSizeMaxTextSize="64sp"
+                android:autoSizeMinTextSize="14sp"
+                android:autoSizeStepGranularity="2sp"
+                android:autoSizeTextType="uniform"
+                android:textSize="60sp"
                 android:textStyle="bold" />
 
+            <!-- a third of the height, and sizes itself like the number does -->
             <TextView
                 android:id="@+id/stats_label"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_marginTop="2dp"
+                android:layout_weight="2"
+                android:autoSizeMaxTextSize="14sp"
+                android:autoSizeMinTextSize="9sp"
+                android:autoSizeStepGranularity="1sp"
+                android:autoSizeTextType="uniform"
+                android:gravity="top"
                 android:maxLines="2"
                 android:textSize="14sp" />
         </LinearLayout>

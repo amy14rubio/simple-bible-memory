@@ -74,10 +74,11 @@ public class DueDecksWidget extends AppWidgetProvider {
 
         // As many decks as fit. "+N more" takes the space of a row only when there are three or more rows (a short widget shows its two
         // decks rather than one deck and a note), or when there happens to be spare room under the last row.
-        int room = heightDp - 80; // the widget's own margins, padding and header
-        int fit = Math.max(1, Math.min(5, room / 44));
-        boolean spare = room - fit * 44 >= 24;
+        int room = heightDp - 94; // the widget's own margins, padding and header
+        int fit = Math.max(0, Math.min(5, room / 52)); // none: a short widget is just the title and the total
+        boolean spare = room - fit * 52 >= 28;
         int show = count <= fit ? count : (spare || fit < 3) ? fit : fit - 1;
+        if (fit == 0) show = 0;
         for (int k = 0; k < show; k++) {
             JSONObject deck = decks.optJSONObject(order[k]);
             int due = deck.optInt("due", 0);
@@ -89,7 +90,7 @@ public class DueDecksWidget extends AppWidgetProvider {
             v.setTextColor(COUNT[k], due > 0 ? p.foreground : p.muted);
             v.setOnClickPendingIntent(ROW[k], AddCardWidget.open(context, "simplebiblememory://deck/" + deck.optString("id"), 30 + k));
         }
-        if (count > show && (spare || fit >= 3)) {
+        if (fit > 0 && count > show && (spare || fit >= 3)) {
             v.setViewVisibility(R.id.due_more, View.VISIBLE);
             v.setTextViewText(R.id.due_more, WidgetData.fill(WidgetData.label(context, "more", "+{count} more"), count - show));
         }
