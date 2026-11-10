@@ -15,6 +15,7 @@ import app.simplebiblememory.R;
 public class DueDecksWidget extends AppWidgetProvider {
     private static final int[] ROW = { R.id.due_row1, R.id.due_row2, R.id.due_row3, R.id.due_row4, R.id.due_row5 };
     private static final int[] NAME = { R.id.due_name1, R.id.due_name2, R.id.due_name3, R.id.due_name4, R.id.due_name5 };
+    private static final int[] LINE = { R.id.due_line1, R.id.due_line2, R.id.due_line3, R.id.due_line4, R.id.due_line5 };
     private static final int[] COUNT = { R.id.due_count1, R.id.due_count2, R.id.due_count3, R.id.due_count4, R.id.due_count5 };
 
     @Override
@@ -71,19 +72,24 @@ public class DueDecksWidget extends AppWidgetProvider {
         }
         v.setTextViewText(R.id.due_total, total > 0 ? String.valueOf(total) : "✓");
 
-        int fit = Math.max(1, Math.min(5, (heightDp - 64) / 34));
-        int show = count > fit ? Math.max(1, fit - 1) : count;
+        // As many decks as fit. "+N more" takes the space of a row only when there are three or more rows (a short widget shows its two
+        // decks rather than one deck and a note), or when there happens to be spare room under the last row.
+        int room = heightDp - 80; // the widget's own margins, padding and header
+        int fit = Math.max(1, Math.min(5, room / 44));
+        boolean spare = room - fit * 44 >= 24;
+        int show = count <= fit ? count : (spare || fit < 3) ? fit : fit - 1;
         for (int k = 0; k < show; k++) {
             JSONObject deck = decks.optJSONObject(order[k]);
             int due = deck.optInt("due", 0);
             v.setViewVisibility(ROW[k], View.VISIBLE);
+            v.setInt(LINE[k], "setBackgroundColor", p.border);
             v.setTextViewText(NAME[k], deck.optString("title"));
             v.setTextColor(NAME[k], p.foreground);
             v.setTextViewText(COUNT[k], due > 0 ? String.valueOf(due) : "✓");
             v.setTextColor(COUNT[k], due > 0 ? p.foreground : p.muted);
             v.setOnClickPendingIntent(ROW[k], AddCardWidget.open(context, "simplebiblememory://deck/" + deck.optString("id"), 30 + k));
         }
-        if (count > show) {
+        if (count > show && (spare || fit >= 3)) {
             v.setViewVisibility(R.id.due_more, View.VISIBLE);
             v.setTextViewText(R.id.due_more, WidgetData.fill(WidgetData.label(context, "more", "+{count} more"), count - show));
         }
