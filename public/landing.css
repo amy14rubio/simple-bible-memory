@@ -273,6 +273,7 @@ h2 {
   .hero::before {
     background-image: url('/bg-dark.webp');
     opacity: 0.9;
+    filter: brightness(1.8); /* the scripture page, easier to see on the dark page */
   }
 }
 /* Paper behind the hero: fine grain, like the page of a book, and a soft light from above. No script, nothing moves.
