@@ -371,6 +371,9 @@ export const es: Dictionary = {
   'settings.contactBody':
     '¿Preguntas, o una inquietud de derechos de autor sobre una carpeta pública? Escríbenos y responderemos, y retiraremos el contenido cuando se pida. También puedes marcar una carpeta en su página.',
   'toast.importedDeck': 'Se importó {title}',
+  'discover.share': 'Compartir esta carpeta',
+  'discover.shareText': '{title}: una carpeta para memorizar la Biblia en Memoria Bíblica Simple',
+  'toast.linkCopied': 'Enlace copiado',
   'report.title': 'Reportar esta carpeta',
   'report.help': 'Cuéntanos qué problema tiene esta carpeta pública.',
   'report.reason.copyright': 'Problema de derechos de autor',

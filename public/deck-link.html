@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Bible memory deck · Simple Bible Memory</title>
+<meta name="description" content="Someone shared a deck of Bible verses with you. Open it in Simple Bible Memory.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/landing.css">
+<style>
+/* The page a shared deck link opens: one centered card of choices, in the landing page's look. */
+.share { max-width: 30rem; margin: 0 auto; padding: 4rem var(--gutter) 5rem; text-align: center; }
+.share h1 { font-family: 'Literata', Georgia, serif; font-weight: 500; font-size: clamp(1.6rem, 6vw, 2.1rem); line-height: 1.2; margin: 0 0 0.5rem; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.share .lead { color: var(--muted); margin: 0 0 2rem; }
+.share .choices { display: grid; gap: 0.75rem; }
+.share .choices .button { width: 100%; }
+.share .stores-label { color: var(--muted); font-size: 0.875rem; margin: 2.25rem 0 0.75rem; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<header class="top">
+<a class="brand" href="/"><img src="/logo.svg" alt="" width="32" height="32">Simple Bible Memory</a>
+</header>
+<main class="share">
+<h1 id="title">A Bible memory deck</h1>
+<p class="lead" id="lead">Someone shared a deck of Bible verses with you.</p>
+<div class="choices">
+<a class="button" id="open-app" href="#" hidden>Open in the app</a>
+<a class="button secondary" id="open-web" href="/app">Open on the web</a>
+</div>
+<p class="stores-label" id="stores-label">Don’t have the app yet?</p>
+<div class="choices" id="stores">
+<a class="button secondary" id="play" href="https://play.google.com/store/apps/details?id=app.simplebiblememory">Get it on Google Play</a>
+<a class="button secondary" id="appstore" href="" hidden>Download on the App Store</a>
+</div>
+</main>
+<script>
+(function () {
+  var APP_STORE_URL = 'https://apps.apple.com/us/app/simple-bible-memory/id6827304569';
+  var PROJECT = 'simple-bible-memory';
+  var strings = {
+    en: { title: 'A Bible memory deck', lead: 'Someone shared a deck of Bible verses with you.', cards: function (n) { return n + (n === 1 ? ' card' : ' cards'); }, app: 'Open in the app', web: 'Open on the web', gone: 'This deck can’t be found. It may have been removed.', noApp: 'Don’t have the app yet?', play: 'Get it on Google Play', store: 'Download on the App Store', doc: 'A Bible memory deck · Simple Bible Memory' },
+    es: { title: 'Una carpeta para memorizar la Biblia', lead: 'Alguien compartió contigo una carpeta de versículos.', cards: function (n) { return n + (n === 1 ? ' tarjeta' : ' tarjetas'); }, app: 'Abrir en la app', web: 'Abrir en la web', gone: 'No se encuentra esta carpeta. Puede que se haya eliminado.', noApp: '¿Aún no tienes la app?', play: 'Disponible en Google Play', store: 'Descargar en el App Store', doc: 'Una carpeta para memorizar la Biblia · Memoria Bíblica Simple' }
+  };
+  var lang = /^es/i.test(navigator.language || '') ? 'es' : 'en';
+  var t = strings[lang];
+  document.documentElement.lang = lang;
+  document.title = t.doc;
+  var $ = function (id) { return document.getElementById(id); };
+
+  // The deck's id: /d/<id> (the shared link), or ?id=<id> (for testing the page on its own).
+  var match = /^\/d\/([^/?#]+)/.exec(location.pathname);
+  var id = match ? decodeURIComponent(match[1]) : new URLSearchParams(location.search).get('id');
+  var valid = id && /^[A-Za-z0-9_-]{1,128}$/.test(id);
+
+  $('title').textContent = t.title;
+  $('lead').textContent = t.lead;
+  $('open-web').textContent = t.web;
+  $('stores-label').textContent = t.noApp;
+  $('play').textContent = t.play;
+  $('appstore').textContent = t.store;
+  if (APP_STORE_URL) { $('appstore').href = APP_STORE_URL; $('appstore').hidden = false; }
+
+  var phone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (!valid) { $('lead').textContent = t.gone; $('open-web').hidden = true; $('open-app').hidden = true; return; }
+  $('open-web').href = '/app#/discover/' + encodeURIComponent(id);
+  if (phone) { $('open-app').textContent = t.app; $('open-app').href = 'simplebiblememory://discover/' + encodeURIComponent(id); $('open-app').hidden = false; $('open-web').classList.add('secondary'); }
+  // Android phones and iPhones that have the app do not need the store buttons first, but they stay below for everyone else.
+
+  // The deck's name and size, read from the public catalogue (anyone may read it). If that fails, the page still works.
+  fetch('https://firestore.googleapis.com/v1/projects/' + PROJECT + '/databases/(default)/documents/publicDecks/' + encodeURIComponent(id))
+    .then(function (r) { return r.ok ? r.json() : r.status === 404 ? { gone: true } : Promise.reject(); })
+    .then(function (d) {
+      var f = d.fields;
+      if (d.gone || !f || (f.hidden && f.hidden.booleanValue === true)) { $('lead').textContent = t.gone; $('open-app').hidden = true; $('open-web').hidden = true; return; }
+      if (f.title && f.title.stringValue) { $('title').textContent = f.title.stringValue; document.title = f.title.stringValue + ' · Simple Bible Memory'; }
+      var n = f.cardCount && Number(f.cardCount.integerValue);
+      if (n) $('lead').textContent = t.cards(n);
+    })
+    .catch(function () {});
+})();
+</script>
+</body>
+</html>
