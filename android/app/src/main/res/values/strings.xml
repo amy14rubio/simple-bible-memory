@@ -4,4 +4,6 @@
     <string name="title_activity_main">Simple Bible Memory</string>
     <string name="package_name">app.simplebiblememory</string>
     <string name="custom_url_scheme">app.simplebiblememory</string>
+    <string name="widget_add_card">Add card</string>
+    <string name="widget_add_card_description">A shortcut to add a new card.</string>
 </resources>

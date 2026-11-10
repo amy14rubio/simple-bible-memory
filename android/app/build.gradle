@@ -35,6 +35,12 @@ android {
         }
     }
     buildTypes {
+        debug {
+            // A debug build installs next to the real app (a separate app with its own data), so trying a build on a phone that has the
+            // Play version never replaces or removes it. (Sign-in with Google does not work in it: its key is not registered.)
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+        }
         release {
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release

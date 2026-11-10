@@ -23,3 +23,22 @@ export function deckIdFromLink(link: string): string | null {
   const hash = /^#\/discover\/([^/?]+)/.exec(url.hash);
   return url.pathname === '/app' && hash ? ok(decodeURIComponent(hash[1]!)) : null;
 }
+
+/**
+ * The screen a link opens (an address inside the app, like "/cards/new"), or null for any other link. Everything `deckIdFromLink`
+ * understands, and the shortcuts the home-screen widgets use:
+ *   simplebiblememory://add          Add card              simplebiblememory://stats       Statistics
+ *   simplebiblememory://deck/<id>    a deck of the person's
+ */
+export function routeFromLink(link: string): string | null {
+  const shared = deckIdFromLink(link);
+  if (shared) return `/discover/${encodeURIComponent(shared)}`;
+  let url: URL;
+  try { url = new URL(link); } catch { return null; }
+  if (url.protocol !== `${APP_SCHEME}:`) return null;
+  const parts = [url.host, ...url.pathname.split('/')].filter(Boolean);
+  if (parts[0] === 'add' && parts.length === 1) return '/cards/new';
+  if (parts[0] === 'stats' && parts.length === 1) return '/stats';
+  if (parts[0] === 'deck' && parts.length === 2 && ok(parts[1])) return `/decks/${encodeURIComponent(parts[1]!)}`;
+  return null;
+}
