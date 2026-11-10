@@ -15,7 +15,10 @@ const toDeck = (r: Row): Deck => ({
 });
 
 export interface DeckRepository {
+  /** Decks never ordered by hand first (A to Z, so a new deck is at the top), then the ones the person has ordered, in their order. */
   list(): Promise<DeckSummary[]>;
+  /** Saves the order the person chose: every deck id, top to bottom. Ids that are not decks are ignored. */
+  reorder(orderedIds: string[]): Promise<void>;
   get(id: string): Promise<Deck | undefined>;
   create(input: DeckInput): Promise<Deck>;
   update(id: string, input: DeckInput): Promise<void>;
@@ -30,9 +33,16 @@ export function createDeckRepository(db: Database, now: Clock = Date.now): DeckR
         `SELECT d.*, COUNT(dc.card_id) AS card_count
            FROM decks d LEFT JOIN deck_cards dc ON dc.deck_id = d.id
           GROUP BY d.id
-          ORDER BY d.title COLLATE NOCASE`,
+          ORDER BY (d.sort_order IS NOT NULL), d.sort_order, d.title COLLATE NOCASE`,
       );
       return rows.map((r) => ({ ...toDeck(r), cardCount: r.card_count as number }));
+    },
+
+    async reorder(orderedIds) {
+      // Not "touching" updated_at: the order is the person's, on this device, and is never part of a deck's published or backed-up copy.
+      await db.transaction(async (tx) => {
+        for (const [position, id] of orderedIds.entries()) await tx.run('UPDATE decks SET sort_order = ? WHERE id = ?', [position, id]);
+      });
     },
 
     async get(id) {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Download, EyeOff, Globe, List, Pencil, Plus, Repeat, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Download, EyeOff, Globe, List, Pencil, Plus, Repeat, Trash2 } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { ConfirmDialog, Dialog } from '../../components/ui';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -14,8 +14,10 @@ const item = 'flex min-h-12 w-full items-center gap-3 border-b border-border tex
 const icon = 'shrink-0 text-muted';
 
 /** The wireframe's deck popup. Only actions that exist today are listed. */
-export function DeckMenu({ deck, onClose, onDeleted }: {
+export function DeckMenu({ deck, onClose, onDeleted, move }: {
   deck: { id: string; title: string } | null; onClose: () => void; onDeleted: () => void;
+  /** Move the deck up or down the home screen's list (null: it is already first or last). Left out when the list cannot be reordered. */
+  move?: { up: (() => void) | null; down: (() => void) | null };
 }) {
   const { t, describeError } = useI18n();
   const { decks, sharing } = useRepositories();
@@ -55,6 +57,8 @@ export function DeckMenu({ deck, onClose, onDeleted }: {
           <Link to={`/decks/${deck?.id}/cards`} onClick={onClose} className={item}><List size={20} aria-hidden className={icon} />{t('deckMenu.browse')}</Link>
           <Link to={`/decks/${deck?.id}?practice=1`} onClick={onClose} className={item}><Repeat size={20} aria-hidden className={icon} />{t('deckMenu.extraPractice')}</Link>
           <Link to={`/decks/${deck?.id}/edit`} onClick={onClose} className={item}><Pencil size={20} aria-hidden className={icon} />{t('deckMenu.rename')}</Link>
+          {move?.up && <button type="button" onClick={() => { move.up?.(); onClose(); }} className={item}><ArrowUp size={20} aria-hidden className={icon} />{t('deckMenu.moveUp')}</button>}
+          {move?.down && <button type="button" onClick={() => { move.down?.(); onClose(); }} className={item}><ArrowDown size={20} aria-hidden className={icon} />{t('deckMenu.moveDown')}</button>}
           <button type="button" onClick={() => { if (deck) setExporting({ ids: [deck.id], title: deck.title }); onClose(); }} className={item}><Download size={20} aria-hidden className={icon} />{t('deckMenu.export')}</button>
           {share.available && <button type="button" onClick={() => { if (deck) setPublishing({ id: deck.id, title: deck.title }); onClose(); }} className={item}>{published ? <EyeOff size={20} aria-hidden className={icon} /> : <Globe size={20} aria-hidden className={icon} />}{published ? t('deckMenu.published') : t('deckMenu.publish')}</button>}
           <button type="button" onClick={() => setConfirming(true)} className={`${item} text-danger`}><Trash2 size={20} aria-hidden className="shrink-0" />{t('deckMenu.delete')}</button>
