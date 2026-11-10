@@ -51,14 +51,19 @@ const scrollParent = (el: HTMLElement): Element => {
 
 const find = (form: string, anchor: string) => document.querySelector<HTMLElement>(`#${form} [data-coach="${anchor}"], header [data-coach="${anchor}"]`);
 
+/** Where each guide was when its screen was left for one of its own pages (kept only while the app is open). */
+const resume = new Map<string, number>();
+
 /**
  * The first time someone opens "Add card", a short guide points at the real fields: the deck, the verse, Autofill, the passage and
  * Save. It is five short steps with no Skip button: the X (or Escape) closes it, the last button ends it, and it is remembered.
  * The "?" on the screen starts it again.
  */
-export function useCoach(isNew: boolean, doneSetting: string) {
+export function useCoach(isNew: boolean, doneSetting: string, resumeKey?: string) {
   const { settings } = useRepositories();
-  const [open, setOpen] = useState(false);
+  // Open from the start if the guide was under way when the person went into one of its own pages (even if they had seen it before and
+  // replayed it with the ? button): it carries on until they close it with the X.
+  const [open, setOpen] = useState(() => !!resumeKey && resume.has(resumeKey));
   useEffect(() => {
     if (!isNew || onboardingDisabledForTests()) return;
     let cancelled = false;
@@ -71,17 +76,30 @@ export function useCoach(isNew: boolean, doneSetting: string) {
 }
 export const useAddCoach = (isNewCard: boolean) => useCoach(isNewCard, COACH_ADD_DONE);
 export const useDeckCoach = (isNewDeck: boolean) => useCoach(isNewDeck, COACH_DECK_DONE);
-export const useSettingsCoach = () => useCoach(true, COACH_SETTINGS_DONE);
+export const useSettingsCoach = () => useCoach(true, COACH_SETTINGS_DONE, 'settings');
 
 export const AddCoach = ({ onClose, autofill }: { onClose: () => void; autofill: boolean }) => <Coach form="card-form" all={ADD_STEPS} autofill={autofill} doneLabel="coach.add.done" onClose={onClose} />;
-export const SettingsCoach = ({ onClose }: { onClose: () => void }) => <Coach form="settings-page" all={SETTINGS_STEPS} doneLabel="coach.add.done" onClose={onClose} />;
+/**
+ * The Settings guide. Tapping a row opens that setting's own page; coming back, the guide carries on at the step it was on. Leaving
+ * Settings for anywhere else (the home screen, a deck) counts as closing the guide.
+ */
+export function SettingsCoach({ onClose }: { onClose: () => void }) {
+  const close = useCallback(() => { resume.delete('settings'); onClose(); }, [onClose]);
+  useEffect(() => () => {
+    const hash = window.location.hash;
+    if (hash === '#/settings' || hash.startsWith('#/settings/')) return; // still here (or only re-rendered), or on a setting's page: it waits
+    close();
+  }, [close]);
+  return <Coach form="settings-page" all={SETTINGS_STEPS} resumeKey="settings" doneLabel="coach.add.done" onClose={close} />;
+}
 export const DeckCoach = ({ onClose }: { onClose: () => void }) => <Coach form="deck-form" all={DECK_STEPS} doneLabel="coach.add.done" onClose={onClose} />;
 
-function Coach({ form, all, autofill, doneLabel, onClose }: { form: string; all: CoachStep[]; autofill?: boolean; doneLabel: MessageKey; onClose: () => void }) {
+function Coach({ form, all, autofill, doneLabel, onClose, resumeKey }: { form: string; all: CoachStep[]; autofill?: boolean; doneLabel: MessageKey; onClose: () => void; resumeKey?: string }) {
   const { t } = useI18n();
   // Which steps there are follows the screen: a field that is not there is left out, and so is the advice for the other Autofill setting.
   const steps = all.filter((s) => (s.autofill === undefined || s.autofill === autofill) && find(form, s.anchor));
-  const [i, setI] = useState(0);
+  const [i, setI] = useState(() => (resumeKey ? resume.get(resumeKey) ?? 0 : 0));
+  useEffect(() => { if (resumeKey) resume.set(resumeKey, i); }, [resumeKey, i]);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [tipHeight, setTipHeight] = useState(0);
   const tip = useRef<HTMLDivElement>(null);

@@ -81,6 +81,60 @@ test.describe('in Spanish', () => {
   });
 });
 
+test.describe('going into a setting and back', () => {
+  test('the guide carries on at the step it was on', async ({ page }) => {
+    await page.goto('/#/settings');
+    await guide(page).getByRole('button', { name: 'Next' }).click();
+    await expect(title(page)).toHaveText('Choose your cards');
+    await page.getByRole('link', { name: /^Theme/ }).click({ force: true }); // the page underneath stays tappable
+    await expect(page).toHaveURL(/#\/settings\/theme$/);
+    await expect(guide(page)).toHaveCount(0);
+    await page.goBack();
+    await expect(title(page)).toHaveText('Choose your cards'); // not step 1 again
+    await expect(guide(page).locator('p.sr-only')).toHaveText(`Step 2 of ${STEPS.length}`);
+    await guide(page).getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('link', { name: /^Theme/ }).click();
+    await page.goBack();
+    await expect(guide(page)).toHaveCount(0); // closed for good
+  });
+
+  test('even a guide replayed with the ? button carries on after going into a setting, until the X', async ({ page }) => {
+    await page.goto('/#/settings');
+    await guide(page).getByRole('button', { name: 'Close' }).click(); // seen before
+    await page.getByRole('button', { name: 'How to use Settings' }).click();
+    await guide(page).getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('link', { name: /^Theme/ }).click({ force: true });
+    await expect(page).toHaveURL(/#\/settings\/theme$/);
+    await page.getByRole('link', { name: 'Back' }).first().click(); // the arrow at the top, as a person would
+    await expect(title(page)).toHaveText('Choose your cards'); // no need to press ? again
+    await guide(page).getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('link', { name: /^Theme/ }).click();
+    await page.getByRole('link', { name: 'Back' }).first().click();
+    await expect(guide(page)).toHaveCount(0); // closed with the X: it stays closed
+  });
+
+  test('changing the language comes back to the same step, now in that language', async ({ page }) => {
+    await page.goto('/#/settings');
+    await guide(page).getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('link', { name: /^Language/ }).click({ force: true });
+    await page.getByRole('group', { name: 'Language' }).getByRole('radio', { name: 'Español', exact: true }).check({ force: true });
+    await page.goBack();
+    await expect(title(page)).toHaveText('Elige tus tarjetas');
+  });
+
+  test('leaving Settings for somewhere else counts as closing the guide', async ({ page }) => {
+    await page.goto('/#/settings');
+    await guide(page).getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('link', { name: 'Back to decks' }).click({ force: true });
+    await expect(page.getByRole('heading', { name: 'Simple Bible Memory', level: 1 })).toBeVisible();
+    await page.goto('/#/settings');
+    await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+    await expect(guide(page)).toHaveCount(0);
+    await page.reload();
+    await expect(guide(page)).toHaveCount(0); // remembered
+  });
+});
+
 test.describe('the box stays below the highlighted part when the page can scroll further', () => {
   for (const height of [560, 640, 720, 800]) {
     test(`every step on a ${height}px tall screen`, async ({ browser }) => {
