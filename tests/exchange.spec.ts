@@ -285,9 +285,9 @@ test.describe('in Spanish, and accessibility', () => {
     await expect(page.getByRole('dialog', { name: 'Exportar datos' }).getByRole('switch', { name: 'Incluir mi progreso' })).toBeVisible();
     await closeWithEscape(page);
     await page.goto('/#/import');
-    await expect(page.getByRole('heading', { name: 'Importar baraja' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Importar carpeta' })).toBeVisible();
     await chooseFile(page, 'x.json', JSON.stringify({ hello: 1 }));
-    await expect(page.getByRole('alert')).toContainText('no es un archivo de baraja de esta app');
+    await expect(page.getByRole('alert')).toContainText('no es un archivo de carpeta de esta app');
     await ctx.close();
   });
 

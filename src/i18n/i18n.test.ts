@@ -38,7 +38,7 @@ describe('dictionaries', () => {
 
   it('the app and Bible Gateway keep their names and examples sensible in Spanish', () => {
     expect(es['app.name']).toBe('Memoria Bíblica Simple');
-    expect(es['cardForm.versesPlaceholder']).toBe('Juan 3:16');
+    expect(es['cardForm.versesPlaceholder']).toBe('Ej. Juan 3:16');
   });
 });
 
@@ -68,7 +68,7 @@ describe('translate', () => {
   });
 
   it('keeps user text untouched (text with braces or quotes is passed through as given)', () => {
-    expect(translate('es', 'decks.noMatch', { query: '{count} "x"' })).toBe('Ninguna baraja coincide con "{count} "x"".');
+    expect(translate('es', 'decks.noMatch', { query: '{count} "x"' })).toBe('Ninguna carpeta coincide con "{count} "x"".');
   });
 });
 
@@ -141,7 +141,7 @@ describe('book names', () => {
 describe('describeError', () => {
   it('translates errors the user can fix', () => {
     expect(describeError('en', new ValidationError('deck-title-required', 'Deck title is required'))).toBe('Deck title is required');
-    expect(describeError('es', new ValidationError('deck-title-required', 'Deck title is required'))).toBe('El título de la baraja es obligatorio');
+    expect(describeError('es', new ValidationError('deck-title-required', 'Deck title is required'))).toBe('El título de la carpeta es obligatorio');
     expect(describeError('es', new ValidationError('reference-required', 'x'))).toBe('El versículo es obligatorio');
     expect(describeError('es', new ValidationError('verse-text-required', 'x'))).toBe('El pasaje es obligatorio');
   });

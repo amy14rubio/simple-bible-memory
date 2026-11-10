@@ -179,7 +179,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
                 )}
               </FormRow>
               {autofill && (
-                <FormRow label={t('autofill.translation')}>
+                <FormRow label={t('autofill.translation')} coach="translation">
                   {(fid) => (
                     <TranslationPicker
                       id={fid}
@@ -232,7 +232,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
           </div>
         )}
       </Page>
-      {coach.open && <AddCoach onClose={coach.close} />}
+      {coach.open && <AddCoach onClose={coach.close} autofill={autofill && canAutofill} />}
       <SplitDialog result={split} studyCardsPerVerse={studyCardsPerVerse} busy={splitBusy} error={splitError} onCancel={() => setSplit(null)} onConfirm={confirmSplit} />
       <ConfirmDialog
         open={confirming}

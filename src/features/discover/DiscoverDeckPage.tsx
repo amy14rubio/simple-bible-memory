@@ -15,6 +15,8 @@ import { Attribution } from '../bible/Attribution';
 import { ReportDrawer } from './ReportDrawer';
 
 const PREVIEW = 3;
+/** About two lines of a phone's width: a longer verse is cut short with "…" until "show more" is pressed. */
+const CLAMPED_AFTER = 100;
 
 /** One public deck: what it is, a taste of its cards, and Import (a copy that is yours alone) or Report. */
 export function DiscoverDeckPage() {
@@ -83,9 +85,10 @@ export function DiscoverDeckPage() {
                 : <p lang={deck.language} className={`scripture text-[0.9375rem] leading-normal text-muted ${showAll ? '' : 'line-clamp-2'}`}>{c.verseText}</p>}
             </div>
           ))}
-          {cards.length > PREVIEW && (
+          {/* More cards than the preview, or a verse the preview cuts short with "…": either way there is more to show. */}
+          {(cards.length > PREVIEW || cards.slice(0, PREVIEW).some((c) => !isLicensed(c.translation) && c.verseText.length > CLAMPED_AFTER)) && (
             <Button variant="ghost" className="w-full" aria-expanded={showAll} onClick={() => setShowAll((v) => !v)}>
-              {showAll ? t('discover.showLess') : t('discover.showMore', { count: cards.length - PREVIEW })}
+              {showAll ? t('discover.showLess') : cards.length > PREVIEW ? t('discover.showMore', { count: cards.length - PREVIEW }) : t('discover.showFull')}
             </Button>
           )}
         </section>

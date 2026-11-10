@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
-import { test, type Browser, type Page } from '@playwright/test';
+import { test, type Browser, type Locator, type Page } from '@playwright/test';
 import { en } from '../../src/i18n/messages.en';
 import { es } from '../../src/i18n/messages.es';
 
@@ -18,14 +18,68 @@ const TMP = resolve('scripts/clips/.tmp'); // absolute: ffmpeg reads file names 
 type Dict = Record<string, unknown>;
 const text = (m: Dict, key: string) => m[key] as string;
 
-/** A soft ring where a finger "touches", so a viewer sees what is being tapped. */
-const RIPPLE = `document.addEventListener('pointerdown', (e) => {
-  const d = document.createElement('div');
-  d.style.cssText = 'position:fixed;left:' + (e.clientX - 24) + 'px;top:' + (e.clientY - 24) + 'px;width:48px;height:48px;border-radius:50%;background:rgba(90,90,90,.28);border:2px solid rgba(90,90,90,.55);z-index:2147483647;pointer-events:none;transition:transform .55s ease-out,opacity .55s ease-out';
-  document.body.appendChild(d);
-  requestAnimationFrame(() => { d.style.transform = 'scale(1.7)'; d.style.opacity = '0'; });
-  setTimeout(() => d.remove(), 650);
-}, true);`;
+/**
+ * What a viewer's eyes follow: a mouse pointer that glides to whatever is pressed, and a soft ring (a click) where it lands.
+ * (A finger is invisible in a recording; a moving pointer is easy to track.)
+ */
+const RIPPLE = `(() => {
+  const pointer = () => {
+    let c = document.getElementById('clip-cursor');
+    if (!c) {
+      c = document.createElement('div');
+      c.id = 'clip-cursor';
+      c.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))"><path d="M3 2l7 19 3-8 8-3z" fill="#fff" stroke="#111" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+      // A popover lives in the browser's "top layer", the same place a modal dialog is drawn, so it is not hidden behind one.
+      c.setAttribute('popover', 'manual');
+      c.style.cssText = 'position:fixed;inset:auto;left:0;top:0;margin:0;padding:0;border:0;background:transparent;overflow:visible;z-index:2147483647;pointer-events:none;opacity:0;transform:translate(-999px,-999px)';
+      document.body.appendChild(c);
+      c.showPopover();
+    }
+    return c;
+  };
+  // Whatever is shown on top layer last is on top, so when something new opens (a menu, a drawer) the pointer is shown again, above it.
+  let promoting = 0;
+  new MutationObserver(() => {
+    clearTimeout(promoting);
+    promoting = setTimeout(() => { const c = document.getElementById('clip-cursor'); if (c && c.matches(':popover-open')) { c.hidePopover(); c.showPopover(); } }, 40);
+  }).observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ['open'] });
+  // Starts near the bottom right of the screen, then glides to each thing that is pressed.
+  window.__showCursor = () => { const c = pointer(); c.style.transition = 'none'; c.style.transform = 'translate(' + (innerWidth - 70) + 'px,' + (innerHeight - 60) + 'px)'; c.style.opacity = '1'; c.getBoundingClientRect(); };
+  window.__moveCursor = (x, y) => { const c = pointer(); c.style.opacity = '1'; c.style.transition = 'transform .7s cubic-bezier(.4,0,.2,1)'; c.style.transform = 'translate(' + (x - 4) + 'px,' + (y - 3) + 'px)'; };
+  document.addEventListener('pointerdown', (e) => {
+    const c = document.getElementById('clip-cursor');
+    if (c) c.firstElementChild.animate([{ transform: 'scale(1)' }, { transform: 'scale(.82)' }, { transform: 'scale(1)' }], { duration: 280 });
+    const d = document.createElement('div');
+    d.style.cssText = 'inset:auto;margin:0;padding:0;overflow:visible;position:fixed;left:' + (e.clientX - 24) + 'px;top:' + (e.clientY - 24) + 'px;width:48px;height:48px;border-radius:50%;background:rgba(90,90,90,.28);border:2px solid rgba(90,90,90,.55);z-index:2147483646;pointer-events:none;transition:transform .55s ease-out,opacity .55s ease-out';
+    d.setAttribute('popover', 'manual');
+    document.body.appendChild(d);
+    d.showPopover();
+    requestAnimationFrame(() => { d.style.transform = 'scale(1.7)'; d.style.opacity = '0'; });
+    setTimeout(() => d.remove(), 650);
+  }, true);
+})();`;
+
+/** Pages whose clicks should show the pointer gliding over first (only while the demo itself runs, not the setup before it). */
+const pointerOn = new WeakSet<Page>();
+let clickPatched = false;
+function glideBeforeClicks(page: Page) {
+  if (clickPatched) return;
+  clickPatched = true;
+  const proto = Object.getPrototypeOf(page.locator('html')) as { click: (this: Locator, o?: unknown) => Promise<void> };
+  const original = proto.click;
+  proto.click = async function (this: Locator, options?: unknown) {
+    const p = this.page();
+    if (pointerOn.has(p)) {
+      await this.scrollIntoViewIfNeeded();
+      const box = await this.boundingBox();
+      if (box) {
+        await p.evaluate(([x, y]) => (window as unknown as { __moveCursor: (x: number, y: number) => void }).__moveCursor(x!, y!), [box.x + box.width / 2, box.y + box.height / 2]);
+        await p.waitForTimeout(780); // the pointer arrives, then the click
+      }
+    }
+    return original.call(this, options);
+  };
+}
 
 const pause = (page: Page, ms = 900) => page.waitForTimeout(ms);
 
@@ -83,7 +137,10 @@ async function clip(browser: Browser, lang: 'en' | 'es', name: string, setup: (p
     void cdp.send('Page.screencastFrameAck', { sessionId: e.sessionId }).catch(() => undefined);
   });
   await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 90, maxWidth: SIZE.width * 2, maxHeight: SIZE.height * 2, everyNthFrame: 1 });
+  glideBeforeClicks(page);
   await setup(page);
+  pointerOn.add(page);
+  await page.evaluate(() => (window as unknown as { __showCursor: () => void }).__showCursor());
   const start = Date.now() / 1000 + 0.2;
   await pause(page, 200);
   await demo(page);

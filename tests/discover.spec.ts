@@ -204,3 +204,18 @@ test('the list shows only the first line of a description, with "…" when there
   await page.getByText('A first line.…').click();
   await expect(page.getByText('only on the deck page')).toBeVisible();
 });
+
+test('a verse cut short with "…" in the preview can be shown in full, even when the deck has only a few cards', async ({ page }) => {
+  const long = 'For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life. '.repeat(3).trim();
+  const d = deck('Short', 'KJV', 'en', 1000, 2);
+  (d.cards['Short-0'] as { verseText: string }).verseText = long;
+  await seed(page, { long: d });
+  await openDiscover(page);
+  await page.locator('a[href*="/discover/"]').first().click();
+  const verse = page.getByText(/^For God so loved/);
+  const clipped = () => verse.evaluate((e) => e.scrollHeight > e.clientHeight + 1);
+  expect(await clipped()).toBe(true); // cut short in the preview
+  await page.getByRole('button', { name: 'Show full verses' }).click();
+  expect(await clipped()).toBe(false); // now all of it
+  await expect(page.getByRole('button', { name: 'Show less' })).toBeVisible();
+});

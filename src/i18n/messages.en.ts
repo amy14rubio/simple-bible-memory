@@ -62,6 +62,7 @@ export const en = {
   'decks.emptyAction': 'Create your first deck',
   'decks.noMatch': 'No decks match "{query}".',
   'decks.dueSuffix': 'due',
+  'decks.doneToday': 'Done for today',
   'decks.actionsFor': 'Actions for {title}',
 
   // deck menu
@@ -198,7 +199,7 @@ export const en = {
   'cardForm.cardsLiveInDecks': 'Cards live inside decks.',
   'cardForm.deck': 'Deck',
   'cardForm.verses': 'Verse(s)',
-  'cardForm.versesPlaceholder': 'John 3:16',
+  'cardForm.versesPlaceholder': 'Ex. John 3:16',
   'cardForm.note': 'Note',
   'cardForm.noteInfo':
     'Just for you, like where you found the verse or something to remember. It stays private and is never published with a deck.',
@@ -313,6 +314,8 @@ export const en = {
   'coach.add.verse.body': 'Like John 3:16.',
   'coach.add.autofill.title': 'Autofill the verse',
   'coach.add.autofill.body': 'Turn it on to fill in the passage for you.',
+  'coach.add.translation.title': 'Change the version',
+  'coach.add.translation.body': 'Pick a different Bible translation for the verse.',
   'coach.add.passage.title': 'Add it yourself',
   'coach.add.passage.body': 'Look up the verse and paste it here.',
   'coach.add.save.title': 'Save',
@@ -350,6 +353,7 @@ export const en = {
   'report.sent': "Thanks, we'll take a look.",
   'report.failed': "Couldn't send the report. Check your connection and try again.",
   'discover.showMore': { one: 'Show {count} more card', other: 'Show {count} more cards' },
+  'discover.showFull': 'Show full verses',
   'discover.showLess': 'Show less',
   'translation.label': 'Translation',
   'translation.mixed': 'Mixed translations',

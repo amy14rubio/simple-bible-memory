@@ -39,7 +39,7 @@ describe('addStarterDeck()', () => {
   it('adds a Spanish deck (Reina-Valera 1909) when the app is in Spanish', async () => {
     await addStarterDeck(repos, 'es');
     const [deck] = await repos.decks.list();
-    expect(deck).toMatchObject({ title: '¡Primera baraja!', description: 'Si eres nuevo en la app, ¡empieza aquí!', translationCode: 'RV1909', bibleLanguage: 'es' });
+    expect(deck).toMatchObject({ title: '¡Primera carpeta!', description: 'Si eres nuevo en la app, ¡empieza aquí!', translationCode: 'RV1909', bibleLanguage: 'es' });
     expect((await repos.cards.listByDeck(deck!.id)).map((c) => c.reference)).toContain('Romanos 5:8');
   });
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { EllipsisVertical, Search, Settings } from 'lucide-react';
+import { Check, EllipsisVertical, Search, Settings } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { useRefreshOnWrites } from '../../app/useRefreshOnWrites';
@@ -54,10 +54,15 @@ export function DecksPage() {
           <li key={d.id} className="flex items-center border-b border-border pr-2 wide:rounded-xl wide:border">
             <Link to={`/decks/${d.id}`} className="flex min-h-16 min-w-0 flex-1 items-center justify-between gap-4 py-3 pl-5 pr-2 hover:bg-surface wide:rounded-l-xl">
               <span className="truncate font-serif text-lg">{d.title}</span>
-              <span className={`shrink-0 text-sm tabular-nums ${d.due > 0 ? 'font-semibold' : 'text-muted'}`}>
-                {d.due}
-                <span className="sr-only"> {t('decks.dueSuffix')}</span>{/* the screen shows just the number; screen readers also hear what it counts */}
-              </span>
+              {d.due === 0 && d.cardCount > 0 ? (
+                // Nothing left today: a check mark says "all done" better than a 0 (a deck with no cards at all still shows 0).
+                <span className="shrink-0 text-muted"><Check size={20} aria-hidden /><span className="sr-only">{t('decks.doneToday')}</span></span>
+              ) : (
+                <span className={`shrink-0 text-sm tabular-nums ${d.due > 0 ? 'font-semibold' : 'text-muted'}`}>
+                  {d.due}
+                  <span className="sr-only"> {t('decks.dueSuffix')}</span>{/* the screen shows just the number; screen readers also hear what it counts */}
+                </span>
+              )}
             </Link>
             <IconButton label={t('decks.actionsFor', { title: d.title })} onClick={() => setMenuFor(d)}><EllipsisVertical size={20} aria-hidden /></IconButton>
           </li>

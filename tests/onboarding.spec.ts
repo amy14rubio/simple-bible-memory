@@ -120,9 +120,9 @@ test.describe('in Spanish', () => {
   test('a Spanish phone gets the Spanish starter deck, with Reina-Valera 1909', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Omitir' }).click();
-    await expect(page.getByText('¡Primera baraja!')).toBeVisible();
-    await page.getByText('¡Primera baraja!').click();
-    await page.getByRole('button', { name: 'Acciones de la baraja' }).click();
+    await expect(page.getByText('¡Primera carpeta!')).toBeVisible();
+    await page.getByText('¡Primera carpeta!').click();
+    await page.getByRole('button', { name: 'Acciones de la carpeta' }).click();
     await page.getByRole('dialog').getByRole('link', { name: 'Ver tarjetas' }).click();
     await expect(page.getByText('Romanos 5:8')).toBeVisible();
   });
@@ -225,7 +225,7 @@ test.describe('for screen readers and small screens', () => {
       await page.goto('/');
       await expect(heading(page)).toHaveText('Bienvenido a Memoria Bíblica Simple');
       await page.getByRole('button', { name: 'Siguiente' }).click();
-      await expect(heading(page)).toHaveText('Barajas y tarjetas');
+      await expect(heading(page)).toHaveText('Carpetas y tarjetas');
       await expect(heading(page)).toHaveAccessibleDescription('Paso 2 de 6');
       await expect(page.getByRole('button', { name: 'Omitir' })).toHaveCount(0); // Skip is on the welcome card only
     });

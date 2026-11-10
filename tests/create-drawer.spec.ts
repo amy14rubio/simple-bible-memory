@@ -148,7 +148,7 @@ test.describe('the create drawer', () => {
     await page.getByRole('button', { name: 'Añadir' }).click();
     const d = drawer(page, 'Crear nuevo');
     await expect(d).toBeVisible();
-    await expect(d.getByRole('button', { name: 'Nueva baraja', exact: true })).toBeVisible();
+    await expect(d.getByRole('button', { name: 'Nueva carpeta', exact: true })).toBeVisible();
     await expect(d.getByRole('button', { name: 'Nueva tarjeta', exact: true })).toBeVisible();
     await d.getByRole('button', { name: 'Cancelar' }).dispatchEvent('click');
     await expect(d).toHaveCount(0);

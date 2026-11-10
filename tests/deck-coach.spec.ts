@@ -69,11 +69,11 @@ test.describe('in Spanish', () => {
   test('the guide and the placeholder are in Spanish', async ({ page }) => {
     await page.goto('/#/decks/new');
     await expect(page.getByLabel('Título')).toHaveAttribute('placeholder', 'Ej. Versículos sobre la gracia');
-    await expect(title(page)).toHaveText('Ponle nombre a tu baraja');
+    await expect(title(page)).toHaveText('Ponle nombre a tu carpeta');
     await guide(page).getByRole('button', { name: 'Siguiente' }).click();
     await expect(title(page)).toHaveText('Solo para publicar');
     await guide(page).getByRole('button', { name: 'Cerrar' }).click();
-    await page.getByRole('button', { name: 'Cómo crear una baraja' }).click();
-    await expect(title(page)).toHaveText('Ponle nombre a tu baraja');
+    await page.getByRole('button', { name: 'Cómo crear una carpeta' }).click();
+    await expect(title(page)).toHaveText('Ponle nombre a tu carpeta');
   });
 });

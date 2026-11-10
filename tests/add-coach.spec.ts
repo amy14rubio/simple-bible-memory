@@ -27,6 +27,19 @@ test('the first time Add card opens, a guide points at the real fields, one by o
   await expect(guide(page)).toHaveCount(0);
 });
 
+test('if Autofill is turned on, it explains changing the version and does not explain pasting; if not, it explains adding the verse yourself', async ({ page }) => {
+  await openAdd(page);
+  await guide(page).getByRole('button', { name: 'Next' }).click();
+  await guide(page).getByRole('button', { name: 'Next' }).click();
+  await expect(title(page)).toHaveText('Autofill the verse');
+  await page.getByRole('switch', { name: /Autofill/ }).click(); // turned on
+  await guide(page).getByRole('button', { name: 'Next' }).click();
+  await expect(title(page)).toHaveText('Change the version'); // pointing at the translation, no "add it yourself"
+  await guide(page).getByRole('button', { name: 'Next' }).click();
+  await expect(title(page)).toHaveText('Save');
+  await expect(guide(page).getByRole('button', { name: 'Got it' })).toBeVisible();
+});
+
 test('it never blocks the form: you can type in the highlighted field while it is shown', async ({ page }) => {
   await openAdd(page);
   await guide(page).getByRole('button', { name: 'Next' }).click(); // the verse step
@@ -91,10 +104,10 @@ test.describe('in Spanish', () => {
     await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
     const id = page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1];
     await page.goto(`/#/cards/new?deck=${id}`);
-    await expect(title(page)).toHaveText('Elige una baraja');
+    await expect(title(page)).toHaveText('Elige una carpeta');
     await expect(guide(page).getByRole('button', { name: 'Omitir' })).toHaveCount(0);
     await guide(page).getByRole('button', { name: 'Cerrar' }).click();
     await page.getByRole('button', { name: 'Cómo agregar un versículo' }).click();
-    await expect(title(page)).toHaveText('Elige una baraja');
+    await expect(title(page)).toHaveText('Elige una carpeta');
   });
 });

@@ -170,8 +170,15 @@ export function GrowingTextarea({ className = '', value, ...props }: TextareaHTM
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
+    // Measuring needs the box collapsed for an instant, which shortens the page, and the browser then clamps the scroll position
+    // (the screen "jumps back up" while you type a long verse). So remember where every scrolling ancestor was, and put it back.
+    const saved: [Element, number][] = [];
+    for (let p: Element | null = el.parentElement; p; p = p.parentElement) if (p.scrollTop > 0) saved.push([p, p.scrollTop]);
+    const [pageX, pageY] = [window.scrollX, window.scrollY];
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
+    for (const [p, top] of saved) p.scrollTop = top;
+    if (window.scrollY !== pageY) window.scrollTo(pageX, pageY);
   }, [value]);
   return (
     <textarea
