@@ -28,6 +28,26 @@ describe('validation errors carry a code, so the screen can show them in the rig
   });
 });
 
+describe('the order of decks on the home screen', () => {
+  it('is A to Z until the person reorders, then their order; a new deck is at the top', async () => {
+    const [b, a, c] = [await decks.create({ title: 'Banana' }), await decks.create({ title: 'apple' }), await decks.create({ title: 'Cherry' })];
+    expect((await decks.list()).map((d) => d.title)).toEqual(['apple', 'Banana', 'Cherry']);
+    await decks.reorder([c.id, b.id, a.id]);
+    expect((await decks.list()).map((d) => d.title)).toEqual(['Cherry', 'Banana', 'apple']);
+    await decks.create({ title: 'Zebra' });
+    await decks.create({ title: 'Aardvark' });
+    expect((await decks.list()).map((d) => d.title)).toEqual(['Aardvark', 'Zebra', 'Cherry', 'Banana', 'apple']); // new ones on top, A to Z among themselves
+  });
+
+  it('does not change a deck or count as an edit, and ignores ids that are not decks', async () => {
+    const a = await decks.create({ title: 'A' });
+    clock += 1000;
+    await decks.reorder(['nope', a.id]);
+    expect((await decks.get(a.id))!.updatedAt).toBe(a.updatedAt); // so it is never synced or published as a change
+    expect((await decks.list()).map((d) => d.title)).toEqual(['A']);
+  });
+});
+
 describe('decks', () => {
   it('creates, trims and lists decks with card counts, sorted by title', async () => {
     const b = await decks.create({ title: '  Banana  ', description: '  ' });
