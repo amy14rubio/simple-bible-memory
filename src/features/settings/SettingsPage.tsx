@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, CircleHelp } from 'lucide-react';
+import { SettingsCoach, useSettingsCoach } from '../../components/Coach';
 import { useRepositories } from '../../app/repositories';
 import { useTheme } from '../../app/theme';
 import { useFont } from '../../app/fonts';
 import { useSharing } from '../../app/sharing';
 import { toast } from '../../components/shadcn/toast';
 import { ExportDrawer, type ExportTarget } from '../exchange/ExportDrawer';
-import { AppBar, BackButton, ConfirmDialog, Page, Switch } from '../../components/ui';
+import { AppBar, BackButton, ConfirmDialog, IconButton, Page, Switch } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { AppleLogo } from '../../components/AppleLogo';
 import { appleSignInSupported } from '../../platform/apple';
@@ -41,6 +42,8 @@ export function SettingsPage() {
   const [encouragement, setEncouragement] = useState(true);
   const encouragementTouched = useRef(false); // a tap before the saved value has loaded must not be undone by it
 
+  const coach = useSettingsCoach();
+
   useEffect(() => { share.ensureLoaded(); }, [share]);
 
   useEffect(() => {
@@ -58,39 +61,42 @@ export function SettingsPage() {
 
   return (
     <>
-      <AppBar title={t('settings.title')} back={<BackButton to="/" label={t('common.backToDecks')} />} />
-      <Page className="space-y-7">
+      <AppBar title={t('settings.title')} back={<BackButton to="/" label={t('common.backToDecks')} />} actions={<IconButton label={t('coach.settings.replay')} onClick={coach.start}><CircleHelp size={22} aria-hidden /></IconButton>} />
+      <Page id="settings-page" className="space-y-7">
         <section aria-labelledby="general">
           <h2 id="general" className={heading}>{t('settings.general')}</h2>
-          <Link to="/settings/language" className={`${row} hover:bg-surface`}>
-            <span>{t('settings.language')}</span>
-            <span className="flex items-center gap-1 text-muted">
-              {languagePreference === 'system' ? t('settings.languageSystem') : LANGUAGES.find((l) => l.code === languagePreference)?.name}
-              <ChevronRight size={20} aria-hidden />
-            </span>
-          </Link>
-          <Link to="/settings/theme" className={`${row} hover:bg-surface`}>
-            <span>{t('settings.theme')}</span>
-            <span className="flex items-center gap-1 text-muted">
-              {t(THEME_LABEL[preference])}
-              <ChevronRight size={20} aria-hidden />
-            </span>
-          </Link>
-          <Link to="/settings/font" className={`${row} hover:bg-surface`}>
-            <span>{t('settings.font')}</span>
-            <span className="flex min-w-0 items-center gap-1 text-muted">
-              <span className="truncate">{fontFamily ?? t('fonts.default')}</span>
-              <ChevronRight size={20} aria-hidden className="shrink-0" />
-            </span>
-          </Link>
-          <Link to="/settings/card-kinds" className={`${row} hover:bg-surface`}>
+          {/* Language, theme and font are one step of the Settings guide (they are all about how the app looks and reads). */}
+          <div data-coach="look">
+            <Link to="/settings/language" className={`${row} hover:bg-surface`}>
+              <span>{t('settings.language')}</span>
+              <span className="flex items-center gap-1 text-muted">
+                {languagePreference === 'system' ? t('settings.languageSystem') : LANGUAGES.find((l) => l.code === languagePreference)?.name}
+                <ChevronRight size={20} aria-hidden />
+              </span>
+            </Link>
+            <Link to="/settings/theme" className={`${row} hover:bg-surface`}>
+              <span>{t('settings.theme')}</span>
+              <span className="flex items-center gap-1 text-muted">
+                {t(THEME_LABEL[preference])}
+                <ChevronRight size={20} aria-hidden />
+              </span>
+            </Link>
+            <Link to="/settings/font" className={`${row} hover:bg-surface`}>
+              <span>{t('settings.font')}</span>
+              <span className="flex min-w-0 items-center gap-1 text-muted">
+                <span className="truncate">{fontFamily ?? t('fonts.default')}</span>
+                <ChevronRight size={20} aria-hidden className="shrink-0" />
+              </span>
+            </Link>
+          </div>
+          <Link to="/settings/card-kinds" data-coach="kinds" className={`${row} hover:bg-surface`}>
             <span>{t('settings.kindsLegend')}</span>
             <span className="flex items-center gap-1 text-muted">
               {t(`kinds.${kinds}.title` as MessageKey)}
               <ChevronRight size={20} aria-hidden />
             </span>
           </Link>
-          <Link to="/settings/blanks" className={`${row} hover:bg-surface`}>
+          <Link to="/settings/blanks" data-coach="blanks" className={`${row} hover:bg-surface`}>
             <span>{t('settings.blanks')}</span>
             <span className="flex items-center gap-1 text-muted">
               {t(`difficulty.${difficulty}` as MessageKey)}
@@ -101,7 +107,7 @@ export function SettingsPage() {
             <span>{t('settings.voice')}</span>
             <ChevronRight size={20} aria-hidden className="text-muted" />
           </Link>
-          <div className={row}>
+          <div data-coach="new" className={row}>
             <InfoLabel title={t('settings.newPerDay')} info={t('settings.newPerDayHint')} />
             <input
               id="new-per-day"
@@ -124,7 +130,7 @@ export function SettingsPage() {
 
         <RemindersSection />
 
-        <section aria-labelledby="backup">
+        <section aria-labelledby="backup" data-coach="backup">
           <h2 id="backup" className={heading}><InfoLabel title={t('settings.backup')} info={t('settings.backupBody')} className="py-2" /></h2>
           {share.available && share.user && share.accountStatus.state !== 'off' && (
             <div role="status" className={`${row} text-muted`}><span>{t(`account.backup.${share.accountStatus.state}` as MessageKey)}</span></div>
@@ -165,7 +171,7 @@ export function SettingsPage() {
         </section>
         <section aria-labelledby="about">
           <h2 id="about" className={heading}>{t('settings.about')}</h2>
-          <Link to="/welcome" className={`${row} hover:bg-surface`}>
+          <Link to="/welcome" data-coach="tour" className={`${row} hover:bg-surface`}>
             <span>{t('onboarding.tour')}</span>
             <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
           </Link>
@@ -185,6 +191,7 @@ export function SettingsPage() {
           )}
         </section>
         <ExportDrawer target={exporting} onClose={() => setExporting(null)} />
+        {coach.open && <SettingsCoach onClose={coach.close} />}
         <ConfirmDialog
           open={confirmingDelete}
           title={t('account.deleteTitle')}

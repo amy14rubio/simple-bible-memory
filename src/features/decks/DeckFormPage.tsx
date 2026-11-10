@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Check, CircleHelp } from 'lucide-react';
-import { DeckCoach, useDeckCoach } from '../cards/AddCoach';
+import { DeckCoach, useDeckCoach } from '../../components/Coach';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, ErrorMessage, FormRow, GrowingTextarea, IconButton, Page, rowInput } from '../../components/ui';
