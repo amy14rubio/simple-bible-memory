@@ -15,7 +15,7 @@ import { asLang } from '../study/verseLang';
 import { useI18n } from '../../i18n/I18nProvider';
 import { deleteCardsWithUndo } from './undoDelete';
 import { FindPassageHelper } from './FindPassageHelper';
-import { AddCoach, useAddCoach } from './AddCoach';
+import { AddCoach, useAddCoach } from '../../components/Coach';
 import { autofillSources, sourceFor } from '../../domain/bible/sources';
 import { getPassageSource } from '../../platform/youversion';
 import { Attribution } from '../bible/Attribution';

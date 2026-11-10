@@ -74,14 +74,14 @@ export function RemindersSection() {
     <section aria-labelledby="reminders">
       <h2 id="reminders" className="mb-1 font-serif text-xl">{t('settings.reminders')}</h2>
       {!notifier.available ? (
-        <div className={row}>
+        <div data-coach="reminders" className={row}>
           <span id="reminders-switch-label" className="sr-only">{t('reminders.switch')}</span>
           <InfoLabel title={t('reminders.switch')} info={t('reminders.unavailable')} />
           <Switch checked={false} labelledBy="reminders-switch-label" onChange={() => {}} disabled />
         </div>
       ) : (
         <>
-          <div className={row}>
+          <div data-coach="reminders" className={row}>
             <span id="reminders-switch-label">{t('reminders.switch')}</span>
             <Switch checked={state.enabled} labelledBy="reminders-switch-label" onChange={(on) => void toggle(on)} disabled={!loaded} />
           </div>
