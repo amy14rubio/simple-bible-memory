@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["UCZ2CMX8NG.app.simplebiblememory"],
+        "components": [
+          { "/": "/d/*", "comment": "A shared public deck opens in the app" }
+        ]
+      }
+    ]
+  }
+}
