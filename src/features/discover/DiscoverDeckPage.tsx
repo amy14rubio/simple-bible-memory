@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from '../../components/shadcn/toast';
-import { Flag } from 'lucide-react';
+import { Flag, Share2 } from 'lucide-react';
 import { AppBar, BackButton, Button, EmptyState, ErrorMessage, IconButton, Page } from '../../components/ui';
 import { useAsync } from '../../app/useAsync';
 import { useRepositories } from '../../app/repositories';
@@ -13,6 +13,8 @@ import { isLicensed } from '../../domain/bible/sources';
 import { MIXED } from '../../domain/sharing/plan';
 import { Attribution } from '../bible/Attribution';
 import { ReportDrawer } from './ReportDrawer';
+import { shareLink } from '../../lib/shareLink';
+import { deckShareUrl } from '../../lib/site';
 
 const PREVIEW = 3;
 /** About two lines of a phone's width: a longer verse is cut short with "…" until "show more" is pressed. */
@@ -63,6 +65,15 @@ export function DiscoverDeckPage() {
     }
   };
 
+  const share = async () => {
+    try {
+      const result = await shareLink({ title: deck.title, text: t('discover.shareText', { title: deck.title }), url: deckShareUrl(deck.id) });
+      if (result === 'copied') toast.add({ title: t('toast.linkCopied'), type: 'success' });
+    } catch (e) {
+      setError(describeError(e));
+    }
+  };
+
   return (
     <>
       <AppBar back={<BackButton to="/discover" label={t('common.back')} />} />
@@ -70,7 +81,10 @@ export function DiscoverDeckPage() {
         <div className="space-y-1">
           <div className="flex items-start justify-between gap-3">
             <h1 className="min-w-0 font-serif text-2xl font-medium tracking-tight">{deck.title}</h1>
-            <IconButton label={t('report.title')} onClick={() => setReporting(true)} className="-mr-3 -mt-1.5 shrink-0 text-muted"><Flag size={20} aria-hidden /></IconButton>
+            <div className="-mr-3 -mt-1.5 flex shrink-0">
+              <IconButton label={t('discover.share')} onClick={() => void share()} className="text-muted"><Share2 size={20} aria-hidden /></IconButton>
+              <IconButton label={t('report.title')} onClick={() => setReporting(true)} className="text-muted"><Flag size={20} aria-hidden /></IconButton>
+            </div>
           </div>
           <p className="text-muted">{deckSummary(deck, t('translation.own'), t('import.cards', { count: cards.length }), t('translation.mixed'))}</p>
           {deck.description && <p className="whitespace-pre-line pt-2">{deck.description}</p>}

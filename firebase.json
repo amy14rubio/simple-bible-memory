@@ -21,6 +21,9 @@
       { "source": "/landing", "destination": "/", "type": 301 },
       { "source": "/es/landing", "destination": "/es", "type": 301 }
     ],
+    "rewrites": [
+      { "source": "/d/**", "destination": "/deck-link.html" }
+    ],
     "cleanUrls": true,
     "trailingSlash": false,
     "ignore": [

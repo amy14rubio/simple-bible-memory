@@ -374,6 +374,9 @@ export const en = {
   'settings.contactBody':
     'Questions, or a copyright concern about a public deck? Write to us and we will respond and remove deck content when asked. You can also flag a deck on its page.',
   'toast.importedDeck': 'Imported {title}',
+  'discover.share': 'Share this deck',
+  'discover.shareText': '{title}: a Bible memory deck on Simple Bible Memory',
+  'toast.linkCopied': 'Link copied',
   'report.title': 'Report this deck',
   'report.help': 'Tell us what is wrong with this public deck.',
   'report.reason.copyright': 'Copyright problem',
