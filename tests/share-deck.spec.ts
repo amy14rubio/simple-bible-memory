@@ -43,25 +43,26 @@ test.describe('the Share button on a public deck', () => {
 
 test.describe('the page a shared link opens', () => {
   const firestore = (page: Page, body: unknown, status = 200) => page.route('https://firestore.googleapis.com/**', (r) => r.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) }));
-  const deckDoc = { fields: { title: { stringValue: 'Family & Relationships' }, cardCount: { integerValue: '13' } } };
+  const deckDoc = { fields: { title: { stringValue: 'Family & Relationships' }, description: { stringValue: 'Verses for families.\nMemorize them together.' }, cardCount: { integerValue: '13' } } };
 
   test('on a computer: the deck name, open on the web, and the store', async ({ page }) => {
     await firestore(page, deckDoc);
     await page.goto(`/deck-link.html?id=${ID}`);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Family & Relationships');
-    await expect(page.getByText('13 cards')).toBeVisible();
+    await expect(page.getByText('Verses for families.')).toBeVisible(); // the deck's description, not a card count
+    await expect(page.getByText('13 cards')).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Open on the web' })).toHaveAttribute('href', `/app#/discover/${ID}`);
-    await expect(page.getByRole('link', { name: 'Open in the app' })).toBeHidden(); // no app to open on a computer
     await expect(page.getByRole('link', { name: 'Get it on Google Play' })).toHaveAttribute('href', /play\.google\.com.*app\.simplebiblememory/);
     await expect(page.getByRole('link', { name: 'Download on the App Store' })).toHaveAttribute('href', 'https://apps.apple.com/us/app/simple-bible-memory/id6827304569');
   });
 
   test.describe('on a phone', () => {
     test.use({ userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36' });
-    test('"Open in the app" is offered, and uses the app link', async ({ page }) => {
+    test('"Open in the app" is not offered until the apps that understand it are released (APP_LINKS_READY)', async ({ page }) => {
       await firestore(page, deckDoc);
       await page.goto(`/deck-link.html?id=${ID}`);
-      await expect(page.getByRole('link', { name: 'Open in the app' })).toHaveAttribute('href', `simplebiblememory://discover/${ID}`);
+      await expect(page.getByRole('link', { name: 'Open on the web' })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Open in the app' })).toBeHidden();
     });
   });
 
@@ -95,7 +96,7 @@ test.describe('the page a shared link opens', () => {
     test('it is in Spanish', async ({ page }) => {
       await firestore(page, deckDoc);
       await page.goto(`/deck-link.html?id=${ID}`);
-      await expect(page.getByText('13 tarjetas')).toBeVisible();
+      await expect(page.getByText('Verses for families.')).toBeVisible();
       await expect(page.getByRole('link', { name: 'Abrir en la web' })).toBeVisible();
       await expect(page.getByRole('link', { name: 'Disponible en Google Play' })).toBeVisible();
     });
@@ -107,7 +108,7 @@ test.describe('the page a shared link opens', () => {
       const page = await ctx.newPage();
       await firestore(page, deckDoc);
       await page.goto(`/deck-link.html?id=${ID}`);
-      await expect(page.getByText('13 cards')).toBeVisible();
+      await expect(page.getByText('Verses for families.')).toBeVisible();
       const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']).analyze();
       expect(results.violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
