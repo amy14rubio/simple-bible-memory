@@ -61,7 +61,10 @@ test('the home list shows only how many cards are due, and it updates after stud
   await page.getByRole('button', { name: /^Easy/ }).click();
   await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   await page.goto('/');
-  await expect(page.getByRole('link', { name: /Due list/ })).toContainText('0 due');
+  const done = page.getByRole('link', { name: /Due list/ });
+  await expect(done).toContainText('Done for today'); // a check mark (heard as "Done for today"), not a 0
+  await expect(done).not.toContainText(/\b0\b/);
+  await expect(done.locator('svg')).toBeVisible();
 });
 
 /** The page fills the box with the saved value a moment after it appears, which can undo typing: retry until it sticks. */

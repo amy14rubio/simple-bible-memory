@@ -10,13 +10,14 @@ import { onboardingDisabledForTests } from '../onboarding/onboarding';
 export const COACH_ADD_DONE = 'coach_add_done';
 export const COACH_DECK_DONE = 'coach_deck_done';
 
-export interface CoachStep { anchor: string; title: MessageKey; body: MessageKey }
+export interface CoachStep { anchor: string; title: MessageKey; body: MessageKey; /** Only while Autofill is on (true) or off (false); a step with no value is always shown. */ autofill?: boolean }
 /** In order down the screen. A step whose field is not on the screen (Autofill, when it is not offered) is left out. */
 const ADD_STEPS: CoachStep[] = [
   { anchor: 'deck', title: 'coach.add.deck.title', body: 'coach.add.deck.body' },
   { anchor: 'verse', title: 'coach.add.verse.title', body: 'coach.add.verse.body' },
   { anchor: 'autofill', title: 'coach.add.autofill.title', body: 'coach.add.autofill.body' },
-  { anchor: 'passage', title: 'coach.add.passage.title', body: 'coach.add.passage.body' },
+  { anchor: 'translation', title: 'coach.add.translation.title', body: 'coach.add.translation.body', autofill: true }, // Autofill is on: the version can be changed
+  { anchor: 'passage', title: 'coach.add.passage.title', body: 'coach.add.passage.body', autofill: false }, // Autofill is off: add the verse yourself
   { anchor: 'save', title: 'coach.add.save.title', body: 'coach.add.save.body' },
 ];
 
@@ -50,18 +51,19 @@ export function useCoach(isNew: boolean, doneSetting: string) {
 export const useAddCoach = (isNewCard: boolean) => useCoach(isNewCard, COACH_ADD_DONE);
 export const useDeckCoach = (isNewDeck: boolean) => useCoach(isNewDeck, COACH_DECK_DONE);
 
-export const AddCoach = ({ onClose }: { onClose: () => void }) => <Coach form="card-form" all={ADD_STEPS} doneLabel="coach.add.done" onClose={onClose} />;
+export const AddCoach = ({ onClose, autofill }: { onClose: () => void; autofill: boolean }) => <Coach form="card-form" all={ADD_STEPS} autofill={autofill} doneLabel="coach.add.done" onClose={onClose} />;
 export const DeckCoach = ({ onClose }: { onClose: () => void }) => <Coach form="deck-form" all={DECK_STEPS} doneLabel="coach.add.done" onClose={onClose} />;
 
-function Coach({ form, all, doneLabel, onClose }: { form: string; all: CoachStep[]; doneLabel: MessageKey; onClose: () => void }) {
+function Coach({ form, all, autofill, doneLabel, onClose }: { form: string; all: CoachStep[]; autofill?: boolean; doneLabel: MessageKey; onClose: () => void }) {
   const { t } = useI18n();
-  const [steps] = useState(() => all.filter((s) => find(form, s.anchor)));
+  // Which steps there are follows the screen: a field that is not there is left out, and so is the advice for the other Autofill setting.
+  const steps = all.filter((s) => (s.autofill === undefined || s.autofill === autofill) && find(form, s.anchor));
   const [i, setI] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [tipHeight, setTipHeight] = useState(0);
   const tip = useRef<HTMLDivElement>(null);
-  const step = steps[i];
-  const last = i === steps.length - 1;
+  const step = steps[Math.min(i, steps.length - 1)];
+  const last = i >= steps.length - 1;
 
   const measure = useCallback(() => {
     const el = step && find(form, step.anchor);

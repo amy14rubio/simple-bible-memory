@@ -199,7 +199,7 @@ test('everything is in Spanish when the app is: legend, group name and the label
   const ctx = await browser.newContext({ locale: 'es-ES' });
   const page = await ctx.newPage();
   await page.goto('/#/decks/new');
-  await page.getByLabel('Título').fill('Baraja');
+  await page.getByLabel('Título').fill('Carpeta');
   await page.getByRole('button', { name: 'Guardar' }).click();
   await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
   await page.goto('/#/stats');

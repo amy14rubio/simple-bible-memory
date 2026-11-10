@@ -321,9 +321,9 @@ test.describe('in Spanish, and accessibility', () => {
     await page.getByLabel('Título').fill('Salmo');
     await page.getByRole('button', { name: 'Guardar' }).click();
     await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
-    await page.getByRole('button', { name: 'Acciones de la baraja' }).click();
-    await page.getByRole('button', { name: 'Publicar baraja' }).click();
-    const d = page.getByRole('dialog', { name: 'Publicar baraja' });
+    await page.getByRole('button', { name: 'Acciones de la carpeta' }).click();
+    await page.getByRole('button', { name: 'Publicar carpeta' }).click();
+    const d = page.getByRole('dialog', { name: 'Publicar carpeta' });
     await expect(d).toContainText('Inicia sesión con Google para publicar');
     await d.getByRole('button', { name: 'Continuar con Google' }).click();
     await d.getByRole('button', { name: '¿Qué se publica?' }).click();
