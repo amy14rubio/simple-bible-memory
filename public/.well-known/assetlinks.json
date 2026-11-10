@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.simplebiblememory",
+      "sha256_cert_fingerprints": [
+        "F9:1A:D9:1F:42:8D:BE:9E:EA:FD:EB:57:2C:A8:A5:8D:24:5C:BB:7A:88:5E:70:C0:25:25:32:C9:3C:51:D1:5B"
+      ]
+    }
+  }
+]
