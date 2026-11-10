@@ -25,6 +25,7 @@ describe('which screen a link opens', () => {
   it('the widgets\' shortcuts', () => {
     expect(routeFromLink('simplebiblememory://add')).toBe('/cards/new');
     expect(routeFromLink('simplebiblememory://stats')).toBe('/stats');
+    expect(routeFromLink('simplebiblememory://home')).toBe('/');
     expect(routeFromLink(`simplebiblememory://deck/${id}`)).toBe(`/decks/${id}`);
   });
   it('nothing else opens anything', () => {

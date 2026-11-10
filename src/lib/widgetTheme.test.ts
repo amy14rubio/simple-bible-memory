@@ -50,7 +50,7 @@ describe('the theme part of the snapshot', () => {
   });
   it('"custom" with no saved colours falls back to following the phone', () => expect(widgetTheme('custom', undefined).pref).toBe('system'));
   it('the whole snapshot is plain JSON with a version, the time, the language and the wording', () => {
-    const s = buildSnapshot({ language: 'es', theme: 'dark', custom: undefined, labels: { addCard: 'Añadir tarjeta' }, now: 123 });
-    expect(JSON.parse(JSON.stringify(s))).toMatchObject({ v: 1, updatedAt: 123, language: 'es', theme: { pref: 'dark' }, labels: { addCard: 'Añadir tarjeta' } });
+    const s = buildSnapshot({ language: 'es', theme: 'dark', custom: undefined, labels: { addCard: 'Añadir tarjeta' }, content: { decks: [], stats: { memorized: 0, mastered: 0, total: 0, counts: { new: 0, learning: 0, young: 0, mature: 0 } }, verseDecks: [], licensedDecks: [] }, now: 123 });
+    expect(JSON.parse(JSON.stringify(s))).toMatchObject({ v: 2, updatedAt: 123, language: 'es', theme: { pref: 'dark' }, labels: { addCard: 'Añadir tarjeta' } });
   });
 });

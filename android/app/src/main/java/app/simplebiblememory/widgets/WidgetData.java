@@ -38,7 +38,7 @@ public final class WidgetData {
     /** Asks every widget on the home screen to draw itself again. */
     public static void refreshAll(Context context) {
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
-        for (Class<?> provider : new Class<?>[] { AddCardWidget.class }) {
+        for (Class<?> provider : new Class<?>[] { AddCardWidget.class, DueDecksWidget.class, StatsWidget.class, VersePreviewWidget.class }) {
             ComponentName name = new ComponentName(context, provider);
             int[] ids = manager.getAppWidgetIds(name);
             if (ids.length == 0) continue;
@@ -103,6 +103,33 @@ public final class WidgetData {
     /** Whichever of the two colours is easier to read on `background`. */
     public static int readableOn(int background, int first, int second) {
         return contrast(background, first) >= contrast(background, second) ? first : second;
+    }
+
+    /** Mixes `percent`% of `fg` into `bg` (like CSS color-mix in sRGB), keeping bg's transparency. */
+    public static int mix(int fg, int percent, int bg) {
+        int r = (Color.red(fg) * percent + Color.red(bg) * (100 - percent) + 50) / 100;
+        int g = (Color.green(fg) * percent + Color.green(bg) * (100 - percent) + 50) / 100;
+        int b = (Color.blue(fg) * percent + Color.blue(bg) * (100 - percent) + 50) / 100;
+        return Color.argb(255, r, g, b);
+    }
+
+    /** Is this a dark background? (The same test the app uses for custom themes.) */
+    public static boolean isDark(int background) {
+        double r = Color.red(background) / 255.0, g = Color.green(background) / 255.0, b = Color.blue(background) / 255.0;
+        return luminance(Color.argb(255, (int) (r * 255), (int) (g * 255), (int) (b * 255))) < 0.3;
+    }
+
+    /** A widget's size in dp (the roomiest it can be). */
+    public static int[] sizeDp(AppWidgetManager manager, int id, int defaultWidth, int defaultHeight) {
+        android.os.Bundle o = manager.getAppWidgetOptions(id);
+        int w = o == null ? 0 : o.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0);
+        int h = o == null ? 0 : o.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0);
+        return new int[] { w > 0 ? w : defaultWidth, h > 0 ? h : defaultHeight };
+    }
+
+    /** A phrase like "+{count} more" with the number put in. */
+    public static String fill(String template, int count) {
+        return template.replace("{count}", String.valueOf(count));
     }
 
     /** A word or phrase the app saved in the person's language; the widget's own English default until there is one. */

@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RemoteViews;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 /** Debug only. Shows every widget at a typical launcher size on a plain "wallpaper": `adb shell am start -n app.simplebiblememory/.widgets.WidgetPreviewActivity --es bg "#8FA8B8"`. */
@@ -22,8 +23,13 @@ public class WidgetPreviewActivity extends Activity {
         root.setBackgroundColor(Color.parseColor(bg == null ? "#8FA8B8" : bg));
         root.setPadding(dp(16), dp(48), dp(16), dp(16));
         show(root, "Add card · 2×1", AddCardWidget.views(this), 176, 56);
-        show(root, "Add card · 4×1", AddCardWidget.views(this), 360, 56);
-        setContentView(root);
+        show(root, "Due today · 4×2", DueDecksWidget.views(this, 140), 360, 140);
+        show(root, "Statistics · 2×2", StatsWidget.views(this, 110, 110), 150, 150);
+        show(root, "Statistics · 4×2", StatsWidget.views(this, 250, 120), 360, 140);
+        show(root, "Verse preview · 4×2", VersePreviewWidget.views(this, 0, 140), 360, 140);
+        ScrollView scroll = new ScrollView(this);
+        scroll.addView(root);
+        setContentView(scroll);
     }
 
     private void show(LinearLayout parent, String title, RemoteViews views, int widthDp, int heightDp) {

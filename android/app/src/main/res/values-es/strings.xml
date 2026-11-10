@@ -2,4 +2,17 @@
 <resources>
     <string name="widget_add_card">Añadir tarjeta</string>
     <string name="widget_add_card_description">Un acceso directo para agregar una tarjeta nueva.</string>
+    <string name="widget_due_today">Pendientes hoy</string>
+    <string name="widget_due_decks">Pendientes hoy</string>
+    <string name="widget_due_decks_description">Tus carpetas, con cuántas tarjetas están pendientes en cada una.</string>
+    <string name="widget_no_decks">Aún no hay carpetas</string>
+    <string name="widget_stats">Estadísticas</string>
+    <string name="widget_stats_description">Cuántos versículos has memorizado.</string>
+    <string name="widget_memorized">Versículos memorizados</string>
+    <string name="widget_verse">Vista previa de versículo</string>
+    <string name="widget_verse_description">Un versículo de una de tus carpetas, uno nuevo cada día.</string>
+    <string name="widget_choose_deck">Elige una carpeta</string>
+    <string name="widget_choose_deck_hint">Elige la carpeta de la que este widget muestra un versículo.</string>
+    <string name="widget_licensed_deck">El texto con licencia no se puede mostrar en la pantalla de inicio</string>
+    <string name="widget_no_verses">Añade una carpeta con tus propios versículos (o una traducción de dominio público) para ver uno aquí.</string>
 </resources>

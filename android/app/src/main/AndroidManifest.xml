@@ -54,6 +54,48 @@
                 android:resource="@xml/widget_add_card_info" />
         </receiver>
 
+        <receiver
+            android:name=".widgets.DueDecksWidget"
+            android:exported="false"
+            android:label="@string/widget_due_decks">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_due_decks_info" />
+        </receiver>
+        <receiver
+            android:name=".widgets.StatsWidget"
+            android:exported="false"
+            android:label="@string/widget_stats">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_stats_info" />
+        </receiver>
+        <receiver
+            android:name=".widgets.VersePreviewWidget"
+            android:exported="false"
+            android:label="@string/widget_verse">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_verse_info" />
+        </receiver>
+        <activity
+            android:name=".widgets.VersePreviewConfigActivity"
+            android:exported="true"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
