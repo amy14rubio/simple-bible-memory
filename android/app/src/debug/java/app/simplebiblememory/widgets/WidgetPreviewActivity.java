@@ -26,6 +26,8 @@ public class WidgetPreviewActivity extends Activity {
         show(root, "Due today · 4×2", DueDecksWidget.views(this, 140), 360, 140);
         show(root, "Statistics · 2×2", StatsWidget.views(this, 110, 110), 150, 150);
         show(root, "Statistics · 4×2", StatsWidget.views(this, 250, 120), 360, 140);
+        show(root, "Statistics · 2×1 (no pie)", StatsWidget.views(this, 110, 56), 150, 70);
+        show(root, "Statistics · 4×1 (pie)", StatsWidget.views(this, 250, 56), 360, 70);
         show(root, "Verse preview · 4×2", VersePreviewWidget.views(this, 0, 140), 360, 140);
         ScrollView scroll = new ScrollView(this);
         scroll.addView(root);

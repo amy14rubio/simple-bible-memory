@@ -46,7 +46,9 @@
             android:scaleType="fitCenter"
             android:visibility="gone" />
 
+        <!-- its top and bottom padding are set in StatsWidget so the number and the label are a little shorter than the pie -->
         <LinearLayout
+            android:id="@+id/stats_text"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
