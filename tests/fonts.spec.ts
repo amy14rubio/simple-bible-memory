@@ -326,11 +326,11 @@ test.describe('font', () => {
     const page = await ctx.newPage();
     await mockGoogleFonts(page);
     await page.goto('/#/settings/font');
-    await expect(page.getByRole('heading', { name: 'Fuente' })).toBeVisible();
-    await page.getByRole('button', { name: /^Fuente:/ }).click();
-    await expect(page.getByRole('dialog', { name: 'Selecciona una fuente' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Letra' })).toBeVisible();
+    await page.getByRole('button', { name: /^Letra:/ }).click();
+    await expect(page.getByRole('dialog', { name: 'Selecciona una letra' })).toBeVisible();
     await page.getByRole('dialog').getByRole('button', { name: 'Lora', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Usar esta fuente' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Usar esta letra' })).toBeVisible();
     await ctx.close();
   });
 

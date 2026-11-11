@@ -1,5 +1,4 @@
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
-import { HiddenClose } from '../../components/ui';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useI18n } from '../../i18n/I18nProvider';
 
@@ -9,7 +8,7 @@ export function MoveDrawer({ open, count, decks, onPick, onClose }: { open: bool
   usePopupHistory(open, onClose);
   return (
     <Drawer open={open} onOpenChange={(o) => { if (!o) onClose(); }} showSwipeHandle>
-      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]">
+      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]" closeLabel={t('common.cancel')}>
         <DrawerHeader className="px-6 pb-2 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
           <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{t('move.title', { count })}</DrawerTitle>
           <DrawerDescription className="sr-only">{t('move.help')}</DrawerDescription>
@@ -23,7 +22,6 @@ export function MoveDrawer({ open, count, decks, onPick, onClose }: { open: bool
             </li>
           ))}
         </ul>
-        <DrawerClose render={<HiddenClose label={t('common.cancel')} />} />
       </DrawerContent>
     </Drawer>
   );

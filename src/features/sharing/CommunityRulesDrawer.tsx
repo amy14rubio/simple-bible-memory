@@ -1,5 +1,5 @@
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
-import { Button, HiddenClose } from '../../components/ui';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
+import { Button } from '../../components/ui';
 import { ExternalLink } from '../../components/ExternalLink';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { legalUrl } from '../../lib/site';
@@ -16,7 +16,7 @@ export function CommunityRulesDrawer({ open, busy, onAgree, onClose, agreeLabel 
   usePopupHistory(open, onClose);
   return (
     <Drawer open={open} onOpenChange={(o) => { if (!o) onClose(); }} showSwipeHandle>
-      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]">
+      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]" closeLabel={t('common.cancel')}>
         <DrawerHeader className="px-6 pb-2 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
           <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{t('terms.title')}</DrawerTitle>
           <DrawerDescription className="text-base text-foreground">{t('terms.intro')}</DrawerDescription>
@@ -32,7 +32,6 @@ export function CommunityRulesDrawer({ open, busy, onAgree, onClose, agreeLabel 
           </div>
         </div>
         <div className="h-6" />
-        <DrawerClose render={<HiddenClose label={t('common.cancel')} />} />
       </DrawerContent>
     </Drawer>
   );

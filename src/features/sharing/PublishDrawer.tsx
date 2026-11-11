@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
 import { toast } from '../../components/shadcn/toast';
-import { Button, ErrorMessage, HiddenClose } from '../../components/ui';
+import { Button, ErrorMessage } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { useRepositories } from '../../app/repositories';
 import { useSharing } from '../../app/sharing';
@@ -124,7 +124,7 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
   return (
     <>
       <Drawer open onOpenChange={(o) => { if (!o) onClose(); }} showSwipeHandle>
-        <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]">
+        <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]" closeLabel={t('common.cancel')}>
           <DrawerHeader className="px-6 pb-2 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
             <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{published ? t('publish.titlePublished') : t('publish.title')}</DrawerTitle>
             <DrawerDescription className="sr-only">{deck.title}</DrawerDescription>
@@ -173,7 +173,6 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
             {error && <ErrorMessage error={error} />}
           </div>
           <div className="h-6" />
-          <DrawerClose render={<HiddenClose label={t('common.cancel')} />} />
         </DrawerContent>
       </Drawer>
       <CommunityRulesDrawer

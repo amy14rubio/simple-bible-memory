@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
 import { toast } from '../../components/shadcn/toast';
-import { Button, CheckList, ErrorMessage, GrowingTextarea, HiddenClose } from '../../components/ui';
+import { Button, CheckList, ErrorMessage, GrowingTextarea } from '../../components/ui';
 import { loadBackends } from '../sharing/backend';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -34,7 +34,7 @@ export function ReportDrawer({ deckId, open, onClose }: { deckId: string; open: 
 
   return (
     <Drawer open={open} onOpenChange={(o) => { if (!o) onClose(); }} showSwipeHandle>
-      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]">
+      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]" closeLabel={t('common.cancel')}>
         <DrawerHeader className="px-6 pb-2 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
           <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{t('report.title')}</DrawerTitle>
           <DrawerDescription className="sr-only">{t('report.help')}</DrawerDescription>
@@ -55,7 +55,6 @@ export function ReportDrawer({ deckId, open, onClose }: { deckId: string; open: 
           <Button className="w-full" disabled={busy} onClick={() => void send()}>{t('report.send')}</Button>
         </div>
         <div className="h-6" />
-        <DrawerClose render={<HiddenClose label={t('common.cancel')} />} />
       </DrawerContent>
     </Drawer>
   );

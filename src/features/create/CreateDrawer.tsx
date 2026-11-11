@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Compass, FilePlus, Layers, Upload } from 'lucide-react';
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
-import { HiddenClose } from '../../components/ui';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useSharing } from '../../app/sharing';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -22,7 +21,7 @@ export function CreateDrawer({ open, onOpenChange }: { open: boolean; onOpenChan
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
-      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]">
+      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]" closeLabel={t('common.cancel')}>
         <DrawerHeader className="px-6 pb-4 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
           <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{t('create.title')}</DrawerTitle>
           <DrawerDescription className="sr-only">{t('create.description')}</DrawerDescription>
@@ -36,7 +35,6 @@ export function CreateDrawer({ open, onOpenChange }: { open: boolean; onOpenChan
         </div>
 
         <div className="h-6" />
-        <DrawerClose render={<HiddenClose label={t('common.cancel')} />} />
       </DrawerContent>
     </Drawer>
   );

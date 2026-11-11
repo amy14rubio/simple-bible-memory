@@ -97,8 +97,17 @@ function DrawerSwipeHandle({
 function DrawerContent({
   className,
   children,
+  closeLabel,
   ...props
-}: DrawerPrimitive.Popup.Props) {
+}: DrawerPrimitive.Popup.Props & {
+  /**
+   * The name of an invisible Close button that sits just above the drawer, in the dimmed part of the screen. It is a child of the drawer (the
+   * rest of the page is hidden from assistive technology while a drawer is open, so a button outside it could not be named), and it is outside
+   * the drawer's box on screen, so with Voice Control "Tap Close" taps outside the drawer, which closes it. A drawer with only text in it has no
+   * other control to say. Screen readers get it as the drawer's Close button.
+   */
+  closeLabel?: string
+}) {
   const { hasSnapPoints, modal, showSwipeHandle, swipeDirection } = useDrawer()
   const swipeAxis =
     swipeDirection === "down" || swipeDirection === "up" ? "y" : "x"
@@ -155,6 +164,13 @@ function DrawerContent({
           >
             {children}
           </DrawerPrimitive.Content>
+          {closeLabel && (
+            <DrawerPrimitive.Close
+              data-slot="drawer-outside-close"
+              aria-label={closeLabel}
+              className="absolute inset-x-0 bottom-full h-20 cursor-default bg-transparent"
+            />
+          )}
         </DrawerPrimitive.Popup>
       </DrawerPrimitive.Viewport>
     </DrawerPortal>

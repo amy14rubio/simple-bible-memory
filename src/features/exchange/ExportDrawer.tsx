@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
 import { toast } from '../../components/shadcn/toast';
-import { Button, ErrorMessage, HiddenClose, Switch } from '../../components/ui';
+import { Button, ErrorMessage, Switch } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { useRepositories } from '../../app/repositories';
 import { exportFileName } from '../../domain/exchange/format';
@@ -53,7 +53,7 @@ export function ExportDrawer({ target, onClose }: { target: ExportTarget | null;
 
   return (
     <Drawer open={open} onOpenChange={(o) => { if (!o) onClose(); }} showSwipeHandle>
-      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]">
+      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]" closeLabel={t('common.cancel')}>
         <DrawerHeader className="px-6 pb-2 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
           <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{target?.ids === null ? t('export.titleAll') : t('export.title')}</DrawerTitle>
           <DrawerDescription className="sr-only">{target?.title}</DrawerDescription>
@@ -68,7 +68,6 @@ export function ExportDrawer({ target, onClose }: { target: ExportTarget | null;
           <Button className="w-full" disabled={busy} onClick={() => void run()}>{t('export.button')}</Button>
         </div>
         <div className="h-6" />
-        <DrawerClose render={<HiddenClose label={t('common.cancel')} />} />
       </DrawerContent>
     </Drawer>
   );

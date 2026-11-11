@@ -141,7 +141,7 @@ export function DecksPage() {
   // Tapping anywhere outside the decks (or pressing Escape) also leaves the mode, like tapping outside a menu closes it.
   useEffect(() => {
     if (!reordering) return;
-    const outside = (e: PointerEvent) => { if (e.target instanceof Element && !e.target.closest('li, [role="dialog"]')) stopReordering(); };
+    const outside = (e: PointerEvent) => { if (e.target instanceof Element && !e.target.closest('li, [role="dialog"], header button')) stopReordering(); };
     const escape = (e: KeyboardEvent) => { if (e.key === 'Escape') stopReordering(); };
     document.addEventListener('pointerdown', outside);
     document.addEventListener('keydown', escape);
