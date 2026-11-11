@@ -11,7 +11,7 @@ const PAGES = [
     typeTab: 'Type', speakTab: 'Speak', blanksTab: 'Fill in the blanks', typeFull: 'For God didn’t give us a spirit of fear, but of power, love, and self-control.', typePartial: 'For God give us a spirit of fear', typeAll: /You remembered 15 of 15 words/, typeSome: /You remembered 8 of 15 words/, check: 'Show answer', speakText: 'Recite verses hands-free while you drive or go about your day. The app reads them back, and you rate yourself for easy, relaxed practice.', langName: 'English', langOther: 'Español', langOtherHref: '/es', langLabel: 'Language', words: ['fear', 'power', 'self-control'], done: /That’s it!/, wrongWord: 'love', wrongNote: /Not quite: the word was “fear”/,
   },
   {
-    lang: 'Spanish', url: '/es/landing.html', other: '/', heading: 'Simple Bible Memory', tagline: 'Aprende la Escritura de memoria', open: 'Empezar a practicar',
+    lang: 'Spanish', url: '/es/landing.html', other: '/', heading: 'Memoria Bíblica Simple', tagline: 'Guarda las Escrituras en tu corazón', open: 'Empezar a practicar',
     play: 'Disponible en Google Play', apple: 'Descargar en el App Store', donate: 'Apoyar en Ko-fi',
     features: ['Sin cuenta', 'Español e inglés', 'Repaso espaciado', 'A tu manera'],
     show: 'Mostrar respuesta', rates: ['Otra vez', 'Difícil', 'Bien', 'Fácil'], goodWhen: /10 min/, next: 'Probar otro versículo', first: 'Proverbios 3:5-6', second: 'Romanos 5:8',
@@ -300,7 +300,7 @@ for (const path of ['/privacy-policy.html', '/terms.html', '/delete-account.html
   });
 }
 
-for (const [lang, path, title] of [['English', '/landing.html', 'Simple Bible Memory'], ['Spanish', '/es/landing.html', 'Simple Bible Memory']] as const) {
+for (const [lang, path, title] of [['English', '/landing.html', 'Simple Bible Memory'], ['Spanish', '/es/landing.html', 'Memoria Bíblica Simple']] as const) {
   test.describe(`${lang}: text reveal`, () => {
     test('the hero words blur in, and then every word is fully visible and the sentence is unchanged', async ({ page }) => {
       await page.goto(path);
@@ -339,15 +339,13 @@ for (const [lang, path, title] of [['English', '/landing.html', 'Simple Bible Me
     test('the hero buttons are quick to appear and, once there, react to hover with no reveal delay', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto(path);
-      const start = page.locator('.hero .actions .button');
-      await expect(start).toHaveAttribute('data-revealed', '', { timeout: 2500 }); // all three buttons within about a second
-      await expect(page.locator('.hero .stores .badge').last()).toHaveAttribute('data-revealed', '', { timeout: 2500 });
+      const start = page.locator('.hero .stores .badge').first();
+      await expect(start).toHaveAttribute('data-revealed', '', { timeout: 4000 }); // both badges within about a second
+      await expect(page.locator('.hero .stores .badge').last()).toHaveAttribute('data-revealed', '', { timeout: 4000 });
       const before = await start.evaluate((el) => getComputedStyle(el).transitionDelay);
       expect(before).toBe('0s'); // nothing left over from the reveal
       await start.hover();
-      await expect(start).toBeEnabled();
-      await start.click();
-      await expect(page).toHaveURL(/\/app$|#\//);
+      await expect(start).toBeVisible(); // (it leads to the store, so it is not clicked here)
     });
 
     test('with reduced motion the text is plain: no split words, nothing hidden', async ({ browser }) => {

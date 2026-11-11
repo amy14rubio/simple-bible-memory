@@ -26,7 +26,7 @@
   var phoneStrip = matchMedia('(max-width: 48rem)').matches; // on a phone the screenshots are a swipeable strip, so it reveals as one piece
   var groups = [
     { sel: ['.top .brand', '.top nav .button'], base: 0 }, // the top bar and the hero buttons play on load, after the title
-    { sel: ['.hero .actions .button', '.hero .stores .badge'], base: 420, step: 70 },
+    { sel: ['.hero .stores .badge'], base: 420, step: 70 },
     { sel: ['#demo'], base: 0 },
     { sel: phoneStrip ? ['.shots'] : ['.shots .shot'], base: 0 },
     { sel: ['.grid li'], base: 0 },
@@ -46,6 +46,8 @@
   blocks.forEach(function (el) {
     // the rise (transform) always changes, even for a button whose own styles keep its opacity fixed
     el.addEventListener('transitionend', function (e) { if (e.target === el && e.propertyName === 'transform' && el.classList.contains('rv-go')) settle(el); });
+    // If the browser never reports the end of the animation (a busy or background tab skips it), the block is handed back anyway.
+    new MutationObserver(function () { if (el.classList.contains('rv-go') && el.classList.contains('rv-block')) setTimeout(function () { settle(el); }, 2500); }).observe(el, { attributes: true, attributeFilter: ['class'] });
   });
   root.classList.remove('reveal-pending');
   if (title) title.classList.add('rv-go');
