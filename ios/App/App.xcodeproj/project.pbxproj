@@ -20,6 +20,12 @@
 		A1B2C3D4E5F60718293A4B04 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B02 /* MainViewController.swift */; };
 		A1B2C3D4E5F60718293A4B08 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B07 /* InfoPlist.strings */; };
 		A1B2C3D4E5F60718293A4B0A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B09 /* GoogleService-Info.plist */; };
+		19C8CBBDF2D6BD4F0C0ED410 /* WidgetBridgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A34FAFFF0433D760C1000E0 /* WidgetBridgePlugin.swift */; };
+		FD2470B2735529912D5730FE /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE4E0FBFA58690B2F4C5AA4 /* Snapshot.swift */; };
+		2BB59F5953286E438053D261 /* Views.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53923F4920C7C9FD89AB8627 /* Views.swift */; };
+		0DE57FD04745C25914FBA104 /* Widgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F96B8CF1262CB5C6788D647 /* Widgets.swift */; };
+		6D918A7A4E4B1243B6620168 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B58E5B51565C0416065E2BE1 /* Localizable.strings */; };
+		2CFBF7683614A4287210B961 /* SBMWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 909E7C01CD94734571489227 /* SBMWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,7 +46,40 @@
 		A1B2C3D4E5F60718293A4B06 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B09 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B0B /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		0A34FAFFF0433D760C1000E0 /* WidgetBridgePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBridgePlugin.swift; sourceTree = "<group>"; };
+		909E7C01CD94734571489227 /* SBMWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SBMWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		BFE4E0FBFA58690B2F4C5AA4 /* Snapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snapshot.swift; sourceTree = "<group>"; };
+		53923F4920C7C9FD89AB8627 /* Views.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views.swift; sourceTree = "<group>"; };
+		4F96B8CF1262CB5C6788D647 /* Widgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Widgets.swift; sourceTree = "<group>"; };
+		5EFBE356FED136C4870FF72E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3499D0C006C50A09C011367D /* SBMWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SBMWidgets.entitlements; sourceTree = "<group>"; };
+		6BCDB396D14642EB9B2C26B5 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		1F1EE89FCF7121BF276E05D7 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXContainerItemProxy section */
+		84DD4E9D3B53AC457FCFC494 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CCB3B10717C9F497A5E37E6E;
+			remoteInfo = SBMWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		921E6DC529914F3E7170A06D /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				2CFBF7683614A4287210B961 /* SBMWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		504EC3011FED79650016851F /* Frameworks */ = {
@@ -48,6 +87,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		54D413C55773FF076995817C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +105,7 @@
 			children = (
 				958DCC722DB07C7200EA8C5F /* debug.xcconfig */,
 				504EC3061FED79650016851F /* App */,
+				B21D8579341CA23884BA1FDB /* SBMWidgets */,
 				504EC3051FED79650016851F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -67,6 +114,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
+				909E7C01CD94734571489227 /* SBMWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -77,6 +125,7 @@
 				9582B6822FE993A50072D4E8 /* SceneDelegate.swift */,
 				A1B2C3D4E5F60718293A4B01 /* SpeechRecognitionPlugin.swift */,
 				A1B2C3D4E5F60718293A4B02 /* MainViewController.swift */,
+				0A34FAFFF0433D760C1000E0 /* WidgetBridgePlugin.swift */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
@@ -92,6 +141,19 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		B21D8579341CA23884BA1FDB /* SBMWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				4F96B8CF1262CB5C6788D647 /* Widgets.swift */,
+				53923F4920C7C9FD89AB8627 /* Views.swift */,
+				BFE4E0FBFA58690B2F4C5AA4 /* Snapshot.swift */,
+				B58E5B51565C0416065E2BE1 /* Localizable.strings */,
+				5EFBE356FED136C4870FF72E /* Info.plist */,
+				3499D0C006C50A09C011367D /* SBMWidgets.entitlements */,
+			);
+			path = SBMWidgets;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -102,10 +164,12 @@
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
+				921E6DC529914F3E7170A06D /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				ECE3BCB7461E647ECF050576 /* PBXTargetDependency */,
 			);
 			name = App;
 			packageProductDependencies = (
@@ -114,6 +178,23 @@
 			productName = App;
 			productReference = 504EC3041FED79650016851F /* App.app */;
 			productType = "com.apple.product-type.application";
+		};
+		CCB3B10717C9F497A5E37E6E /* SBMWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 321339B54253FC00958BCA94 /* Build configuration list for PBXNativeTarget "SBMWidgets" */;
+			buildPhases = (
+				68C51CC5D83CA838B6518590 /* Sources */,
+				54D413C55773FF076995817C /* Frameworks */,
+				740AD1C664087EA472DEBDF2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SBMWidgets;
+			productName = SBMWidgets;
+			productReference = 909E7C01CD94734571489227 /* SBMWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -127,6 +208,10 @@
 					504EC3031FED79650016851F = {
 						CreatedOnToolsVersion = 9.2;
 						LastSwiftMigration = 1100;
+						ProvisioningStyle = Automatic;
+					};
+					CCB3B10717C9F497A5E37E6E = {
+						CreatedOnToolsVersion = 15.0;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -149,6 +234,7 @@
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				CCB3B10717C9F497A5E37E6E /* SBMWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -169,6 +255,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		740AD1C664087EA472DEBDF2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6D918A7A4E4B1243B6620168 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -180,10 +274,29 @@
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
 				A1B2C3D4E5F60718293A4B03 /* SpeechRecognitionPlugin.swift in Sources */,
 				A1B2C3D4E5F60718293A4B04 /* MainViewController.swift in Sources */,
+				19C8CBBDF2D6BD4F0C0ED410 /* WidgetBridgePlugin.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		68C51CC5D83CA838B6518590 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0DE57FD04745C25914FBA104 /* Widgets.swift in Sources */,
+				2BB59F5953286E438053D261 /* Views.swift in Sources */,
+				FD2470B2735529912D5730FE /* Snapshot.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		ECE3BCB7461E647ECF050576 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CCB3B10717C9F497A5E37E6E /* SBMWidgets */;
+			targetProxy = 84DD4E9D3B53AC457FCFC494 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
@@ -209,6 +322,15 @@
 				A1B2C3D4E5F60718293A4B06 /* es */,
 			);
 			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		B58E5B51565C0416065E2BE1 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				6BCDB396D14642EB9B2C26B5 /* en */,
+				1F1EE89FCF7121BF276E05D7 /* es */,
+			);
+			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -371,6 +493,56 @@
 			};
 			name = Release;
 		};
+		B6F1E5C1CD6DC9B31E944152 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = SBMWidgets/SBMWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = UCZ2CMX8NG;
+				INFOPLIST_FILE = SBMWidgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.4;
+				PRODUCT_BUNDLE_IDENTIFIER = app.simplebiblememory.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5FB4A29D1E4A4268D79887B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = SBMWidgets/SBMWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = UCZ2CMX8NG;
+				INFOPLIST_FILE = SBMWidgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.4;
+				PRODUCT_BUNDLE_IDENTIFIER = app.simplebiblememory.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -388,6 +560,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		321339B54253FC00958BCA94 /* Build configuration list for PBXNativeTarget "SBMWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B6F1E5C1CD6DC9B31E944152 /* Debug */,
+				5FB4A29D1E4A4268D79887B0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
