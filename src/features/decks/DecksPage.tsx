@@ -4,7 +4,6 @@ import { Check, EllipsisVertical, GripVertical, Search, Settings } from 'lucide-
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type Announcements, type DragEndEvent, type KeyboardCoordinateGetter } from '@dnd-kit/core';
 import { SortableContext, arrayMove, rectSortingStrategy, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { toast } from '../../components/shadcn/toast';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
@@ -139,6 +138,15 @@ export function DecksPage() {
   const stopReordering = () => setReordering(false);
   usePopupHistory(reordering, stopReordering); // Back leaves reordering instead of the screen
   useEffect(() => { if (reordering && !canReorder) setReordering(false); }, [reordering, canReorder]); // for example, one deck was deleted
+  // Tapping anywhere outside the decks (or pressing Escape) also leaves the mode, like tapping outside a menu closes it.
+  useEffect(() => {
+    if (!reordering) return;
+    const outside = (e: PointerEvent) => { if (e.target instanceof Element && !e.target.closest('li, [role="dialog"]')) stopReordering(); };
+    const escape = (e: KeyboardEvent) => { if (e.key === 'Escape') stopReordering(); };
+    document.addEventListener('pointerdown', outside);
+    document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape); };
+  }, [reordering]);
   const wasReordering = useRef(false);
   const [announce, setAnnounce] = useState('');
   useEffect(() => {
@@ -189,18 +197,6 @@ export function DecksPage() {
     const to = ordered.findIndex((d) => d.id === over.id);
     if (from >= 0 && to >= 0) save(arrayMove(ordered, from, to).map((d) => d.id));
   };
-  // Move up / Move down from a deck's menu: the same thing without dragging.
-  const moveFor = (id: string | undefined) => {
-    if (!ordered || !id || !canReorder) return undefined;
-    const i = ordered.findIndex((d) => d.id === id);
-    if (i < 0) return undefined;
-    const go = (to: number) => () => {
-      save(arrayMove(ordered, i, to).map((d) => d.id));
-      toast.add({ title: t(to < i ? 'toast.deckMovedUp' : 'toast.deckMovedDown', { title: ordered[i]!.title }), type: 'success' }); // heard by screen readers too
-    };
-    return { up: i > 0 ? go(i - 1) : null, down: i < ordered.length - 1 ? go(i + 1) : null };
-  };
-
   return (
     <>
       {reordering ? (
@@ -235,7 +231,7 @@ export function DecksPage() {
           </ul>
         </SortableContext>
       </DndContext>
-      <DeckMenu deck={menuFor} onClose={() => setMenuFor(null)} onDeleted={reload} move={moveFor(menuFor?.id)} />
+      <DeckMenu deck={menuFor} onClose={() => setMenuFor(null)} onDeleted={reload} />
     </>
   );
 }

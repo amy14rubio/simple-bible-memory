@@ -9,32 +9,20 @@ async function three(page: Page) {
   await page.goto('/');
   await expect.poll(() => order(page)).toEqual(['Apple', 'Banana', 'Cherry']); // A to Z until someone reorders
 }
-const menu = (page: Page, title: string) => page.getByRole('button', { name: `Actions for ${title}` }).click();
-
-test('Move up / Move down in a deck\'s menu reorders, and the order is kept', async ({ page }) => {
-  await three(page);
-  await menu(page, 'Apple');
-  await expect(page.getByRole('dialog').getByRole('button', { name: 'Move up' })).toHaveCount(0); // already first
-  await page.getByRole('dialog').getByRole('button', { name: 'Move down' }).click();
-  await expect(page.getByText('Moved Apple down')).toBeVisible(); // also heard by a screen reader
-  await expect.poll(() => order(page)).toEqual(['Banana', 'Apple', 'Cherry']);
-  await menu(page, 'Cherry');
-  await expect(page.getByRole('dialog').getByRole('button', { name: 'Move down' })).toHaveCount(0); // already last
-  await page.getByRole('dialog').getByRole('button', { name: 'Move up' }).click();
-  await expect.poll(() => order(page)).toEqual(['Banana', 'Cherry', 'Apple']);
-  await page.reload();
-  await expect.poll(() => order(page)).toEqual(['Banana', 'Cherry', 'Apple']); // kept
-});
 
 test('a new deck goes to the top, whatever the order was', async ({ page }) => {
   await three(page);
-  await menu(page, 'Apple');
-  await page.getByRole('dialog').getByRole('button', { name: 'Move down' }).click();
+  await hold(page, 'Apple');
+  await dragHandle(page, 'Apple', 'Cherry');
+  await expect.poll(() => order(page)).toEqual(['Banana', 'Cherry', 'Apple']);
+  await done(page).click();
+  await page.waitForTimeout(300);
   await createDeck(page, 'Date');
   await page.goto('/');
-  await expect.poll(() => order(page)).toEqual(['Date', 'Banana', 'Apple', 'Cherry']);
+  await expect.poll(() => order(page)).toEqual(['Date', 'Banana', 'Cherry', 'Apple']);
 });
 
+const menu = (page: Page, title: string) => page.getByRole('button', { name: `Actions for ${title}` }).click();
 const heading = (page: Page) => page.getByRole('heading', { level: 1 });
 const done = (page: Page) => page.getByRole('button', { name: 'Done' });
 const handle = (page: Page, title: string) => page.getByRole('button', { name: `Move ${title}` });
@@ -215,12 +203,28 @@ test.describe('in Spanish', () => {
     for (const title of ['Uno', 'Dos']) { await page.goto('/#/decks/new'); await page.getByLabel('Título').fill(title); await page.getByRole('button', { name: 'Guardar' }).click(); await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/); }
     await page.goto('/');
     await page.getByRole('button', { name: 'Acciones de Dos' }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Bajar' }).click();
-    await expect(page.getByText('Se bajó Dos')).toBeVisible();
+    await expect(page.getByRole('dialog').getByRole('button', { name: 'Bajar' })).toHaveCount(0); // no Move buttons in the menu
+    await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Reordenar carpetas' }).focus();
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Reordenar carpetas');
     await expect(page.getByRole('button', { name: 'Mover Uno' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Listo' })).toBeVisible();
   });
+});
+
+test('tapping outside the decks (or pressing Escape) leaves reordering', async ({ page }) => {
+  await three(page);
+  await hold(page, 'Apple');
+  await expect(heading(page)).toHaveText('Reorder decks');
+  await page.mouse.click(200, 760); // empty space below the decks
+  await expect(heading(page)).toHaveText('Simple Bible Memory');
+  await hold(page, 'Apple');
+  await expect(heading(page)).toHaveText('Reorder decks');
+  await heading(page).click(); // the top bar counts as outside too
+  await expect(heading(page)).toHaveText('Simple Bible Memory');
+  await hold(page, 'Apple');
+  await expect(heading(page)).toHaveText('Reorder decks');
+  await page.keyboard.press('Escape');
+  await expect(heading(page)).toHaveText('Simple Bible Memory');
 });

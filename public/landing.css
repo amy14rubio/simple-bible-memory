@@ -273,7 +273,6 @@ h2 {
   .hero::before {
     background-image: url('/bg-dark.webp');
     opacity: 0.9;
-    filter: brightness(1.8); /* the scripture page, easier to see on the dark page */
   }
 }
 /* Paper behind the hero: fine grain, like the page of a book, and a soft light from above. No script, nothing moves.
@@ -339,9 +338,18 @@ h1 {
 }
 .stores {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.75rem 1rem;
+}
+.stores .badge {
+  display: block;
+}
+.stores .badge img {
+  display: block;
+  height: 3.25rem; /* the two store badges, the same height */
+  width: auto;
 }
 
 /* demo: it looks like the app's own study screen (the card in the middle, the buttons along the bottom) */

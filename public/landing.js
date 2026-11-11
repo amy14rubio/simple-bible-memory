@@ -26,7 +26,7 @@
   var phoneStrip = matchMedia('(max-width: 48rem)').matches; // on a phone the screenshots are a swipeable strip, so it reveals as one piece
   var groups = [
     { sel: ['.top .brand', '.top nav .button'], base: 0 }, // the top bar and the hero buttons play on load, after the title
-    { sel: ['.hero .actions .button', '.hero .stores .button'], base: 420, step: 70 },
+    { sel: ['.hero .actions .button', '.hero .stores .badge'], base: 420, step: 70 },
     { sel: ['#demo'], base: 0 },
     { sel: phoneStrip ? ['.shots'] : ['.shots .shot'], base: 0 },
     { sel: ['.grid li'], base: 0 },
