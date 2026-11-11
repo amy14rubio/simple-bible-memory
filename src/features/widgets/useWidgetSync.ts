@@ -5,7 +5,10 @@ import { onDatabaseWrite } from '../../data/writeEvents';
 import { useI18n } from '../../i18n/I18nProvider';
 import { pushWidgetSnapshot, widgetsAvailable } from '../../platform/widgets';
 import { collectWidgetContent } from './collect';
-import { buildSnapshot } from './snapshot';
+import { buildSnapshot, type WidgetContent } from './snapshot';
+
+/** What the widgets were last given to show (the decks, statistics and verses), kept so a new theme or language can be sent without reading the database. */
+let lastContent: WidgetContent | undefined;
 
 /**
  * Keeps the Android home-screen widgets in step with the app: the theme (including the person's own colours), the language, the due
@@ -47,15 +50,25 @@ export function useWidgetSync() {
       running = true;
       try {
         const content = await collectWidgetContent({ decks, cards, reviews, stats, settings });
+        lastContent = content;
         await pushWidgetSnapshot(buildSnapshot({ language, theme: preference, custom, labels: JSON.parse(wording) as Record<string, string>, content, now: Date.now() }));
       } catch { /* the widgets keep what they had */ } finally {
         running = false;
         if (again) { again = false; schedule(); }
       }
     };
-    const schedule = () => { clearTimeout(timer); timer = setTimeout(() => void send(), 1500); };
-    schedule();
-    const off = onDatabaseWrite(schedule);
-    return () => { clearTimeout(timer); off(); };
+    // After a save, a moment's wait gathers a burst of saves into one send. This effect itself runs again only when the theme, the
+    // language or a word changed (or on start), which is rare and should show on the home screen at once, so it sends almost
+    // immediately: someone who switches the language and goes straight to the home screen must find the widgets already changed.
+    const schedule = (delay = 1500) => { clearTimeout(timer); timer = setTimeout(() => { timer = undefined; void send(); }, delay); };
+    // The colours and words go first, straight away, with the content the widgets already had (no database reads to wait for); the
+    // up-to-date content follows a moment later.
+    if (lastContent) void pushWidgetSnapshot(buildSnapshot({ language, theme: preference, custom, labels: JSON.parse(wording) as Record<string, string>, content: lastContent, now: Date.now() }));
+    schedule(150);
+    const off = onDatabaseWrite(() => schedule());
+    // Leaving the app freezes the page, so whatever is waiting is sent now rather than after the wait.
+    const flush = () => { if (document.visibilityState === 'hidden' && timer !== undefined) { clearTimeout(timer); timer = undefined; void send(); } };
+    document.addEventListener('visibilitychange', flush);
+    return () => { clearTimeout(timer); off(); document.removeEventListener('visibilitychange', flush); };
   }, [decks, cards, reviews, stats, settings, preference, custom, language, wording]);
 }
