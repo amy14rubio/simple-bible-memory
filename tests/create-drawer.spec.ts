@@ -221,8 +221,10 @@ test.describe('closing popups without a Cancel button', () => {
     await page.getByRole('button', { name: 'Add' }).click();
     const close = drawer(page).getByRole('button', { name: 'Cancel' });
     await expect(close).toBeAttached();
-    const box = await close.boundingBox();
-    expect(box!.width).toBeLessThanOrEqual(2); // not visible on screen
+    await page.waitForTimeout(800); // the drawer slides up; measure after it has stopped
+    expect(await close.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)'); // nothing is drawn
+    const [box, panel] = [await close.boundingBox(), await drawer(page).boundingBox()];
+    expect(box!.y + box!.height / 2).toBeLessThan(panel!.y - 20); // it sits above the drawer, so Voice Control's "Tap Close" taps outside it
     await close.dispatchEvent('click');
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });

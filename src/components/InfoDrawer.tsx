@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Info } from 'lucide-react';
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
-import { HiddenClose } from './ui';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
 import { usePopupHistory } from '../lib/usePopupHistory';
 import { useI18n } from '../i18n/I18nProvider';
 
@@ -35,14 +34,13 @@ export function InfoLabel({ title, info, className = '' }: { title: string; info
         </span>
       </button>
       <Drawer open={open} onOpenChange={setOpen} showSwipeHandle>
-        <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]">
+        <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]" closeLabel={t('common.close')}>
           <DrawerHeader className="gap-2 px-6 pb-4 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
             <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{title}</DrawerTitle>
             {typeof info === 'string' && <DrawerDescription className="max-w-none whitespace-pre-line text-base text-foreground">{info}</DrawerDescription>}
           </DrawerHeader>
           {typeof info !== 'string' && <div className="px-6 pb-2">{info}</div>}
           <div className="h-6" />
-          <DrawerClose render={<HiddenClose label={t('common.close')} />} />
         </DrawerContent>
       </Drawer>
     </>

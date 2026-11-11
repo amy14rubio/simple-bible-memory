@@ -1,5 +1,5 @@
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
-import { Button, FormRow, HiddenClose } from '../../components/ui';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
+import { Button, FormRow } from '../../components/ui';
 import { OptionPicker } from '../../components/OptionPicker';
 import { OPEN_TRANSLATIONS, OWN_WORDS, SHARING_LANGUAGES } from '../../domain/sharing/translations';
 import { usePopupHistory } from '../../lib/usePopupHistory';
@@ -20,7 +20,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, seen = { transl
 
   return (
     <Drawer open={open} onOpenChange={(o) => { if (!o) onClose(); }} showSwipeHandle>
-      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]">
+      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]" closeLabel={t('common.close')}>
         <DrawerHeader className="px-6 pb-2 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
           <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{t('discover.filter')}</DrawerTitle>
           <DrawerDescription className="sr-only">{t('discover.filterHelp')}</DrawerDescription>
@@ -71,7 +71,6 @@ export function FilterDrawer({ open, onClose, filters, onChange, seen = { transl
           <Button variant="secondary" className="w-full" disabled={none} onClick={() => onChange({ ...NO_FILTERS, query: filters.query })}>{t('discover.clearFilters')}</Button>
         </div>
         <div className="h-6" />
-        <DrawerClose render={<HiddenClose label={t('common.close')} />} />
       </DrawerContent>
     </Drawer>
   );

@@ -105,10 +105,12 @@ export function SearchBar({ label, placeholder, value, onChange, backLabel, onCl
 
 /**
  * A close button that is not drawn but is still there for screen readers, voice control and switch devices
- * (sighted users close popups by tapping outside, swiping down, pressing Escape or Back).
+ * (sighted users close popups by tapping outside, swiping down, pressing Escape or Back). It covers a thin strip along the top of the screen,
+ * above the popup, so Voice Control can put a name on it and "Tap Close" taps outside the popup (a 1 pixel button gets no name there).
+ * The strip is short, so it never covers a popup's own content.
  */
 export function HiddenClose({ label, ...props }: { label: string } & ButtonHTMLAttributes<HTMLButtonElement>) {
-  return <button type="button" className="sr-only" {...props}>{label}</button>;
+  return <button type="button" className="fixed inset-x-0 top-0 z-10 h-10 cursor-default overflow-hidden bg-transparent text-[0px]" {...props}>{label}</button>;
 }
 
 /** An on/off switch. Give it the id of the text that labels it. */

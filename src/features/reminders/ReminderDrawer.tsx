@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
-import { Button, FormRow, GrowingTextarea, HiddenClose, rowInput } from '../../components/ui';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
+import { Button, FormRow, GrowingTextarea, rowInput } from '../../components/ui';
 import { MESSAGE_MAX, REPEATS, dayKey, type Reminder, type Repeat } from '../../domain/reminders/schedule';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -28,7 +28,7 @@ export function ReminderDrawer({ reminder, isNew, onSave, onDelete, onClose }: {
   const set = (patch: Partial<Reminder>) => setDraft((d) => (d ? { ...d, ...patch } : d));
   return (
     <Drawer open={open} onOpenChange={(o) => { if (!o) onClose(); }} showSwipeHandle>
-      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]">
+      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]" closeLabel={t('common.cancel')}>
         <DrawerHeader className="px-6 pb-2 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
           <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{t(isNew ? 'reminders.new' : 'reminders.edit')}</DrawerTitle>
           <DrawerDescription className="sr-only">{t('reminders.help')}</DrawerDescription>
@@ -65,7 +65,6 @@ export function ReminderDrawer({ reminder, isNew, onSave, onDelete, onClose }: {
           </div>
         )}
         <div className="h-6" />
-        <DrawerClose render={<HiddenClose label={t('common.cancel')} />} />
       </DrawerContent>
     </Drawer>
   );
