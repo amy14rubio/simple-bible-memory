@@ -6,6 +6,7 @@ import { useRouteAnnouncer } from './useRouteAnnouncer';
 import { useFirstLaunchTour } from '../features/onboarding/useFirstLaunchTour';
 import { CreateDrawer } from '../features/create/CreateDrawer';
 import { useReminderSync } from '../features/reminders/useReminderSync';
+import { useWidgetSync } from '../features/widgets/useWidgetSync';
 import { AccountSwitchDialog } from '../features/account/AccountSwitchDialog';
 import { IconButton } from '../components/ui';
 import { Sidebar } from './Sidebar';
@@ -25,6 +26,7 @@ export function AppShell() {
   useRouteAnnouncer(main);
   useFirstLaunchTour();
   useReminderSync();
+  useWidgetSync();
   useKeyboardInset();
   useLicensedText();
   const wide = useWide();

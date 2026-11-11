@@ -1,10 +1,10 @@
 import { Capacitor } from '@capacitor/core';
-import { deckIdFromLink } from '../lib/deepLink';
+import { routeFromLink } from '../lib/deepLink';
 
-/** Opens the public deck a link points at (from the share page's "Open in the app", or a shared link). Native apps only. */
+/** Opens the screen a link points at (a shared deck, or a home-screen widget's shortcut). Native apps only. */
 const open = (link: string | undefined) => {
-  const id = link ? deckIdFromLink(link) : null;
-  if (id) window.location.hash = `#/discover/${encodeURIComponent(id)}`;
+  const route = link ? routeFromLink(link) : null;
+  if (route) window.location.hash = `#${route}`;
 };
 
 export function installDeepLinks(): void {

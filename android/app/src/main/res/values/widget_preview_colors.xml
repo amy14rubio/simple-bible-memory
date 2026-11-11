@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The colours of the widget picker's previews: the app's own light and dark themes, chosen by the phone's setting (src/styles/tokens.css). -->
+<resources>
+    <color name="widget_preview_surface">#EEEEEA</color>
+    <color name="widget_preview_border">#D9D8D3</color>
+    <color name="widget_preview_foreground">#17171A</color>
+    <color name="widget_preview_muted">#5E5E5A</color>
+    <color name="widget_preview_accent">#D96878</color>
+    <color name="widget_preview_on_accent">#17171A</color>
+</resources>
