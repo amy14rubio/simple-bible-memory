@@ -51,7 +51,7 @@ test.describe('the page a shared link opens', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Family & Relationships');
     await expect(page.getByText('Verses for families.')).toBeVisible(); // the deck's description, not a card count
     await expect(page.getByText('13 cards')).toHaveCount(0);
-    await expect(page.getByRole('link', { name: 'Open on the web' })).toHaveAttribute('href', `/app#/discover/${ID}`);
+    await expect(page.getByRole('link', { name: 'Open in your browser' })).toHaveAttribute('href', `/app#/discover/${ID}`);
     await expect(page.getByRole('link', { name: 'Get it on Google Play' })).toHaveAttribute('href', /play\.google\.com.*app\.simplebiblememory/);
     await expect(page.getByRole('link', { name: 'Download on the App Store' })).toHaveAttribute('href', 'https://apps.apple.com/us/app/simple-bible-memory/id6827304569');
   });
@@ -61,7 +61,7 @@ test.describe('the page a shared link opens', () => {
     test('"Open in the app" is not offered until the apps that understand it are released (APP_LINKS_READY)', async ({ page }) => {
       await firestore(page, deckDoc);
       await page.goto(`/deck-link.html?id=${ID}`);
-      await expect(page.getByRole('link', { name: 'Open on the web' })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Open in your browser' })).toBeVisible();
       await expect(page.getByRole('link', { name: 'Open in the app' })).toBeHidden();
     });
   });
@@ -70,7 +70,7 @@ test.describe('the page a shared link opens', () => {
     await firestore(page, { error: { code: 404 } }, 404);
     await page.goto(`/deck-link.html?id=${ID}`);
     await expect(page.getByText('This deck can’t be found. It may have been removed.')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Open on the web' })).toBeHidden();
+    await expect(page.getByRole('link', { name: 'Open in your browser' })).toBeHidden();
   });
 
   test('a deck hidden after a report is treated as gone', async ({ page }) => {
@@ -82,7 +82,7 @@ test.describe('the page a shared link opens', () => {
   test('if the catalogue cannot be reached the page still works', async ({ page }) => {
     await page.route('https://firestore.googleapis.com/**', (r) => r.abort());
     await page.goto(`/deck-link.html?id=${ID}`);
-    await expect(page.getByRole('link', { name: 'Open on the web' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Open in your browser' })).toBeVisible();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('A Bible memory deck');
   });
 
@@ -97,7 +97,7 @@ test.describe('the page a shared link opens', () => {
       await firestore(page, deckDoc);
       await page.goto(`/deck-link.html?id=${ID}`);
       await expect(page.getByText('Verses for families.')).toBeVisible();
-      await expect(page.getByRole('link', { name: 'Abrir en la web' })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Abrir en tu navegador' })).toBeVisible();
       await expect(page.getByRole('link', { name: 'Disponible en Google Play' })).toBeVisible();
     });
   });

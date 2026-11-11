@@ -18,11 +18,11 @@ beforeEach(() => {
 });
 
 describe('sharing a deck link', () => {
-  it('in a phone app, opens the phone\'s Share sheet with the title, a sentence and the link', async () => {
+  it('in a phone app, opens the phone\'s Share sheet with the title, and the sentence and the link on separate lines', async () => {
     native.on = true;
     share.share.mockResolvedValue({});
     expect(await shareLink(link)).toBe('shared');
-    expect(share.share).toHaveBeenCalledWith({ title: 'Family', text: link.text, url: link.url, dialogTitle: 'Family' });
+    expect(share.share).toHaveBeenCalledWith({ title: 'Family', text: `${link.text}\n\n${link.url}`, dialogTitle: 'Family' });
     expect(writeText).not.toHaveBeenCalled();
   });
 
@@ -30,6 +30,13 @@ describe('sharing a deck link', () => {
     native.on = true;
     share.share.mockRejectedValue(new Error('Share canceled'));
     expect(await shareLink(link)).toBe('cancelled');
+  });
+
+  it('in a phone app, "can\'t share while sharing" is not shown: the link is copied instead', async () => {
+    native.on = true;
+    share.share.mockRejectedValue(new Error("Can't share while sharing is in progress"));
+    expect(await shareLink(link)).toBe('copied');
+    expect(writeText).toHaveBeenCalledWith(link.url);
   });
 
   it('in a phone app, a real failure is passed on', async () => {

@@ -72,8 +72,6 @@ export const en = {
   'deckMenu.browse': 'View cards',
   'deckMenu.extraPractice': 'Extra practice',
   'deckMenu.rename': 'Edit deck',
-  'deckMenu.moveUp': 'Move up',
-  'deckMenu.moveDown': 'Move down',
   'decks.reorder': 'Reorder decks',
   'decks.reorderTitle': 'Reorder decks',
   'decks.reorderDone': 'Done',
@@ -86,8 +84,6 @@ export const en = {
   'decks.dragOver': '{title} is now number {position} of {total}.',
   'decks.dragDropped': '{title} dropped at number {position} of {total}.',
   'decks.dragCancelled': 'Cancelled. {title} did not move.',
-  'toast.deckMovedUp': 'Moved {title} up',
-  'toast.deckMovedDown': 'Moved {title} down',
   'deckMenu.delete': 'Delete deck',
   'deckMenu.deleteTitle': 'Delete this deck?',
   'deckMenu.deletePublished':

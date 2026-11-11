@@ -12,10 +12,16 @@ export async function shareLink({ title, text, url }: { title: string; text: str
     try {
       // Wrapped in an object on purpose: a Capacitor plugin must never be returned straight from a promise.
       const { share } = await import('@capacitor/share').then((m) => ({ share: m.Share }));
-      await share.share({ title, text, url, dialogTitle: title });
+      // The link goes inside the text, after a blank line: given separately, Android joins it to the sentence with a single space, so
+      // in a chat it ended up on the same line as the description.
+      await share.share({ title, text: `${text}\n\n${url}`, dialogTitle: title });
       return 'shared';
     } catch (e) {
-      if (/cancel|abort/i.test(e instanceof Error ? `${e.name} ${e.message}` : String(e))) return 'cancelled';
+      const message = e instanceof Error ? `${e.name} ${e.message}` : String(e);
+      if (/cancel|abort/i.test(message)) return 'cancelled';
+      // Android can think an earlier Share sheet is still open ("Can't share while sharing is in progress"). That is not the person's
+      // problem: the link is copied instead, so the button always does something.
+      if (/while sharing/i.test(message)) { await copy(url); return 'copied'; }
       throw e;
     }
   }

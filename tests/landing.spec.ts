@@ -5,14 +5,14 @@ import AxeBuilder from '@axe-core/playwright';
 const PAGES = [
   {
     lang: 'English', url: '/landing.html', other: '/es', heading: 'Simple Bible Memory', tagline: 'Learn scripture by heart', open: 'Start Practicing',
-    play: 'Coming soon to Google Play', apple: 'Coming soon to the App Store', donate: 'Support on Ko-fi',
+    play: 'Get it on Google Play', apple: 'Download on the App Store', donate: 'Support on Ko-fi',
     features: ['No account needed', 'English and Spanish', 'Spaced repetition', 'Make it yours'],
     show: 'Show answer', rates: ['Again', 'Hard', 'Good', 'Easy'], goodWhen: /10m/, next: 'Try another verse', first: 'Proverbs 3:5-6', second: 'Romans 5:8',
     typeTab: 'Type', speakTab: 'Speak', blanksTab: 'Fill in the blanks', typeFull: 'For God didn’t give us a spirit of fear, but of power, love, and self-control.', typePartial: 'For God give us a spirit of fear', typeAll: /You remembered 15 of 15 words/, typeSome: /You remembered 8 of 15 words/, check: 'Show answer', speakText: 'Recite verses hands-free while you drive or go about your day. The app reads them back, and you rate yourself for easy, relaxed practice.', langName: 'English', langOther: 'Español', langOtherHref: '/es', langLabel: 'Language', words: ['fear', 'power', 'self-control'], done: /That’s it!/, wrongWord: 'love', wrongNote: /Not quite: the word was “fear”/,
   },
   {
     lang: 'Spanish', url: '/es/landing.html', other: '/', heading: 'Simple Bible Memory', tagline: 'Aprende la Escritura de memoria', open: 'Empezar a practicar',
-    play: 'Próximamente en Google Play', apple: 'Próximamente en la App Store', donate: 'Apoyar en Ko-fi',
+    play: 'Disponible en Google Play', apple: 'Descargar en el App Store', donate: 'Apoyar en Ko-fi',
     features: ['Sin cuenta', 'Español e inglés', 'Repaso espaciado', 'A tu manera'],
     show: 'Mostrar respuesta', rates: ['Otra vez', 'Difícil', 'Bien', 'Fácil'], goodWhen: /10 min/, next: 'Probar otro versículo', first: 'Proverbios 3:5-6', second: 'Romanos 5:8',
     typeTab: 'Escribir', speakTab: 'Hablar', blanksTab: 'Completar espacios', typeFull: 'Porque no nos ha dado Dios el espíritu de temor, sino el de fortaleza, y de amor, y de templanza.', typePartial: 'Porque no nos ha dado Dios el espiritu de temor', typeAll: /Recordaste 20 de 20 palabras/, typeSome: /Recordaste 10 de 20 palabras/, check: 'Mostrar respuesta', speakText: 'Recita versículos sin manos mientras manejas o sigues con tu día. La app te los lee de vuelta, y tú te calificas para una práctica fácil y tranquila.', langName: 'Español', langOther: 'English', langOtherHref: '/', langLabel: 'Idioma', words: ['temor', 'fortaleza', 'templanza'], done: /¡Eso es!/, wrongWord: 'amor', wrongNote: /Casi: la palabra era “temor”/,
@@ -40,12 +40,13 @@ for (const p of PAGES) {
       await expect(donate).toHaveAttribute('target', '_blank'); // opens in a new tab, so the visitor keeps the page
       await expect(donate).toHaveAttribute('rel', /noopener/);
       await expect(page.locator('body')).not.toContainText(/stays that way|así seguirá|won.t change|no va a cambiar|free forever|gratis para siempre/i);
-      for (const label of [p.play, p.apple]) {
-        const b = page.getByRole('button', { name: label });
-        await expect(b).toBeVisible();
-        await expect(b).toBeDisabled();
-      }
-      await expect(page.locator('a[href*="play.google.com"], a[href*="apps.apple.com"]')).toHaveCount(0); // no links until the apps are live
+      const play = page.getByRole('link', { name: p.play });
+      await expect(play).toBeVisible();
+      await expect(play).toHaveAttribute('href', /play\.google\.com.*app\.simplebiblememory/);
+      const store = page.getByRole('link', { name: p.apple });
+      await expect(store).toBeVisible();
+      await expect(store).toHaveAttribute('href', 'https://apps.apple.com/us/app/simple-bible-memory/id6827304569');
+      for (const badge of [play, store]) expect(await badge.locator('img').evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0); // the official badge image loads
     });
 
     test('the demo: flip a flashcard, rate it, see when it comes back, try another verse', async ({ page }) => {
@@ -340,7 +341,7 @@ for (const [lang, path, title] of [['English', '/landing.html', 'Simple Bible Me
       await page.goto(path);
       const start = page.locator('.hero .actions .button');
       await expect(start).toHaveAttribute('data-revealed', '', { timeout: 2500 }); // all three buttons within about a second
-      await expect(page.locator('.hero .stores .button').last()).toHaveAttribute('data-revealed', '', { timeout: 2500 });
+      await expect(page.locator('.hero .stores .badge').last()).toHaveAttribute('data-revealed', '', { timeout: 2500 });
       const before = await start.evaluate((el) => getComputedStyle(el).transitionDelay);
       expect(before).toBe('0s'); // nothing left over from the reveal
       await start.hover();
