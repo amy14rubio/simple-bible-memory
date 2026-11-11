@@ -348,8 +348,26 @@ h1 {
 }
 .stores .badge img {
   display: block;
-  height: 3.25rem; /* the two store badges, the same height */
+  height: 100%;
   width: auto;
+}
+/* the two store badges, the same height */
+.stores .badge {
+  height: 3.75rem;
+}
+/* on a phone they stack, all the same width */
+@media (max-width: 47.99rem) {
+  .stores {
+    flex-direction: column;
+  }
+  .stores .badge {
+    width: 10.5rem;
+    height: auto;
+  }
+  .stores .badge img {
+    width: 100%;
+    height: auto;
+  }
 }
 
 /* demo: it looks like the app's own study screen (the card in the middle, the buttons along the bottom) */
@@ -383,6 +401,32 @@ h1 {
 @media (max-width: 30rem) {
   .tabs {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+/* On a tablet or desktop the demo is laid out sideways, as wide as the screenshots below: the ways to study down the left, the card on the right */
+@media (min-width: 48rem) {
+  .demo {
+    display: grid;
+    grid-template-columns: 15rem 1fr;
+    column-gap: 2rem;
+    align-items: stretch; /* the sidebar runs the whole height of the card */
+    max-width: 56rem;
+  }
+  .tabs {
+    grid-template-columns: 1fr;
+    align-content: start;
+    gap: 0.25rem;
+    margin: 0;
+  }
+  .tab {
+    min-height: 3rem;
+    padding: 0.5rem 1rem;
+    text-align: left;
+    font-size: 0.9375rem;
+  }
+  .demo-card {
+    grid-column: 2;
+    min-height: 31rem;
   }
 }
 .tab[aria-pressed='true'] {
@@ -433,6 +477,12 @@ h1 {
 .d-verse.left {
   text-align: left;
   font-size: 1.125rem;
+}
+/* a verse set in left-aligned lines stays a column in the middle of the card, so on a wide card it lines up with the title and the buttons */
+.d-verse.left,
+.d-verse.blanks {
+  width: 100%;
+  max-width: 30rem;
 }
 .d-verse.blanks {
   text-align: left;
@@ -800,5 +850,21 @@ h1 {
     transform: none;
     filter: none;
     transition: none;
+  }
+}
+
+/* Google's Spanish Play badge comes without the grey outline the English one has: it is drawn here, so it matches the others on a dark page */
+img[src*='play-es'] {
+  box-sizing: border-box;
+  border: 1px solid #a6a6a6;
+  border-radius: 0.45rem;
+}
+
+/* on the wide demo card the verse's lines are centered too (left-aligned lines in a column leave the empty space on the right, which looks off-center) */
+@media (min-width: 48rem) {
+  .d-verse.left,
+  .d-verse.blanks {
+    text-align: center;
+    text-wrap: balance;
   }
 }

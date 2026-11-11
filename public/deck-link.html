@@ -19,7 +19,7 @@
 <meta name="twitter:description" content="Someone shared a deck of Bible verses with you. · Alguien compartió contigo una carpeta de versículos.">
 <meta name="twitter:image" content="https://simple-bible-memory.web.app/og-image.jpg">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="stylesheet" href="/landing.css">
+<link rel="stylesheet" href="/landing.css?v=202611102142">
 <style>
 /* The page a shared deck link opens: one centered card of choices, in the landing page's look. */
 .share.hero { max-width: 46rem; margin: 0 auto; padding: 5rem var(--gutter) 5rem; text-align: center; } /* a .hero: the landing page's scripture-page background and paper grain (landing.css) */
@@ -53,6 +53,9 @@ main { min-height: calc(100vh - 4rem); min-height: calc(100dvh - 4rem); display:
   .share.hero { width: 70vw; margin: 0 auto; padding-top: 7.5rem; padding-bottom: 6.5rem; }
   .share .choices { grid-auto-flow: column; justify-content: center; align-items: center; gap: 1rem; } /* the three buttons in one row */
 }
+@media (min-width: 48rem) and (orientation: portrait) {
+  .share.hero { padding-bottom: calc(6.5rem + max(0px, (100vh - 900px) * 0.7)); } /* a tall tablet held upright: the taller the screen, the higher the content sits (the eye looks above the middle) */
+}
 html, body { overflow-y: clip; } /* the scripture background reaches past the page to fade out; that must not make the page scroll */
 [hidden] { display: none !important; }
 </style>
@@ -69,7 +72,7 @@ html, body { overflow-y: clip; } /* the scripture background reaches past the pa
 <div class="choices">
 <a class="button store-like" id="open-app" href="#" hidden>Open in the app</a>
 <a class="button store-like" id="open-web" href="/app"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19"/><path d="M12 2.5c2.6 2.6 4 5.9 4 9.5s-1.4 6.9-4 9.5c-2.6-2.6-4-5.9-4-9.5s1.4-6.9 4-9.5z"/></svg><span><small id="web-small">Open in your</small><b id="web-big">Web Browser</b></span></a>
-<a class="badge" id="play" href="https://play.google.com/store/apps/details?id=app.simplebiblememory"><img id="play-img" src="/badges/play-en.png" alt="Get it on Google Play" width="574" height="174"></a>
+<a class="badge" id="play" href="https://play.google.com/store/apps/details?id=app.simplebiblememory"><img id="play-img" src="/badges/play-en.png?v=202611102119" alt="Get it on Google Play" width="574" height="174"></a>
 <a class="badge" id="appstore" href="" hidden><img id="appstore-img" src="/badges/appstore-en.svg" alt="Download on the App Store" width="120" height="40"></a>
 </div>
 </section>
@@ -98,7 +101,7 @@ html, body { overflow-y: clip; } /* the scripture background reaches past the pa
   $('title').textContent = t.title;
   $('lead').textContent = t.lead;
   $('web-small').textContent = t.webSmall; $('web-big').textContent = t.webBig; $('open-web').setAttribute('aria-label', t.web);
-  $('play-img').src = '/badges/play-' + lang + '.png'; $('play-img').alt = t.play;
+  $('play-img').src = '/badges/play-' + lang + '.png?v=202611102119'; $('play-img').alt = t.play;
   $('appstore-img').src = '/badges/appstore-' + lang + '.svg'; $('appstore-img').alt = t.store;
   if (APP_STORE_URL) { $('appstore').href = APP_STORE_URL; $('appstore').hidden = false; }
 
