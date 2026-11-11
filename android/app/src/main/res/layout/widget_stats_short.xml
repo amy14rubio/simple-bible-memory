@@ -75,13 +75,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:autoSizeMaxTextSize="12sp"
+                android:autoSizeMaxTextSize="13sp"
                 android:autoSizeMinTextSize="7sp"
                 android:autoSizeStepGranularity="1sp"
                 android:autoSizeTextType="uniform"
                 android:includeFontPadding="false"
                 android:maxLines="1"
-                android:textSize="12sp" />
+                android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

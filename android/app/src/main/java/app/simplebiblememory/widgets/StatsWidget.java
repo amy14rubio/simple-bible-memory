@@ -31,7 +31,12 @@ public class StatsWidget extends AppWidgetProvider {
         WidgetData.Palette p = WidgetData.Palette.current(context);
         JSONObject stats = WidgetData.load(context).optJSONObject("stats");
         // A one-row widget has its own layout (a small one-line label, and the number as big as the rest of the height allows); taller ones scale everything.
-        RemoteViews v = new RemoteViews(context.getPackageName(), heightDp < 110 ? R.layout.widget_stats_short : R.layout.widget_stats);
+        // The pie sits beside the number, so only a wide widget has it; it shrinks to fit a short one, and a square one is just the number.
+        boolean room = widthDp >= 160 && heightDp >= 52 && widthDp >= heightDp * 1.45; // a 3x2 widget is about 180 x 110
+        // With the pie the number and its words are left-aligned (beside the pie); without it they sit in the middle.
+        boolean shortWidget = heightDp < 110;
+        int layout = shortWidget ? (room ? R.layout.widget_stats_short : R.layout.widget_stats_short_center) : (room ? R.layout.widget_stats : R.layout.widget_stats_center);
+        RemoteViews v = new RemoteViews(context.getPackageName(), layout);
         v.setInt(R.id.widget_bg, "setColorFilter", p.surface);
         v.setInt(R.id.widget_ring, "setColorFilter", p.border);
         v.setTextViewText(R.id.stats_number, String.valueOf(stats == null ? 0 : stats.optInt("memorized", 0)));
@@ -47,8 +52,6 @@ public class StatsWidget extends AppWidgetProvider {
         int sideDp = 16;
         v.setViewPadding(R.id.stats_content, (int) (sideDp * d), (int) (padDp * d), (int) (sideDp * d), (int) (padDp * d));
 
-        // The pie sits beside the number, so only a wide widget has it; it shrinks to fit a short one, and a square one is just the number.
-        boolean room = widthDp >= 160 && heightDp >= 52 && widthDp >= heightDp * 1.45; // a 3x2 widget is about 180 x 110
         v.setViewVisibility(R.id.stats_pie, room ? View.VISIBLE : View.GONE);
         if (room) {
             // The pie is as big as the height allows, but never more than about a third of the width (so the words keep their room), and the gap
