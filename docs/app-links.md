@@ -35,10 +35,15 @@ On your side: deploy the website, install the build from Play, and check with
 `adb shell pm get-app-links app.simplebiblememory` (the host should say `verified`). If you later add other signing keys (for example a debug build to test with),
 add their SHA-256 to the same list.
 
-## After both apps are released
+## Status: working, and the "Open in the app" button stays off (decided 2026-11-11)
 
-In `public/deck-link.html` set `APP_LINKS_READY = true` so phones also see the "Open in the app" button (it uses the `simplebiblememory://` link, which
-works for people who open the page from a browser), and update the test in `tests/share-deck.spec.ts`.
+Both apps are released and a shared link opens the app by itself when it is installed (checked on an iPad and on Android). Someone without the app gets
+the web page: Open in your Web Browser, Google Play, App Store.
+
+`APP_LINKS_READY` in `public/deck-link.html` is **deliberately left `false`**. Turning it on would add an "Open in the app" button for phones, using the
+`simplebiblememory://` link. That link does nothing useful when the app is not installed (iPhone Safari shows an "invalid address" message) and the page
+cannot tell whether the app is installed, so the button would look broken to the very people who need the store buttons. If it is ever turned on, also
+update the phone test in `tests/share-deck.spec.ts`.
 
 ## Link previews in chat apps
 
