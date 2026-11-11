@@ -64,6 +64,10 @@ public class StatsWidget extends AppWidgetProvider {
             int pieV = Math.max(0, Math.round((availH - pieDp) / 2f));
             int gap = Math.round(Math.max(10, Math.min(gapMax, pieDp * 0.30f + 4))); // a small pie sits closer to its words
             v.setViewPadding(R.id.stats_pie, 0, (int) (pieV * d), (int) (gap * d), (int) (pieV * d));
+            // The number and its words together are a little shorter than the pie (about 90% of its height), centered on it.
+            int textV = Math.max(0, Math.round((availH - pieDp * 0.9f) / 2f));
+            int lift = Math.min(textV, 5); // the digits sit low in their box, so the pair is raised a little to look centered on the pie
+            v.setViewPadding(R.id.stats_text, 0, (int) ((textV - lift) * d), 0, (int) ((textV + lift) * d));
             JSONObject c = stats == null ? null : stats.optJSONObject("counts");
             int[] counts = c == null ? new int[4] : new int[] { c.optInt("new"), c.optInt("learning"), c.optInt("young"), c.optInt("mature") };
             boolean dark = WidgetData.isDark(p.background);
