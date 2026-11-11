@@ -7,7 +7,7 @@ in translations the app has licenses for. Work in progress on the branch `youver
 
 **Every translation the platform offers this app can be filled in** (about 1,410, in about 1,220 languages). The list is part of the app
 (`src/domain/bible/catalogue.json`, with the language names in `languageNames.json`; refresh both with
-`node scripts/make-translation-data.mjs`): **the platform allows this app only about 200 requests an hour IN ALL, whoever makes them**, so
+`node scripts/make-translation-data.mjs`): **the platform allows this app a fixed number of requests an hour IN ALL, whoever makes them** (it was about 200 while in testing; since the app went live with YouVersion in November 2026 it is **10,000 an hour**), so
 no device asks for the list. What is asked for: each verse's text once (then kept on the device), and a translation's copyright notice once. Only a few public-domain ones are *open* (listed by hand in `src/domain/bible/sources.ts`
 and `OPEN_TRANSLATIONS`: WEB, BSB, ASV, Geneva, CPDV, World Messianic Bible, Reina-Valera 1909). **Everything else is licensed** by
 default, so a translation added to the platform later is safe from day one. **Not offered:** Biblica's versions (69, in many
@@ -27,7 +27,7 @@ abbreviation for a hand-listed text (NASB2020), `YV<id>` for any other (YV2692).
 platform (`GET /v1/bibles/{id}`: its copyright text, and its link, or the version's bible.com page) and is kept on the device.
 The rules that matter come from the agreements (the owner's Google Drive): Lockman (free, no ads, notice + link to lockman.org,
 annual report by the end of February) and the lighter MissionAssist/others template (no edits, digital display only, footnotes,
-30 days' notice). **Ask YouVersion to raise the 200-an-hour limit before launching to more than a few people.** **The same conservative handling is applied to every licensed version**, whatever its publisher: for versions whose
+30 days' notice). **The limit was raised to 10,000 an hour when the app went live (it was 200 while testing).** **The same conservative handling is applied to every licensed version**, whatever its publisher: for versions whose
 agreement was not read, check it in the Platform portal.
 
 ## How it works
