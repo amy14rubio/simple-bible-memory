@@ -76,7 +76,7 @@ export function DiscoverPage() {
       {!available ? (
         <EmptyState title={t('discover.unavailable')}>{null}</EmptyState>
       ) : (
-        <Page className="space-y-4 pt-4">
+        <Page className="pt-2">
           <h2 className="sr-only">{heading}</h2>
           <p role="status" className="sr-only">{state === 'ready' ? t('discover.count', { count: decks.length }) : ''}</p>
           {state === 'loading' && (

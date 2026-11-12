@@ -95,7 +95,7 @@ export function DeckHomePage() {
 function StudyTiles({ id, practice = false }: { id: string; practice?: boolean }) {
   const { t } = useI18n();
   return (
-    <ul className="grid grid-cols-2 gap-3">
+    <ul className="mx-auto grid max-w-md grid-cols-2 gap-3">
       {MODES.map(({ mode, title, hint, Icon }) => (
         <li key={mode}>
           <Link to={`/collections/${id}/study/${mode}${practice ? '?practice=1' : ''}`} className={`${tile} border-border bg-background hover:bg-surface`}>

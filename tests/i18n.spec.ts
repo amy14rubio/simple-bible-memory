@@ -393,6 +393,7 @@ test.describe('accessibility in Spanish', () => {
       test.setTimeout(90_000);
       const { ctx, page } = await spanishPage(browser, scheme);
       const audit = async (label: string) => {
+        await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined)))); // a screen fades in when it opens
         const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
         expect(r.violations.map((v) => `${v.id}: ${v.help}`), `violations on ${label}`).toEqual([]);
       };

@@ -123,7 +123,7 @@ export const en = {
   'mode.blanks': 'Blanks',
   'mode.blanksHint': 'Fill in or choose',
   'mode.speak': 'Speak',
-  'mode.speakHint': 'Hands-free, out loud',
+  'mode.speakHint': 'Hands-free',
   'settings.voice': 'Voice for Speak',
   'settings.voiceHint': 'Pick the voice that reads aloud in Speak mode. Only voices for the language the app is in are shown.',
   'speak.voiceNone': 'No voices found on this device.',
