@@ -3,6 +3,8 @@
 interface ImportMetaEnv {
   /** Google Fonts API key (optional): enables the full font catalogue. See .env.example. */
   readonly VITE_GOOGLE_FONTS_API_KEY?: string;
+  /** '1' in a build that has the screen-transition switch in Settings (see src/app/motion.ts). */
+  readonly VITE_MOTION_PROTOTYPE?: string;
   /** Firebase web app settings (not secret; see .env.example). */
   readonly VITE_FIREBASE_API_KEY?: string;
   readonly VITE_FIREBASE_AUTH_DOMAIN?: string;

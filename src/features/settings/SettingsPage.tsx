@@ -12,6 +12,7 @@ import { AppBar, BackButton, ConfirmDialog, IconButton, Page, Switch } from '../
 import { InfoLabel } from '../../components/InfoDrawer';
 import { AppleLogo } from '../../components/AppleLogo';
 import { appleSignInSupported } from '../../platform/apple';
+import { MOTION_PROTOTYPE, setMotion, useMotion, type Motion } from '../../app/motion';
 import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
 import type { CardKindSetting } from '../../domain/study/cardKind';
 import { LANGUAGES, type MessageKey } from '../../i18n';
@@ -45,6 +46,7 @@ export function SettingsPage() {
   const encouragementTouched = useRef(false); // a tap before the saved value has loaded must not be undone by it
 
   const coach = useSettingsCoach();
+  const motion = useMotion();
 
   useEffect(() => { share.ensureLoaded(); }, [share]);
 
@@ -202,6 +204,19 @@ export function SettingsPage() {
           )}
           </div>
         </section>
+        {MOTION_PROTOTYPE && (
+          <section aria-labelledby="motion-proto">
+            <h2 id="motion-proto" className={heading}>Screen transitions (prototype)</h2>
+            <div className={panel}>
+              {([['off', 'Off', 'Screens swap at once, as before'], ['fade', 'A + B: quiet fade', 'No blank gap; each new screen fades in (200 ms)'], ['material', 'C: Material slide', 'Deeper slides in from the right, Back reverses, tabs fade through']] as [Motion, string, string][]).map(([key, label, hint]) => (
+                <button key={key} type="button" aria-pressed={motion === key} onClick={() => setMotion(key)} className={`${row} w-full text-left`}>
+                  <span className="min-w-0"><span className="block">{label}</span><span className="block text-sm text-muted">{hint}</span></span>
+                  {motion === key && <span aria-hidden className="text-lg">✓</span>}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
         <ExportDrawer target={exporting} onClose={() => setExporting(null)} />
         {coach.open && <SettingsCoach onClose={coach.close} />}
         <ConfirmDialog

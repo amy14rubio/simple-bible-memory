@@ -6,6 +6,7 @@ import { useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, ButtonLink, ConfirmDialog, EmptyState, ErrorMessage, IconButton, IconLink, Page, SearchBar } from '../../components/ui';
 import { DeckPicker } from '../../components/DeckPicker';
 import { useI18n } from '../../i18n/I18nProvider';
+import { useMotion } from '../../app/motion';
 import { useRefreshOnWrites } from '../../app/useRefreshOnWrites';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { deleteCardsWithUndo } from '../cards/undoDelete';
@@ -26,6 +27,7 @@ const MOVE_TOLERANCE_PX = 10;
  */
 export function CardBrowsePage() {
   const { t } = useI18n();
+  const motion = useMotion();
   const { id = '' } = useParams();
   const { decks, cards } = useRepositories();
   const navigate = useNavigate();
@@ -68,7 +70,7 @@ export function CardBrowsePage() {
     wasSelecting.current = selecting;
   }, [selecting, selected.size, t]);
 
-  if (loading && !data) return null;
+  if (loading && !data) return motion === 'off' ? null : <AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} />; // the top bar is there at once, not a blank screen
   const deck = data?.all.find((d) => d.id === id);
   if (!data || (!isAll && !deck)) return <><AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;
 

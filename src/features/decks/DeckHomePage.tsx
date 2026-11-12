@@ -6,6 +6,7 @@ import { useAsync } from '../../app/useAsync';
 import { useRefreshOnWrites } from '../../app/useRefreshOnWrites';
 import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, IconButton, Page } from '../../components/ui';
 import { useI18n } from '../../i18n/I18nProvider';
+import { useMotion } from '../../app/motion';
 import type { MessageKey } from '../../i18n';
 import { loadCardKinds } from '../study/cardKinds';
 import { loadNewPerDay } from '../study/newPerDay';
@@ -23,6 +24,7 @@ const tile = 'flex aspect-[5/4] flex-col justify-between rounded-lg border p-4';
 /** "Open deck view": how do you want to study? plus the deck's card counts. */
 export function DeckHomePage() {
   const { t } = useI18n();
+  const motion = useMotion();
   const { id = '' } = useParams();
   const { decks, reviews, settings } = useRepositories();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -40,7 +42,7 @@ export function DeckHomePage() {
   }, [id, decks, reviews, settings]);
   useRefreshOnWrites(refresh);
 
-  if (loading) return null;
+  if (loading) return motion === 'off' ? null : <AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} />; // the top bar is there at once, not a blank screen
   if (!data?.deck) return <><AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;
   const { deck, stats, queued, nextDue } = data;
 

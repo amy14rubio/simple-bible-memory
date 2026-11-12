@@ -4,6 +4,7 @@ import { ChartColumn, LibraryBig, PanelLeftOpen, Plus } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
 import { useRouteAnnouncer } from './useRouteAnnouncer';
 import { useScrollToTop } from './useScrollToTop';
+import { supportsViewTransitions, useMotion } from './motion';
 import { useFirstLaunchTour } from '../features/onboarding/useFirstLaunchTour';
 import { CreateDrawer } from '../features/create/CreateDrawer';
 import { useReminderSync } from '../features/reminders/useReminderSync';
@@ -26,6 +27,7 @@ export function AppShell() {
   const main = useRef<HTMLElement>(null);
   useRouteAnnouncer(main);
   useScrollToTop();
+  const motion = useMotion();
   useFirstLaunchTour();
   useReminderSync();
   useWidgetSync();
@@ -50,7 +52,8 @@ export function AppShell() {
         </div>
       )}
       <main ref={main} className={`${sidebar ? 'min-w-0 flex-1' : ''} ${showNav ? 'pb-[calc(8rem+var(--safe-bottom))]' : ''}`}>
-        <div className={sidebar ? `mx-auto ${roomy ? 'max-w-4xl' : 'max-w-2xl'}` : ''}><Outlet /></div>
+        <div className={sidebar ? `mx-auto ${roomy ? 'max-w-4xl' : 'max-w-2xl'}` : ''}>{/* A new screen fades in (the 'fade' style, and the 'material' style where the browser cannot slide two screens). Keyed by the address so every screen change plays it. */}
+<div key={motion === 'off' ? undefined : pathname} className={motion === 'fade' || (motion === 'material' && !supportsViewTransitions()) ? 'screen-fade' : undefined}><Outlet /></div></div>
       </main>
       <AccountSwitchDialog />
       {sidebar && <CreateDrawer open={creating} onOpenChange={setCreating} />}
