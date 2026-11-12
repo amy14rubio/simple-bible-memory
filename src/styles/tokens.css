@@ -180,21 +180,21 @@ html[data-motion='material'] [data-vt='bottombar'] { view-transition-name: vt-bo
 html[data-motion='material']::view-transition-old(root),
 html[data-motion='material']::view-transition-new(root) { mix-blend-mode: normal; }
 
-/* Quick and responsive, and easy to see. The slide and the fade have their own timing: the slide starts fast and lands softly, but the fade is
-   even, so it can be seen (on the slide's curve the screen would be almost fully visible in the first few milliseconds).
-   The old screen leaves in 150 ms (24px); the new one starts 40 ms later, glides in over 360 ms from 36px away, and fades in over 300 ms. */
+/* Quick, and easy to see. The slide and the fade have their own timing. The slide uses an even curve (a curve that starts very fast does most of
+   its travelling while the screen is still almost invisible, so the slide could not be seen); the fade is slow enough to watch.
+   The old screen leaves in 150 ms (24px); the new one starts 40 ms later, glides in over 420 ms from 48px away, and fades in over 380 ms. */
 @keyframes vt-out-left { to { opacity: 0; transform: translateX(-24px); } }
 @keyframes vt-out-right { to { opacity: 0; transform: translateX(24px); } }
-@keyframes vt-slide-in-right { from { transform: translateX(36px); } }
-@keyframes vt-slide-in-left { from { transform: translateX(-36px); } }
+@keyframes vt-slide-in-right { from { transform: translateX(48px); } }
+@keyframes vt-slide-in-left { from { transform: translateX(-48px); } }
 @keyframes vt-fade-in { from { opacity: 0; } }
 
 /* going deeper (or to a later tab): the old screen leaves to the left as the new one arrives from the right (shared axis) */
 html[data-motion='material'][data-nav='forward']::view-transition-old(root) { animation: vt-out-left 150ms cubic-bezier(0.4, 0, 1, 1) both; }
-html[data-motion='material'][data-nav='forward']::view-transition-new(root) { animation: vt-slide-in-right 360ms cubic-bezier(0.2, 0, 0, 1) 40ms both, vt-fade-in 300ms cubic-bezier(0.4, 0, 0.6, 1) 40ms both; }
+html[data-motion='material'][data-nav='forward']::view-transition-new(root) { animation: vt-slide-in-right 420ms cubic-bezier(0.22, 0.61, 0.36, 1) 40ms both, vt-fade-in 380ms cubic-bezier(0.4, 0, 0.6, 1) 40ms both; }
 /* going back (or to an earlier tab): the other way round */
 html[data-motion='material'][data-nav='back']::view-transition-old(root) { animation: vt-out-right 150ms cubic-bezier(0.4, 0, 1, 1) both; }
-html[data-motion='material'][data-nav='back']::view-transition-new(root) { animation: vt-slide-in-left 360ms cubic-bezier(0.2, 0, 0, 1) 40ms both, vt-fade-in 300ms cubic-bezier(0.4, 0, 0.6, 1) 40ms both; }
+html[data-motion='material'][data-nav='back']::view-transition-new(root) { animation: vt-slide-in-left 420ms cubic-bezier(0.22, 0.61, 0.36, 1) 40ms both, vt-fade-in 380ms cubic-bezier(0.4, 0, 0.6, 1) 40ms both; }
 
 /* The content inside a screen that fills in after loading (Statistics, a collection): once it is there, each section rises and fades in a moment
    after the one above it, so it never just pops in. */
