@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, type ComponentProps, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import { unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
 import { createHashHistory } from 'history';
@@ -25,5 +25,6 @@ export function MotionRouter({ children }: { children: ReactNode }) {
     });
     return h;
   }, []);
-  return <HistoryRouter history={history}>{children}</HistoryRouter>;
+  // (the router's own History type asks for two more methods than the `history` library's; it never calls them for a hash router)
+  return <HistoryRouter history={history as unknown as ComponentProps<typeof HistoryRouter>['history']}>{children}</HistoryRouter>;
 }
