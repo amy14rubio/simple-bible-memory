@@ -40,7 +40,8 @@ export function DeckHomePage() {
   }, [id, decks, reviews, settings]);
   useRefreshOnWrites(refresh);
 
-  if (loading) return null;
+  // While the collection loads: just the top bar with its back arrow (no placeholder shapes), so it is never blank.
+  if (loading) return <AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} />;
   if (!data?.deck) return <><AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;
   const { deck, stats, queued, nextDue } = data;
 

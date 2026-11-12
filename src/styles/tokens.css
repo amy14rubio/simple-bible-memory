@@ -168,3 +168,10 @@ select:focus-visible { outline: none; }
 .rating-banner { animation: rating-banner 3000ms cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 /* With reduced motion it simply appears and is removed (the rule above that shortens animations would hide it at once). */
 @media (prefers-reduced-motion: reduce) { .rating-banner { animation: none; } }
+
+/* ---- Screen transitions: none here. The whole screen slides and fades in as one block (AppShell does it, with the Web Animations API, once per
+   screen change); there are no animations on anything inside it. ---- */
+
+/* Loading placeholders appear only if loading takes longer than a blink, so a fast load goes straight to the content with no grey shapes flashing first. */
+.later { opacity: 0; animation: later-in 0s linear 150ms forwards; }
+@keyframes later-in { to { opacity: 1; } }

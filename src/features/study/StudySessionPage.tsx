@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
-import { AppBar, BackButton, Button, ButtonLink, ErrorMessage, Page } from '../../components/ui';
+import { AppBar, BackButton, Button, ButtonLink, ErrorMessage, Page, Bar } from '../../components/ui';
 import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
 import type { Rating } from '../../domain/study/rating';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -59,7 +59,18 @@ export function StudySessionPage() {
     [id, extraPractice, decks, cards, reviews, settings],
   );
   const exit = <BackButton to={`/collections/${id}`} label={t('study.exit')} />;
-  if (loading || !data) return null;
+  // While the cards load: the top bar with its back arrow at once, and the shapes of the verse area (a reference and a few lines), so the screen is never blank.
+  if (loading || !data) {
+    return (
+      <>
+        <AppBar back={exit} />
+        <Page busy className="space-y-6 pt-10">
+          <Bar className="mx-auto h-7 w-44" />
+          <div className="space-y-3"><Bar className="h-5 w-full" /><Bar className="h-5 w-11/12" /><Bar className="h-5 w-3/4" /></div>
+        </Page>
+      </>
+    );
+  }
   // The screen's name, for people who cannot see it: "Studying Psalms: Flashcard".
   const heading = t('study.heading', { deck: data.deck?.title ?? '', mode: MODES.includes(mode) ? t(`mode.${mode}` as MessageKey) : '' });
   if (!data.deck) return <><AppBar back={exit} title={t('study.exit')} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;

@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CheckCheck, FolderInput, Plus, Search, Trash2, X } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
-import { AppBar, BackButton, ButtonLink, ConfirmDialog, EmptyState, ErrorMessage, IconButton, IconLink, Page, SearchBar } from '../../components/ui';
+import { AppBar, BackButton, ButtonLink, ConfirmDialog, EmptyState, ErrorMessage, IconButton, IconLink, Page, SearchBar, Bar } from '../../components/ui';
 import { DeckPicker } from '../../components/DeckPicker';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useRefreshOnWrites } from '../../app/useRefreshOnWrites';
@@ -68,7 +68,20 @@ export function CardBrowsePage() {
     wasSelecting.current = selecting;
   }, [selecting, selected.size, t]);
 
-  if (loading && !data) return null;
+  // While the list loads, the top bar and the shapes of the table (its heading row and a few rows), so nothing pops in.
+  if (loading && !data) {
+    return (
+      <>
+        <AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} />
+        <div aria-hidden className="w-full">
+          <div className="flex border-b border-border py-3 text-sm text-muted"><div className="w-2/5 px-5"><Bar className="h-4 w-12" /></div><div className="flex-1 pr-5"><Bar className="h-4 w-16" /></div></div>
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <div key={i} className="flex border-b border-border py-3.5"><div className="w-2/5 px-5"><Bar className="h-5 w-24" /></div><div className="flex-1 space-y-2 pr-5"><Bar className="h-4 w-full" /><Bar className="h-4 w-2/3" /></div></div>
+          ))}
+        </div>
+      </>
+    );
+  }
   const deck = data?.all.find((d) => d.id === id);
   if (!data || (!isAll && !deck)) return <><AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;
 
