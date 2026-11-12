@@ -38,11 +38,14 @@ export const supportsViewTransitions = () => typeof document !== 'undefined' && 
 export const prefersReducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export type Direction = 'forward' | 'back' | 'tab';
-const TABS = new Set(['/', '/stats']);
+/** The main tabs, in order: Collections, then Statistics. Switching between them slides the way the tabs lie (to the right going to Statistics). */
+const TABS = ['/', '/stats'];
 const depth = (p: string) => p.split('/').filter(Boolean).length;
-/** Which way a navigation goes: deeper (forward), up (back), or sideways between the main tabs. */
+/** Which way a navigation goes: deeper or to a later tab (forward), up or to an earlier tab (back). */
 export function directionOf(from: string, to: string, action: 'PUSH' | 'POP' | 'REPLACE'): Direction {
-  if (TABS.has(from) && TABS.has(to)) return 'tab';
+  const a = TABS.indexOf(from);
+  const b = TABS.indexOf(to);
+  if (a >= 0 && b >= 0) return b > a ? 'forward' : 'back';
   if (action === 'POP') return 'back';
   return depth(to) < depth(from) ? 'back' : 'forward';
 }
