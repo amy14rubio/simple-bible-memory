@@ -25,7 +25,9 @@ import { RemindersSection } from '../reminders/RemindersSection';
 const THEME_LABEL = { system: 'settings.themeSystem', light: 'settings.themeLight', dark: 'settings.themeDark', custom: 'settings.themeCustom' } as const;
 
 const row = 'flex min-h-13 items-center justify-between gap-4 border-b border-border py-1.5';
-const heading = 'mb-1 font-serif text-xl';
+const heading = 'mb-2.5 font-serif text-xl';
+/** One group of settings: a grey panel like the sections of Statistics, its rows divided by thin lines (none under the last one). */
+const panel = 'rounded-3xl bg-panel px-5 py-1 [&>*:last-child]:border-b-0';
 
 export function SettingsPage() {
   const { t, preference: languagePreference } = useI18n();
@@ -63,10 +65,10 @@ export function SettingsPage() {
     <>
       <AppBar title={t('settings.title')} back={<BackButton to="/" label={t('common.backToDecks')} />} actions={<IconButton label={t('coach.settings.replay')} onClick={coach.start}><CircleHelp size={22} aria-hidden /></IconButton>} />
       <Page id="settings-page" className="space-y-7">
-        <section aria-labelledby="general">
-          <h2 id="general" className={heading}>{t('settings.general')}</h2>
+        <section aria-labelledby="personalization">
+          <h2 id="personalization" className={heading}>{t('settings.personalization')}</h2>
           {/* Language, theme and font are one step of the Settings guide (they are all about how the app looks and reads). */}
-          <div data-coach="look">
+          <div data-coach="look" className={panel}>
             <Link to="/settings/language" className={`${row} hover:bg-surface`}>
               <span>{t('settings.language')}</span>
               <span className="flex items-center gap-1 text-muted">
@@ -89,6 +91,11 @@ export function SettingsPage() {
               </span>
             </Link>
           </div>
+        </section>
+
+        <section aria-labelledby="study">
+          <h2 id="study" className={heading}>{t('settings.study')}</h2>
+          <div className={panel}>
           <Link to="/settings/card-kinds" data-coach="kinds" className={`${row} hover:bg-surface`}>
             <span>{t('settings.kindsLegend')}</span>
             <span className="flex items-center gap-1 text-muted">
@@ -126,14 +133,16 @@ export function SettingsPage() {
             <InfoLabel title={t('settings.encouragement')} info={t('settings.encouragementHint')} />
             <Switch checked={encouragement} labelledBy="encouragement-label" onChange={(on) => { encouragementTouched.current = true; setEncouragement(on); void settings.set('encouragement', on); }} />
           </div>
+          </div>
         </section>
-
         <RemindersSection />
 
         <section aria-labelledby="backup" data-coach="backup">
           <h2 id="backup" className={heading}><InfoLabel title={t('settings.backup')} info={t('settings.backupBody')} className="py-2" /></h2>
+          <div className={panel}>
+          {/* One line says who is signed in and how the backup is going (when there is no backup status, "Signed in as" stands alone below). */}
           {share.available && share.user && share.accountStatus.state !== 'off' && (
-            <div role="status" className={`${row} text-muted`}><span>{t(`account.backup.${share.accountStatus.state}` as MessageKey)}</span></div>
+            <div role="status" className={`${row} text-muted`}><span>{t(`account.backup.${share.accountStatus.state}` as MessageKey, { name: share.user.displayName ?? share.user.email ?? '' })}</span></div>
           )}
           <button type="button" onClick={() => setExporting({ ids: null, title: t('export.everything') })} className={`${row} w-full text-left hover:bg-surface`}>
             <span>{t('export.titleAll')}</span>
@@ -144,11 +153,11 @@ export function SettingsPage() {
               {accountError && <p role="alert" className="py-2 text-danger">{accountError}</p>}
               {share.user ? (
                 <>
-                  <div className={row}><span className="min-w-0 truncate">{t('account.signedInAs', { name: share.user.displayName ?? share.user.email ?? '' })}</span></div>
+                  {share.accountStatus.state === 'off' && <div className={row}><span className="min-w-0 truncate">{t('account.signedInAs', { name: share.user.displayName ?? share.user.email ?? '' })}</span></div>}
                   <button type="button" onClick={() => void share.signOut()} className={`${row} w-full text-left hover:bg-surface`}>
                     <span>{t('account.signOut')}</span>
                   </button>
-                  <button type="button" onClick={() => setConfirmingDelete(true)} className={`${row} mt-3 w-full text-left text-danger hover:bg-surface`}>
+                  <button type="button" onClick={() => setConfirmingDelete(true)} className={`${row} w-full text-left text-danger hover:bg-surface`}>
                     <span>{t('account.delete')}</span>
                   </button>
                 </>
@@ -168,9 +177,11 @@ export function SettingsPage() {
               )}
             </>
           )}
+          </div>
         </section>
         <section aria-labelledby="about">
           <h2 id="about" className={heading}>{t('settings.about')}</h2>
+          <div className={panel}>
           <Link to="/welcome" data-coach="tour" className={`${row} hover:bg-surface`}>
             <span>{t('onboarding.tour')}</span>
             <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
@@ -189,6 +200,7 @@ export function SettingsPage() {
               </a>
             </div>
           )}
+          </div>
         </section>
         <ExportDrawer target={exporting} onClose={() => setExporting(null)} />
         {coach.open && <SettingsCoach onClose={coach.close} />}

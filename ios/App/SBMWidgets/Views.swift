@@ -107,7 +107,7 @@ struct DueTodayView: View {
         .padding(.vertical, 9)
         .overlay(alignment: .top) { Rectangle().fill(p.border.color).frame(height: 1) }
         // (a small widget is one tap target; the bigger ones open the deck that was tapped)
-        if family == .systemSmall { line } else if let url = URL(string: "simplebiblememory://deck/\(deck.id)") { Link(destination: url) { line } } else { line }
+        if family == .systemSmall { line } else if let url = URL(string: "simplebiblememory://collection/\(deck.id)") { Link(destination: url) { line } } else { line }
     }
 }
 
@@ -229,6 +229,6 @@ struct VerseView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             }
         }
-        .widgetURL(deck.flatMap { URL(string: "simplebiblememory://deck/\($0.id)") } ?? home)
+        .widgetURL(deck.flatMap { URL(string: "simplebiblememory://collection/\($0.id)") } ?? home)
     }
 }

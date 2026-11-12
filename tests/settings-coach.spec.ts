@@ -125,7 +125,7 @@ test.describe('going into a setting and back', () => {
   test('leaving Settings for somewhere else counts as closing the guide', async ({ page }) => {
     await page.goto('/#/settings');
     await guide(page).getByRole('button', { name: 'Next' }).click();
-    await page.getByRole('link', { name: 'Back to decks' }).click({ force: true });
+    await page.getByRole('link', { name: 'Back to collections' }).click({ force: true });
     await expect(page.getByRole('heading', { name: 'Simple Bible Memory', level: 1 })).toBeVisible();
     await page.goto('/#/settings');
     await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();

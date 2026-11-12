@@ -10,8 +10,8 @@ test('a wide screen has a sidebar with the main places, and no bottom bar', asyn
   await page.goto('/');
   const nav = sidebar(page);
   await expect(nav).toBeVisible();
-  for (const name of ['Decks', 'View cards', 'Statistics']) await expect(nav.getByRole('link', { name, exact: true })).toBeVisible();
-  await expect(nav.getByRole('link', { name: 'Decks', exact: true })).toHaveAttribute('aria-current', 'page');
+  for (const name of ['Collections', 'View cards', 'Statistics']) await expect(nav.getByRole('link', { name, exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Collections', exact: true })).toHaveAttribute('aria-current', 'page');
   const box = (await nav.boundingBox())!;
   expect(box.x).toBeLessThan(40); // down the left side
   await expect(page.getByRole('button', { name: 'Add' })).toBeVisible();
@@ -20,13 +20,13 @@ test('a wide screen has a sidebar with the main places, and no bottom bar', asyn
   await expect(nav.getByRole('link', { name: 'Statistics', exact: true })).toHaveAttribute('aria-current', 'page');
 });
 
-test('View cards opens the cards of all decks, and is the highlighted place there', async ({ page }) => {
+test('View cards opens the cards of all collections, and is the highlighted place there', async ({ page }) => {
   await page.setViewportSize(WIDE);
   await page.goto('/');
   await sidebar(page).getByRole('link', { name: 'View cards' }).click();
-  await expect(page).toHaveURL(/#\/decks\/all\/cards$/);
+  await expect(page).toHaveURL(/#\/collections\/all\/cards$/);
   await expect(sidebar(page).getByRole('link', { name: 'View cards' })).toHaveAttribute('aria-current', 'page');
-  await expect(sidebar(page).getByRole('link', { name: 'Decks', exact: true })).not.toHaveAttribute('aria-current', 'page');
+  await expect(sidebar(page).getByRole('link', { name: 'Collections', exact: true })).not.toHaveAttribute('aria-current', 'page');
 });
 
 test('the logo is in the sidebar and takes you home', async ({ page }) => {
@@ -84,37 +84,37 @@ test('resizing across the line switches between the two', async ({ page }) => {
 
 test('studying has the whole screen: no sidebar', async ({ page }) => {
   await page.setViewportSize(WIDE);
-  await page.goto('/#/decks/new');
+  await page.goto('/#/collections/new');
   await page.getByLabel('Title').fill('Focus');
   await page.getByRole('button', { name: 'Save' }).click();
-  await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
-  const id = page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1]!;
+  await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
+  const id = page.url().match(/#\/collections\/([0-9a-f-]{36})$/)![1]!;
   await expect(sidebar(page)).toBeVisible(); // the deck page has it
-  await page.goto(`/#/decks/${id}/study/flashcard`);
+  await page.goto(`/#/collections/${id}/study/flashcard`);
   await expect(sidebar(page)).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Show sidebar' })).toHaveCount(0);
 });
 
-test('the deck list is a grid of cards on a wide screen', async ({ page }) => {
+test('the collection list is a grid of cards on a wide screen', async ({ page }) => {
   await page.setViewportSize(WIDE);
-  await page.goto('/#/decks/new');
+  await page.goto('/#/collections/new');
   for (const title of ['One', 'Two']) {
-    await page.goto('/#/decks/new');
+    await page.goto('/#/collections/new');
     await page.getByLabel('Title').fill(title);
     await page.getByRole('button', { name: 'Save' }).click();
-    await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
+    await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
   }
   await page.goto('/');
   const [a, b] = await Promise.all([page.getByRole('link', { name: /^One/ }).boundingBox(), page.getByRole('link', { name: /^Two/ }).boundingBox()]);
   expect(Math.abs(a!.y - b!.y)).toBeLessThan(4); // side by side
 });
 
-test('a single deck takes the whole width, not half of it', async ({ page }) => {
+test('a single collection takes the whole width, not half of it', async ({ page }) => {
   await page.setViewportSize(WIDE);
-  await page.goto('/#/decks/new');
+  await page.goto('/#/collections/new');
   await page.getByLabel('Title').fill('Only one');
   await page.getByRole('button', { name: 'Save' }).click();
-  await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
+  await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
   await page.goto('/');
   const card = (await page.getByRole('link', { name: /^Only one/ }).locator('xpath=..').boundingBox())!;
   const list = (await page.locator('main ul').first().boundingBox())!;

@@ -41,7 +41,7 @@ struct DueTodayWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "DueTodayWidget", provider: SnapshotProvider()) { DueTodayView(snapshot: $0.snapshot) }
             .configurationDisplayName("Due today")
-            .description("Decks with cards due.")
+            .description("Collections with cards due.")
             .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
@@ -60,7 +60,7 @@ struct StatsWidget: Widget {
 struct DeckEntity: AppEntity {
     let id: String
     let title: String
-    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Deck"
+    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Collection"
     var displayRepresentation: DisplayRepresentation { DisplayRepresentation(title: "\(title)") }
     static let defaultQuery = DeckQuery()
 }
@@ -75,8 +75,8 @@ struct DeckQuery: EntityQuery {
 
 struct VerseWidgetIntent: WidgetConfigurationIntent {
     static let title: LocalizedStringResource = "Verse preview"
-    static let description = IntentDescription("Pick the deck this widget shows a verse from.")
-    @Parameter(title: "Deck") var deck: DeckEntity?
+    static let description = IntentDescription("Pick the collection this widget shows a verse from.")
+    @Parameter(title: "Collection") var deck: DeckEntity?
 }
 
 struct VerseProvider: AppIntentTimelineProvider {

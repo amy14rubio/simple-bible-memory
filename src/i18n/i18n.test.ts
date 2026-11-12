@@ -33,7 +33,7 @@ describe('dictionaries', () => {
 
   it('nothing was left untranslated, except words that are the same in both languages', () => {
     const sameInBoth = keys.filter((k) => JSON.stringify(en[k]) === JSON.stringify(es[k]));
-    expect(sameInBoth).toEqual(['settings.general']);
+    expect(sameInBoth).toEqual([]);
   });
 
   it('the app and Bible Gateway keep their names and examples sensible in Spanish', () => {
@@ -140,7 +140,7 @@ describe('book names', () => {
 
 describe('describeError', () => {
   it('translates errors the user can fix', () => {
-    expect(describeError('en', new ValidationError('deck-title-required', 'Deck title is required'))).toBe('Deck title is required');
+    expect(describeError('en', new ValidationError('deck-title-required', 'Deck title is required'))).toBe('Collection title is required');
     expect(describeError('es', new ValidationError('deck-title-required', 'Deck title is required'))).toBe('El título de la carpeta es obligatorio');
     expect(describeError('es', new ValidationError('reference-required', 'x'))).toBe('El versículo es obligatorio');
     expect(describeError('es', new ValidationError('verse-text-required', 'x'))).toBe('El pasaje es obligatorio');

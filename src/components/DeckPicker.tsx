@@ -21,7 +21,7 @@ export function DeckPicker({ label, value, options, onChange, variant, id }: {
       popupTitle={t('picker.title')}
       searchLabel={t('decks.search')}
       noMatch={(query) => t('decks.noMatch', { query })}
-      onCreate={{ label: t('common.newDeck'), run: () => navigate('/decks/new', { replace: true }) }}
+      onCreate={{ label: t('common.newDeck'), run: () => navigate('/collections/new', { replace: true }) }}
     />
   );
 }

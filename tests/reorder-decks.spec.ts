@@ -10,7 +10,7 @@ async function three(page: Page) {
   await expect.poll(() => order(page)).toEqual(['Apple', 'Banana', 'Cherry']); // A to Z until someone reorders
 }
 
-test('a new deck goes to the top, whatever the order was', async ({ page }) => {
+test('a new collection goes to the top, whatever the order was', async ({ page }) => {
   await three(page);
   await hold(page, 'Apple');
   await dragHandle(page, 'Apple', 'Cherry');
@@ -45,11 +45,11 @@ async function dragHandle(page: Page, from: string, toTitle: string) {
   await page.mouse.up();
 }
 
-test('touch and hold a deck starts reordering: handles appear, and nothing opens by accident', async ({ page }) => {
+test('touch and hold a collection starts reordering: handles appear, and nothing opens by accident', async ({ page }) => {
   await three(page);
   await expect(page.getByRole('button', { name: /^Move / })).toHaveCount(0); // no handles until then
   await hold(page, 'Apple');
-  await expect(heading(page)).toHaveText('Reorder decks');
+  await expect(heading(page)).toHaveText('Reorder collections');
   await expect(page).toHaveURL(/\/(#\/)?$/); // the hold did not open the deck
   await expect(page.getByRole('button', { name: /^Move / })).toHaveCount(3);
   await expect(page.getByRole('button', { name: /^Actions for / })).toHaveCount(0); // the menus are out of the way
@@ -58,7 +58,7 @@ test('touch and hold a deck starts reordering: handles appear, and nothing opens
   await expect(page.getByRole('link', { name: /Banana/ })).toHaveCount(0); // they are not links any more
 });
 
-test('dragging a handle moves a deck; Done keeps the order and leaves the mode', async ({ page }) => {
+test('dragging a handle moves a collection; Done keeps the order and leaves the mode', async ({ page }) => {
   await three(page);
   await hold(page, 'Apple');
   await dragHandle(page, 'Apple', 'Cherry');
@@ -71,7 +71,7 @@ test('dragging a handle moves a deck; Done keeps the order and leaves the mode',
   await expect.poll(() => order(page)).toEqual(['Banana', 'Cherry', 'Apple']);
 });
 
-test('outside the mode a click opens the deck, and dragging a row does not move it', async ({ page }) => {
+test('outside the mode a click opens the collection, and dragging a row does not move it', async ({ page }) => {
   await three(page);
   const a = (await row(page, 'Apple').boundingBox())!;
   const c = (await row(page, 'Cherry').boundingBox())!;
@@ -81,25 +81,25 @@ test('outside the mode a click opens the deck, and dragging a row does not move 
   await page.mouse.up();
   await expect.poll(() => order(page)).toEqual(['Apple', 'Banana', 'Cherry']);
   await page.getByRole('link', { name: /Banana/ }).click();
-  await expect(page).toHaveURL(/#\/decks\/[0-9a-f-]{36}$/);
+  await expect(page).toHaveURL(/#\/collections\/[0-9a-f-]{36}$/);
 });
 
 test('Back leaves reordering without leaving the screen', async ({ page }) => {
   await three(page);
   await hold(page, 'Apple');
-  await expect(heading(page)).toHaveText('Reorder decks');
+  await expect(heading(page)).toHaveText('Reorder collections');
   await page.goBack();
   await expect(heading(page)).toHaveText('Simple Bible Memory');
   await expect(page).toHaveURL(/\/(#\/)?$/);
 });
 
-test('from the keyboard: the Reorder decks button, then Space and the arrow keys on a handle', async ({ page }) => {
+test('from the keyboard: the Reorder collections button, then Space and the arrow keys on a handle', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 780 }); // one column (on a wide screen decks sit two to a row, and Down means the row below)
   await three(page);
-  const start = page.getByRole('button', { name: 'Reorder decks' });
+  const start = page.getByRole('button', { name: 'Reorder collections' });
   await start.focus();
   await page.keyboard.press('Enter');
-  await expect(heading(page)).toHaveText('Reorder decks');
+  await expect(heading(page)).toHaveText('Reorder collections');
   await expect(handle(page, 'Apple')).toBeFocused(); // focus lands on the first handle
   await page.keyboard.press('Space');
   await page.waitForTimeout(150);
@@ -111,11 +111,11 @@ test('from the keyboard: the Reorder decks button, then Space and the arrow keys
   await expect(heading(page)).toBeFocused(); // focus is not lost when the mode's buttons go
 });
 
-test('on a wide screen too, every arrow key moves a deck one place along the list (two to a row or not)', async ({ page }) => {
+test('on a wide screen too, every arrow key moves a collection one place along the list (two to a row or not)', async ({ page }) => {
   for (const title of ['Apple', 'Banana', 'Cherry', 'Date']) await createDeck(page, title);
   await page.goto('/');
   await expect.poll(() => order(page)).toEqual(['Apple', 'Banana', 'Cherry', 'Date']);
-  await page.getByRole('button', { name: 'Reorder decks' }).focus();
+  await page.getByRole('button', { name: 'Reorder collections' }).focus();
   await page.keyboard.press('Enter');
   await expect(handle(page, 'Apple')).toBeFocused();
   const press = async (keys: string[]) => { await page.keyboard.press('Space'); await page.waitForTimeout(150); for (const k of keys) { await page.keyboard.press(k); await page.waitForTimeout(250); } await page.keyboard.press('Space'); await page.waitForTimeout(400); };
@@ -145,10 +145,10 @@ test.describe('with a finger', () => {
   }
   const centre = async (page: Page, locator: ReturnType<Page['locator']>) => { const b = (await locator.boundingBox())!; return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; };
 
-  test('hold starts reordering without opening the deck; then a finger on the handle drags', async ({ page }) => {
+  test('hold starts reordering without opening the collection; then a finger on the handle drags', async ({ page }) => {
     await three(page);
     await touch(page, [await centre(page, row(page, 'Apple'))], 650);
-    await expect(heading(page)).toHaveText('Reorder decks');
+    await expect(heading(page)).toHaveText('Reorder collections');
     await expect(page).toHaveURL(/\/(#\/)?$/);
     const a = await centre(page, handle(page, 'Apple'));
     const c = await centre(page, row(page, 'Cherry'));
@@ -166,15 +166,15 @@ test.describe('with a finger', () => {
   });
 });
 
-test('searching turns reordering off (only some decks are shown)', async ({ page }) => {
+test('searching turns reordering off (only some collections are shown)', async ({ page }) => {
   await three(page);
-  await page.getByRole('button', { name: 'Search decks' }).click();
-  await page.getByRole('searchbox').or(page.getByPlaceholder('Search decks')).first().fill('an');
+  await page.getByRole('button', { name: 'Search collections' }).click();
+  await page.getByRole('searchbox').or(page.getByPlaceholder('Search collections')).first().fill('an');
   await menu(page, 'Banana');
   await expect(page.getByRole('dialog').getByRole('button', { name: /^Move (up|down)$/ })).toHaveCount(0);
 });
 
-test('one deck alone cannot be moved, and says nothing about it', async ({ page }) => {
+test('one collection alone cannot be moved, and says nothing about it', async ({ page }) => {
   await createDeck(page, 'Only');
   await page.goto('/');
   await menu(page, 'Only');
@@ -188,9 +188,9 @@ for (const scheme of ['light', 'dark'] as const) {
     await three(page);
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']).analyze();
     expect(results.violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
-    await page.getByRole('button', { name: 'Reorder decks' }).focus();
+    await page.getByRole('button', { name: 'Reorder collections' }).focus();
     await page.keyboard.press('Enter');
-    await expect(heading(page)).toHaveText('Reorder decks');
+    await expect(heading(page)).toHaveText('Reorder collections');
     const inMode = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']).analyze();
     expect(inMode.violations.map((v) => `${v.id}: ${v.help}`), 'while reordering').toEqual([]);
     await ctx.close();
@@ -200,7 +200,7 @@ for (const scheme of ['light', 'dark'] as const) {
 test.describe('in Spanish', () => {
   test.use({ locale: 'es-ES' });
   test('the menu and the hint are in Spanish', async ({ page }) => {
-    for (const title of ['Uno', 'Dos']) { await page.goto('/#/decks/new'); await page.getByLabel('Título').fill(title); await page.getByRole('button', { name: 'Guardar' }).click(); await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/); }
+    for (const title of ['Uno', 'Dos']) { await page.goto('/#/collections/new'); await page.getByLabel('Título').fill(title); await page.getByRole('button', { name: 'Guardar' }).click(); await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/); }
     await page.goto('/');
     await page.getByRole('button', { name: 'Acciones de Dos' }).click();
     await expect(page.getByRole('dialog').getByRole('button', { name: 'Bajar' })).toHaveCount(0); // no Move buttons in the menu
@@ -213,18 +213,18 @@ test.describe('in Spanish', () => {
   });
 });
 
-test('tapping outside the decks (or pressing Escape) leaves reordering', async ({ page }) => {
+test('tapping outside the collections (or pressing Escape) leaves reordering', async ({ page }) => {
   await three(page);
   await hold(page, 'Apple');
-  await expect(heading(page)).toHaveText('Reorder decks');
+  await expect(heading(page)).toHaveText('Reorder collections');
   await page.mouse.click(200, 760); // empty space below the decks
   await expect(heading(page)).toHaveText('Simple Bible Memory');
   await hold(page, 'Apple');
-  await expect(heading(page)).toHaveText('Reorder decks');
+  await expect(heading(page)).toHaveText('Reorder collections');
   await heading(page).click(); // the top bar counts as outside too
   await expect(heading(page)).toHaveText('Simple Bible Memory');
   await hold(page, 'Apple');
-  await expect(heading(page)).toHaveText('Reorder decks');
+  await expect(heading(page)).toHaveText('Reorder collections');
   await page.keyboard.press('Escape');
   await expect(heading(page)).toHaveText('Simple Bible Memory');
 });

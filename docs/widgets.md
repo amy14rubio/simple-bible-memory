@@ -5,7 +5,7 @@ Four widgets, drawn by the phone (`android/app/src/main/java/app/simplebiblememo
 | Widget | Shows | Tap |
 |---|---|---|
 | Add card | a pill with a plus | Add card screen (`simplebiblememory://add`) |
-| Due today | the decks with their due counts (decks with cards due first, as many as fit) | a deck (`://deck/<id>`), or the deck list |
+| Due today | the collections with their due counts (collections with cards due first, as many as fit) | a collection (`://collection/<id>`), or the collection list |
 | Statistics | verses memorized (big), and the card-stage pie when there is room | Statistics (`://stats`) |
 | Verse preview | one verse of a chosen deck, a new one each day | that deck |
 

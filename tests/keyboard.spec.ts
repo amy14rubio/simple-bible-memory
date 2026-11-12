@@ -24,7 +24,7 @@ test('while the keyboard is up, the Show answer bar sits above it, not under it'
   const id = await createDeck(page);
   await addCard(page, id, 'Example 1:1', 'Example verse text typed by the user.');
   await setCardKinds(page, 'Recall the passage');
-  await page.goto(`/#/decks/${id}/study/type`);
+  await page.goto(`/#/collections/${id}/study/type`);
   const button = page.getByRole('button', { name: 'Show answer' });
   await expect(button).toBeVisible();
   const resting = (await button.boundingBox())!;

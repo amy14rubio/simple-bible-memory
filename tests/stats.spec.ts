@@ -4,12 +4,12 @@ import { addCard, createDeck, setCardKinds, closeWithEscape } from './helpers';
 const number = (page: import('@playwright/test').Page, label: string) =>
   page.getByRole('term').filter({ hasText: new RegExp(`^${label}$`) }).locator('xpath=preceding-sibling::dd[1]');
 
-test('statistics: empty state before any deck exists', async ({ page }) => {
+test('statistics: empty state before any collection exists', async ({ page }) => {
   await page.goto('/#/stats');
   await expect(page.getByText('Nothing to show yet')).toBeVisible();
 });
 
-test('statistics: totals, books progress and card counts, and the deck scope switcher', async ({ page }) => {
+test('statistics: totals, books progress and card counts, and the collection scope switcher', async ({ page }) => {
   const a = await createDeck(page, 'Alpha');
   await addCard(page, a, 'John 3:16', 'Sample text.');
   await addCard(page, a, 'Salmos 23:1', 'Sample text.');
@@ -17,7 +17,7 @@ test('statistics: totals, books progress and card counts, and the deck scope swi
   await addCard(page, b, 'Genesis 1:1', 'Sample text.');
 
   // study one card with Easy so it graduates to Review
-  await page.goto(`/#/decks/${a}/study/flashcard`);
+  await page.goto(`/#/collections/${a}/study/flashcard`);
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click();
   // The review is saved before the next card appears, so the counters moving on means it is stored.
@@ -59,7 +59,7 @@ test('statistics: totals, books progress and card counts, and the deck scope swi
 
   // scope to a single deck
   await page.getByRole('button', { name: /^Show statistics for:/ }).click();
-  await page.getByRole('dialog', { name: 'Select a deck' }).getByRole('button', { name: 'Beta' }).click();
+  await page.getByRole('dialog', { name: 'Select a collection' }).getByRole('button', { name: 'Beta' }).click();
   await expect(number(page, 'Total cards added')).toHaveText('1');
   await expect(number(page, 'Verses memorized')).toHaveText('0');
 });
@@ -68,7 +68,7 @@ test('statistics: with only recall cards in use, one studied card makes a verse 
   const a = await createDeck(page, 'Alpha');
   await addCard(page, a, 'John 3:16', 'Sample text.');
   await setCardKinds(page, 'Recall the passage');
-  await page.goto(`/#/decks/${a}/study/flashcard`);
+  await page.goto(`/#/collections/${a}/study/flashcard`);
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click();
   await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();

@@ -17,8 +17,8 @@ export function DoneForToday({ deckId, nextDue, reviewed, as: Heading = 'h1', sh
         {nextDue !== null && <p role="status" className="text-muted">{t('deckHome.nextReview', { interval: formatInterval(nextDue - Date.now()) })}</p>}
       </div>
       <div className="mx-auto flex max-w-xs flex-col gap-3">
-        <ButtonLink to={`/decks/${deckId}?practice=1`} variant="secondary">{t('study.keepPracticing')}</ButtonLink>
-        {showBack && <ButtonLink to={`/decks/${deckId}`}>{t('common.backToDeck')}</ButtonLink>}
+        <ButtonLink to={`/collections/${deckId}?practice=1`} variant="secondary">{t('study.keepPracticing')}</ButtonLink>
+        {showBack && <ButtonLink to={`/collections/${deckId}`}>{t('common.backToDeck')}</ButtonLink>}
       </div>
     </div>
   );

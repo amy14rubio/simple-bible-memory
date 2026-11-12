@@ -2,8 +2,8 @@ import { test, expect, type Page } from '@playwright/test';
 import { createDeck, deckIdFromUrl } from './helpers';
 
 async function newCardForm(page: Page) {
-  const id = await createDeck(page, 'Gateway deck');
-  await page.goto(`/#/cards/new?deck=${id}`);
+  const id = await createDeck(page, 'Gateway collection');
+  await page.goto(`/#/cards/new?collection=${id}`);
 }
 const helper = (page: Page) => page.getByRole('button', { name: /Find passage/ });
 const reference = (page: Page) => page.getByLabel('Verse(s)');
@@ -74,7 +74,7 @@ test('the helper also appears when editing an existing card', async ({ page }) =
   await passage(page).fill('Typed by the user.');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('John 3:16 added')).toBeVisible();
-  await page.goto(`/#/decks/${deckIdFromUrl(page)}/cards`);
+  await page.goto(`/#/collections/${deckIdFromUrl(page)}/cards`);
   await page.getByRole('link', { name: /John 3:16/ }).click();
   await expect(helper(page)).toBeVisible();
 });
@@ -131,9 +131,9 @@ test.describe('eBible, the second source', () => {
     }
   });
 
-  test('a Spanish deck opens Reina-Valera 1909', async ({ page, context }) => {
+  test('a Spanish collection opens Reina-Valera 1909', async ({ page, context }) => {
     await context.route('https://ebible.org/**', (route) => route.fulfill({ contentType: 'text/html', body: '<p>stub</p>' }));
-    await page.goto('/#/decks/new');
+    await page.goto('/#/collections/new');
     await page.getByLabel('Title').fill('Salmos');
     await page.getByRole('button', { name: /^Translation/ }).click();
     const list = page.getByRole('dialog', { name: 'Choose a translation' });
@@ -141,9 +141,9 @@ test.describe('eBible, the second source', () => {
     await list.getByRole('button', { name: /^Spanish/ }).click();
     await list.getByRole('button', { name: /Reina-Valera 1909/ }).click();
     await page.getByRole('button', { name: 'Save' }).click();
-    await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
-    const id = page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1]!;
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
+    const id = page.url().match(/#\/collections\/([0-9a-f-]{36})$/)![1]!;
+    await page.goto(`/#/cards/new?collection=${id}`);
     await reference(page).fill('Salmos 23:1');
     await helper(page).click();
     const popup = context.waitForEvent('page');

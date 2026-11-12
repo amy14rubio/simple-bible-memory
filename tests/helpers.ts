@@ -1,17 +1,17 @@
 import { expect, type Page } from '@playwright/test';
 
 /** Creates a deck through the UI and returns its id. */
-export async function createDeck(page: Page, title = 'Test deck'): Promise<string> {
-  await page.goto('/#/decks/new');
+export async function createDeck(page: Page, title = 'Test collection'): Promise<string> {
+  await page.goto('/#/collections/new');
   await page.getByLabel('Title').fill(title);
   await page.getByRole('button', { name: 'Save' }).click();
-  await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
-  return page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1]!;
+  await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
+  return page.url().match(/#\/collections\/([0-9a-f-]{36})$/)![1]!;
 }
 
 /** Adds a user-entered example card and waits until it appears in the deck's card list. */
 export async function addCard(page: Page, deckId: string, reference: string, passage: string, source?: string) {
-  await page.goto(`/#/cards/new?deck=${deckId}`);
+  await page.goto(`/#/cards/new?collection=${deckId}`);
   await page.getByLabel('Verse(s)').fill(reference);
   if (source) await page.getByLabel('Note', { exact: true }).fill(source);
   await page.getByLabel('Passage', { exact: true }).fill(passage);
@@ -19,7 +19,7 @@ export async function addCard(page: Page, deckId: string, reference: string, pas
   // Saving shows a toast and leaves a cleared form open. Then open the deck's card list, and reload so the
   // toast's text ("John 3:16 added") cannot be mistaken for the card itself by later checks.
   await expect(page.getByText(`${reference} added`)).toBeVisible();
-  await page.goto(`/#/decks/${deckId}/cards`);
+  await page.goto(`/#/collections/${deckId}/cards`);
   await page.reload();
   await expect(page.getByText(reference, { exact: true })).toBeVisible();
 }
@@ -41,7 +41,7 @@ export async function tapFirstBankWord(page: Page): Promise<void> {
   await expect.poll(async () => ((await bank.isVisible()) ? await current.textContent() : 'finished')).not.toBe(before);
 }
 
-export const openDeck = (page: Page, deckId: string) => page.goto(`/#/decks/${deckId}`);
+export const openDeck = (page: Page, deckId: string) => page.goto(`/#/collections/${deckId}`);
 
 /** Chooses which study cards each verse gets (Settings > Cards for each verse). */
 export async function setCardKinds(page: Page, kinds: 'Both' | 'Recall the passage' | 'Identify the verse') {
@@ -67,9 +67,9 @@ export async function setBlankDifficulty(page: Page, level: 'Easy' | 'Medium' | 
   }).toPass({ timeout: 10_000 });
 }
 
-/** The deck id in a "New card" address (/#/cards/new?deck=...). */
+/** The deck id in a "New card" address (/#/cards/new?collection=...). */
 export function deckIdFromUrl(page: Page): string {
-  return new URL(page.url().split('#')[1]!, 'http://x').searchParams.get('deck')!;
+  return new URL(page.url().split('#')[1]!, 'http://x').searchParams.get('collection')!;
 }
 
 /**

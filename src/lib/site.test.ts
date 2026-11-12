@@ -22,10 +22,10 @@ describe('the website pages (public/)', () => {
         expect(html).toContain(`<html lang="${lang}">`);
         expect(html).toContain(`mailto:${CONTACT_EMAIL}`);
         expect(html).toContain(lang === 'en' ? `href="/es/${page}"` : `href="/${page}"`); // the way to the other language
-        expect(html).toContain('<link rel="stylesheet" href="/legal.css">');
-        expect(html).toContain('<link rel="stylesheet" href="/footer.css">');
+        expect(html).toMatch(/<link rel="stylesheet" href="\/legal\.css(\?v=\d+)?">/);
+        expect(html).toMatch(/<link rel="stylesheet" href="\/footer\.css(\?v=\d+)?">/);
         // plain pages: the only script is the shared one that closes the footer's language menu (no inline scripts)
-        expect(html.match(/<script[^>]*>/gi)).toEqual(['<script src="/landing.js" defer>']);
+        expect(html.match(/<script[^>]*>/gi)).toEqual([expect.stringMatching(/^<script src="\/landing\.js(\?v=\d+)?" defer>$/)]);
       });
     }
   }

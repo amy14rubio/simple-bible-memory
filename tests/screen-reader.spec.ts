@@ -38,8 +38,8 @@ test.describe('moving between screens', () => {
   });
 
   test('a screen that puts the cursor in a field keeps it there, and the first screen is left alone', async ({ page }) => {
-    await page.goto('/#/decks/new');
-    await expect(page).toHaveTitle('New deck · Simple Bible Memory');
+    await page.goto('/#/collections/new');
+    await expect(page).toHaveTitle('New collection · Simple Bible Memory');
     expect(await focused(page)).toMatchObject({ tag: 'input' });
   });
 
@@ -49,7 +49,7 @@ test.describe('moving between screens', () => {
     await page.getByRole('link', { name: /Psalms/ }).click();
     await expect(page).toHaveTitle('Psalms · Simple Bible Memory');
     expect(await focused(page)).toMatchObject({ tag: 'h1', name: 'Psalms' });
-    await page.getByRole('button', { name: 'Deck actions' }).click();
+    await page.getByRole('button', { name: 'Collection actions' }).click();
     await page.getByRole('dialog').getByRole('link', { name: 'View cards' }).click();
     await expect(page).toHaveTitle('Cards in Psalms · Simple Bible Memory');
     expect(id).toBeTruthy();
@@ -69,14 +69,14 @@ test.describe('moving between screens', () => {
 test.describe('studying', () => {
   test('the study screen has a real heading', async ({ page }) => {
     const id = await deckWithCard(page);
-    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await page.goto(`/#/collections/${id}/study/flashcard`);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Studying Psalms: Flashcard');
     await expect(page).toHaveTitle('Studying Psalms: Flashcard · Simple Bible Memory');
   });
 
   test('Flashcard: Show answer moves focus to the answer, which has the verse as its name', async ({ page }) => {
     const id = await deckWithCard(page);
-    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await page.goto(`/#/collections/${id}/study/flashcard`);
     await page.getByRole('button', { name: 'Show answer' }).click();
     const f = await focused(page);
     expect(f).toMatchObject({ tag: 'div', role: 'group' });
@@ -88,7 +88,7 @@ test.describe('studying', () => {
 
   test('Type: the whole result is one spoken line: the summary, what you typed, then the verse (no swiping needed)', async ({ page }) => {
     const id = await deckWithCard(page);
-    await page.goto(`/#/decks/${id}/study/type`);
+    await page.goto(`/#/collections/${id}/study/type`);
     const reference = (await page.locator('main p').filter({ hasText: /^(John 3:16|Psalm 23:1|Psalm 1:1|Psalm 2:1)$/ }).first().textContent())!;
     const typed = { 'John 3:16': 'For God so hated the earth that he gave nothing', 'Psalm 23:1': 'The Lord is my master; I shall not want extra', 'Psalm 1:1': 'Blessed is the man that walketh extra', 'Psalm 2:1': 'Why do the extra rage' }[reference]!;
     await page.getByRole('textbox').fill(typed);
@@ -104,7 +104,7 @@ test.describe('studying', () => {
 
   test('Flashcard: the answer is read once (its name), and its drawn copy is skipped by screen readers', async ({ page }) => {
     const id = await deckWithCard(page);
-    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await page.goto(`/#/collections/${id}/study/flashcard`);
     await page.getByRole('button', { name: 'Show answer' }).click();
     const group = page.getByRole('group', { name: /^Answer: / });
     await expect(group.locator('[aria-hidden="true"]')).toHaveCount(1);
@@ -112,18 +112,18 @@ test.describe('studying', () => {
 
   test('Each card says where you are and what is asked, as its first control takes focus', async ({ page }) => {
     const id = await deckWithCard(page);
-    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await page.goto(`/#/collections/${id}/study/flashcard`);
     await expect(page.getByRole('button', { name: 'Show answer' })).toBeFocused();
     await expect(page.getByRole('button', { name: 'Show answer' })).toHaveAccessibleDescription(/^Card 1 of \d+\. (John 3:16|Psalm 23:1|Psalm 1:1|Psalm 2:1)$/);
-    await page.goto(`/#/decks/${id}/study/type`);
+    await page.goto(`/#/collections/${id}/study/type`);
     await expect(page.getByRole('textbox')).toHaveAccessibleDescription(/^Card 1 of \d+\. /);
-    await page.goto(`/#/decks/${id}/study/blanks`);
+    await page.goto(`/#/collections/${id}/study/blanks`);
     await expect(page.getByRole('status').filter({ hasText: /Card 1 of \d+\. .*blank\. Word bank: / })).toBeAttached();
   });
 
   test('Type: a perfect answer says so, and says the verse', async ({ page }) => {
     const id = await deckWithCard(page);
-    await page.goto(`/#/decks/${id}/study/type`);
+    await page.goto(`/#/collections/${id}/study/type`);
     const reference = (await page.locator('main p').filter({ hasText: /^(John 3:16|Psalm 23:1|Psalm 1:1|Psalm 2:1)$/ }).first().textContent())!;
     const verse = { 'John 3:16': 'For God so loved the world that he gave his only Son.', 'Psalm 23:1': 'The Lord is my shepherd; I shall not want.', 'Psalm 1:1': 'Blessed is the man that walketh not.', 'Psalm 2:1': 'Why do the heathen rage.' }[reference]!;
     await page.getByRole('textbox').fill(verse);
@@ -134,7 +134,7 @@ test.describe('studying', () => {
 
   test('Blanks: finishing the last blank moves focus to the result and says how many were right', async ({ page }) => {
     const id = await deckWithCard(page);
-    await page.goto(`/#/decks/${id}/study/blanks`);
+    await page.goto(`/#/collections/${id}/study/blanks`);
     await expect(page.getByRole('group', { name: 'Word bank' })).toBeVisible();
     while (await wordBankOpen(page)) await tapFirstBankWord(page);
     const done = page.getByRole('group', { name: /^All blanks filled: \d+ of \d+ right\.$/ });
@@ -143,7 +143,7 @@ test.describe('studying', () => {
 
   test('Choosing the verse: the choice is answered out loud, with the right verse', async ({ page }) => {
     const id = await deckWithCard(page, 'Identify the verse');
-    await page.goto(`/#/decks/${id}/study/blanks`);
+    await page.goto(`/#/collections/${id}/study/blanks`);
     await page.getByRole('group', { name: 'Choose the verse' }).getByRole('button').first().click();
     const answered = page.getByRole('group', { name: /^(Correct\.|Not quite\. The verse is )/ });
     await expect(answered).toBeFocused();
@@ -151,7 +151,7 @@ test.describe('studying', () => {
 
   test('Identify, Flashcard: the revealed verse reference is the focused answer', async ({ page }) => {
     const id = await deckWithCard(page, 'Identify the verse');
-    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await page.goto(`/#/collections/${id}/study/flashcard`);
     await page.getByRole('button', { name: 'Show answer' }).click();
     await expect(page.getByRole('group', { name: /^Answer: / })).toBeFocused();
   });
@@ -160,7 +160,7 @@ test.describe('studying', () => {
 test.describe('the medium fixes', () => {
   test('M1: selecting cards is announced, comes first for a screen reader, and keeps focus sensible', async ({ page }) => {
     const id = await deckWithCard(page);
-    await page.goto(`/#/decks/${id}/cards`);
+    await page.goto(`/#/collections/${id}/cards`);
     // the way in is before the list, not after every card
     const before = await page.getByRole('button', { name: 'Select cards' }).evaluate((b) => !!(b.compareDocumentPosition(document.querySelector('table')!) & Node.DOCUMENT_POSITION_FOLLOWING));
     expect(before).toBe(true);
@@ -178,7 +178,7 @@ test.describe('the medium fixes', () => {
 
   test('M2: the Undo toast says Undo is there, and stays long enough to find it', async ({ page }) => {
     const id = await deckWithCard(page);
-    await page.goto(`/#/decks/${id}/cards`);
+    await page.goto(`/#/collections/${id}/cards`);
     await page.getByRole('row', { name: /Psalm 1:1/ }).click();
     await page.getByRole('button', { name: 'Delete card' }).click();
     await page.locator('dialog[open]').getByRole('button', { name: 'Delete card' }).click();
@@ -191,13 +191,13 @@ test.describe('the medium fixes', () => {
 
   test('M3: after a blank is filled, the announcement says which blank is next', async ({ page }) => {
     const id = await deckWithCard(page);
-    await page.goto(`/#/decks/${id}/study/blanks`);
+    await page.goto(`/#/collections/${id}/study/blanks`);
     await page.getByRole('group', { name: 'Word bank' }).getByRole('button').first().click();
     await expect(page.getByRole('status').filter({ hasText: /blank\. Word bank: / })).toBeAttached(); // the verse up to the next blank, then the options
   });
 
   test('M4: verses carry their own language, even when the app is in another', async ({ page }) => {
-    await page.goto('/#/decks/new');
+    await page.goto('/#/collections/new');
     await page.getByLabel('Title').fill('Salmos');
     await page.getByRole('button', { name: /^Translation/ }).click();
     const list = page.getByRole('dialog', { name: 'Choose a translation' });
@@ -205,19 +205,19 @@ test.describe('the medium fixes', () => {
     await list.getByRole('button', { name: /^Spanish/ }).click();
     await list.getByRole('button', { name: /Reina-Valera 1909/ }).click();
     await page.getByRole('button', { name: 'Save' }).click();
-    await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
-    const id = page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1]!;
+    await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
+    const id = page.url().match(/#\/collections\/([0-9a-f-]{36})$/)![1]!;
     await addCard(page, id, 'Salmo 23:1', 'Jehová es mi pastor; nada me faltará.');
-    await page.goto(`/#/decks/${id}/cards`);
+    await page.goto(`/#/collections/${id}/cards`);
     await expect(page.locator('td [lang="es"]').first()).toBeAttached();
     await setCardKinds(page, 'Recall the passage');
-    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await page.goto(`/#/collections/${id}/study/flashcard`);
     await page.getByRole('button', { name: 'Show answer' }).click();
     await expect(page.locator('p[lang="es"]').filter({ hasText: 'Jehová' })).toBeAttached();
   });
 
   test('M5: a form error names the field, marks it invalid and puts the cursor in it', async ({ page }) => {
-    await page.goto('/#/decks/new');
+    await page.goto('/#/collections/new');
     await page.getByRole('button', { name: 'Save' }).click();
     const title = page.getByLabel('Title');
     await expect(title).toHaveAttribute('aria-invalid', 'true');
@@ -228,7 +228,7 @@ test.describe('the medium fixes', () => {
     await expect(title).not.toHaveAttribute('aria-invalid', 'true'); // fixing it clears the mark
 
     const id = await createDeck(page, 'Psalms');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await page.getByLabel('Passage', { exact: true }).fill('Some text');
     await page.getByRole('button', { name: 'Save' }).click();
     const verse = page.getByLabel('Verse(s)');
@@ -238,7 +238,7 @@ test.describe('the medium fixes', () => {
 
   test('M6: the 1 to 4 keys rate only when focus is on the answer or the ratings, and never with Cmd/Ctrl', async ({ page }) => {
     const id = await deckWithCard(page);
-    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await page.goto(`/#/collections/${id}/study/flashcard`);
     await page.getByRole('button', { name: 'Show answer' }).click();
     await expect(page.getByRole('group', { name: /^Answer: / })).toBeFocused();
     const remaining = () => page.getByRole('list', { name: 'Cards remaining' }).innerText();
@@ -265,7 +265,7 @@ test.describe('the small fixes', () => {
 
   test('L2: rating buttons say their wait in words ("10 minutes"), not "10m"', async ({ page }) => {
     const id = await deckWithCard(page);
-    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await page.goto(`/#/collections/${id}/study/flashcard`);
     await page.getByRole('button', { name: 'Show answer' }).click();
     const good = page.getByRole('group', { name: 'How well did you remember it?' }).getByRole('button', { name: /^Good/ });
     await expect(good).toHaveAccessibleName(/^Good\s+\d+ (minutes?|hours?|days?)/);
@@ -280,22 +280,22 @@ test.describe('the small fixes', () => {
   });
 });
 
-test.describe('making a deck, and the blanks, as a screen reader hears them', () => {
-  test('the new deck form is read with the screen name; saving says the deck was created; a fixed error goes away', async ({ page }) => {
-    await page.goto('/#/decks/new');
-    await expect(page.getByLabel('Title')).toHaveAccessibleDescription('New deck');
+test.describe('making a collection, and the blanks, as a screen reader hears them', () => {
+  test('the new collection form is read with the screen name; saving says the collection was created; a fixed error goes away', async ({ page }) => {
+    await page.goto('/#/collections/new');
+    await expect(page.getByLabel('Title')).toHaveAccessibleDescription('New collection');
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(page.locator('#form-error')).toBeVisible();
     await page.getByLabel('Title').fill('Proverbs');
     await expect(page.locator('#form-error')).toHaveCount(0); // the old message does not linger once fixed
     await page.getByRole('button', { name: 'Save' }).click();
-    await expect(page.getByRole('region', { name: 'Notifications' })).toContainText('Deck Proverbs created');
+    await expect(page.getByRole('region', { name: 'Notifications' })).toContainText('Collection Proverbs created');
     await expect(page.getByRole('heading', { level: 1, name: 'Proverbs' })).toBeFocused();
   });
 
   test('Blanks says the verse up to the blank, then the word bank, for every blank', async ({ page }) => {
     const id = await deckWithCard(page);
-    await page.goto(`/#/decks/${id}/study/blanks`);
+    await page.goto(`/#/collections/${id}/study/blanks`);
     const say = page.getByRole('status').filter({ hasText: /^Card 1 of \d+\. .+ blank\. Word bank: (\S+, ){7}\S+\.$/ });
     await expect(say).toBeAttached();
     await page.getByRole('group', { name: 'Word bank' }).getByRole('button').first().click();

@@ -91,7 +91,7 @@ function DeckRow({ d, wide, reordering, onMenu, onHold }: { d: Row; wide: boolea
       ) : (
         <>
           <Link
-            to={`/decks/${d.id}`}
+            to={`/collections/${d.id}`}
             draggable={false}
             onClick={(e) => { if (justHeld.current) { justHeld.current = false; e.preventDefault(); } }}
             className={`${body} hover:bg-surface wide:rounded-l-xl`}
@@ -216,7 +216,7 @@ export function DecksPage() {
       )}
       {error && <div className="p-5"><ErrorMessage error={error} /></div>}
       {!loading && data?.length === 0 && (
-        <EmptyState title={t('decks.emptyTitle')} action={<ButtonLink to="/decks/new">{t('decks.emptyAction')}</ButtonLink>}>
+        <EmptyState title={t('decks.emptyTitle')} action={<ButtonLink to="/collections/new">{t('decks.emptyAction')}</ButtonLink>}>
           {t('decks.emptyBody')}
         </EmptyState>
       )}

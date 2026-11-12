@@ -8,7 +8,7 @@ async function deckWithCards(page: Page, title = 'Psalms') {
   await addCard(page, id, 'Psalm 1:1', 'one');
   await addCard(page, id, 'Psalm 1:2', 'two');
   await addCard(page, id, 'Psalm 1:3', 'three');
-  await page.goto(`/#/decks/${id}/cards`);
+  await page.goto(`/#/collections/${id}/cards`);
   await expect(page.getByRole('row', { name: /Psalm 1:3/ })).toBeVisible();
   return id;
 }
@@ -86,13 +86,13 @@ test('deleting one card from its edit page also has an Undo', async ({ page }) =
   await expect(page.getByRole('row')).toHaveCount(3);
   await page.getByRole('button', { name: 'Undo' }).click();
   await expect(page.getByRole('row')).toHaveCount(4);
-  await expect(page).toHaveURL(new RegExp(`/decks/${id}/cards$`));
+  await expect(page).toHaveURL(new RegExp(`/collections/${id}/cards$`));
 });
 
-test('move cards to another deck', async ({ page }) => {
+test('move cards to another collection', async ({ page }) => {
   const from = await deckWithCards(page, 'Psalms');
   const to = await createDeck(page, 'Proverbs');
-  await page.goto(`/#/decks/${from}/cards`);
+  await page.goto(`/#/collections/${from}/cards`);
   await longPress(page, 'Psalm 1:1');
   await row(page, 'Psalm 1:3').click();
   await page.getByRole('button', { name: 'Move' }).click();
@@ -107,7 +107,7 @@ test('move cards to another deck', async ({ page }) => {
   await expect(page.getByRole('row')).toHaveCount(4);
 
   await page.waitForTimeout(300);
-  await page.goto(`/#/decks/${to}/cards`);
+  await page.goto(`/#/collections/${to}/cards`);
   await expect(page.getByText('No cards yet')).toBeVisible();
 });
 
@@ -128,7 +128,7 @@ test('selecting, moving and deleting in Spanish', async ({ page }) => {
   const id = await deckWithCards(page);
   await page.goto('/#/settings/language');
   await page.getByRole('group', { name: /^(Language|Idioma)$/ }).getByRole('radio', { name: 'Español', exact: true }).click();
-  await page.goto(`/#/decks/${id}/cards`);
+  await page.goto(`/#/collections/${id}/cards`);
   await page.getByRole('button', { name: 'Seleccionar tarjetas' }).focus();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: '0 seleccionadas' })).toBeVisible();

@@ -62,7 +62,7 @@ test.describe('font', () => {
     await expect(useFont(page)).toHaveCount(0); // nothing to apply yet
   });
 
-  test('the font list is the same popup as the deck picker: names in their own typeface, search and category chips', async ({ page }) => {
+  test('the font list is the same popup as the collection picker: names in their own typeface, search and category chips', async ({ page }) => {
     await mockGoogleFonts(page);
     await page.goto('/#/settings/font');
     await trigger(page).click();
@@ -71,7 +71,7 @@ test.describe('font', () => {
     await expect(popup(page).locator('li')).toHaveCount(FULL_COUNT + 1);
     const lora = popup(page).getByRole('button', { name: 'Lora', exact: true });
     expect(await lora.locator('span').first().evaluate((e) => getComputedStyle(e).fontFamily)).toContain('Lora'); // the name is set in that font
-    await expect(popup(page).getByRole('button', { name: 'New deck' })).toHaveCount(0); // and no +
+    await expect(popup(page).getByRole('button', { name: 'New collection' })).toHaveCount(0); // and no +
 
     await popup(page).getByRole('button', { name: 'Search fonts' }).click();
     await popup(page).getByLabel('Search fonts', { exact: true }).fill('mono');

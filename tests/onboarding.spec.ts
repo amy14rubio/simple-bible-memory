@@ -18,19 +18,19 @@ test.describe('first launch', () => {
     await expect(page.getByRole('button', { name: 'Skip' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Back' })).toHaveCount(0); // nothing to go back to yet
 
-    for (const title of ['Decks and cards', 'Add your own verse', 'Discover decks', 'Smart scheduling', 'Try the starter deck']) {
+    for (const title of ['Collections and cards', 'Add your own verse', 'Discover collections', 'Smart scheduling', 'Try the starter collection']) {
       await next(page).click();
       await expect(heading(page)).toHaveText(title);
     }
     await expect(next(page)).toHaveCount(0);
     await page.getByRole('button', { name: 'Get started' }).click();
     await expect(page).toHaveURL(/#\/$/);
-    await expect(page.getByText('Starter deck!')).toBeVisible(); // the tour's last card promised it
-    await expect(page.getByText('No decks yet')).toHaveCount(0);
+    await expect(page.getByText('Starter collection!')).toBeVisible(); // the tour's last card promised it
+    await expect(page.getByText('No collections yet')).toHaveCount(0);
 
     await page.reload();
     await expect(page).toHaveURL(/#\/$/); // seen: it does not come back, and the starter deck is not added again
-    await expect(page.getByText('Starter deck!')).toHaveCount(1);
+    await expect(page.getByText('Starter collection!')).toHaveCount(1);
   });
 
   test('Skip is only on the welcome card: every other card has Next (and Back) and nothing under them', async ({ page }) => {
@@ -49,42 +49,42 @@ test.describe('first launch', () => {
     await expect(page.getByRole('button', { name: 'Skip' })).toBeVisible(); // back on the first card
   });
 
-  test('Skip counts as seeing it, and also gives the starter deck', async ({ page }) => {
+  test('Skip counts as seeing it, and also gives the starter collection', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Skip' }).click();
     await expect(page).toHaveURL(/#\/$/);
-    await expect(page.getByText('Starter deck!')).toBeVisible();
+    await expect(page.getByText('Starter collection!')).toBeVisible();
     await page.reload();
     await expect(page).toHaveURL(/#\/$/);
   });
 
-  test('the starter deck is a normal deck: it has the verses, can be studied, and stays deleted once deleted', async ({ page }) => {
+  test('the starter collection is a normal deck: it has the verses, can be studied, and stays deleted once deleted', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Skip' }).click();
-    await page.getByText('Starter deck!').click();
+    await page.getByText('Starter collection!').click();
     await expect(page.getByText('5 cards to study today.')).toBeVisible(); // 26 study cards, the first 5 new ones for today
-    await page.getByRole('button', { name: 'Deck actions' }).click();
+    await page.getByRole('button', { name: 'Collection actions' }).click();
     await page.getByRole('dialog').getByRole('link', { name: 'View cards' }).click();
     await expect(page.getByText('Romans 5:8')).toBeVisible();
     await page.goBack();
-    await page.getByRole('button', { name: 'Deck actions' }).click();
-    await page.getByRole('button', { name: 'Delete deck' }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Delete deck' }).click();
-    await expect(page.getByText('No decks yet')).toBeVisible();
+    await page.getByRole('button', { name: 'Collection actions' }).click();
+    await page.getByRole('button', { name: 'Delete collection' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete collection' }).click();
+    await expect(page.getByText('No collections yet')).toBeVisible();
     await page.reload();
-    await expect(page.getByText('Starter deck!')).toHaveCount(0); // never comes back
-    await expect(page.getByText('No decks yet')).toBeVisible();
+    await expect(page.getByText('Starter collection!')).toHaveCount(0); // never comes back
+    await expect(page.getByText('No collections yet')).toBeVisible();
   });
 
   test('Back, the arrow keys and a swipe all move between cards', async ({ page }) => {
     await page.goto('/');
     await next(page).click();
-    await expect(heading(page)).toHaveText('Decks and cards');
+    await expect(heading(page)).toHaveText('Collections and cards');
     await page.getByRole('button', { name: 'Back' }).click();
     await expect(heading(page)).toHaveText('Welcome to Simple Bible Memory');
 
     await page.keyboard.press('ArrowRight');
-    await expect(heading(page)).toHaveText('Decks and cards');
+    await expect(heading(page)).toHaveText('Collections and cards');
     await page.keyboard.press('ArrowLeft');
     await expect(heading(page)).toHaveText('Welcome to Simple Bible Memory');
 
@@ -95,7 +95,7 @@ test.describe('first launch', () => {
     await page.mouse.down();
     await page.mouse.move(box.x + box.width * 0.2, y, { steps: 6 });
     await page.mouse.up();
-    await expect(heading(page)).toHaveText('Decks and cards'); // swiped left: next
+    await expect(heading(page)).toHaveText('Collections and cards'); // swiped left: next
     await page.mouse.move(box.x + box.width * 0.2, y);
     await page.mouse.down();
     await page.mouse.move(box.x + box.width * 0.8, y, { steps: 6 });
@@ -103,7 +103,7 @@ test.describe('first launch', () => {
     await expect(heading(page)).toHaveText('Welcome to Simple Bible Memory'); // swiped right: back
   });
 
-  test('someone who already has decks, or who opened a link, is never taken to it', async ({ page }) => {
+  test('someone who already has collections, or who opened a link, is never taken to it', async ({ page }) => {
     await page.goto('/#/stats'); // a deep link: no tour
     await expect(page.getByRole('heading', { name: 'Statistics', level: 1 })).toBeVisible();
     await createDeck(page, 'Psalms');
@@ -117,7 +117,7 @@ test.describe('in Spanish', () => {
   test.use({ locale: 'es-ES' });
   test.beforeEach(({ page }) => forceTour(page));
 
-  test('a Spanish phone gets the Spanish starter deck, with Reina-Valera 1909', async ({ page }) => {
+  test('a Spanish phone gets the Spanish starter collection, with Reina-Valera 1909', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Omitir' }).click();
     await expect(page.getByText('¡Primera carpeta!')).toBeVisible();
@@ -131,23 +131,23 @@ test.describe('in Spanish', () => {
 test.describe('opening it again', () => {
   test.beforeEach(({ page }) => forceTour(page));
 
-  test('Settings > Help > How to use the app opens it, and finishing returns home without a second starter deck', async ({ page }) => {
+  test('Settings > Help > How to use the app opens it, and finishing returns home without a second starter collection', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Skip' }).click(); // the first time: the starter deck is added
-    await expect(page.getByText('Starter deck!')).toHaveCount(1);
+    await expect(page.getByText('Starter collection!')).toHaveCount(1);
     await page.goto('/#/settings');
     await page.getByRole('link', { name: 'How to use the app' }).click();
     await expect(page).toHaveURL(/#\/welcome$/);
     await expect(heading(page)).toHaveText('Welcome to Simple Bible Memory');
     await page.getByRole('button', { name: 'Skip' }).click();
     await expect(page).toHaveURL(/#\/$/);
-    await expect(page.getByText('Starter deck!')).toHaveCount(1); // opened again from Settings: nothing more is added
+    await expect(page.getByText('Starter collection!')).toHaveCount(1); // opened again from Settings: nothing more is added
   });
 });
 
 test.describe('the clips', () => {
   test.beforeEach(({ page }) => forceTour(page));
-  const clips = [['Decks and cards', 'decks-cards'], ['Add your own verse', 'add'], ['Discover decks', 'discover'], ['Smart scheduling', 'schedule'], ['Try the starter deck', 'starter']];
+  const clips = [['Collections and cards', 'decks-cards'], ['Add your own verse', 'add'], ['Discover collections', 'discover'], ['Smart scheduling', 'schedule'], ['Try the starter collection', 'starter']];
 
   test('every card after the welcome plays a short silent clip of the app', async ({ page }) => {
     await page.goto('/');
@@ -170,7 +170,7 @@ test.describe('the clips', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
     await next(page).click();
-    await expect(heading(page)).toHaveText('Decks and cards');
+    await expect(heading(page)).toHaveText('Collections and cards');
     await expect(page.locator('video')).toHaveCount(0);
     await expect(page.locator('img[src="/tutorial/en/decks-cards.jpg"]')).toBeVisible();
   });

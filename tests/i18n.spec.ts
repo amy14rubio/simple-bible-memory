@@ -11,19 +11,19 @@ const language = (page: Page, name: string) => page.getByRole('group', { name: /
 
 // Spanish-interface helpers: create things through the Spanish screens.
 async function esCreateDeck(page: Page, title: string): Promise<string> {
-  await page.goto('/#/decks/new');
+  await page.goto('/#/collections/new');
   await page.getByLabel('Título').fill(title);
   await page.getByRole('button', { name: 'Guardar' }).click();
-  await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
-  return page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1]!;
+  await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
+  return page.url().match(/#\/collections\/([0-9a-f-]{36})$/)![1]!;
 }
 async function esAddCard(page: Page, deckId: string, reference: string, passage: string) {
-  await page.goto(`/#/cards/new?deck=${deckId}`);
+  await page.goto(`/#/cards/new?collection=${deckId}`);
   await page.getByLabel('Versículo(s)').fill(reference);
   await page.getByLabel('Pasaje', { exact: true }).fill(passage);
   await page.getByRole('button', { name: 'Guardar' }).click();
   await expect(page.getByText(`${reference} agregado`)).toBeVisible(); // the toast; the form stays open, cleared
-  await page.goto(`/#/decks/${deckId}/cards`);
+  await page.goto(`/#/collections/${deckId}/cards`);
   await page.reload();
 }
 async function esSetKinds(page: Page, name: RegExp) {
@@ -51,7 +51,7 @@ test.describe('which language the app starts in', () => {
 
   test('an English browser gets English', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByText('No decks yet')).toBeVisible();
+    await expect(page.getByText('No collections yet')).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page).toHaveTitle('Simple Bible Memory');
   });
@@ -60,7 +60,7 @@ test.describe('which language the app starts in', () => {
     const ctx = await browser.newContext({ locale: 'fr-FR' });
     const page = await ctx.newPage();
     await page.goto('/');
-    await expect(page.getByText('No decks yet')).toBeVisible();
+    await expect(page.getByText('No collections yet')).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await ctx.close();
   });
@@ -76,7 +76,7 @@ test.describe('the language setting', () => {
     await expect(page).toHaveTitle('Idioma · Memoria Bíblica Simple');
     await page.goto('/#/settings');
     await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Recordatorios de estudio' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Notificaciones' })).toBeVisible();
     await expect(page.getByLabel('Tarjetas nuevas por día', { exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: /^Idioma/ })).toContainText('Español'); // the row shows the choice
     await page.goto('/#/settings/language');
@@ -135,7 +135,7 @@ test.describe('the language setting', () => {
 test.describe('verses are not translated', () => {
   test('the verse text, the reference and the source stay exactly as typed when the language changes', async ({ page }) => {
     const id = await createDeck(page, 'My verses');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await page.getByLabel('Verse(s)').fill('John 3:16');
     await page.getByLabel('Note', { exact: true }).fill('Example translation');
     await page.getByLabel('Passage', { exact: true }).fill('Example passage text, typed exactly like this.');
@@ -147,7 +147,7 @@ test.describe('verses are not translated', () => {
     await language(page, 'Español').click();
     await expect(page.getByRole('heading', { name: 'Idioma' })).toBeVisible();
 
-    await page.goto(`/#/decks/${id}/cards`);
+    await page.goto(`/#/collections/${id}/cards`);
     await expect(page.getByRole('columnheader', { name: 'Versículo' })).toBeVisible(); // interface: translated
     await expect(page.getByRole('link', { name: 'John 3:16' })).toBeVisible(); // the reference: as typed, not "Juan"
     await expect(page.getByText('Example passage text, typed exactly like this.')).toBeVisible(); // the passage: untouched
@@ -157,7 +157,7 @@ test.describe('verses are not translated', () => {
     await expect(page.getByLabel('Pasaje', { exact: true })).toHaveValue('Example passage text, typed exactly like this.');
   });
 
-  test('the deck name is yours too', async ({ page }) => {
+  test('the collection name is yours too', async ({ page }) => {
     await createDeck(page, 'Commute verses');
     await page.goto('/#/settings/language');
     await language(page, 'Español').click();
@@ -168,7 +168,7 @@ test.describe('verses are not translated', () => {
   test('English references still work in the Spanish app, and Spanish ones in the English app', async ({ browser }) => {
     const { ctx, page } = await spanishPage(browser);
     const deck = await esCreateDeck(page, 'Carpeta');
-    await page.goto(`/#/cards/new?deck=${deck}`);
+    await page.goto(`/#/cards/new?collection=${deck}`);
     await page.getByLabel('Versículo(s)').fill('John 3:16'); // English book name in the Spanish app
     await expect(page.getByRole('button', { name: /Buscar pasaje/ })).toBeVisible();
     await page.getByLabel('Versículo(s)').fill('Salmos 130:1');
@@ -178,7 +178,7 @@ test.describe('verses are not translated', () => {
 });
 
 test.describe('the app in Spanish', () => {
-  test('decks, forms, validation messages and menus', async ({ browser }) => {
+  test('collections, forms, validation messages and menus', async ({ browser }) => {
     const { ctx, page } = await spanishPage(browser);
     await page.goto('/');
     await page.getByRole('link', { name: 'Crea tu primera carpeta' }).click();
@@ -188,7 +188,7 @@ test.describe('the app in Spanish', () => {
     await page.getByLabel('Título').fill('Versículos del camino');
     await expect(page.getByLabel('Descripción')).toBeVisible();
     await page.getByRole('button', { name: 'Guardar' }).click();
-    await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
+    await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
     await expect(page.getByText('Aún no hay nada que estudiar')).toBeVisible();
 
     await page.getByRole('link', { name: 'Nueva tarjeta' }).click();
@@ -200,7 +200,7 @@ test.describe('the app in Spanish', () => {
     await page.getByLabel('Pasaje', { exact: true }).fill('Texto de ejemplo escrito por la persona.');
     await page.getByRole('button', { name: 'Guardar' }).click();
     await expect(page.getByText('Juan 3:16 agregado')).toBeVisible(); // the toast, in Spanish
-    await page.goto(`/#/decks/${new URL(page.url().split('#')[1]!, 'http://x').searchParams.get('deck')}/cards`);
+    await page.goto(`/#/collections/${new URL(page.url().split('#')[1]!, 'http://x').searchParams.get('collection')}/cards`);
     await expect(page.getByRole('columnheader', { name: 'Pasaje' })).toBeVisible();
 
     await page.goto('/');
@@ -237,7 +237,7 @@ test.describe('the app in Spanish', () => {
     await esAddCard(page, id, 'Salmos 23:1', 'Texto de ejemplo dos.');
     await esRecallOnly(page);
 
-    await page.goto(`/#/decks/${id}`);
+    await page.goto(`/#/collections/${id}`);
     await expect(page.getByText('2 tarjetas para estudiar hoy.')).toBeVisible();
     await expect(page.getByRole('link', { name: /Tarjeta/ })).toBeVisible();
     await expect(page.getByRole('link', { name: /Escribir/ })).toBeVisible();
@@ -269,7 +269,7 @@ test.describe('the app in Spanish', () => {
     const id = await esCreateDeck(page, 'Escribir');
     await esAddCard(page, id, 'Juan 3:16', 'Uno dos tres cuatro.');
     await esRecallOnly(page);
-    await page.goto(`/#/decks/${id}/study/type`);
+    await page.goto(`/#/collections/${id}/study/type`);
     await expect(page.getByRole('button', { name: 'Mostrar respuesta' })).toHaveCount(1);
     await page.getByLabel('Escribe el versículo de memoria').fill('uno dos cinco cuatro');
     await page.getByRole('button', { name: 'Mostrar respuesta' }).click();
@@ -279,7 +279,7 @@ test.describe('the app in Spanish', () => {
 
     // identify card: type the verse
     await esSetKinds(page, /^Identificar el versículo/);
-    await page.goto(`/#/decks/${id}/study/type`);
+    await page.goto(`/#/collections/${id}/study/type`);
     await expect(page.getByText('Uno dos tres cuatro.')).toBeVisible();
     await page.getByLabel(/Escribe la referencia del versículo/).fill('Juan 3:17');
     await page.getByRole('button', { name: 'Mostrar respuesta' }).click();
@@ -295,7 +295,7 @@ test.describe('the app in Spanish', () => {
     await esAddCard(page, id, 'Salmos 23:1', 'Texto de ejemplo dos.');
     await esAddCard(page, id, 'Romanos 8:28', 'Texto de ejemplo tres.');
     await esRecallOnly(page);
-    await page.goto(`/#/decks/${id}/study/blanks`);
+    await page.goto(`/#/collections/${id}/study/blanks`);
     const bank = page.getByRole('group', { name: 'Banco de palabras' });
     await expect(bank).toBeVisible();
     expect(await bank.getByRole('button').count()).toBeGreaterThan(1);
@@ -303,7 +303,7 @@ test.describe('the app in Spanish', () => {
     await expect(page.getByRole('button', { name: /^(Otra vez|Difícil|Bien|Fácil)/ }).first()).toBeVisible(); // every blank is done
 
     await esSetKinds(page, /^Identificar el versículo/);
-    await page.goto(`/#/decks/${id}/study/blanks`);
+    await page.goto(`/#/collections/${id}/study/blanks`);
     const choices = page.getByRole('group', { name: 'Elige el versículo' });
     await expect(choices).toBeVisible();
     await choices.getByRole('button').first().click();
@@ -342,7 +342,7 @@ test.describe('the app in Spanish', () => {
     const { ctx, page } = await spanishPage(browser);
     await ctx.route('https://www.biblegateway.com/**', (route) => route.fulfill({ contentType: 'text/html', body: '<p>stub</p>' }));
     const id = await esCreateDeck(page, 'Separar');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await page.getByLabel('Versículo(s)').fill('Salmos 130:1-2');
     await page.getByLabel('Pasaje', { exact: true }).fill('1 Texto de ejemplo uno. 2 Texto de ejemplo dos.');
 
@@ -359,11 +359,11 @@ test.describe('the app in Spanish', () => {
     await expect(split).toContainText('tendrás 4 tarjetas de estudio');
     await split.getByRole('button', { name: 'Crear 2 tarjetas' }).click();
     await expect(page.getByText('2 versículos agregados')).toBeVisible();
-    await page.goto(`/#/decks/${new URL(page.url().split('#')[1]!, 'http://x').searchParams.get('deck')}/cards`);
+    await page.goto(`/#/collections/${new URL(page.url().split('#')[1]!, 'http://x').searchParams.get('collection')}/cards`);
     await expect(page.getByRole('link', { name: 'Salmos 130:2', exact: true })).toBeVisible();
 
     // and the explanation when it cannot split
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await page.getByLabel('Versículo(s)').fill('Salmos 130:1-3');
     await page.getByLabel('Pasaje', { exact: true }).fill('1 Uno. 3 Tres.');
     await page.getByRole('button', { name: 'Separar en versículos' }).click();
@@ -375,8 +375,8 @@ test.describe('the app in Spanish', () => {
     const { ctx, page } = await spanishPage(browser);
     const id = await esCreateDeck(page, 'Carpeta de prueba');
     await esAddCard(page, id, 'Juan 3:16', 'Texto de ejemplo uno.');
-    const english = /\b(Settings|Decks|Cancel|Save|Statistics|Delete|Browse|Practice|Show answer|Again|Hard|Good|Easy|Passage|Verse|Search|Add card|New card|New deck|Study|Description|Title|Source|Theme|Language|Notifications|Account|caught up|Session|review)\b/;
-    const screens = ['/', '/#/settings', '/#/stats', `/#/decks/${id}`, `/#/decks/${id}/cards`, `/#/decks/${id}?practice=1`, `/#/cards/new?deck=${id}`, `/#/decks/${id}/edit`, `/#/decks/${id}/study/flashcard`, '/#/decks/nope', '/#/nowhere'];
+    const english = /\b(Settings|Collections|Cancel|Save|Statistics|Delete|Browse|Practice|Show answer|Again|Hard|Good|Easy|Passage|Verse|Search|Add card|New card|New collection|Study|Description|Title|Source|Theme|Language|Notifications|Account|caught up|Session|review)\b/;
+    const screens = ['/', '/#/settings', '/#/stats', `/#/collections/${id}`, `/#/collections/${id}/cards`, `/#/collections/${id}?practice=1`, `/#/cards/new?collection=${id}`, `/#/collections/${id}/edit`, `/#/collections/${id}/study/flashcard`, '/#/collections/nope', '/#/nowhere'];
     for (const path of screens) {
       await page.goto(path);
       await page.waitForTimeout(250);
@@ -407,17 +407,17 @@ test.describe('accessibility in Spanish', () => {
       await audit('menú añadir');
       await closeWithEscape(page);
       await expect(page.getByRole('dialog')).toHaveCount(0); // the drawer has finished closing (its focus guards linger while it slides away)
-      await page.goto(`/#/decks/${id}`);
+      await page.goto(`/#/collections/${id}`);
       await expect(page.getByText(/tarjetas? para estudiar hoy/)).toBeVisible();
       await audit('carpeta');
-      await page.goto(`/#/cards/new?deck=${id}`);
+      await page.goto(`/#/cards/new?collection=${id}`);
       await page.getByLabel('Versículo(s)').fill('Salmos 130:1-2');
       await page.getByLabel('Pasaje', { exact: true }).fill('1 Uno. 2 Dos.');
       await audit('formulario de tarjeta');
       await page.getByRole('button', { name: 'Separar en versículos' }).click();
       await audit('separar en versículos');
       await page.getByRole('dialog').getByRole('button', { name: 'Cancelar' }).dispatchEvent('click');
-      await page.goto(`/#/decks/${id}/study/flashcard`);
+      await page.goto(`/#/collections/${id}/study/flashcard`);
       await page.getByRole('button', { name: 'Mostrar respuesta' }).click();
       await audit('estudio con valoraciones');
       await page.goto('/#/stats');

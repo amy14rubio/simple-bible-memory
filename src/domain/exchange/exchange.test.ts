@@ -108,7 +108,7 @@ describe('deck file', () => {
   it('makes safe file names, in any alphabet', () => {
     expect(exportFileName(['Psalms: 23 / 91!'])).toBe('Psalms-23-91.json');
     expect(exportFileName(['Versículos del camino'])).toBe('Versículos-del-camino.json');
-    expect(exportFileName(['???'])).toBe('deck.json');
+    expect(exportFileName(['???'])).toBe('collection.json');
     expect(exportFileName(['a', 'b'])).toBe('bible-memory-backup.json');
   });
 });

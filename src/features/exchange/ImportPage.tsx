@@ -106,7 +106,7 @@ export function ImportPage() {
         ? await exchange.importFile(loaded.file, { progress })
         : await exchange.importCards({ title: deckName }, mapped!.cards);
       toast.add({ title: t('toast.imported', { count: result.decks }), type: 'success' });
-      navigate(result.deckIds.length === 1 ? `/decks/${result.deckIds[0]}` : '/', { replace: true });
+      navigate(result.deckIds.length === 1 ? `/collections/${result.deckIds[0]}` : '/', { replace: true });
     } catch (e) {
       setError(describeError(e));
       setBusy(false);

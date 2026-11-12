@@ -12,10 +12,10 @@ async function deckOfVerses(page: Page, n = VERSES.length) {
   await setCardKinds(page, 'Recall the passage');
   return id;
 }
-const study = (page: Page, id: string, mode: string) => page.goto(`/#/decks/${id}/study/${mode}`);
+const study = (page: Page, id: string, mode: string) => page.goto(`/#/collections/${id}/study/${mode}`);
 /** The verse on the current card ("Card 2 of 5. John 3:16" is what a screen reader hears). */
 const currentRef = async (page: Page) => (await page.locator('#card-prompt').innerText()).replace(/^Card \d+ of \d+\.\s*/, '').trim();
-const setNewPerDay = async (page: Page, n: number) => { await page.goto('/#/settings'); await page.getByLabel('New cards per day').fill(String(n)); await page.getByRole('link', { name: 'Back to decks' }).click(); };
+const setNewPerDay = async (page: Page, n: number) => { await page.goto('/#/settings'); await page.getByLabel('New cards per day').fill(String(n)); await page.getByRole('link', { name: 'Back to collections' }).click(); };
 
 test('switching modes continues the same list, in the same order, where it left off', async ({ page }) => {
   const id = await deckOfVerses(page);
@@ -37,7 +37,7 @@ test('switching modes continues the same list, in the same order, where it left 
   expect(await currentRef(page)).toBe(second);
 });
 
-test('lowering new cards per day after starting cards: the home list, the deck page and the session all agree at once', async ({ page }) => {
+test('lowering new cards per day after starting cards: the home list, the collection page and the session all agree at once', async ({ page }) => {
   const id = await deckOfVerses(page, 5);
   await study(page, id, 'flashcard');
   for (let i = 0; i < 5; i++) { // start all five: each is rated Again, so it is being learned
@@ -72,7 +72,7 @@ test('"You\'re done for today!" says when the next review is, and Keep practicin
   await expect(page.getByText(/Your next review is in \d+(m|h|d|mo)/)).toBeVisible();
   await expect(page.getByText('See you tomorrow')).toHaveCount(0);
 
-  await page.getByRole('link', { name: 'Back to deck' }).click(); // the deck page says the same, with the same two things
+  await page.getByRole('link', { name: 'Back to collection' }).click(); // the deck page says the same, with the same two things
   await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   await expect(page.getByText(/Your next review is in/)).toBeVisible();
   await page.getByRole('link', { name: 'Keep practicing' }).click();

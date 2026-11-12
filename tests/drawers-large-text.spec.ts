@@ -40,14 +40,14 @@ for (const size of [100, 125, 150]) {
     await setTextSize(page, size);
     const id = await createDeck(page, 'Psalm 23');
     await addCard(page, id, 'Psalm 23:1', 'The Lord is my shepherd; I shall not want.');
-    await page.goto(`/#/decks/${id}/edit`);
+    await page.goto(`/#/collections/${id}/edit`);
     await page.getByRole('button', { name: /^Translation:/ }).click();
     await page.getByRole('dialog', { name: 'Choose a translation' }).getByRole('button', { name: /King James Version/ }).click();
     await page.getByRole('button', { name: 'Save' }).click();
     await openDeck(page, id);
-    await page.getByRole('button', { name: 'Deck actions' }).click();
-    await page.getByRole('button', { name: 'Publish deck' }).click();
-    const publish = page.getByRole('dialog', { name: 'Publish deck' });
+    await page.getByRole('button', { name: 'Collection actions' }).click();
+    await page.getByRole('button', { name: 'Publish collection' }).click();
+    const publish = page.getByRole('dialog', { name: 'Publish collection' });
     await publish.getByRole('button', { name: 'Continue with Google' }).click();
     await publish.getByRole('button', { name: 'Publish', exact: true }).click();
     const rules = page.getByRole('dialog', { name: 'Community rules' });

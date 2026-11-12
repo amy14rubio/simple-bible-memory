@@ -5,12 +5,12 @@ import { addCard, closeWithEscape, createDeck, openDeck } from './helpers';
 import { parseExportFile, type ExportFile } from '../src/domain/exchange/format';
 
 const readDownload = async (d: Download) => readFileSync((await d.path())!, 'utf8');
-const exportDrawer = (page: Page) => page.getByRole('dialog', { name: /^Export (deck|data)$/ });
+const exportDrawer = (page: Page) => page.getByRole('dialog', { name: /^Export (collection|data)$/ });
 
 async function exportDeck(page: Page, deckId: string, { progress = false } = {}) {
   await openDeck(page, deckId);
-  await page.getByRole('button', { name: 'Deck actions' }).click();
-  await page.getByRole('button', { name: 'Export deck' }).click();
+  await page.getByRole('button', { name: 'Collection actions' }).click();
+  await page.getByRole('button', { name: 'Export collection' }).click();
   const drawer = exportDrawer(page);
   await expect(drawer).toBeVisible();
   const sw = drawer.getByRole('switch', { name: 'Include my progress' });
@@ -19,7 +19,7 @@ async function exportDeck(page: Page, deckId: string, { progress = false } = {})
   const text = await readDownload(download);
   const parsed = parseExportFile(text);
   expect(parsed.ok).toBe(true);
-  await expect(page.getByRole('dialog', { name: /^Export (deck|data)$/ })).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: /^Export (collection|data)$/ })).toHaveCount(0);
   await page.waitForTimeout(250); // the drawer's history clean-up, before the test goes anywhere else
   return { download, file: (parsed as { ok: true; file: ExportFile }).file };
 }
@@ -34,14 +34,14 @@ async function twoVerseDeck(page: Page, title = 'My Psalms') {
   return id;
 }
 const study = async (page: Page, id: string) => {
-  await page.goto(`/#/decks/${id}/study/flashcard`);
+  await page.goto(`/#/collections/${id}/study/flashcard`);
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click();
   await expect(page.getByRole('progressbar', { name: 'Session progress' })).toHaveJSProperty('value', 1); // the review is saved before the next card appears
 };
 
 test.describe('export', () => {
-  test('Export deck is in the deck menu, opens a drawer with a progress switch (off), and saves a deck file', async ({ page }) => {
+  test('Export collection is in the collection menu, opens a drawer with a progress switch (off), and saves a collection file', async ({ page }) => {
     const id = await twoVerseDeck(page);
     const { download, file } = await exportDeck(page, id);
     expect(download.suggestedFilename()).toBe('My-Psalms.json');
@@ -50,7 +50,7 @@ test.describe('export', () => {
     expect(file.decks[0]!.cards.map((c) => c.reference)).toEqual(['Psalm 23:1', 'Psalm 23:2']);
     expect(file.includesProgress).toBe(false);
     await expect(page.getByText('Exported My Psalms')).toBeVisible(); // the toast
-    await expect(page.getByRole('dialog', { name: /^Export (deck|data)$/ })).toHaveCount(0); // the drawer closed
+    await expect(page.getByRole('dialog', { name: /^Export (collection|data)$/ })).toHaveCount(0); // the drawer closed
   });
 
   test('"Include my progress" adds the study schedule and history', async ({ page }) => {
@@ -67,10 +67,10 @@ test.describe('export', () => {
   test('the switch explains itself behind an "i"', async ({ page }) => {
     const id = await twoVerseDeck(page);
     await openDeck(page, id);
-    await page.getByRole('button', { name: 'Deck actions' }).click();
-    await page.getByRole('button', { name: 'Export deck' }).click();
+    await page.getByRole('button', { name: 'Collection actions' }).click();
+    await page.getByRole('button', { name: 'Export collection' }).click();
     await exportDrawer(page).getByRole('button', { name: 'Include my progress' }).click(); // the label is also the info button
-    await expect(page.getByRole('dialog', { name: 'Include my progress' })).toContainText('Leave it off when you share a deck');
+    await expect(page.getByRole('dialog', { name: 'Include my progress' })).toContainText('Leave it off when you share a collection');
   });
 
   test('an info drawer opened from the export drawer closes first: outside tap, Escape and Back each close only the top one', async ({ page }) => {
@@ -80,8 +80,8 @@ test.describe('export', () => {
     const openBoth = async () => {
       await page.goto('/#/');
       await openDeck(page, id);
-      await page.getByRole('button', { name: 'Deck actions' }).click();
-      await page.getByRole('button', { name: 'Export deck' }).click();
+      await page.getByRole('button', { name: 'Collection actions' }).click();
+      await page.getByRole('button', { name: 'Export collection' }).click();
       await exportDrawer(page).getByRole('button', { name: 'Include my progress' }).click();
       await expect(page.getByRole('dialog', { name: 'Include my progress' })).toBeVisible();
       await page.waitForTimeout(600);
@@ -100,7 +100,7 @@ test.describe('export', () => {
     await closeTopOnly(async () => { await page.goBack(); await page.waitForTimeout(500); });
   });
 
-  test('Settings > Backup: Export everything saves all decks, with progress on by default', async ({ page }) => {
+  test('Settings > Backup: Export everything saves all collections, with progress on by default', async ({ page }) => {
     await twoVerseDeck(page, 'First');
     await twoVerseDeck(page, 'Second');
     await page.goto('/#/settings');
@@ -116,8 +116,8 @@ test.describe('export', () => {
   });
 });
 
-test.describe('import a deck file', () => {
-  test('exporting then importing adds a NEW deck and leaves the original alone', async ({ page }) => {
+test.describe('import a collection file', () => {
+  test('exporting then importing adds a NEW collection and leaves the original alone', async ({ page }) => {
     const id = await twoVerseDeck(page);
     const { file } = await exportDeck(page, id);
     await page.goto('/#/import');
@@ -131,8 +131,8 @@ test.describe('import a deck file', () => {
     const otherY = (await page.getByText('Choose a different file').boundingBox())!.y;
     expect(importY).toBeLessThan(otherY);
     await page.getByRole('button', { name: 'Import', exact: true }).click();
-    await expect(page.getByText('Imported 1 deck')).toBeVisible();
-    await expect(page).toHaveURL(/#\/decks\/[0-9a-f-]{36}$/);
+    await expect(page.getByText('Imported 1 collection')).toBeVisible();
+    await expect(page).toHaveURL(/#\/collections\/[0-9a-f-]{36}$/);
     expect(page.url()).not.toContain(id); // a different deck
     await expect(page.getByRole('heading', { name: 'My Psalms', exact: true })).toBeVisible();
 
@@ -166,14 +166,14 @@ test.describe('import a deck file', () => {
     await expect(page.getByText('4 cards to study today.')).toBeVisible();
   });
 
-  test('a whole backup brings back several decks at once', async ({ page }) => {
+  test('a whole backup brings back several collections at once', async ({ page }) => {
     await twoVerseDeck(page, 'First');
     await twoVerseDeck(page, 'Second');
     await page.goto('/#/settings');
     await page.getByRole('button', { name: 'Export data' }).click();
     const [download] = await Promise.all([page.waitForEvent('download'), exportDrawer(page).getByRole('button', { name: 'Export' }).click()]);
     const backup = await readDownload(download);
-    await expect(page.getByRole('dialog', { name: /^Export (deck|data)$/ })).toHaveCount(0);
+    await expect(page.getByRole('dialog', { name: /^Export (collection|data)$/ })).toHaveCount(0);
     await page.waitForTimeout(250);
     await page.reload();
 
@@ -182,27 +182,27 @@ test.describe('import a deck file', () => {
     await chooseFile(page, 'bible-memory-backup.json', backup);
     await expect(page.getByRole('region', { name: 'What will be added' }).getByRole('listitem')).toHaveCount(2);
     await page.getByRole('button', { name: 'Import', exact: true }).click();
-    await expect(page.getByText('Imported 2 decks')).toBeVisible();
+    await expect(page.getByText('Imported 2 collections')).toBeVisible();
     await expect(page).toHaveURL(/#\/$/); // several decks: back to the list
     await expect(page.getByRole('link', { name: /First/ })).toHaveCount(2);
   });
 
-  test('the + drawer has an Import deck row that opens the import page', async ({ page }) => {
+  test('the + drawer has an Import collection row that opens the import page', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Add' }).click();
-    await page.getByRole('dialog', { name: 'Create new' }).getByRole('button', { name: 'Import deck' }).click();
+    await page.getByRole('dialog', { name: 'Create new' }).getByRole('button', { name: 'Import collection' }).click();
     await expect(page).toHaveURL(/#\/import$/);
-    await expect(page.getByRole('heading', { name: 'Import deck' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Import collection' })).toBeVisible();
   });
 
   test('bad files get a clear message and nothing is added', async ({ page }) => {
     await page.goto('/#/import');
     const cases: [string, string, RegExp][] = [
-      ['x.json', JSON.stringify({ hello: 'world' }), /isn't a deck file from this app/],
+      ['x.json', JSON.stringify({ hello: 'world' }), /isn't a collection file from this app/],
       ['x.json', JSON.stringify({ app: 'simple-bible-memory', format: 99, decks: [] }), /newer version of the app/],
-      ['x.json', JSON.stringify({ app: 'simple-bible-memory', format: 1, decks: [{ title: 'T', cards: [{ reference: '', verseText: 'x' }] }] }), /damaged|isn't a valid deck file/],
-      ['x.json', JSON.stringify({ app: 'simple-bible-memory', format: 1, decks: [] }), /doesn't contain any decks/],
-      ['x.json', '{ not json', /damaged|isn't a valid deck file/],
+      ['x.json', JSON.stringify({ app: 'simple-bible-memory', format: 1, decks: [{ title: 'T', cards: [{ reference: '', verseText: 'x' }] }] }), /damaged|isn't a valid collection file/],
+      ['x.json', JSON.stringify({ app: 'simple-bible-memory', format: 1, decks: [] }), /doesn't contain any collections/],
+      ['x.json', '{ not json', /damaged|isn't a valid collection file/],
       ['x.txt', '', /Couldn't find any cards/],
       ['x.txt', 'just one column of text', /at least two columns/],
     ];
@@ -212,17 +212,17 @@ test.describe('import a deck file', () => {
       await expect(page.getByRole('button', { name: 'Import', exact: true })).toHaveCount(0);
     }
     await page.goto('/');
-    await expect(page.getByText('No decks yet')).toBeVisible();
+    await expect(page.getByText('No collections yet')).toBeVisible();
   });
 });
 
 test.describe('import from Anki', () => {
   const ANKI = '#separator:tab\n#html:true\n#columns:Front\tBack\tTags\nJohn 3:16\tFor God so loved the world<br>that he gave\tkjv\n\tno verse here\t\nPsalm 23:1\tThe Lord is my shepherd\tkjv\nRomans 8:28\t\tkjv\nPsalm 1:1\tBlessed is the man\tkids\n';
 
-  test('reads the file, guesses the columns, shows a preview, and creates a deck', async ({ page }) => {
+  test('reads the file, guesses the columns, shows a preview, and creates a collection', async ({ page }) => {
     await page.goto('/#/import');
     await chooseFile(page, 'Memory verses.txt', ANKI, 'text/plain');
-    await expect(page.getByLabel('Deck name')).toHaveValue('Memory verses');
+    await expect(page.getByLabel('Collection name')).toHaveValue('Memory verses');
     await expect(page.getByRole('button', { name: /^Verse:/ })).toContainText('Front');
     await expect(page.getByRole('button', { name: /^Passage:/ })).toContainText('Back');
     await expect(page.getByRole('button', { name: /^Note:/ })).toContainText('None');
@@ -237,10 +237,10 @@ test.describe('import from Anki', () => {
     await page.getByRole('dialog', { name: 'Select a column' }).getByRole('button', { name: /^Tags/ }).click();
 
     await page.getByRole('button', { name: 'Import', exact: true }).click();
-    await expect(page.getByText('Imported 1 deck')).toBeVisible();
+    await expect(page.getByText('Imported 1 collection')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Memory verses' })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Deck actions' }).click();
+    await page.getByRole('button', { name: 'Collection actions' }).click();
     await page.getByRole('dialog').getByRole('link', { name: 'View cards' }).click();
     await expect(page.getByRole('link', { name: 'John 3:16' })).toBeVisible();
     await expect(page.getByRole('row')).toHaveCount(4); // header + 3 cards
@@ -248,15 +248,15 @@ test.describe('import from Anki', () => {
     await expect(page.getByLabel('Note', { exact: true })).toHaveValue('kids');
   });
 
-  test('"First row is a header" skips the first row; the deck name can be changed', async ({ page }) => {
+  test('"First row is a header" skips the first row; the collection name can be changed', async ({ page }) => {
     await page.goto('/#/import');
     await chooseFile(page, 'plain.csv', 'Verse,Text\nJohn 3:16,For God so loved\nPsalm 23:1,The Lord is my shepherd\n', 'text/csv');
     await expect(page.getByRole('region', { name: 'What will be added' })).toContainText('3 cards ready'); // the header row counts as a card for now
     await page.getByRole('switch', { name: 'First row is a header' }).click();
     await expect(page.getByRole('region', { name: 'What will be added' })).toContainText('2 cards ready');
-    await page.getByLabel('Deck name').fill('My Anki deck');
+    await page.getByLabel('Collection name').fill('My Anki collection');
     await page.getByRole('button', { name: 'Import', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'My Anki deck' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'My Anki collection' })).toBeVisible();
   });
 
   test('swapping the columns works; choosing the same column for both is refused', async ({ page }) => {
@@ -301,8 +301,8 @@ test.describe('in Spanish, and accessibility', () => {
       };
       const id = await twoVerseDeck(page);
       await openDeck(page, id);
-      await page.getByRole('button', { name: 'Deck actions' }).click();
-      await page.getByRole('button', { name: 'Export deck' }).click();
+      await page.getByRole('button', { name: 'Collection actions' }).click();
+      await page.getByRole('button', { name: 'Export collection' }).click();
       await expect(exportDrawer(page)).toBeVisible();
       await page.waitForTimeout(700);
       await audit();
