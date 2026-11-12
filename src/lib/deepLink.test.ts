@@ -26,10 +26,11 @@ describe('which screen a link opens', () => {
     expect(routeFromLink('simplebiblememory://add')).toBe('/cards/new');
     expect(routeFromLink('simplebiblememory://stats')).toBe('/stats');
     expect(routeFromLink('simplebiblememory://home')).toBe('/');
-    expect(routeFromLink(`simplebiblememory://deck/${id}`)).toBe(`/decks/${id}`);
+    expect(routeFromLink(`simplebiblememory://collection/${id}`)).toBe(`/collections/${id}`);
+    expect(routeFromLink(`simplebiblememory://deck/${id}`)).toBe(`/collections/${id}`); // the older spelling (widgets in builds before the rename)
   });
   it('nothing else opens anything', () => {
-    for (const link of ['simplebiblememory://settings', 'simplebiblememory://add/extra', 'simplebiblememory://deck/', 'simplebiblememory://deck/a/b', 'simplebiblememory://deck/a%20b', 'https://example.com/add', '', 'nope']) {
+    for (const link of ['simplebiblememory://settings', 'simplebiblememory://add/extra', 'simplebiblememory://deck/', 'simplebiblememory://deck/a/b', 'simplebiblememory://deck/a%20b', 'simplebiblememory://collection/', 'simplebiblememory://collection/a/b', 'https://example.com/add', '', 'nope']) {
       expect(routeFromLink(link), link).toBeNull();
     }
   });

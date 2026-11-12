@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { addCard, createDeck, openDeck, setCardKinds } from './helpers';
 
-const study = (page: import('@playwright/test').Page, id: string, mode: 'flashcard' | 'type' | 'blanks') => page.goto(`/#/decks/${id}/study/${mode}`);
+const study = (page: import('@playwright/test').Page, id: string, mode: 'flashcard' | 'type' | 'blanks') => page.goto(`/#/collections/${id}/study/${mode}`);
 
 test('Settings lets you choose which cards each verse gets, and it changes how many cards are due', async ({ page }) => {
   const id = await createDeck(page, 'Kinds');
@@ -138,11 +138,11 @@ test('both kinds: a verse\'s two cards can come up in the same session, recall f
   await expect(page.getByText('First example passage.')).toBeVisible(); // the same verse's identify card, same day
 });
 
-test('extra practice: from the deck menu, covers every card, and changes nothing', async ({ page }) => {
+test('extra practice: from the collection menu, covers every card, and changes nothing', async ({ page }) => {
   const id = await createDeck(page);
   await addCard(page, id, 'John 3:16', 'First example passage.');
   await openDeck(page, id);
-  await page.getByRole('button', { name: 'Deck actions' }).click();
+  await page.getByRole('button', { name: 'Collection actions' }).click();
   await expect(page.getByRole('link', { name: 'Extra practice', exact: true })).toBeVisible(); // just the label, no small print under it
   await expect(page.getByText("Doesn't count toward your progress")).toHaveCount(0);
   await page.getByRole('link', { name: /Extra practice/ }).click();
@@ -166,11 +166,11 @@ test('extra practice: from the deck menu, covers every card, and changes nothing
   await expect(page.getByText(/schedule and statistics/)).toHaveCount(0);
   await expect(page.getByRole('link', { name: 'View cards' })).toHaveCount(0);
   const again = page.getByRole('button', { name: 'Practice again' });
-  const back = page.getByRole('link', { name: 'Back to deck' });
+  const back = page.getByRole('link', { name: 'Back to collection' });
   const [a, b] = [await again.boundingBox(), await back.boundingBox()];
   expect(b!.y).toBeGreaterThan(a!.y + a!.height - 1); // stacked, not side by side
 
-  await page.getByRole('link', { name: 'Back to deck' }).click();
+  await page.getByRole('link', { name: 'Back to collection' }).click();
   await expect(page.getByText('2 cards to study today.')).toBeVisible(); // nothing was recorded, so both cards are still waiting
   await page.goto('/#/stats');
   await expect(page.getByRole('term').filter({ hasText: /^Days since starting$/ }).locator('xpath=preceding-sibling::dd[1]')).toHaveText('0');

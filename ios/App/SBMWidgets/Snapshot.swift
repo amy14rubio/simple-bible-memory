@@ -148,8 +148,8 @@ struct Snapshot {
     /// A word or phrase the app saved in the person's language; the widget's own default until there is one.
     func label(_ key: String) -> String {
         if let v = labels[key], !v.isEmpty { return v }
-        let en = ["addCard": "Add card", "dueToday": "Due today", "noDecks": "No decks yet", "memorized": "Verses memorized", "more": "+{count} more",
-                  "licensedDeck": "Licensed text can't be shown on the home screen", "noVerses": "Add a deck of your own verses (or a public-domain translation) to see one here."]
+        let en = ["addCard": "Add card", "dueToday": "Due today", "noDecks": "No collections yet", "memorized": "Verses memorized", "more": "+{count} more",
+                  "licensedDeck": "Licensed text can't be shown on the home screen", "noVerses": "Add a collection of your own verses (or a public-domain translation) to see one here."]
         let es = ["addCard": "Añadir tarjeta", "dueToday": "Pendientes hoy", "noDecks": "Aún no hay carpetas", "memorized": "Versículos memorizados", "more": "+{count} más",
                   "licensedDeck": "El texto con licencia no se puede mostrar en la pantalla de inicio", "noVerses": "Añade una carpeta con tus propios versículos (o una traducción de dominio público) para ver uno aquí."]
         return (spanish ? es[key] : en[key]) ?? en[key] ?? ""

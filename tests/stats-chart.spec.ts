@@ -7,10 +7,10 @@ const label = (page: Page) => page.getByRole('status').filter({ hasText: /\S/ })
 
 /** One verse studied once with Easy: of its 2 study cards, 1 is young. Another verse is untouched. So: 3 new, 0 learning, 1 young, 0 mature. */
 async function deckWithProgress(page: Page) {
-  const id = await createDeck(page, 'Chart deck');
+  const id = await createDeck(page, 'Chart collection');
   await addCard(page, id, 'John 3:16', 'Example one.');
   await addCard(page, id, 'Psalm 23:1', 'Example two.');
-  await page.goto(`/#/decks/${id}/study/flashcard`);
+  await page.goto(`/#/collections/${id}/study/flashcard`);
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click();
   await expect(page.getByRole('list', { name: 'Cards remaining' })).toContainText('New: 3');
@@ -74,7 +74,7 @@ test.describe('the pie', () => {
   });
 
   test('with no cards it shows an empty disc and zeros, not a blank space', async ({ page }) => {
-    await createDeck(page, 'Empty deck');
+    await createDeck(page, 'Empty collection');
     await page.goto('/#/stats');
     await expect(legend(page)).toBeVisible();
     expect(await legendItems(page)).toEqual(['New 0', 'Learning 0', 'Young 0', 'Mature 0']);
@@ -198,10 +198,10 @@ test.describe('tapping the pie', () => {
 test('everything is in Spanish when the app is: legend, group name and the label', async ({ browser }) => {
   const ctx = await browser.newContext({ locale: 'es-ES' });
   const page = await ctx.newPage();
-  await page.goto('/#/decks/new');
+  await page.goto('/#/collections/new');
   await page.getByLabel('Título').fill('Carpeta');
   await page.getByRole('button', { name: 'Guardar' }).click();
-  await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
+  await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
   await page.goto('/#/stats');
   await expect(legend(page)).toBeVisible();
   expect(await legendItems(page)).toEqual(['Nuevas 0', 'En aprendizaje 0', 'Jóvenes 0', 'Maduras 0']);
@@ -214,7 +214,7 @@ test('the charting library is only loaded when Statistics is opened', async ({ p
   const requested: string[] = [];
   page.on('request', (r) => requested.push(r.url()));
   await page.goto('/');
-  await expect(page.getByText('No decks yet')).toBeVisible();
+  await expect(page.getByText('No collections yet')).toBeVisible();
   await page.goto('/#/settings');
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
   expect(requested.filter((u) => /recharts/i.test(u))).toEqual([]);

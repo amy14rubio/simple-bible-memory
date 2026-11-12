@@ -58,7 +58,7 @@ export function StudySessionPage() {
     },
     [id, extraPractice, decks, cards, reviews, settings],
   );
-  const exit = <BackButton to={`/decks/${id}`} label={t('study.exit')} />;
+  const exit = <BackButton to={`/collections/${id}`} label={t('study.exit')} />;
   if (loading || !data) return null;
   // The screen's name, for people who cannot see it: "Studying Psalms: Flashcard".
   const heading = t('study.heading', { deck: data.deck?.title ?? '', mode: MODES.includes(mode) ? t(`mode.${mode}` as MessageKey) : '' });
@@ -164,10 +164,10 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
     }
   }, [entry, extraPractice, reviews, mode, t, describeError, encouragement, goOn]);
   const skip = goOn;
-  const stop = useCallback(() => navigate(`/decks/${deckId}`), [navigate, deckId]);
+  const stop = useCallback(() => navigate(`/collections/${deckId}`), [navigate, deckId]);
   const bannerEl = banner && <RatingBanner key={banner.id} id={banner.id} rating={banner.rating} text={t(banner.text)} />;
 
-  const exit = <BackButton to={`/decks/${deckId}`} label={t('study.exit')} />;
+  const exit = <BackButton to={`/collections/${deckId}`} label={t('study.exit')} />;
 
   if (!entry) {
     const reviewed = reviewedCards.size;
@@ -183,7 +183,7 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
             </div>
             <div className="mx-auto flex max-w-xs flex-col gap-3">
               <Button variant="secondary" onClick={() => { setIndex(0); setReviewedCards(new Set()); setQueue(shuffle(initialQueue)); }}>{t('study.practiceAgain')}</Button>
-              <ButtonLink to={`/decks/${deckId}`}>{t('common.backToDeck')}</ButtonLink>
+              <ButtonLink to={`/collections/${deckId}`}>{t('common.backToDeck')}</ButtonLink>
             </div>
           </div>
         ) : (

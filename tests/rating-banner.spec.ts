@@ -15,7 +15,7 @@ async function deckToStudy(page: Page) {
   const id = await createDeck(page, 'Banner');
   for (let i = 1; i <= 5; i++) await addCard(page, id, `John 3:${i}`, `Passage number ${i}.`);
   await setCardKinds(page, 'Recall the passage');
-  await page.goto(`/#/decks/${id}/study/flashcard`);
+  await page.goto(`/#/collections/${id}/study/flashcard`);
   await expect(page.getByRole('button', { name: 'Show answer' })).toBeVisible();
   return id;
 }
@@ -163,17 +163,17 @@ test('the icon is always a check mark, whatever the rating', async ({ page }) =>
 test.describe('in Spanish', () => {
   test.use({ locale: 'es-ES' });
   test('the message is Spanish', async ({ page }) => {
-    await page.goto('/#/decks/new');
+    await page.goto('/#/collections/new');
     await page.getByLabel('Título').fill('Mensajes');
     await page.getByRole('button', { name: 'Guardar' }).click();
-    await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
-    const id = page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1]!;
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
+    const id = page.url().match(/#\/collections\/([0-9a-f-]{36})$/)![1]!;
+    await page.goto(`/#/cards/new?collection=${id}`);
     await page.getByLabel('Versículo(s)').fill('Juan 3:16');
     await page.getByLabel('Pasaje', { exact: true }).fill('Porque de tal manera amó Dios al mundo.');
     await page.getByRole('button', { name: 'Guardar' }).click();
     await page.waitForTimeout(600);
-    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await page.goto(`/#/collections/${id}/study/flashcard`);
     await page.getByRole('button', { name: 'Mostrar respuesta' }).click();
     await page.getByRole('button', { name: /^Bien/ }).click();
     const text = (await banner(page).innerText()).trim();

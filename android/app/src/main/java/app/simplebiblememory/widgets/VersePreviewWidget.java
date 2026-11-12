@@ -89,7 +89,7 @@ public class VersePreviewWidget extends AppWidgetProvider {
         v.setTextViewText(R.id.verse_text, verse.optString("text"));
         String translation = verse.optString("tr", "");
         v.setTextViewText(R.id.verse_ref, translation.isEmpty() ? verse.optString("ref") : verse.optString("ref") + " · " + translation);
-        v.setOnClickPendingIntent(R.id.widget_root, AddCardWidget.open(context, "simplebiblememory://deck/" + deck.optString("id"), 60 + widgetId));
+        v.setOnClickPendingIntent(R.id.widget_root, AddCardWidget.open(context, "simplebiblememory://collection/" + deck.optString("id"), 60 + widgetId));
         return v;
     }
 

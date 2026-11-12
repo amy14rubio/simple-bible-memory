@@ -18,14 +18,14 @@ async function seed(page: Page, decks: Record<string, ReturnType<typeof deck>>) 
 async function openDiscover(page: Page) {
   await page.goto('/');
   await page.getByRole('button', { name: 'Add' }).click();
-  await page.getByRole('button', { name: 'Discover decks' }).click();
+  await page.getByRole('button', { name: 'Discover collections' }).click();
   await expect(page.getByRole('heading', { name: 'Newest' })).toBeVisible();
   await expect(page.getByRole('dialog', { name: 'Create new' })).toHaveCount(0); // the Add drawer has finished closing (the sidebar keeps it on the page)
 }
 
 const seeded = { a: deck('Alpha', 'KJV', 'en', 3000), b: deck('Beta', 'RV1909', 'es', 2000), c: deck('Gamma', 'OWN', 'en', 1000) };
 
-test('browse newest first, search, filter, then import a public deck', async ({ page }) => {
+test('browse newest first, search, filter, then import a public collection', async ({ page }) => {
   await seed(page, seeded);
   await openDiscover(page);
 
@@ -33,10 +33,10 @@ test('browse newest first, search, filter, then import a public deck', async ({ 
   await expect(page.getByRole('heading', { name: 'Newest' })).toHaveClass(/sr-only/); // no visible label, only for screen readers
   await expect(links.first()).toContainText('Alpha');
   await expect(links).toHaveCount(3);
-  await expect(page.getByRole('status').filter({ hasText: '3 decks shown' })).toBeAttached(); // the count is said out loud
+  await expect(page.getByRole('status').filter({ hasText: '3 collections shown' })).toBeAttached(); // the count is said out loud
 
   // search by the start of a title
-  await page.getByRole('button', { name: 'Search public decks' }).click();
+  await page.getByRole('button', { name: 'Search public collections' }).click();
   await page.getByRole('searchbox').fill('be');
   await expect(links).toHaveCount(1);
   await expect(links.first()).toContainText('Beta');
@@ -60,23 +60,23 @@ test('browse newest first, search, filter, then import a public deck', async ({ 
   await links.first().click();
   await expect(page.getByRole('heading', { name: 'Alpha', exact: true })).toBeVisible();
   await expect(page.getByText('John 3:16')).toBeVisible();
-  await page.getByRole('button', { name: 'Import deck' }).click();
-  await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
+  await page.getByRole('button', { name: 'Import collection' }).click();
+  await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
   await expect(page.getByRole('heading', { name: 'Alpha', exact: true })).toBeVisible();
 
   // the deck now remembers where it came from
   await page.goto('/#/discover');
   await page.locator('a[href*="/discover/"]').first().click();
-  await expect(page.getByText('You already have a copy of this deck.')).toBeVisible();
+  await expect(page.getByText('You already have a copy of this collection.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Import again' })).toBeVisible();
 });
 
-test('report a public deck without signing in', async ({ page }) => {
+test('report a public collection without signing in', async ({ page }) => {
   await seed(page, seeded);
   await openDiscover(page);
   await page.locator('a[href*="/discover/"]').first().click();
-  await page.getByRole('button', { name: 'Report this deck' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Report this deck' });
+  await page.getByRole('button', { name: 'Report this collection' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Report this collection' });
   await dialog.getByRole('radio', { name: 'Inappropriate content' }).check();
   await dialog.getByLabel('Details').fill('Not suitable.');
   await dialog.getByRole('button', { name: 'Send report' }).click();
@@ -87,7 +87,7 @@ test('report a public deck without signing in', async ({ page }) => {
 
 test('empty and offline states, and Load more', async ({ page }) => {
   await openDiscover(page);
-  await expect(page.getByText('No public decks yet.')).toBeVisible();
+  await expect(page.getByText('No public collections yet.')).toBeVisible();
 
   const many = Object.fromEntries(Array.from({ length: 25 }, (_, i) => [`d${i}`, deck(`Deck ${String(i).padStart(2, '0')}`, 'KJV', 'en', 10_000 - i, 1)]));
   await page.evaluate((d) => localStorage.setItem('sbm-fake-cloud', JSON.stringify({ user: null, decks: d, offline: false })), many);
@@ -100,7 +100,7 @@ test('empty and offline states, and Load more', async ({ page }) => {
 
   await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('sbm-fake-cloud')!); s.offline = true; localStorage.setItem('sbm-fake-cloud', JSON.stringify(s)); });
   await page.reload();
-  await expect(page.getByText("Couldn't load public decks.")).toBeVisible();
+  await expect(page.getByText("Couldn't load public collections.")).toBeVisible();
 });
 
 test.describe('Spanish', () => {
@@ -115,7 +115,7 @@ test.describe('Spanish', () => {
 });
 });
 
-test('a long deck previews 3 cards and Show more reveals the rest', async ({ page }) => {
+test('a long collection previews 3 cards and Show more reveals the rest', async ({ page }) => {
   await seed(page, { long: deck('Long', 'KJV', 'en', 1000, 8) });
   await openDiscover(page);
   await page.locator('a[href*="/discover/"]').first().click();
@@ -126,7 +126,7 @@ test('a long deck previews 3 cards and Show more reveals the rest', async ({ pag
   await expect(page.getByText(/^John 3:\d+$/)).toHaveCount(3);
 });
 
-test('a deck you hid after a report is no longer listed', async ({ page }) => {
+test('a collection you hid after a report is no longer listed', async ({ page }) => {
   await seed(page, { ...seeded, hid: { ...deck('Hidden one', 'KJV', 'en', 4000), hidden: true } as ReturnType<typeof deck> });
   await openDiscover(page);
   const links = page.locator('a[href*="/discover/"]');
@@ -147,7 +147,7 @@ test('Settings has the one place to contact us', async ({ page }) => {
   await expect(page.getByRole('dialog', { name: 'Account' })).toContainText("You don't need an account");
 });
 
-test('a public deck\'s description keeps its line breaks on its page', async ({ page }) => {
+test('a public collection\'s description keeps its line breaks on its page', async ({ page }) => {
   const d = deck('Breaks', 'KJV', 'en', 1000);
   await seed(page, { b: { ...d, meta: { ...d.meta, description: 'First line.\nSecond line.' } } });
   await openDiscover(page);
@@ -159,7 +159,7 @@ test('a public deck\'s description keeps its line breaks on its page', async ({ 
 });
 
 
-test('a deck published by a newer version of the app can be looked at, but not imported until the app is updated', async ({ page }) => {
+test('a collection published by a newer version of the app can be looked at, but not imported until the app is updated', async ({ page }) => {
   const newer = deck('Newer format', 'KJV', 'en', 5000);
   (newer.meta as Record<string, unknown>).v = 3; // saved in a format this app does not know
   await seed(page, { n: newer, ...seeded });
@@ -175,37 +175,37 @@ test('a deck published by a newer version of the app can be looked at, but not i
   await expect(page.getByRole('heading', { name: 'Newer format' })).toBeVisible();
   await expect(page.getByText('Verse text 0 of Newer format.')).toBeVisible(); // it can be read
   await expect(page.getByRole('status').filter({ hasText: 'needs a newer version of the app' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Import deck' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Import collection' })).toBeDisabled();
 
   // an ordinary deck still imports
   await page.goBack();
   await links.nth(1).click();
-  await expect(page.getByRole('button', { name: 'Import deck' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Import collection' })).toBeEnabled();
 });
 
-test('the list shows only the first line of a description, with "…" when there is more; the deck\'s page shows it all', async ({ page }) => {
+test('the list shows only the first line of a description, with "…" when there is more; the collection\'s page shows it all', async ({ page }) => {
   const long = deck('Alpha', 'KJV', 'en', 3000);
   const short = deck('Beta', 'KJV', 'en', 2000);
   const wide = deck('Gamma', 'KJV', 'en', 1000);
   await seed(page, {
-    a: { ...long, meta: { ...long.meta, description: 'A first line.\nA second line that is only on the deck page.' } },
+    a: { ...long, meta: { ...long.meta, description: 'A first line.\nA second line that is only on the collection page.' } },
     b: { ...short, meta: { ...short.meta, description: 'Just one line' } },
     c: { ...wide, meta: { ...wide.meta, description: 'This one line is so long that it cannot possibly fit across a phone screen without being cut off, and it goes on and on. '.repeat(3) } },
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await openDiscover(page);
   await expect(page.getByText('A first line.…')).toBeVisible();
-  await expect(page.getByText('only on the deck page')).toHaveCount(0);
+  await expect(page.getByText('only on the collection page')).toHaveCount(0);
   await expect(page.getByText('Just one line', { exact: true })).toBeVisible(); // nothing more: no "…"
   const cut = page.getByText(/^This one line is so long/);
   await expect(cut).toHaveCSS('white-space', 'nowrap'); // one line, however long
   await expect(cut).toHaveCSS('text-overflow', 'ellipsis');
   expect((await cut.boundingBox())!.height).toBeLessThan(30);
   await page.getByText('A first line.…').click();
-  await expect(page.getByText('only on the deck page')).toBeVisible();
+  await expect(page.getByText('only on the collection page')).toBeVisible();
 });
 
-test('a verse cut short with "…" in the preview can be shown in full, even when the deck has only a few cards', async ({ page }) => {
+test('a verse cut short with "…" in the preview can be shown in full, even when the collection has only a few cards', async ({ page }) => {
   const long = 'For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life. '.repeat(3).trim();
   const d = deck('Short', 'KJV', 'en', 1000, 2);
   (d.cards['Short-0'] as { verseText: string }).verseText = long;

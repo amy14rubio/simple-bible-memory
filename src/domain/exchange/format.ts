@@ -214,5 +214,5 @@ export function parseExportFile(source: string): ParseResult {
 export function exportFileName(titles: string[]): string {
   const base = titles.length === 1 ? titles[0]! : 'bible-memory-backup';
   const slug = base.normalize('NFC').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 60);
-  return `${slug || 'deck'}.json`;
+  return `${slug || 'collection'}.json`;
 }

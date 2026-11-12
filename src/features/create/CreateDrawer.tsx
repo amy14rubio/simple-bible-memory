@@ -28,7 +28,7 @@ export function CreateDrawer({ open, onOpenChange }: { open: boolean; onOpenChan
         </DrawerHeader>
 
         <div className="grid gap-3 px-4">
-          <Choice icon={<Layers size={24} aria-hidden />} title={t('common.newDeck')} onClick={() => go('/decks/new')} />
+          <Choice icon={<Layers size={24} aria-hidden />} title={t('common.newDeck')} onClick={() => go('/collections/new')} />
           <Choice icon={<FilePlus size={24} aria-hidden />} title={t('common.newCard')} onClick={() => go('/cards/new')} />
           <Choice icon={<Upload size={24} aria-hidden />} title={t('create.import')} onClick={() => go('/import')} />
           {available && <Choice icon={<Compass size={24} aria-hidden />} title={t('create.discover')} onClick={() => go('/discover')} />}

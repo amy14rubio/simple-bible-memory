@@ -32,11 +32,11 @@ for (const size of SIZES) {
 
     test('fill in the blanks: the current blank stays in view as blanks are filled, with the word bank pinned below', async ({ page }) => {
       const id = await deckWithLongVerse(page, 'Recall the passage');
-      await page.goto(`/#/decks/${id}/study/blanks`);
+      await page.goto(`/#/collections/${id}/study/blanks`);
       await withGestureBar(page);
       // the first card may be either verse (the order is random): wait for the long one by retrying from the deck page
       for (let tries = 0; tries < 12 && !(await page.getByText('Psalm 23:1-6', { exact: true }).isVisible()); tries++) {
-        await page.goto('/#/'); await page.goto(`/#/decks/${id}/study/blanks`);
+        await page.goto('/#/'); await page.goto(`/#/collections/${id}/study/blanks`);
       }
       await expect(page.getByText('Psalm 23:1-6', { exact: true })).toBeVisible();
       const bank = page.getByRole('group', { name: 'Word bank' });
@@ -55,10 +55,10 @@ for (const size of SIZES) {
 
     test('choose the reference: the options are pinned at the bottom with room below them, the passage scrolls above', async ({ page }) => {
       const id = await deckWithLongVerse(page, 'Identify the verse');
-      await page.goto(`/#/decks/${id}/study/blanks`);
+      await page.goto(`/#/collections/${id}/study/blanks`);
       await withGestureBar(page);
       for (let tries = 0; tries < 12 && !(await page.getByText(/shepherd; I shall lack nothing/).isVisible()); tries++) {
-        await page.goto('/#/'); await page.goto(`/#/decks/${id}/study/blanks`);
+        await page.goto('/#/'); await page.goto(`/#/collections/${id}/study/blanks`);
       }
       const options = page.getByRole('group', { name: 'Choose the verse' }).getByRole('button');
       await expect(options.first()).toBeVisible();
@@ -78,7 +78,7 @@ test.describe('Speak with a long verse', () => {
     await page.addInitScript(() => { (window as unknown as { __fakeVoice: unknown }).__fakeVoice = { spoken: [], heard: [['done']], micRequests: 0, micAllowed: true, speakMs: 3000 }; });
     const id = await deckWithLongVerse(page, 'Recall the passage');
     // only the long verse matters here: open the deck's study screen until the long one comes first
-    await page.goto(`/#/decks/${id}/study/speak`);
+    await page.goto(`/#/collections/${id}/study/speak`);
     await withGestureBar(page);
     await page.getByRole('button', { name: 'Start' }).click();
     await expect(page.getByText('Here is the verse')).toBeVisible({ timeout: 15_000 });
@@ -96,7 +96,7 @@ test.describe('Speak status', () => {
   test('the mic and the status text sit in the horizontal centre of the screen', async ({ page }) => {
     await page.addInitScript(() => { (window as unknown as { __fakeVoice: unknown }).__fakeVoice = { spoken: [], heard: [['x'], ['x'], ['x'], ['x'], ['x'], ['x']], micRequests: 0, micAllowed: true, speakMs: 100 }; });
     const id = await deckWithLongVerse(page, 'Recall the passage');
-    await page.goto(`/#/decks/${id}/study/speak`);
+    await page.goto(`/#/collections/${id}/study/speak`);
     await page.getByRole('button', { name: 'Start' }).click();
     await expect(page.getByText('Listening…')).toBeVisible();
     const gaps = await page.evaluate(() => {
@@ -110,7 +110,7 @@ test.describe('Speak status', () => {
 
 test('the study screens with a long verse have no accessibility violations', async ({ page }) => {
   const id = await deckWithLongVerse(page, 'Recall the passage');
-  await page.goto(`/#/decks/${id}/study/blanks`);
+  await page.goto(`/#/collections/${id}/study/blanks`);
   await expect(page.getByRole('group', { name: 'Word bank' })).toBeVisible();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });

@@ -11,8 +11,8 @@ const item = (active: boolean) =>
 export function Sidebar({ onHide, onAdd, adding }: { onHide: () => void; onAdd: () => void; adding: boolean }) {
   const { t } = useI18n();
   const { pathname } = useLocation();
-  const browsing = pathname.endsWith('/cards') && pathname.startsWith('/decks/');
-  const inDecks = !browsing && (pathname === '/' || pathname.startsWith('/decks') || pathname.startsWith('/cards') || pathname === '/import');
+  const browsing = pathname.endsWith('/cards') && pathname.startsWith('/collections/');
+  const inDecks = !browsing && (pathname === '/' || pathname.startsWith('/collections') || pathname.startsWith('/cards') || pathname === '/import');
   return (
     <aside className="sticky top-0 flex h-dvh w-64 shrink-0 flex-col gap-4 border-r border-border bg-background px-3 pb-[calc(0.75rem+var(--safe-bottom))] pt-[calc(var(--safe-top)+0.5rem)]">
       <div className="flex items-center justify-between gap-1 pl-3">
@@ -33,7 +33,7 @@ export function Sidebar({ onHide, onAdd, adding }: { onHide: () => void; onAdd: 
       </button>
       <nav aria-label={t('nav.main')} className="flex flex-col gap-1">
         <NavLink to="/" end className={() => item(inDecks)}><LibraryBig size={20} aria-hidden />{t('nav.decks')}</NavLink>
-        <NavLink to={`/decks/${ALL_DECKS}/cards`} className={() => item(browsing)}><Layers size={20} aria-hidden />{t('nav.browse')}</NavLink>
+        <NavLink to={`/collections/${ALL_DECKS}/cards`} className={() => item(browsing)}><Layers size={20} aria-hidden />{t('nav.browse')}</NavLink>
         <NavLink to="/stats" className={({ isActive }) => item(isActive)}><ChartColumn size={20} aria-hidden />{t('nav.statistics')}</NavLink>
       </nav>
     </aside>

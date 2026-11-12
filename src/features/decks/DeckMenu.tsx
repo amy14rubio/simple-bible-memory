@@ -51,10 +51,10 @@ export function DeckMenu({ deck, onClose, onDeleted }: {
       <Dialog open={!!deck && !confirming} onClose={() => { if (!confirming) onClose(); }} title={deck?.title ?? t('deckMenu.defaultTitle')}>
         {error && <p role="alert" className="mb-2 text-danger">{error}</p>}
         <nav aria-label={t('deckMenu.actions')} className="flex flex-col border-t border-border">
-          <Link to={`/cards/new?deck=${deck?.id}`} onClick={onClose} className={item}><Plus size={20} aria-hidden className={icon} />{t('deckMenu.addCard')}</Link>
-          <Link to={`/decks/${deck?.id}/cards`} onClick={onClose} className={item}><List size={20} aria-hidden className={icon} />{t('deckMenu.browse')}</Link>
-          <Link to={`/decks/${deck?.id}?practice=1`} onClick={onClose} className={item}><Repeat size={20} aria-hidden className={icon} />{t('deckMenu.extraPractice')}</Link>
-          <Link to={`/decks/${deck?.id}/edit`} onClick={onClose} className={item}><Pencil size={20} aria-hidden className={icon} />{t('deckMenu.rename')}</Link>
+          <Link to={`/cards/new?collection=${deck?.id}`} onClick={onClose} className={item}><Plus size={20} aria-hidden className={icon} />{t('deckMenu.addCard')}</Link>
+          <Link to={`/collections/${deck?.id}/cards`} onClick={onClose} className={item}><List size={20} aria-hidden className={icon} />{t('deckMenu.browse')}</Link>
+          <Link to={`/collections/${deck?.id}?practice=1`} onClick={onClose} className={item}><Repeat size={20} aria-hidden className={icon} />{t('deckMenu.extraPractice')}</Link>
+          <Link to={`/collections/${deck?.id}/edit`} onClick={onClose} className={item}><Pencil size={20} aria-hidden className={icon} />{t('deckMenu.rename')}</Link>
           <button type="button" onClick={() => { if (deck) setExporting({ ids: [deck.id], title: deck.title }); onClose(); }} className={item}><Download size={20} aria-hidden className={icon} />{t('deckMenu.export')}</button>
           {share.available && <button type="button" onClick={() => { if (deck) setPublishing({ id: deck.id, title: deck.title }); onClose(); }} className={item}>{published ? <EyeOff size={20} aria-hidden className={icon} /> : <Globe size={20} aria-hidden className={icon} />}{published ? t('deckMenu.published') : t('deckMenu.publish')}</button>}
           <button type="button" onClick={() => setConfirming(true)} className={`${item} text-danger`}><Trash2 size={20} aria-hidden className="shrink-0" />{t('deckMenu.delete')}</button>

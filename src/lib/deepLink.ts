@@ -29,7 +29,7 @@ export function deckIdFromLink(link: string): string | null {
  * understands, and the shortcuts the home-screen widgets use:
  *   simplebiblememory://add          Add card              simplebiblememory://stats       Statistics
  *   simplebiblememory://home         the deck list
- *   simplebiblememory://deck/<id>    a deck of the person's
+ *   simplebiblememory://collection/<id>  a collection of the person's (the older spelling, deck/<id>, still works: widgets in old builds use it)
  */
 export function routeFromLink(link: string): string | null {
   const shared = deckIdFromLink(link);
@@ -41,6 +41,6 @@ export function routeFromLink(link: string): string | null {
   if (parts[0] === 'home' && parts.length === 1) return '/';
   if (parts[0] === 'add' && parts.length === 1) return '/cards/new';
   if (parts[0] === 'stats' && parts.length === 1) return '/stats';
-  if (parts[0] === 'deck' && parts.length === 2 && ok(parts[1])) return `/decks/${encodeURIComponent(parts[1]!)}`;
+  if ((parts[0] === 'collection' || parts[0] === 'deck') && parts.length === 2 && ok(parts[1])) return `/collections/${encodeURIComponent(parts[1]!)}`;
   return null;
 }

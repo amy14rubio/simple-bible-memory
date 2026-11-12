@@ -27,7 +27,7 @@ test.describe('the create drawer', () => {
     const d = drawer(page);
     await expect(d.locator('[data-slot="drawer-swipe-handle"]')).toBeVisible();
     await expect(d.getByRole('heading', { name: 'Create new' })).toBeVisible();
-    await expect(d.getByRole('button', { name: 'New deck', exact: true })).toBeVisible();
+    await expect(d.getByRole('button', { name: 'New collection', exact: true })).toBeVisible();
     await expect(d.getByRole('button', { name: 'New card', exact: true })).toBeVisible();
     // the choices are just their names: no description text under them
     await expect(d.getByText('Organize your verses')).toHaveCount(0);
@@ -43,7 +43,7 @@ test.describe('the create drawer', () => {
     const family = await title.evaluate((el) => getComputedStyle(el).fontFamily);
     expect(family).toContain('Literata');
     // the same family as a title in another dialog (the delete-deck confirmation uses the shared Dialog)
-    const choice = drawer(page).getByRole('button', { name: 'New deck', exact: true });
+    const choice = drawer(page).getByRole('button', { name: 'New collection', exact: true });
     expect(await choice.evaluate((el) => getComputedStyle(el).fontFamily)).toContain('Instrument Sans'); // action labels are sans, like the other buttons and menus
   });
 
@@ -112,12 +112,12 @@ test.describe('the create drawer', () => {
     await expect(drawer(page)).toBeVisible();
   });
 
-  test('New deck goes to the new deck form, and the drawer is gone', async ({ page }) => {
+  test('New collection goes to the new collection form, and the drawer is gone', async ({ page }) => {
     await page.goto('/');
     await plus(page).click();
-    await drawer(page).getByRole('button', { name: /New deck/ }).click();
-    await expect(page.getByRole('heading', { name: 'New deck' })).toBeVisible();
-    await expect(page).toHaveURL(/#\/decks\/new$/);
+    await drawer(page).getByRole('button', { name: /New collection/ }).click();
+    await expect(page.getByRole('heading', { name: 'New collection' })).toBeVisible();
+    await expect(page).toHaveURL(/#\/collections\/new$/);
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 
@@ -126,14 +126,14 @@ test.describe('the create drawer', () => {
     await plus(page).click();
     await drawer(page).getByRole('button', { name: /New card/ }).click();
     await expect(page).toHaveURL(/#\/cards\/new$/);
-    await expect(page.getByText('Create a deck first')).toBeVisible(); // no decks yet
+    await expect(page.getByText('Create a collection first')).toBeVisible(); // no decks yet
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 
   test('going back to the home screen after choosing leaves the drawer closed', async ({ page }) => {
     await page.goto('/');
     await plus(page).click();
-    await drawer(page).getByRole('button', { name: /New deck/ }).click();
+    await drawer(page).getByRole('button', { name: /New collection/ }).click();
     await page.goBack();
     await expect(page.getByRole('heading', { name: 'Simple Bible Memory' })).toBeVisible();
     await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -206,11 +206,11 @@ test.describe('closing popups without a Cancel button', () => {
     await expect(page).toHaveURL(/#\/settings$/);
   });
 
-  test('choosing New deck from the drawer leaves a clean history: Back returns to the home screen', async ({ page }) => {
+  test('choosing New collection from the drawer leaves a clean history: Back returns to the home screen', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Add' }).click();
-    await drawer(page).getByRole('button', { name: 'New deck' }).click();
-    await expect(page).toHaveURL(/#\/decks\/new$/);
+    await drawer(page).getByRole('button', { name: 'New collection' }).click();
+    await expect(page).toHaveURL(/#\/collections\/new$/);
     await page.goBack();
     await expect(page).toHaveURL(/\/#?\/?$/);
     await expect(page.getByRole('dialog')).toHaveCount(0);

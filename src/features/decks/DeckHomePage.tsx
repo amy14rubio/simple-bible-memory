@@ -52,7 +52,7 @@ export function DeckHomePage() {
         actions={<IconButton label={t('deckHome.actions')} onClick={() => setMenuOpen(true)}><EllipsisVertical size={20} aria-hidden /></IconButton>}
       />
       {stats.total === 0 ? (
-        <EmptyState title={t('deckHome.emptyTitle')} action={<ButtonLink to={`/cards/new?deck=${id}`}>{t('common.newCard')}</ButtonLink>}>
+        <EmptyState title={t('deckHome.emptyTitle')} action={<ButtonLink to={`/cards/new?collection=${id}`}>{t('common.newCard')}</ButtonLink>}>
           {t('deckHome.emptyBody')}
         </EmptyState>
       ) : (
@@ -67,7 +67,7 @@ export function DeckHomePage() {
               </section>
               <StudyTiles id={id} practice />
               <div className="text-center">
-                <Link to={`/decks/${id}`} className="inline-flex min-h-11 items-center px-3 text-sm text-muted underline underline-offset-4 hover:text-foreground">{t('deckHome.backToRegular')}</Link>
+                <Link to={`/collections/${id}`} className="inline-flex min-h-11 items-center px-3 text-sm text-muted underline underline-offset-4 hover:text-foreground">{t('deckHome.backToRegular')}</Link>
               </div>
             </>
           ) : queued > 0 ? (
@@ -97,7 +97,7 @@ function StudyTiles({ id, practice = false }: { id: string; practice?: boolean }
     <ul className="grid grid-cols-2 gap-3">
       {MODES.map(({ mode, title, hint, Icon }) => (
         <li key={mode}>
-          <Link to={`/decks/${id}/study/${mode}${practice ? '?practice=1' : ''}`} className={`${tile} border-border bg-background hover:bg-surface`}>
+          <Link to={`/collections/${id}/study/${mode}${practice ? '?practice=1' : ''}`} className={`${tile} border-border bg-background hover:bg-surface`}>
             <Icon size={22} aria-hidden className="text-muted" />
             <span>
               <span className="block font-serif text-lg">{t(title)}</span>
@@ -107,7 +107,7 @@ function StudyTiles({ id, practice = false }: { id: string; practice?: boolean }
         </li>
       ))}
       <li>
-        <Link to={`/decks/${id}/study/speak${practice ? '?practice=1' : ''}`} className={`${tile} border-border bg-background hover:bg-surface`}>
+        <Link to={`/collections/${id}/study/speak${practice ? '?practice=1' : ''}`} className={`${tile} border-border bg-background hover:bg-surface`}>
           <Mic size={22} aria-hidden className="text-muted" />
           <span><span className="block font-serif text-lg">{t('mode.speak')}</span><span className="text-sm text-muted">{t('mode.speakHint')}</span></span>
         </Link>

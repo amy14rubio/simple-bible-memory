@@ -7,12 +7,12 @@ import { createDeck, openDeck } from './helpers';
  */
 type Cloud = { decks: Record<string, { meta: { translation: string; language: string; v: number; cardCount: number }; cards: Record<string, { reference: string; verseText: string; translation?: string; v: number }> }> };
 const cloud = (page: Page) => page.evaluate(() => (window as unknown as { __fakeCloud: () => unknown }).__fakeCloud()) as Promise<Cloud>;
-const drawer = (page: Page) => page.getByRole('dialog', { name: /^(Publish deck|Published deck)$/ });
+const drawer = (page: Page) => page.getByRole('dialog', { name: /^(Publish collection|Published collection)$/ });
 const rulesDrawer = (page: Page) => page.getByRole('dialog', { name: 'Community rules' });
 
 async function addAutofilled(page: Page, deckId: string, translation: RegExp, references: string[]) {
   await page.goto('/');
-  await page.goto(`/#/cards/new?deck=${deckId}`);
+  await page.goto(`/#/cards/new?collection=${deckId}`);
   await page.getByRole('switch', { name: 'Autofill' }).click();
   await page.getByRole('button', { name: /^Translation: / }).click();
   await page.getByRole('dialog', { name: 'Choose a translation' }).getByRole('button', { name: translation }).click();
@@ -26,16 +26,16 @@ async function addAutofilled(page: Page, deckId: string, translation: RegExp, re
 
 async function publishDeck(page: Page, deckId: string) {
   await openDeck(page, deckId);
-  await page.getByRole('button', { name: 'Deck actions' }).click();
-  await page.getByRole('button', { name: 'Publish deck' }).click();
+  await page.getByRole('button', { name: 'Collection actions' }).click();
+  await page.getByRole('button', { name: 'Publish collection' }).click();
   await drawer(page).getByRole('button', { name: 'Continue with Google' }).click();
   await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
-  await expect(rulesDrawer(page).or(page.getByText('Deck published'))).toBeVisible();
+  await expect(rulesDrawer(page).or(page.getByText('Collection published'))).toBeVisible();
   if (await rulesDrawer(page).isVisible()) await rulesDrawer(page).getByRole('button', { name: 'Agree and publish' }).click();
-  await expect(page.getByText('Deck published')).toBeVisible();
+  await expect(page.getByText('Collection published')).toBeVisible();
 }
 
-test('a deck of licensed cards is published as references only, labelled with its translation', async ({ page }) => {
+test('a collection of licensed cards is published as references only, labelled with its translation', async ({ page }) => {
   test.setTimeout(90_000);
   const id = await createDeck(page, 'Lockman verses');
   await addAutofilled(page, id, /New American Standard Bible 2020/, ['John 3:16', 'Romans 8:28']);
@@ -49,17 +49,17 @@ test('a deck of licensed cards is published as references only, labelled with it
   expect(JSON.stringify(published)).not.toContain('Fake NASB2020 text'); // the publisher's text is nowhere in the cloud
 });
 
-test('a deck labelled with a licensed translation in the Publish screen is published as references only', async ({ page }) => {
+test('a collection labelled with a licensed translation in the Publish screen is published as references only', async ({ page }) => {
   test.setTimeout(90_000);
   const id = await createDeck(page, 'My NASB verses');
-  await page.goto(`/#/cards/new?deck=${id}`);
+  await page.goto(`/#/cards/new?collection=${id}`);
   await page.getByLabel('Verse(s)').fill('John 3:16');
   await page.getByLabel('Passage', { exact: true }).fill('typed from my own Bible');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('John 3:16 added')).toBeVisible();
   await openDeck(page, id);
-  await page.getByRole('button', { name: 'Deck actions' }).click();
-  await page.getByRole('button', { name: 'Publish deck' }).click();
+  await page.getByRole('button', { name: 'Collection actions' }).click();
+  await page.getByRole('button', { name: 'Publish collection' }).click();
   await drawer(page).getByRole('button', { name: 'Continue with Google' }).click();
   await drawer(page).getByRole('button', { name: /^Translation:/ }).click();
   const list = page.getByRole('dialog', { name: 'Choose a translation' });
@@ -67,9 +67,9 @@ test('a deck labelled with a licensed translation in the Publish screen is publi
   await expect(list.getByRole('listitem').nth(1)).toHaveText(/Another translation/);
   await list.getByRole('button', { name: /New American Standard Bible 2020/ }).click();
   await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
-  await expect(rulesDrawer(page).or(page.getByText('Deck published'))).toBeVisible();
+  await expect(rulesDrawer(page).or(page.getByText('Collection published'))).toBeVisible();
   if (await rulesDrawer(page).isVisible()) await rulesDrawer(page).getByRole('button', { name: 'Agree and publish' }).click();
-  await expect(page.getByText('Deck published')).toBeVisible();
+  await expect(page.getByText('Collection published')).toBeVisible();
 
   const [deck] = Object.values((await cloud(page)).decks);
   expect(deck!.meta).toMatchObject({ translation: 'NASB2020', language: 'en' });
@@ -77,7 +77,7 @@ test('a deck labelled with a licensed translation in the Publish screen is publi
   expect(JSON.stringify(deck)).not.toContain('typed from my own Bible');
 });
 
-test('a deck with licensed and open cards is published as MIXED, with the open text and the licensed references', async ({ page }) => {
+test('a collection with licensed and open cards is published as MIXED, with the open text and the licensed references', async ({ page }) => {
   test.setTimeout(90_000);
   const id = await createDeck(page, 'Both');
   await addAutofilled(page, id, /World English Bible/, ['John 1:1']);
@@ -89,7 +89,7 @@ test('a deck with licensed and open cards is published as MIXED, with the open t
   expect(sent.map((c) => [c.reference, c.verseText, c.translation])).toEqual([['John 1:1', 'Fake WEB text of John 1:1.', 'WEB'], ['John 1:2', '', 'AMP']]);
 });
 
-test('Discover shows such a deck without the text, and importing it brings the cards, which fetch their text', async ({ page, browser }) => {
+test('Discover shows such a collection without the text, and importing it brings the cards, which fetch their text', async ({ page, browser }) => {
   test.setTimeout(120_000);
   const id = await createDeck(page, 'Lockman verses');
   await addAutofilled(page, id, /New American Standard Bible 2020/, ['John 3:16', 'Romans 8:28']);
@@ -105,12 +105,12 @@ test('Discover shows such a deck without the text, and importing it brings the c
   await reader.getByRole('link', { name: /Lockman verses/ }).click();
   await expect(reader.getByText('John 3:16', { exact: true })).toBeVisible();
   await expect(reader.getByText(/Fake NASB2020 text/)).toHaveCount(0); // not in the preview
-  await expect(reader.getByText('The text of this translation appears once you import the deck.').first()).toBeVisible();
+  await expect(reader.getByText('The text of this translation appears once you import the collection.').first()).toBeVisible();
   await expect(reader.getByRole('link', { name: 'NASB 2020' }).first()).toHaveAttribute('href', 'https://www.lockman.org');
 
   await reader.getByRole('button', { name: /^Import/ }).click();
-  await reader.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
-  await reader.goto('/#/decks/all/cards');
+  await reader.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
+  await reader.goto('/#/collections/all/cards');
   await expect(reader.getByText('Fake NASB2020 text of John 3:16.')).toBeVisible(); // fetched to this device after the import
   await expect(reader.getByText('Fake NASB2020 text of Romans 8:28.')).toBeVisible();
   await other.close();

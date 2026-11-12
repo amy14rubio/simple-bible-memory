@@ -19,7 +19,7 @@ async function setup(page: Page, kinds: 'Both' | 'Recall the passage' | 'Identif
 test('speak: prompts, listens, reads the verse, asks, and records the spoken rating', async ({ page }) => {
   await hear(page, ['example verse text'], ['done'], ['easy']);
   const id = await setup(page);
-  await page.goto(`/#/decks/${id}/study/speak`);
+  await page.goto(`/#/collections/${id}/study/speak`);
   await expect(page.getByRole('heading', { name: 'Hands-free study' })).toBeVisible();
   await page.getByRole('button', { name: 'Start' }).click();
   await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
@@ -32,7 +32,7 @@ test('speak: prompts, listens, reads the verse, asks, and records the spoken rat
 test('speak: the rating buttons appear with the question, and tapping one works', async ({ page }) => {
   await hear(page, ['done']);
   const id = await setup(page);
-  await page.goto(`/#/decks/${id}/study/speak`);
+  await page.goto(`/#/collections/${id}/study/speak`);
   await page.getByRole('button', { name: 'Start' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click(); // (clicking waits for it to appear)
   await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
@@ -42,7 +42,7 @@ test('speak: the rating buttons appear with the question, and tapping one works'
 test('speak: no rating buttons while the verse is being said', async ({ page }) => {
   await hear(page);
   const id = await setup(page);
-  await page.goto(`/#/decks/${id}/study/speak`);
+  await page.goto(`/#/collections/${id}/study/speak`);
   await page.getByRole('button', { name: 'Start' }).click();
   await expect(page.getByText('Listening…')).toBeVisible();
   await expect(page.getByRole('button', { name: /^Easy/ })).toBeHidden();
@@ -50,18 +50,18 @@ test('speak: no rating buttons while the verse is being said', async ({ page }) 
   await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
 });
 
-test('speak: saying "stop" leaves for the deck', async ({ page }) => {
+test('speak: saying "stop" leaves for the collection', async ({ page }) => {
   await hear(page, ['stop']);
   const id = await setup(page);
-  await page.goto(`/#/decks/${id}/study/speak`);
+  await page.goto(`/#/collections/${id}/study/speak`);
   await page.getByRole('button', { name: 'Start' }).click();
-  await expect(page).toHaveURL(new RegExp(`#/decks/${id}$`));
+  await expect(page).toHaveURL(new RegExp(`#/collections/${id}$`));
 });
 
 test('speak: an identify card reads the passage and asks which verse', async ({ page }) => {
   await hear(page, ['example one one'], ['done'], ['easy']);
   const id = await setup(page, 'Identify the verse');
-  await page.goto(`/#/decks/${id}/study/speak`);
+  await page.goto(`/#/collections/${id}/study/speak`);
   await page.getByRole('button', { name: 'Start' }).click();
   await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   const spoken = await said(page);
@@ -72,7 +72,7 @@ test('speak: an identify card reads the passage and asks which verse', async ({ 
 
 test('speak: start screen has no accessibility violations', async ({ page }) => {
   const id = await setup(page);
-  await page.goto(`/#/decks/${id}/study/speak`);
+  await page.goto(`/#/collections/${id}/study/speak`);
   await expect(page.getByRole('heading', { name: 'Hands-free study' })).toBeVisible();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });
@@ -80,7 +80,7 @@ test('speak: start screen has no accessibility violations', async ({ page }) => 
 test('speak: the "i" on the start screen says why what you say is not graded', async ({ page }) => {
   await hear(page);
   const id = await setup(page);
-  await page.goto(`/#/decks/${id}/study/speak`);
+  await page.goto(`/#/collections/${id}/study/speak`);
   await expect(page.getByText("Speak mode doesn't grade what you say.")).toHaveCount(0); // behind the i, not printed
   await page.getByRole('button', { name: 'Hands-free study' }).click();
   await expect(page.getByRole('dialog', { name: 'Hands-free study' })).toContainText("Speak mode doesn't grade what you say. Speech recognition can mishear");

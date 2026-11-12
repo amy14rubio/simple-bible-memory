@@ -71,8 +71,9 @@ export function RemindersSection() {
   };
 
   return (
-    <section aria-labelledby="reminders">
-      <h2 id="reminders" className="mb-1 font-serif text-xl">{t('settings.reminders')}</h2>
+    <div role="group" aria-labelledby="reminders">
+      <h2 id="reminders" className="mb-2.5 px-2 font-serif text-xl">{t('settings.reminders')}</h2>
+      <div className="rounded-3xl bg-panel px-5 py-1 [&>*:last-child]:border-b-0">
       {!notifier.available ? (
         <div data-coach="reminders" className={row}>
           <span id="reminders-switch-label" className="sr-only">{t('reminders.switch')}</span>
@@ -111,6 +112,7 @@ export function RemindersSection() {
           )}
         </>
       )}
+      </div>
       <ReminderDrawer
         reminder={editing}
         isNew={editing !== null && !state.reminders.some((x) => x.id === editing.id)}
@@ -118,6 +120,6 @@ export function RemindersSection() {
         onDelete={(id) => void remove(id)}
         onClose={() => setEditing(null)}
       />
-    </section>
+    </div>
   );
 }

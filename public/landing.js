@@ -64,7 +64,7 @@
   } else heads.concat(subs, blocks).forEach(function (h) { h.classList.add('rv-go'); });
 })();
 /* The little demo on the landing page: it looks like the app's own study screens. Flip and rate a flashcard, type a verse, fill in the blanks,
-   and read about speaking. Plain script, no libraries. The verses are copied from the app's own decks (World English Bible, Reina-Valera 1909).
+   and read about speaking. Plain script, no libraries. The verses are copied from the app's own collections (World English Bible, Reina-Valera 1909).
    Nothing here is saved or sent anywhere. Only the flashcard offers another verse; the other three use one fixed verse. */
 (function () {
   var top = document.querySelector('header.top');

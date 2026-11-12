@@ -3,25 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>A Bible memory deck · Simple Bible Memory</title>
-<meta name="description" content="Someone shared a deck of Bible verses with you. Open it in Simple Bible Memory.">
+<title>A Bible memory collection · Simple Bible Memory</title>
+<meta name="description" content="Someone shared a collection of Bible verses with you. Open it in Simple Bible Memory.">
 <meta name="robots" content="noindex">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Simple Bible Memory">
-<meta property="og:title" content="A Bible memory deck · Una carpeta de versículos">
-<meta property="og:description" content="Someone shared a deck of Bible verses with you. · Alguien compartió contigo una carpeta de versículos.">
+<meta property="og:title" content="A Bible memory collection · Una carpeta de versículos">
+<meta property="og:description" content="Someone shared a collection of Bible verses with you. · Alguien compartió contigo una carpeta de versículos.">
 <meta property="og:image" content="https://simple-bible-memory.web.app/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Simple Bible Memory">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="A Bible memory deck · Una carpeta de versículos">
-<meta name="twitter:description" content="Someone shared a deck of Bible verses with you. · Alguien compartió contigo una carpeta de versículos.">
+<meta name="twitter:title" content="A Bible memory collection · Una carpeta de versículos">
+<meta name="twitter:description" content="Someone shared a collection of Bible verses with you. · Alguien compartió contigo una carpeta de versículos.">
 <meta name="twitter:image" content="https://simple-bible-memory.web.app/og-image.jpg">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="/landing.css?v=202611102142">
 <style>
-/* The page a shared deck link opens: one centered card of choices, in the landing page's look. */
+/* The page a shared collection link opens: one centered card of choices, in the landing page's look. */
 .share.hero { max-width: 46rem; margin: 0 auto; padding: 5rem var(--gutter) 5rem; text-align: center; } /* a .hero: the landing page's scripture-page background and paper grain (landing.css) */
 .share.hero { max-width: none; } /* the title and description may use the width; on a wide screen they are held to 80% of it (below) */
 .share h1 { font-family: 'Literata', Georgia, serif; font-weight: 500; font-size: clamp(1.5rem, 6vw, 3.25rem); line-height: 1.15; margin: 0 0 1.75rem; letter-spacing: -0.01em; overflow-wrap: anywhere; text-wrap: pretty; } /* the title runs as wide as the buttons (the landing page balances headings into a narrow block) */
@@ -67,8 +67,8 @@ html, body { overflow-y: clip; } /* the scripture background reaches past the pa
 <main>
 <section class="hero share">
 <div class="prism" aria-hidden="true"></div>
-<h1 id="title">A Bible memory deck</h1>
-<p class="lead" id="lead">Someone shared a deck of Bible verses with you.</p>
+<h1 id="title">A Bible memory collection</h1>
+<p class="lead" id="lead">Someone shared a collection of Bible verses with you.</p>
 <div class="choices">
 <a class="button store-like" id="open-app" href="#" hidden>Open in the app</a>
 <a class="button store-like" id="open-web" href="/app"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19"/><path d="M12 2.5c2.6 2.6 4 5.9 4 9.5s-1.4 6.9-4 9.5c-2.6-2.6-4-5.9-4-9.5s1.4-6.9 4-9.5z"/></svg><span><small id="web-small">Open in your</small><b id="web-big">Web Browser</b></span></a>
@@ -84,7 +84,7 @@ html, body { overflow-y: clip; } /* the scripture background reaches past the pa
   // Turn on once the Android and iPhone apps that understand simplebiblememory:// links are released (until then the button would lead nowhere).
   var APP_LINKS_READY = false;
   var strings = {
-    en: { title: 'A Bible memory deck', lead: 'Someone shared a deck of Bible verses with you.', app: 'Open in the app', web: 'Open in your browser', webSmall: 'Open in your', webBig: 'Web Browser', gone: 'This deck can’t be found. It may have been removed.', noApp: 'Don’t have the app yet?', play: 'Get it on Google Play', store: 'Download on the App Store', doc: 'A Bible memory deck · Simple Bible Memory' },
+    en: { title: 'A Bible memory collection', lead: 'Someone shared a collection of Bible verses with you.', app: 'Open in the app', web: 'Open in your browser', webSmall: 'Open in your', webBig: 'Web Browser', gone: 'This collection can’t be found. It may have been removed.', noApp: 'Don’t have the app yet?', play: 'Get it on Google Play', store: 'Download on the App Store', doc: 'A Bible memory collection · Simple Bible Memory' },
     es: { title: 'Una carpeta para memorizar la Biblia', lead: 'Alguien compartió contigo una carpeta de versículos.', app: 'Abrir en la app', web: 'Abrir en tu navegador', webSmall: 'Abrir en tu', webBig: 'Navegador web', gone: 'No se encuentra esta carpeta. Puede que se haya eliminado.', noApp: '¿Aún no tienes la app?', play: 'Disponible en Google Play', store: 'Descargar en el App Store', doc: 'Una carpeta para memorizar la Biblia · Memoria Bíblica Simple' }
   };
   var lang = /^es/i.test(navigator.language || '') ? 'es' : 'en';
@@ -93,7 +93,7 @@ html, body { overflow-y: clip; } /* the scripture background reaches past the pa
   document.title = t.doc;
   var $ = function (id) { return document.getElementById(id); };
 
-  // The deck's id: /d/<id> (the shared link), or ?id=<id> (for testing the page on its own).
+  // The collection's id: /d/<id> (the shared link), or ?id=<id> (for testing the page on its own).
   var match = /^\/d\/([^/?#]+)/.exec(location.pathname);
   var id = match ? decodeURIComponent(match[1]) : new URLSearchParams(location.search).get('id');
   var valid = id && /^[A-Za-z0-9_-]{1,128}$/.test(id);
@@ -111,14 +111,14 @@ html, body { overflow-y: clip; } /* the scripture background reaches past the pa
   if (phone && APP_LINKS_READY) { $('open-app').textContent = t.app; $('open-app').href = 'simplebiblememory://discover/' + encodeURIComponent(id); $('open-app').hidden = false; }
   // Android phones and iPhones that have the app do not need the store buttons first, but they stay below for everyone else.
 
-  // The deck's name and size, read from the public catalogue (anyone may read it). If that fails, the page still works.
+  // The collection's name and size, read from the public catalogue (anyone may read it). If that fails, the page still works.
   fetch('https://firestore.googleapis.com/v1/projects/' + PROJECT + '/databases/(default)/documents/publicDecks/' + encodeURIComponent(id))
     .then(function (r) { return r.ok ? r.json() : r.status === 404 ? { gone: true } : Promise.reject(); })
     .then(function (d) {
       var f = d.fields;
       if (d.gone || !f || (f.hidden && f.hidden.booleanValue === true)) { $('lead').textContent = t.gone; $('open-app').hidden = true; $('open-web').hidden = true; return; }
       if (f.title && f.title.stringValue) { $('title').textContent = f.title.stringValue; document.title = f.title.stringValue + ' · Simple Bible Memory'; }
-      // The deck's own description, if it has one (otherwise the line above stays).
+      // The collection's own description, if it has one (otherwise the line above stays).
       if (f.description && f.description.stringValue) $('lead').textContent = f.description.stringValue;
     })
     .catch(function () {});

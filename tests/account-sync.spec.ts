@@ -23,10 +23,10 @@ async function newDevice(browser: Browser) {
   return { ctx, page: await ctx.newPage() };
 }
 
-test('signing in backs up decks, cards and the study schedule, and says so', async ({ page }) => {
+test('signing in backs up collections, cards and the study schedule, and says so', async ({ page }) => {
   const id = await createDeck(page, 'Psalms');
   await addCard(page, id, 'John 3:16', 'For God so loved the world.');
-  await page.goto(`/#/decks/${id}/study/flashcard`);
+  await page.goto(`/#/collections/${id}/study/flashcard`);
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /Good/ }).click(); // one review: a schedule now exists
   await page.waitForTimeout(300);
@@ -45,7 +45,7 @@ test('signing in backs up decks, cards and the study schedule, and says so', asy
   expect(message).toBeLessThan((await section.getByRole('button', { name: 'Sign out' }).boundingBox())!.y);
 });
 
-test('a second device that signs in gets the decks, and later changes arrive by themselves', async ({ browser }) => {
+test('a second device that signs in gets the collections, and later changes arrive by themselves', async ({ browser }) => {
   const a = await newDevice(browser);
   const id = await createDeck(a.page, 'Psalms');
   await addCard(a.page, id, 'John 3:16', 'For God so loved the world.');
@@ -58,11 +58,11 @@ test('a second device that signs in gets the decks, and later changes arrive by 
   await signInFromSettings(b.page);
   await b.page.goto('/');
   await expect(b.page.getByText('Psalms', { exact: true })).toBeVisible();
-  await b.page.goto(`/#/decks/${id}/cards`);
+  await b.page.goto(`/#/collections/${id}/cards`);
   await expect(b.page.getByRole('row', { name: /John 3:16/ })).toBeVisible();
 
   // a card added on B reaches A while A is looking at the list
-  await a.page.goto(`/#/decks/${id}/cards`);
+  await a.page.goto(`/#/collections/${id}/cards`);
   await addCard(b.page, id, 'Psalm 23:1', 'The Lord is my shepherd.');
   await expect(b.page.getByRole('row', { name: /Psalm 23:1/ })).toBeVisible();
   await b.page.goto('/#/settings');
@@ -72,7 +72,7 @@ test('a second device that signs in gets the decks, and later changes arrive by 
   await a.ctx.close(); await b.ctx.close();
 });
 
-test.describe('signing in with a different account on a device that has decks', () => {
+test.describe('signing in with a different account on a device that has collections', () => {
   async function ready(page: Page) {
     await createDeck(page, 'Psalms');
     await signInFromSettings(page); // account one
@@ -82,7 +82,7 @@ test.describe('signing in with a different account on a device that has decks', 
     await expect(page.getByRole('dialog', { name: 'Different account' })).toBeVisible();
   }
 
-  test('Add keeps the decks and puts them in the new account', async ({ page }) => {
+  test('Add keeps the collections and puts them in the new account', async ({ page }) => {
     await ready(page);
     await page.getByRole('button', { name: 'Add them to this account' }).click();
     await expect(page.getByRole('status').filter({ hasText: 'backed up' })).toBeVisible();
@@ -91,14 +91,14 @@ test.describe('signing in with a different account on a device that has decks', 
     await expect(page.getByText('Psalms', { exact: true })).toBeVisible();
   });
 
-  test('Replace asks again, then swaps the decks for the account\'s (here, none)', async ({ page }) => {
+  test('Replace asks again, then swaps the collections for the account\'s (here, none)', async ({ page }) => {
     await ready(page);
-    await page.getByRole('button', { name: "Replace them with this account's decks" }).click();
-    await expect(page.getByRole('dialog', { name: 'Replace the decks on this device?' })).toBeVisible();
-    await page.getByRole('button', { name: 'Replace the decks' }).click();
+    await page.getByRole('button', { name: "Replace them with this account's collections" }).click();
+    await expect(page.getByRole('dialog', { name: 'Replace the collections on this device?' })).toBeVisible();
+    await page.getByRole('button', { name: 'Replace the collections' }).click();
     await expect(page.getByRole('status').filter({ hasText: 'backed up' })).toBeVisible();
     await page.goto('/');
-    await expect(page.getByText('No decks yet')).toBeVisible();
+    await expect(page.getByText('No collections yet')).toBeVisible();
   });
 
   test('Cancel signs out again and changes nothing', async ({ page }) => {
@@ -117,7 +117,7 @@ test.describe('signing in with a different account on a device that has decks', 
   });
 });
 
-test('deleting the account removes the backup but keeps the decks on the device', async ({ page }) => {
+test('deleting the account removes the backup but keeps the collections on the device', async ({ page }) => {
   await createDeck(page, 'Psalms');
   await signInFromSettings(page);
   expect((await itemKeys(page)).length).toBeGreaterThan(0);
@@ -134,7 +134,7 @@ test.describe('privacy note', () => {
     await page.goto('/#/settings');
     await page.getByRole('link', { name: 'Privacy & data' }).click();
     await expect(page.getByRole('heading', { name: 'Privacy', level: 1 })).toBeVisible();
-    for (const h of ['On your device', 'If you sign in', 'Public decks', 'Deleting your data', 'Other services']) await expect(page.getByRole('heading', { name: h })).toBeVisible();
+    for (const h of ['On your device', 'If you sign in', 'Public collections', 'Deleting your data', 'Other services']) await expect(page.getByRole('heading', { name: h })).toBeVisible();
     await expect(page.getByText('Your review history, theme, font and language are not copied.')).toBeVisible();
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
     expect(results.violations.map((v) => v.id)).toEqual([]);

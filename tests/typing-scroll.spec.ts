@@ -9,7 +9,7 @@ const scrolled = (page: import('@playwright/test').Page) => page.evaluate(() => 
 test('typing a long verse does not make the screen jump back up', async ({ page }) => {
   const id = await createDeck(page, 'Long');
   await addCard(page, id, 'Example 1:1', 'A verse.');
-  await page.goto(`/#/decks/${id}/study/type`);
+  await page.goto(`/#/collections/${id}/study/type`);
   const box = page.getByLabel('Type the verse from memory');
   await box.fill(Array.from({ length: 40 }, (_, i) => `line ${i} of a long verse typed from memory`).join('\n'));
   await box.focus();

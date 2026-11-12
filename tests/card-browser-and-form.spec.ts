@@ -52,14 +52,14 @@ test.describe('card browser', () => {
 test.describe('adding cards: save, toast, and a cleared form', () => {
   test('the check mark saves the card, shows a toast, clears verse and passage, keeps the source, and stays on the form', async ({ page }) => {
     const id = await createDeck(page, 'Many');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await reference(page).fill('John 3:16');
     await page.getByLabel('Note', { exact: true }).fill('Example translation');
     await passage(page).fill('First example passage.');
     await page.getByRole('button', { name: 'Save' }).click(); // the check mark in the header
 
     await expect(page.getByText('John 3:16 added')).toBeVisible(); // the toast
-    await expect(page).toHaveURL(new RegExp(`#/cards/new\\?deck=${id}$`)); // still the same form
+    await expect(page).toHaveURL(new RegExp(`#/cards/new\\?collection=${id}$`)); // still the same form
     await expect(reference(page)).toHaveValue('');
     await expect(passage(page)).toHaveValue('');
     await expect(page.getByLabel('Note', { exact: true })).toHaveValue('Example translation');
@@ -71,7 +71,7 @@ test.describe('adding cards: save, toast, and a cleared form', () => {
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByText('Psalm 23:1 added')).toBeVisible();
 
-    await page.goto(`/#/decks/${id}/cards`);
+    await page.goto(`/#/collections/${id}/cards`);
     await expect(page.getByRole('link', { name: /John 3:16/ })).toBeVisible();
     await expect(page.getByRole('link', { name: /Psalm 23:1/ })).toBeVisible();
   });
@@ -79,7 +79,7 @@ test.describe('adding cards: save, toast, and a cleared form', () => {
   test('the toast is a floating banner near the bottom, with margins, and goes away by itself', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 700 });
     const id = await createDeck(page, 'Many');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await reference(page).fill('John 3:16');
     await passage(page).fill('Example.');
     await page.getByRole('button', { name: 'Save' }).click();
@@ -96,7 +96,7 @@ test.describe('adding cards: save, toast, and a cleared form', () => {
 
   test('the toast is announced to screen readers without taking focus', async ({ page }) => {
     const id = await createDeck(page, 'Many');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await reference(page).fill('John 3:16');
     await passage(page).fill('Example.');
     await page.getByRole('button', { name: 'Save' }).click();
@@ -107,7 +107,7 @@ test.describe('adding cards: save, toast, and a cleared form', () => {
 
   test('shows an error and keeps what you typed when the card is incomplete (no toast)', async ({ page }) => {
     const id = await createDeck(page, 'Many');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await reference(page).fill('John 3:16');
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByRole('alert')).toContainText('Verse text is required');
@@ -131,7 +131,7 @@ test.describe('split into separate verses', () => {
   test('the button only appears when it can be used, and is centred, with no explanation under it', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     const id = await createDeck(page, 'Split');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await expect(splitButton(page)).toHaveCount(0); // nothing typed
     await reference(page).fill('John 3:16'); // a single verse
     await passage(page).fill('16 Example sixteen.');
@@ -148,7 +148,7 @@ test.describe('split into separate verses', () => {
 
   test('a whole chapter (Psalm 130) becomes one card per verse: 8 cards, 16 study cards', async ({ page }) => {
     const id = await createDeck(page, 'Split');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await reference(page).fill('Psalm 130');
     await page.getByLabel('Note', { exact: true }).fill('Example translation');
     await passage(page).fill(EIGHT);
@@ -167,7 +167,7 @@ test.describe('split into separate verses', () => {
     await expect(reference(page)).toHaveValue('');
     await expect(passage(page)).toHaveValue('');
     await expect(page.getByLabel('Note', { exact: true })).toHaveValue('Example translation');
-    await page.goto(`/#/decks/${id}/cards`);
+    await page.goto(`/#/collections/${id}/cards`);
     await expect(page.getByRole('row')).toHaveCount(9); // header + 8
     await expect(page.getByRole('link', { name: 'Psalm 130:1', exact: true })).toBeVisible();
     await expect(page.getByText('Example eight eighth.')).toBeVisible();
@@ -180,7 +180,7 @@ test.describe('split into separate verses', () => {
 
   test('a verse range (Psalm 130:1-2) becomes 2 cards: 4 study cards', async ({ page }) => {
     const id = await createDeck(page, 'Split');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await reference(page).fill('Psalm 130:1-2');
     await passage(page).fill('1 Example one first. 2 Example two second.');
     await splitButton(page).click();
@@ -189,18 +189,18 @@ test.describe('split into separate verses', () => {
     await expect(dialog).toContainText('so you will have 4 study cards');
     await dialog.getByRole('button', { name: 'Create 2 cards' }).click();
     await expect(page.getByText('2 verses added')).toBeVisible();
-    await page.goto(`/#/decks/${id}/cards`);
+    await page.goto(`/#/collections/${id}/cards`);
     await expect(page.getByRole('row')).toHaveCount(3);
 
     // and the study queue really has 4 cards (2 verses x recall + identify)
-    await page.goto(`/#/decks/${id}`);
+    await page.goto(`/#/collections/${id}`);
     await expect(page.getByText('4 cards to study today.')).toBeVisible();
   });
 
   test('with only one kind of card in use, the preview says so', async ({ page }) => {
     const id = await createDeck(page, 'Split');
     await setCardKinds(page, 'Recall the passage');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await reference(page).fill('Psalm 130:1-2');
     await passage(page).fill('1 Example one first. 2 Example two second.');
     await splitButton(page).click();
@@ -211,7 +211,7 @@ test.describe('split into separate verses', () => {
 
   test('Spanish references keep their style', async ({ page }) => {
     const id = await createDeck(page, 'Split');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await reference(page).fill('Salmos 130:1-2');
     await passage(page).fill('1 Texto de ejemplo uno. 2 Texto de ejemplo dos.');
     await splitButton(page).click();
@@ -222,7 +222,7 @@ test.describe('split into separate verses', () => {
 
   test('Cancel saves nothing and keeps what you typed', async ({ page }) => {
     const id = await createDeck(page, 'Split');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await reference(page).fill('Psalm 130:1-2');
     await passage(page).fill('1 Example one first. 2 Example two second.');
     await splitButton(page).click();
@@ -230,13 +230,13 @@ test.describe('split into separate verses', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(reference(page)).toHaveValue('Psalm 130:1-2');
     await expect(passage(page)).toHaveValue('1 Example one first. 2 Example two second.');
-    await page.goto(`/#/decks/${id}/cards`);
+    await page.goto(`/#/collections/${id}/cards`);
     await expect(page.getByText('No cards yet')).toBeVisible();
   });
 
   test('explains the problem when verse numbers are missing, and keeps the text', async ({ page }) => {
     const id = await createDeck(page, 'Split');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await reference(page).fill('Psalm 130');
     await passage(page).fill('A paragraph with no verse numbers at all.');
     await splitButton(page).click();
@@ -249,7 +249,7 @@ test.describe('split into separate verses', () => {
 
   test('names the verse that is missing from a range', async ({ page }) => {
     const id = await createDeck(page, 'Split');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await reference(page).fill('Psalm 130:1-3');
     await passage(page).fill('1 Example one first. 3 Example three third.');
     await splitButton(page).click();
@@ -272,7 +272,7 @@ test.describe('rating colors: only the text is colored', () => {
       const id = await createDeck(page, 'Colors');
       await addCard(page, id, 'John 3:16', 'Example passage.');
       await setCardKinds(page, 'Recall the passage');
-      await page.goto(`/#/decks/${id}/study/flashcard`);
+      await page.goto(`/#/collections/${id}/study/flashcard`);
       await page.getByRole('button', { name: 'Show answer' }).click();
       for (const [name, color] of [['Again', c.again], ['Hard', c.hard], ['Good', c.good], ['Easy', c.easy]] as const) {
         const button = page.getByRole('button', { name: new RegExp(`^${name}`) });
@@ -289,7 +289,7 @@ test.describe('rating colors: only the text is colored', () => {
       const id = await createDeck(page, 'Colors');
       await addCard(page, id, 'John 3:16', 'Example passage.');
       await setCardKinds(page, 'Recall the passage');
-      await page.goto(`/#/decks/${id}/study/flashcard`);
+      await page.goto(`/#/collections/${id}/study/flashcard`);
       const items = page.getByRole('list', { name: 'Cards remaining' }).getByRole('listitem');
       await expect(items.nth(0)).toHaveCSS('color', c.easy); // new
       await expect(items.nth(1)).toHaveCSS('color', c.again); // learning
@@ -302,7 +302,7 @@ test.describe('rating colors: only the text is colored', () => {
 
 test('the Passage field starts as one line, grows as you type, and has no box', async ({ page }) => {
   const id = await createDeck(page, 'Grow');
-  await page.goto(`/#/cards/new?deck=${id}`);
+  await page.goto(`/#/cards/new?collection=${id}`);
   const field = page.getByLabel('Passage', { exact: true });
   const height = async () => (await field.boundingBox())!.height;
   const start = await height();
@@ -318,26 +318,26 @@ test('the Passage field starts as one line, grows as you type, and has no box', 
   expect(await height()).toBeLessThan(60); // and shrinks back
 });
 
-test('the Deck row in the card form opens the same popup as the other deck pickers', async ({ page }) => {
+test('the Collection row in the card form opens the same popup as the other collection pickers', async ({ page }) => {
   const a = await createDeck(page, 'Alpha');
   await createDeck(page, 'Beta');
-  await page.goto(`/#/cards/new?deck=${a}`);
+  await page.goto(`/#/cards/new?collection=${a}`);
   await expect(page.locator('select')).toHaveCount(0); // no system dropdown
   await expect(page.getByLabel('Note', { exact: true })).toHaveAttribute('placeholder', 'Optional');
 
-  const row = page.getByRole('button', { name: 'Deck: Alpha' });
+  const row = page.getByRole('button', { name: 'Collection: Alpha' });
   await expect(row).toBeVisible();
   await row.click();
-  const popup = page.getByRole('dialog', { name: 'Select a deck' });
-  await expect(popup.getByRole('button', { name: /^(Alpha|Beta)$/ })).toHaveText(['Alpha', 'Beta']); // just decks: no "All decks" here
+  const popup = page.getByRole('dialog', { name: 'Select a collection' });
+  await expect(popup.getByRole('button', { name: /^(Alpha|Beta)$/ })).toHaveText(['Alpha', 'Beta']); // just decks: no "All collections" here
   await popup.getByRole('button', { name: 'Beta' }).click();
-  await expect(page.getByRole('button', { name: 'Deck: Beta' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Collection: Beta' })).toBeVisible();
 
   // the card goes into the chosen deck
   await reference(page).fill('John 3:16');
   await passage(page).fill('Example.');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('John 3:16 added')).toBeVisible();
-  await page.goto(`/#/decks/${a}/cards`);
+  await page.goto(`/#/collections/${a}/cards`);
   await expect(page.getByText('No cards yet')).toBeVisible();
 });

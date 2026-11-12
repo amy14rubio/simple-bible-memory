@@ -6,11 +6,11 @@ import { createDeck } from './helpers';
 const forceGuide = (page: Page) => page.addInitScript(() => localStorage.setItem('sbm-force-onboarding', '1'));
 const guide = (page: Page) => page.getByRole('dialog').filter({ has: page.locator('#coach-title') });
 const title = (page: Page) => guide(page).getByRole('heading', { level: 2 });
-const STEPS = ['Choose a deck', 'Type the reference', 'Autofill the verse', 'Add it yourself', 'Save'];
+const STEPS = ['Choose a collection', 'Type the reference', 'Autofill the verse', 'Add it yourself', 'Save'];
 
 async function openAdd(page: Page) {
   const id = await createDeck(page, 'Psalms');
-  await page.goto(`/#/cards/new?deck=${id}`);
+  await page.goto(`/#/cards/new?collection=${id}`);
   await expect(page.getByLabel('Verse(s)')).toBeVisible();
 }
 
@@ -57,21 +57,21 @@ test('it has no Skip button; the X closes it, it is not shown again, and the ? b
   await expect(page.getByLabel('Verse(s)')).toBeVisible();
   await expect(guide(page)).toHaveCount(0); // remembered
   await page.getByRole('button', { name: 'How to add a verse' }).click();
-  await expect(title(page)).toHaveText('Choose a deck');
+  await expect(title(page)).toHaveText('Choose a collection');
   await page.keyboard.press('Escape'); // a keyboard closes it too
   await expect(guide(page)).toHaveCount(0);
 });
 
 test('editing a card never shows it', async ({ page }) => {
   const id = await createDeck(page, 'Psalms');
-  await page.goto(`/#/cards/new?deck=${id}`);
+  await page.goto(`/#/cards/new?collection=${id}`);
   await expect(guide(page)).toBeVisible();
   await page.keyboard.press('Escape');
   await page.getByLabel('Verse(s)').fill('Psalm 23:1');
   await page.getByLabel('Passage', { exact: true }).fill('The Lord is my shepherd.');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Psalm 23:1 added')).toBeVisible();
-  await page.goto(`/#/decks/${id}/cards`);
+  await page.goto(`/#/collections/${id}/cards`);
   await page.getByRole('link', { name: /Psalm 23:1/ }).click();
   await expect(page.getByRole('heading', { name: 'Edit card' })).toBeVisible();
   await expect(guide(page)).toHaveCount(0);
@@ -98,12 +98,12 @@ for (const scheme of ['light', 'dark'] as const) {
 test.describe('in Spanish', () => {
   test.use({ locale: 'es-ES' });
   test('the guide is in Spanish', async ({ page }) => {
-    await page.goto('/#/decks/new');
+    await page.goto('/#/collections/new');
     await page.getByLabel('Título').fill('Salmos');
     await page.getByRole('button', { name: 'Guardar' }).click();
-    await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
-    const id = page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1];
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
+    const id = page.url().match(/#\/collections\/([0-9a-f-]{36})$/)![1];
+    await page.goto(`/#/cards/new?collection=${id}`);
     await expect(title(page)).toHaveText('Elige una carpeta');
     await expect(guide(page).getByRole('button', { name: 'Omitir' })).toHaveCount(0);
     await guide(page).getByRole('button', { name: 'Cerrar' }).click();

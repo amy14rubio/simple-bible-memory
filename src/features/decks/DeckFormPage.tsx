@@ -11,7 +11,7 @@ import { ValidationError } from '../../domain/errors';
 import { LIMITS } from '../../domain/sharing/translations';
 import { TranslationFields, type TranslationValue } from '../sharing/TranslationFields';
 
-/** One form for both "New deck" (/decks/new) and "Rename deck" (/decks/:id/edit). */
+/** One form for both "New deck" (/collections/new) and "Rename deck" (/collections/:id/edit). */
 export function DeckFormPage() {
   const { id } = useParams();
   const { decks } = useRepositories();
@@ -38,10 +38,10 @@ function DeckForm({ id, initialTitle, initialDescription, initialTranslation, no
     e.preventDefault();
     try {
       const details = { title, description, translationCode: translation.translation, bibleLanguage: translation.language };
-      if (id) { await decks.update(id, details); navigate(`/decks/${id}`, { replace: true }); }
+      if (id) { await decks.update(id, details); navigate(`/collections/${id}`, { replace: true }); }
       else {
         const d = await decks.create(details);
-        navigate(`/decks/${d.id}`, { replace: true });
+        navigate(`/collections/${d.id}`, { replace: true });
         toast.add({ title: t('toast.deckCreated', { title: d.title }), type: 'success' }); // heard by screen readers too
       }
     } catch (err) {

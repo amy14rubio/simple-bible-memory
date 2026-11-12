@@ -9,14 +9,14 @@ const setFake = (page: Page, patch: Partial<FakeCloud>) => page.evaluate((p) => 
 const published = async (page: Page) => Object.values((await cloud(page)).decks);
 
 const picker = (page: Page, label: string) => page.getByRole('button', { name: new RegExp(`^${label}:`) });
-const drawer = (page: Page) => page.getByRole('dialog', { name: /^(Publish deck|Published deck)$/ });
+const drawer = (page: Page) => page.getByRole('dialog', { name: /^(Publish collection|Published collection)$/ });
 
 async function setTranslation(page: Page, deckId: string, option: string | RegExp) {
-  await page.goto(`/#/decks/${deckId}/edit`);
+  await page.goto(`/#/collections/${deckId}/edit`);
   await picker(page, 'Translation').click();
   await page.getByRole('dialog', { name: 'Choose a translation' }).getByRole('button', { name: option }).click();
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page).toHaveURL(new RegExp(`#/decks/${deckId}$`));
+  await expect(page).toHaveURL(new RegExp(`#/collections/${deckId}$`));
 }
 
 async function psalmsDeck(page: Page, translation: string | RegExp | null = /King James Version/) {
@@ -29,8 +29,8 @@ async function psalmsDeck(page: Page, translation: string | RegExp | null = /Kin
 
 async function openPublish(page: Page, deckId: string) {
   await openDeck(page, deckId);
-  await page.getByRole('button', { name: 'Deck actions' }).click();
-  await page.getByRole('button', { name: /^(Publish deck|Unpublish deck)$/ }).click();
+  await page.getByRole('button', { name: 'Collection actions' }).click();
+  await page.getByRole('button', { name: /^(Publish collection|Unpublish collection)$/ }).click();
   await expect(drawer(page)).toBeVisible();
 }
 
@@ -38,18 +38,18 @@ const rulesDrawer = (page: Page) => page.getByRole('dialog', { name: 'Community 
 /** Presses Publish. The first time, the separate community-rules drawer opens, and "Agree and publish" finishes the job. */
 const publish = async (page: Page) => {
   await drawer(page).getByRole('button', { name: 'Publish', exact: true }).click();
-  await expect(rulesDrawer(page).or(page.getByText('Deck published'))).toBeVisible();
+  await expect(rulesDrawer(page).or(page.getByText('Collection published'))).toBeVisible();
   if (await rulesDrawer(page).isVisible()) await rulesDrawer(page).getByRole('button', { name: 'Agree and publish' }).click();
 };
 const signInInDrawer = async (page: Page) => { await drawer(page).getByRole('button', { name: 'Continue with Google' }).click(); await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeVisible(); };
 
 test.describe('a card\'s note stays private', () => {
-  test('the note field explains itself behind an "i", and a published deck never contains notes', async ({ page }) => {
+  test('the note field explains itself behind an "i", and a published collection never contains notes', async ({ page }) => {
     const id = await createDeck(page, 'Psalm 23');
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await expect(page.getByLabel('Source')).toHaveCount(0); // it used to be called Source
     await page.getByRole('button', { name: 'Note', exact: true }).click();
-    await expect(page.getByRole('dialog', { name: 'Note' })).toContainText('It stays private and is never published with a deck');
+    await expect(page.getByRole('dialog', { name: 'Note' })).toContainText('It stays private and is never published with a collection');
     await closeWithEscape(page);
     await expect(page.getByRole('dialog')).toHaveCount(0); // wait for the drawer to finish closing
     await page.getByLabel('Verse(s)').fill('Psalm 23:1');
@@ -63,17 +63,17 @@ test.describe('a card\'s note stays private', () => {
     await openPublish(page, id);
     await signInInDrawer(page);
     await publish(page);
-    await expect(page.getByText('Deck published')).toBeVisible();
+    await expect(page.getByText('Collection published')).toBeVisible();
     const [deck] = await published(page);
     expect(Object.values(deck!.cards)).toHaveLength(1);
     expect(JSON.stringify(deck)).not.toMatch(/AMP|Friday|note/); // the private note never leaves the phone
   });
 });
 
-test.describe('a deck\'s translation', () => {
-  test('is chosen on the deck form, remembered, and "my own words" asks for a language', async ({ page }) => {
+test.describe('a collection\'s translation', () => {
+  test('is chosen on the collection form, remembered, and "my own words" asks for a language', async ({ page }) => {
     const id = await createDeck(page, 'Verses');
-    await page.goto(`/#/decks/${id}/edit`);
+    await page.goto(`/#/collections/${id}/edit`);
     await expect(picker(page, 'Translation')).toContainText('Not set');
     await expect(page.getByRole('button', { name: /^Language:/ })).toHaveCount(0);
     await picker(page, 'Translation').click();
@@ -88,23 +88,23 @@ test.describe('a deck\'s translation', () => {
     await page.getByRole('button', { name: /^Language:/ }).click();
     await page.getByRole('dialog', { name: 'Language' }).getByRole('button', { name: 'Español' }).click();
     await page.getByRole('button', { name: 'Save' }).click();
-    await expect(page).toHaveURL(new RegExp(`#/decks/${id}$`));
+    await expect(page).toHaveURL(new RegExp(`#/collections/${id}$`));
 
-    await page.goto(`/#/decks/${id}/edit`);
+    await page.goto(`/#/collections/${id}/edit`);
     await expect(picker(page, 'Translation')).toContainText('My own words');
     await expect(page.getByRole('button', { name: /^Language:/ })).toContainText('Español');
   });
 });
 
 test.describe('publishing', () => {
-  test('sign in, then publish: the public copy has the deck and every card, and no author name', async ({ page }) => {
+  test('sign in, then publish: the public copy has the collection and every card, and no author name', async ({ page }) => {
     const id = await psalmsDeck(page);
     await openPublish(page, id);
     await expect(drawer(page).getByText('Sign in with Google to publish')).toBeVisible();
     await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toHaveCount(0); // not until signed in
     await signInInDrawer(page);
     await publish(page);
-    await expect(page.getByText('Deck published')).toBeVisible();
+    await expect(page.getByText('Collection published')).toBeVisible();
     await expect(drawer(page)).toHaveCount(0);
 
     const [deck] = await published(page);
@@ -113,12 +113,12 @@ test.describe('publishing', () => {
     expect(JSON.stringify(deck)).not.toMatch(/Reader|reader@example\.com/); // nothing about the person
   });
 
-  test('a deck with no translation, or a copyrighted one, cannot be published, and says why', async ({ page }) => {
+  test('a collection with no translation, or a copyrighted one, cannot be published, and says why', async ({ page }) => {
     const id = await psalmsDeck(page, null);
     await openPublish(page, id);
     await signInInDrawer(page);
     await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeDisabled();
-    await expect(drawer(page)).toContainText("Choose the translation of this deck's text to publish it.");
+    await expect(drawer(page)).toContainText("Choose the translation of this collection's text to publish it.");
 
     await closeWithEscape(page);
     await setTranslation(page, id, "Another translation (can't be published)");
@@ -136,7 +136,7 @@ test.describe('publishing', () => {
     await page.getByRole('dialog', { name: 'Choose a translation' }).getByRole('button', { name: /World English Bible/ }).click();
     await expect(drawer(page).getByRole('button', { name: 'Publish', exact: true })).toBeEnabled();
     await publish(page);
-    await expect(page.getByText('Deck published')).toBeVisible();
+    await expect(page.getByText('Collection published')).toBeVisible();
     expect((await published(page))[0]!.meta.translation).toBe('WEB');
   });
 
@@ -149,91 +149,91 @@ test.describe('publishing', () => {
     await expect(why).toContainText('copyrighted');
     await expect(why).toContainText('taken down');
     await expect(why).toContainText('free to share');
-    await expect(why).toContainText('export any deck to a file');
+    await expect(why).toContainText('export any collection to a file');
   });
 
-  test('the deck menu says Unpublish deck afterwards, with the status and an Unpublish button', async ({ page }) => {
+  test('the collection menu says Unpublish collection afterwards, with the status and an Unpublish button', async ({ page }) => {
     const id = await psalmsDeck(page);
     await openPublish(page, id);
     await signInInDrawer(page);
     await publish(page);
-    await expect(page.getByText('Deck published')).toBeVisible();
+    await expect(page.getByText('Collection published')).toBeVisible();
     await page.waitForTimeout(300);
 
-    await openPublish(page, id); // (the menu item now says "Unpublish deck"; it opens the drawer)
+    await openPublish(page, id); // (the menu item now says "Unpublish collection"; it opens the drawer)
     await expect(drawer(page)).toContainText('Published. Changes you make are sent automatically.');
     await drawer(page).getByRole('button', { name: 'Unpublish' }).click();
-    await expect(page.getByText('Deck unpublished')).toBeVisible();
+    await expect(page.getByText('Collection unpublished')).toBeVisible();
     expect(await published(page)).toHaveLength(0);
     await page.waitForTimeout(300);
     await openDeck(page, id);
-    await page.getByRole('button', { name: 'Deck actions' }).click();
-    await expect(page.getByRole('button', { name: 'Publish deck' })).toBeVisible(); // back to unpublished; the local deck is untouched
-    await expect(page.getByRole('button', { name: 'Unpublish deck' })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Collection actions' }).click();
+    await expect(page.getByRole('button', { name: 'Publish collection' })).toBeVisible(); // back to unpublished; the local deck is untouched
+    await expect(page.getByRole('button', { name: 'Unpublish collection' })).toHaveCount(0);
   });
 });
 
-test.describe('automatic syncing of a published deck', () => {
+test.describe('automatic syncing of a published collection', () => {
   async function publishedDeck(page: Page) {
     const id = await psalmsDeck(page);
     await openPublish(page, id);
     await signInInDrawer(page);
     await publish(page);
-    await expect(page.getByText('Deck published')).toBeVisible();
+    await expect(page.getByText('Collection published')).toBeVisible();
     await page.waitForTimeout(300); // the drawer's history clean-up, before the page is reloaded
     await page.reload(); // clears the toast
     return id;
   }
 
-  test('adding, changing and deleting cards, and renaming the deck, reach the public copy by themselves', async ({ page }) => {
+  test('adding, changing and deleting cards, and renaming the collection, reach the public copy by themselves', async ({ page }) => {
     const id = await publishedDeck(page);
     await addCard(page, id, 'Psalm 23:3', 'He restoreth my soul.');
     await expect.poll(async () => Object.keys((await published(page))[0]!.cards).length, { timeout: 15_000 }).toBe(3);
     expect((await published(page))[0]!.meta.cardCount).toBe(3);
 
-    await page.goto(`/#/decks/${id}/edit`);
+    await page.goto(`/#/collections/${id}/edit`);
     await page.getByLabel('Title').fill('Psalm 23 (renamed)');
     await page.getByRole('button', { name: 'Save' }).click();
     await expect.poll(async () => (await published(page))[0]!.meta.title, { timeout: 15_000 }).toBe('Psalm 23 (renamed)');
 
-    await page.goto(`/#/decks/${id}/cards`);
+    await page.goto(`/#/collections/${id}/cards`);
     await page.getByRole('link', { name: 'Psalm 23:1' }).click();
     await page.getByLabel('Passage', { exact: true }).fill('The Lord is my shepherd.');
     await page.getByRole('button', { name: 'Save' }).click();
     await expect.poll(async () => Object.values((await published(page))[0]!.cards).some((c) => c.verseText === 'The Lord is my shepherd.'), { timeout: 15_000 }).toBe(true);
 
-    await page.goto(`/#/decks/${id}/cards`);
+    await page.goto(`/#/collections/${id}/cards`);
     await page.getByRole('link', { name: 'Psalm 23:2' }).click();
     await page.getByRole('button', { name: 'Delete card' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Delete card' }).click();
     await expect.poll(async () => Object.keys((await published(page))[0]!.cards).length, { timeout: 15_000 }).toBe(2);
   });
 
-  test('deleting a published deck warns that it is also unpublished, then removes its public copy', async ({ page }) => {
+  test('deleting a published collection warns that it is also unpublished, then removes its public copy', async ({ page }) => {
     const id = await publishedDeck(page);
     await openDeck(page, id);
-    await page.getByRole('button', { name: 'Deck actions' }).click();
-    await page.getByRole('button', { name: 'Delete deck' }).click();
+    await page.getByRole('button', { name: 'Collection actions' }).click();
+    await page.getByRole('button', { name: 'Delete collection' }).click();
     const dialog = page.getByRole('dialog');
-    await expect(dialog.getByText('This deck is published. Deleting it also removes it from Discover')).toBeVisible();
-    await expect(dialog.getByRole('button', { name: 'Delete deck' })).toHaveCount(0); // the button says what it does instead
+    await expect(dialog.getByText('This collection is published. Deleting it also removes it from Discover')).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Delete collection' })).toHaveCount(0); // the button says what it does instead
     await dialog.getByRole('button', { name: 'Delete and unpublish' }).click();
     await expect.poll(async () => (await published(page)).length, { timeout: 15_000 }).toBe(0);
   });
 
-  test('signed out, a published deck is deleted only on this device: its public copy stays, now and after signing in again', async ({ page }) => {
+  test('signed out, a published collection is deleted only on this device: its public copy stays, now and after signing in again', async ({ page }) => {
     const id = await publishedDeck(page);
     await page.goto('/#/settings');
     await page.getByRole('button', { name: 'Sign out' }).click();
     await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeVisible();
     await openDeck(page, id);
-    await page.getByRole('button', { name: 'Deck actions' }).click();
-    await page.getByRole('button', { name: 'Delete deck' }).click();
+    await page.getByRole('button', { name: 'Collection actions' }).click();
+    await page.getByRole('button', { name: 'Delete collection' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText('Deleting it only deletes it from this device: its public copy stays in Discover')).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Delete and unpublish' })).toHaveCount(0);
-    await dialog.getByRole('button', { name: 'Delete deck' }).click();
-    await expect(page.getByRole('heading', { name: 'Delete this deck?' })).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Delete collection' }).click();
+    await expect(page.getByRole('heading', { name: 'Delete this collection?' })).toHaveCount(0);
     expect((await published(page)).length).toBe(1); // still public while signed out
     await page.goto('/#/settings');
     await page.getByRole('button', { name: 'Sign in with Google' }).click();
@@ -242,15 +242,15 @@ test.describe('automatic syncing of a published deck', () => {
     expect((await published(page)).length).toBe(1); // signing in again must not take it down
   });
 
-  test('deleting a deck that is not published has no unpublish warning', async ({ page }) => {
-    const id = await createDeck(page, 'Private deck');
+  test('deleting a collection that is not published has no unpublish warning', async ({ page }) => {
+    const id = await createDeck(page, 'Private collection');
     await openDeck(page, id);
-    await page.getByRole('button', { name: 'Deck actions' }).click();
-    await page.getByRole('button', { name: 'Delete deck' }).click();
+    await page.getByRole('button', { name: 'Collection actions' }).click();
+    await page.getByRole('button', { name: 'Delete collection' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText('permanently deleted')).toBeVisible();
     await expect(dialog.getByText(/is published/)).toHaveCount(0);
-    await expect(dialog.getByRole('button', { name: 'Delete deck' })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Delete collection' })).toBeVisible();
   });
 
   test('edits made while offline are sent when the connection is back', async ({ page }) => {
@@ -287,12 +287,12 @@ test.describe('automatic syncing of a published deck', () => {
 });
 
 test.describe('the account in Settings', () => {
-  test('sign in, sign out, and delete the account: the public decks go, the local decks stay', async ({ page }) => {
+  test('sign in, sign out, and delete the account: the public collections go, the local collections stay', async ({ page }) => {
     const id = await psalmsDeck(page);
     await openPublish(page, id);
     await signInInDrawer(page);
     await publish(page);
-    await expect(page.getByText('Deck published')).toBeVisible();
+    await expect(page.getByText('Collection published')).toBeVisible();
     await page.waitForTimeout(300);
     await page.reload();
 
@@ -300,16 +300,16 @@ test.describe('the account in Settings', () => {
     await expect(page.getByText('Signed in as Reader')).toBeVisible();
     await page.getByRole('button', { name: 'Delete my account' }).click();
     await page.getByRole('dialog', { name: 'Delete your account?' }).getByRole('button', { name: 'Delete my account' }).click();
-    await expect(page.getByText('Your account was deleted. The decks on this device are still here.')).toBeVisible();
+    await expect(page.getByText('Your account was deleted. The collections on this device are still here.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeVisible();
     expect(await published(page)).toHaveLength(0);
     expect((await cloud(page)).user).toBeNull();
 
-    await page.goto(`/#/decks/${id}/cards`);
+    await page.goto(`/#/collections/${id}/cards`);
     await expect(page.getByRole('link', { name: 'Psalm 23:1' })).toBeVisible(); // still on this device
-    await page.goto(`/#/decks/${id}`);
-    await page.getByRole('button', { name: 'Deck actions' }).click();
-    await expect(page.getByRole('button', { name: 'Publish deck' })).toBeVisible(); // and no longer published
+    await page.goto(`/#/collections/${id}`);
+    await page.getByRole('button', { name: 'Collection actions' }).click();
+    await expect(page.getByRole('button', { name: 'Publish collection' })).toBeVisible(); // and no longer published
   });
 });
 
@@ -317,10 +317,10 @@ test.describe('in Spanish, and accessibility', () => {
   test('the publish drawer explains the copyright rule in Spanish', async ({ browser }) => {
     const ctx = await browser.newContext({ locale: 'es-ES' });
     const page = await ctx.newPage();
-    await page.goto('/#/decks/new');
+    await page.goto('/#/collections/new');
     await page.getByLabel('Título').fill('Salmo');
     await page.getByRole('button', { name: 'Guardar' }).click();
-    await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
+    await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
     await page.getByRole('button', { name: 'Acciones de la carpeta' }).click();
     await page.getByRole('button', { name: 'Publicar carpeta' }).click();
     const d = page.getByRole('dialog', { name: 'Publicar carpeta' });
@@ -348,7 +348,7 @@ test.describe('in Spanish, and accessibility', () => {
       await picker(page, 'Translation').click();
       await page.getByRole('dialog', { name: 'Choose a translation' }).getByRole('button', { name: /King James Version/ }).click();
       await publish(page);
-      await expect(page.getByText('Deck published')).toBeVisible();
+      await expect(page.getByText('Collection published')).toBeVisible();
       await page.waitForTimeout(300);
       await page.reload();
       await openPublish(page, id);
@@ -380,7 +380,7 @@ test.describe('the community rules before publishing', () => {
     expect((await published(page)).length).toBe(0); // nothing is published until they agree
 
     await rules.getByRole('button', { name: 'Agree and publish' }).click();
-    await expect(page.getByText('Deck published')).toBeVisible();
+    await expect(page.getByText('Collection published')).toBeVisible();
     expect((await published(page)).length).toBe(1);
   });
 
@@ -402,22 +402,22 @@ test.describe('the community rules before publishing', () => {
     expect((await published(page)).length).toBe(0);
   });
 
-  test('after agreeing once, the next deck publishes straight away, with no rules drawer', async ({ page }) => {
+  test('after agreeing once, the next collection publishes straight away, with no rules drawer', async ({ page }) => {
     const first = await psalmsDeck(page, 'KJV');
     await openPublish(page, first);
     await signInInDrawer(page);
     await publish(page);
-    await expect(page.getByText('Deck published')).toBeVisible();
+    await expect(page.getByText('Collection published')).toBeVisible();
 
     const second = await psalmsDeck(page, 'KJV');
     await openPublish(page, second);
     await pressPublish(page);
-    await expect(page.getByText('Deck published')).toBeVisible();
+    await expect(page.getByText('Collection published')).toBeVisible();
     await expect(rulesDrawer(page)).toHaveCount(0);
     expect((await published(page)).length).toBe(2);
   });
 
-  test('if the connection is down after agreeing, the agreement is still remembered (and the deck syncs when it can)', async ({ page }) => {
+  test('if the connection is down after agreeing, the agreement is still remembered (and the collection syncs when it can)', async ({ page }) => {
     const id = await psalmsDeck(page, 'KJV');
     await openPublish(page, id);
     await signInInDrawer(page);
@@ -432,7 +432,7 @@ test.describe('the community rules before publishing', () => {
     const second = await psalmsDeck(page, 'KJV');
     await openPublish(page, second);
     await pressPublish(page);
-    await expect(page.getByText('Deck published')).toBeVisible();
+    await expect(page.getByText('Collection published')).toBeVisible();
     await expect(rulesDrawer(page)).toHaveCount(0); // not asked a second time
   });
 

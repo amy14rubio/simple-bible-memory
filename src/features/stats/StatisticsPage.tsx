@@ -44,7 +44,7 @@ export function StatisticsPage() {
     return (
       <>
         <AppBar back={back} title={t('stats.title')} />
-        <EmptyState title={t('stats.emptyTitle')} action={<ButtonLink to="/decks/new">{t('stats.createDeck')}</ButtonLink>}>{t('stats.emptyBody')}</EmptyState>
+        <EmptyState title={t('stats.emptyTitle')} action={<ButtonLink to="/collections/new">{t('stats.createDeck')}</ButtonLink>}>{t('stats.emptyBody')}</EmptyState>
       </>
     );
   }

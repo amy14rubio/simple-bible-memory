@@ -10,7 +10,7 @@ const fake = (page: Page) => page.evaluate(() => (window as unknown as { __fakeY
 const failNext = (page: Page, ...problems: string[]) => page.evaluate((p) => { (window as unknown as { __fakeYouVersion: Fake }).__fakeYouVersion.failWith.push(...p); }, problems);
 
 async function newCardForm(page: Page, deckId: string) {
-  await page.goto(`/#/cards/new?deck=${deckId}`);
+  await page.goto(`/#/cards/new?collection=${deckId}`);
   await expect(page.getByLabel('Verse(s)')).toBeVisible();
   await page.evaluate(() => { (window as unknown as { __fakeYouVersion: Fake }).__fakeYouVersion.asked.length = 0; });
 }
@@ -184,7 +184,7 @@ test('a licensed translation: the text cannot be edited, the publisher\'s notice
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Philippians 4:6-7 added')).toBeVisible();
 
-  await page.goto(`/#/decks/${id}/cards`);
+  await page.goto(`/#/collections/${id}/cards`);
   await expect(page.getByText('Fake NASB2020 text of Philippians 4:6-7.')).toBeVisible();
 });
 
@@ -218,7 +218,7 @@ test('offline: a licensed card is saved without text and fills in by itself afte
   await expect(page.getByText(/You're offline\. Save the card/)).toBeVisible();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('Romans 8:28 added')).toBeVisible();
-  await page.goto(`/#/decks/${id}/cards`);
+  await page.goto(`/#/collections/${id}/cards`);
   await expect(page.getByText('Fake NASB2020 text of Romans 8:28.')).toBeVisible(); // fetched in the background once it could be
 });
 
@@ -240,7 +240,7 @@ test('a passage that cannot be found says so', async ({ page }) => {
   await expect(page.getByText(/Couldn't find that passage in World English Bible/)).toBeVisible();
 });
 
-test('a licensed text is never in an exported deck file; the reference and translation are', async ({ page }) => {
+test('a licensed text is never in an exported collection file; the reference and translation are', async ({ page }) => {
   const id = await createDeck(page, 'Mixed');
   await newCardForm(page, id);
   await autofillSwitch(page).click();
@@ -251,9 +251,9 @@ test('a licensed text is never in an exported deck file; the reference and trans
   await expect(page.getByText('John 3:16 added')).toBeVisible();
 
   await openDeck(page, id);
-  await page.getByRole('button', { name: 'Deck actions' }).click();
-  await page.getByRole('button', { name: 'Export deck' }).click();
-  const drawer = page.getByRole('dialog', { name: /^Export (deck|data)$/ });
+  await page.getByRole('button', { name: 'Collection actions' }).click();
+  await page.getByRole('button', { name: 'Export collection' }).click();
+  const drawer = page.getByRole('dialog', { name: /^Export (collection|data)$/ });
   const [download] = await Promise.all([page.waitForEvent('download'), drawer.getByRole('button', { name: 'Export' }).click()]);
   const text = readFileSync((await download.path())!, 'utf8');
   expect(text).not.toContain('Fake AMP text');
@@ -272,7 +272,7 @@ test('editing a licensed card: the text stays read-only, and a changed reference
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('John 3:16 added')).toBeVisible();
 
-  await page.goto(`/#/decks/${id}/cards`);
+  await page.goto(`/#/collections/${id}/cards`);
   await page.getByText('Fake AMP text of John 3:16.').click();
   await expect(page.getByRole('heading', { name: 'Edit card' })).toBeVisible();
   await expect(autofillSwitch(page)).toHaveAttribute('aria-checked', 'true');
@@ -282,7 +282,7 @@ test('editing a licensed card: the text stays read-only, and a changed reference
   await page.getByLabel('Verse(s)').fill('John 3:17');
   await expect(passage).toHaveValue('Fake AMP text of John 3:17.');
   await page.getByRole('button', { name: 'Save' }).click();
-  await page.goto(`/#/decks/${id}/cards`);
+  await page.goto(`/#/collections/${id}/cards`);
   await expect(page.getByText('Fake AMP text of John 3:17.')).toBeVisible();
 });
 
@@ -299,12 +299,12 @@ test('while studying, a licensed card shows the publisher\'s tag, and an ordinar
   await page.getByRole('radio', { name: /^Recall the passage/ }).check();
   await page.waitForTimeout(300);
 
-  await page.goto(`/#/decks/${id}/study/flashcard`);
+  await page.goto(`/#/collections/${id}/study/flashcard`);
   await page.getByRole('button', { name: 'Show answer' }).click();
   await expect(page.getByText('Fake NASB2020 text of John 3:16.')).toBeVisible();
   await expect(page.getByRole('link', { name: 'NASB 2020' })).toHaveAttribute('href', 'https://www.lockman.org');
 
-  await page.goto(`/#/decks/${id}/cards`);
+  await page.goto(`/#/collections/${id}/cards`);
   await expect(page.getByRole('link', { name: 'NASB 2020' })).toBeVisible();
 });
 
@@ -325,12 +325,12 @@ test('cards still waiting for their text are not offered for study', async ({ pa
 test.describe('Spanish', () => {
   test.use({ locale: 'es-ES' });
   test('the picker and the notice are in Spanish, and the form has no accessibility violations', async ({ page }) => {
-    await page.goto('/#/decks/new');
+    await page.goto('/#/collections/new');
     await page.getByLabel('Título').fill('Versículos');
     await page.getByRole('button', { name: 'Guardar' }).click();
-    await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
-    const id = page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1]!;
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
+    const id = page.url().match(/#\/collections\/([0-9a-f-]{36})$/)![1]!;
+    await page.goto(`/#/cards/new?collection=${id}`);
     await page.getByRole('switch', { name: 'Autocompletar' }).click();
     await page.getByRole('button', { name: /^Traducción: / }).click();
     const dialog = page.getByRole('dialog', { name: 'Elige una traducción' });

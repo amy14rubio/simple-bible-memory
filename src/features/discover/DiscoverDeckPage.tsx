@@ -58,7 +58,7 @@ export function DiscoverDeckPage() {
         cards.map((c) => ({ reference: c.reference, verseText: isLicensed(c.translation) ? '' : c.verseText, ...(c.translation ? { translationCode: c.translation } : {}) })),
       );
       toast.add({ title: t('toast.importedDeck', { title: deck.title }), type: 'success' });
-      navigate(`/decks/${result.deckIds[0]}`, { replace: true });
+      navigate(`/collections/${result.deckIds[0]}`, { replace: true });
     } catch (e) {
       setError(describeError(e));
       setBusy(false);
@@ -109,7 +109,7 @@ export function DiscoverDeckPage() {
 
         {have && (
           <p role="status" className="text-[0.9375rem]">
-            {t('discover.alreadyHave')} <Link to={`/decks/${have.id}`} className="font-medium underline underline-offset-4">{t('discover.open')}</Link>
+            {t('discover.alreadyHave')} <Link to={`/collections/${have.id}`} className="font-medium underline underline-offset-4">{t('discover.open')}</Link>
           </p>
         )}
         {error && <ErrorMessage error={error} />}

@@ -3,9 +3,9 @@ import { closeWithEscape } from './helpers';
 
 test('settings explanations live behind an "i" with a drawer, not as small print', async ({ page }) => {
   await page.goto('/#/settings');
-  await expect(page.getByText('Counted across all decks.')).toHaveCount(0); // nothing printed on the page
+  await expect(page.getByText('Counted across all collections.')).toHaveCount(0); // nothing printed on the page
   await page.getByRole('button', { name: 'New cards per day', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'New cards per day' })).toContainText('Counted across all decks.');
+  await expect(page.getByRole('dialog', { name: 'New cards per day' })).toContainText('Counted across all collections.');
   await closeWithEscape(page);
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
@@ -69,7 +69,7 @@ test('Account: Export data comes first, then sign in, and there is no Import row
   await expect(items.nth(1)).toContainText('Sign in');
   await expect(section.getByRole('link')).toHaveCount(0);
   await section.getByRole('button', { name: 'Account', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'Account' })).toContainText('also backs up your decks, cards, study schedule and settings to your account');
+  await expect(page.getByRole('dialog', { name: 'Account' })).toContainText('also backs up your collections, cards, study schedule and settings to your account');
 });
 
 test('the Privacy page\'s own "i" gives its summary, and Settings has just a Privacy & data row', async ({ page }) => {
@@ -81,7 +81,7 @@ test('the Privacy page\'s own "i" gives its summary, and Settings has just a Pri
   await expect(page.getByText('The short version:')).toHaveCount(0); // the summary is behind the i, not printed
   await page.getByRole('button', { name: 'Privacy', exact: true }).click();
   const drawer = page.getByRole('dialog', { name: 'Privacy' });
-  await expect(drawer).toContainText('The short version: your decks stay on your device unless you sign in or publish one.');
+  await expect(drawer).toContainText('The short version: your collections stay on your device unless you sign in or publish one.');
   await expect(drawer).toContainText('you can delete your account and its data any time');
 });
 

@@ -32,7 +32,7 @@ export function AppShell() {
   const wide = useWide();
   const [open, setOpen] = useSidebarOpen();
   // Studying (and the welcome tour) has the whole screen to itself, so nothing pulls attention away from the verse.
-  const focus = /^\/decks\/[^/]+\/study\//.test(pathname) || pathname === '/welcome';
+  const focus = /^\/collections\/[^/]+\/study\//.test(pathname) || pathname === '/welcome';
   const sidebar = wide && !focus;
   // The bottom bar is for phones and tablets standing up; on a wide screen the sidebar replaces it.
   const showNav = pathname === '/' && !wide;

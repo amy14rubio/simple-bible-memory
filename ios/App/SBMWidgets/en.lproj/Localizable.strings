@@ -1,10 +1,10 @@
 "Add card" = "Add card";
 "Add a new card." = "Add a new card.";
 "Due today" = "Due today";
-"Decks with cards due." = "Decks with cards due.";
+"Collections with cards due." = "Collections with cards due.";
 "Statistics" = "Statistics";
 "Verses memorized." = "Verses memorized.";
 "Verse preview" = "Verse preview";
 "A verse each day." = "A verse each day.";
-"Deck" = "Deck";
-"Pick the deck this widget shows a verse from." = "Pick the deck this widget shows a verse from.";
+"Collection" = "Collection";
+"Pick the collection this widget shows a verse from." = "Pick the collection this widget shows a verse from.";

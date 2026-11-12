@@ -73,7 +73,7 @@ export function CardBrowsePage() {
   if (!data || (!isAll && !deck)) return <><AppBar back={<BackButton to="/" label={t('common.backToDecks')} />} /><Page><ErrorMessage error={t('error.deckGone')} /></Page></>;
 
   const heading = isAll ? t('browse.headingAll') : t('browse.heading', { deck: deck!.title });
-  const newCardTo = isAll ? '/cards/new' : `/cards/new?deck=${id}`; // in All decks you choose the deck inside the form
+  const newCardTo = isAll ? '/cards/new' : `/cards/new?collection=${id}`; // in All decks you choose the deck inside the form
   const q = query.trim().toLowerCase();
   const lang = isAll ? undefined : asLang(deck?.bibleLanguage); // the verses' language (not known when decks are mixed)
   const shown = data.list.filter((c) => c.reference.toLowerCase().includes(q) || c.verseText.toLowerCase().includes(q));
@@ -119,7 +119,7 @@ export function CardBrowsePage() {
           titleSlot={
             <>
               <h1 className="sr-only">{heading}</h1>
-              <DeckPicker label={t('browse.deck')} value={id} options={[{ value: ALL_DECKS, label: t('common.allDecks') }, ...data.all.map((d) => ({ value: d.id, label: d.title }))]} onChange={(v) => navigate(`/decks/${v}/cards`, { replace: true })} />
+              <DeckPicker label={t('browse.deck')} value={id} options={[{ value: ALL_DECKS, label: t('common.allDecks') }, ...data.all.map((d) => ({ value: d.id, label: d.title }))]} onChange={(v) => navigate(`/collections/${v}/cards`, { replace: true })} />
             </>
           }
           actions={

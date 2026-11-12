@@ -1,16 +1,16 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-/** The guide the first time "New deck" opens. Every other test runs with it off (VITE_SKIP_ONBOARDING); these switch it on. */
+/** The guide the first time "New collection" opens. Every other test runs with it off (VITE_SKIP_ONBOARDING); these switch it on. */
 const forceGuide = (page: Page) => page.addInitScript(() => localStorage.setItem('sbm-force-onboarding', '1'));
 const guide = (page: Page) => page.getByRole('dialog').filter({ has: page.locator('#coach-title') });
 const title = (page: Page) => guide(page).getByRole('heading', { level: 2 });
-const STEPS = ['Name your deck', 'Only for publishing', 'Create the deck'];
+const STEPS = ['Name your collection', 'Only for publishing', 'Create the collection'];
 
 test.beforeEach(({ page }) => forceGuide(page));
 
-test('the first time New deck opens, a guide explains the name, the optional publishing fields and the check mark', async ({ page }) => {
-  await page.goto('/#/decks/new');
+test('the first time New collection opens, a guide explains the name, the optional publishing fields and the check mark', async ({ page }) => {
+  await page.goto('/#/collections/new');
   await expect(page.getByLabel('Title')).toHaveAttribute('placeholder', 'Ex. Verses about grace');
   for (const [i, text] of STEPS.entries()) {
     await expect(title(page)).toHaveText(text);
@@ -23,28 +23,28 @@ test('the first time New deck opens, a guide explains the name, the optional pub
 });
 
 test('the X closes it, it is remembered, and the ? button starts it again', async ({ page }) => {
-  await page.goto('/#/decks/new');
+  await page.goto('/#/collections/new');
   await guide(page).getByRole('button', { name: 'Close' }).click();
   await expect(guide(page)).toHaveCount(0);
   await page.reload();
   await expect(page.getByLabel('Title')).toBeVisible();
   await expect(guide(page)).toHaveCount(0);
-  await page.getByRole('button', { name: 'How to make a deck' }).click();
-  await expect(title(page)).toHaveText('Name your deck');
+  await page.getByRole('button', { name: 'How to make a collection' }).click();
+  await expect(title(page)).toHaveText('Name your collection');
 });
 
-test('it does not block the form, and renaming a deck never shows it', async ({ page }) => {
-  await page.goto('/#/decks/new');
+test('it does not block the form, and renaming a collection never shows it', async ({ page }) => {
+  await page.goto('/#/collections/new');
   await page.getByLabel('Title').fill('Grace');
   await expect(page.getByLabel('Title')).toHaveValue('Grace');
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Save' }).click();
-  await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
-  const id = page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1];
-  await page.goto(`/#/decks/${id}/edit`);
+  await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
+  const id = page.url().match(/#\/collections\/([0-9a-f-]{36})$/)![1];
+  await page.goto(`/#/collections/${id}/edit`);
   await expect(page.getByLabel('Title')).toHaveValue('Grace');
   await expect(guide(page)).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'How to make a deck' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'How to make a collection' })).toHaveCount(0);
 });
 
 for (const scheme of ['light', 'dark'] as const) {
@@ -52,7 +52,7 @@ for (const scheme of ['light', 'dark'] as const) {
     const ctx = await browser.newContext({ colorScheme: scheme, viewport: { width: 390, height: 780 } });
     const page = await ctx.newPage();
     await forceGuide(page);
-    await page.goto('/#/decks/new');
+    await page.goto('/#/collections/new');
     for (let i = 0; i < STEPS.length; i++) {
       await expect(title(page)).toHaveText(STEPS[i]!);
       await page.waitForTimeout(300);
@@ -67,7 +67,7 @@ for (const scheme of ['light', 'dark'] as const) {
 test.describe('in Spanish', () => {
   test.use({ locale: 'es-ES' });
   test('the guide and the placeholder are in Spanish', async ({ page }) => {
-    await page.goto('/#/decks/new');
+    await page.goto('/#/collections/new');
     await expect(page.getByLabel('Título')).toHaveAttribute('placeholder', 'Ej. Versículos sobre la gracia');
     await expect(title(page)).toHaveText('Ponle nombre a tu carpeta');
     await guide(page).getByRole('button', { name: 'Siguiente' }).click();

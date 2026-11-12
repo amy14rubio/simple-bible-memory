@@ -1,16 +1,16 @@
 import { test, expect } from '@playwright/test';
 import { addCard, createDeck, openDeck, setBlankDifficulty, setCardKinds, tapFirstBankWord, wordBankOpen } from './helpers';
 
-const study = (page: import('@playwright/test').Page, deckId: string, mode: 'flashcard' | 'type' | 'blanks') => page.goto(`/#/decks/${deckId}/study/${mode}`);
+const study = (page: import('@playwright/test').Page, deckId: string, mode: 'flashcard' | 'type' | 'blanks') => page.goto(`/#/collections/${deckId}/study/${mode}`);
 
-test('an empty deck has nothing to study yet', async ({ page }) => {
+test('an empty collection has nothing to study yet', async ({ page }) => {
   const id = await createDeck(page, 'Empty');
   await expect(page.getByText('Nothing to study yet')).toBeVisible();
   await expect(page.getByRole('link', { name: /Flashcard/ })).toHaveCount(0);
   expect(id).toBeTruthy();
 });
 
-test('open deck view shows the study tiles and only the number of cards due', async ({ page }) => {
+test('open collection view shows the study tiles and only the number of cards due', async ({ page }) => {
   const id = await createDeck(page, 'Tiles');
   await addCard(page, id, 'Example 1:1', 'Example text.');
   await openDeck(page, id);
@@ -232,7 +232,7 @@ test('regular study never mentions practice', async ({ page }) => {
   await expect(visiblePractice()).toHaveCount(0);
 });
 
-test('leaving a session early: cards still waiting (including ones rated Again) are still counted on the deck page', async ({ page }) => {
+test('leaving a session early: cards still waiting (including ones rated Again) are still counted on the collection page', async ({ page }) => {
   const id = await createDeck(page);
   await addCard(page, id, 'John 3:16', 'First example passage.');
   await addCard(page, id, 'Psalm 23:1', 'Second example passage.');
@@ -258,6 +258,6 @@ test('finishing every card, with none waiting, says you are done for today, with
   await study(page, id, 'flashcard');
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click(); // Easy graduates the card: due in days
-  await page.getByRole('link', { name: 'Back to deck' }).click();
+  await page.getByRole('link', { name: 'Back to collection' }).click();
   await expect(page.getByText("You're done for today!")).toBeVisible();
 });

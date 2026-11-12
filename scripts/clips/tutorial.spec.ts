@@ -103,11 +103,11 @@ async function newPage(browser: Browser, lang: 'en' | 'es') {
 
 /** A deck with three cards, made quietly before the camera is "on" (the clip is trimmed to start after this). */
 async function setupDeck(page: Page, lang: 'en' | 'es', title: string, cards = 3) {
-  await page.goto('/#/decks/new');
+  await page.goto('/#/collections/new');
   await page.getByLabel(lang === 'es' ? 'Título' : 'Title').fill(title);
   await page.getByRole('button', { name: lang === 'es' ? 'Guardar' : 'Save' }).click();
-  await page.waitForURL(/#\/decks\/[0-9a-f-]{36}$/);
-  const id = page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1]!;
+  await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
+  const id = page.url().match(/#\/collections\/([0-9a-f-]{36})$/)![1]!;
   for (const [reference, passage] of (lang === 'es' ? VERSES_ES : VERSES).slice(0, cards)) {
     await page.goto(`/#/cards/new?deck=${id}`);
     await page.getByLabel(lang === 'es' ? 'Versículo(s)' : 'Verse(s)').fill(reference);
@@ -238,7 +238,7 @@ for (const lang of ['en', 'es'] as const) {
         await pause(p, 700);
         await p.getByRole('button', { name: T('nav.add') }).click();
         await pause(p, 1000);
-        // On a small screen the menu is longer than the screen: scroll it so "Discover decks" is seen before it is tapped.
+        // On a small screen the menu is longer than the screen: scroll it so "Discover collections" is seen before it is tapped.
         const discover = p.getByRole('button', { name: T('create.discover') });
         await discover.evaluate((el) => el.scrollIntoView({ behavior: 'smooth', block: 'end' }));
         await pause(p, 1500);
@@ -259,7 +259,7 @@ for (const lang of ['en', 'es'] as const) {
 
   test(`${lang}: smart scheduling`, async ({ browser }) => {
     let deckId = '';
-    await clip(browser, lang, 'schedule', async (p) => { deckId = await setupDeck(p, lang, deckTitle); await p.goto(`/#/decks/${deckId}/study/flashcard`); await p.getByRole('button', { name: T('study.showAnswer') }).waitFor(); await p.waitForTimeout(400); }, async (p) => {
+    await clip(browser, lang, 'schedule', async (p) => { deckId = await setupDeck(p, lang, deckTitle); await p.goto(`/#/collections/${deckId}/study/flashcard`); await p.getByRole('button', { name: T('study.showAnswer') }).waitFor(); await p.waitForTimeout(400); }, async (p) => {
       await pause(p, 700);
       await p.getByRole('button', { name: T('study.showAnswer') }).click();
       await pause(p, 600);

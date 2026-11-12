@@ -1,4 +1,4 @@
-import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { DatabaseProvider } from './app/DatabaseProvider';
 import { RepositoriesProvider } from './app/repositories';
 import { ThemeProvider } from './app/theme';
@@ -39,13 +39,19 @@ function NotFound() {
   return <p className="px-5 py-10 text-muted">{t('error.pageNotFound')}</p>;
 }
 
-/** Old links to /decks/:id/study now land on the open-deck screen. */
+/** Old links to /collections/:id/study now land on the open-deck screen. */
 function StudyRedirect() {
   const { id } = useParams();
-  return <Navigate to={`/decks/${id}`} replace />;
+  return <Navigate to={`/collections/${id}`} replace />;
 }
 
-// HashRouter (URLs like /#/decks/1) works from Capacitor's local files with no server rewrites.
+/** The old addresses, /decks/..., (bookmarks, links the web app gave out before) go to the same place under /collections/.... */
+function OldDecksLink() {
+  const { pathname, search } = useLocation();
+  return <Navigate to={`${pathname.replace(/^\/decks/, '/collections')}${search}`} replace />;
+}
+
+// HashRouter (URLs like /#/collections/1) works from Capacitor's local files with no server rewrites.
 export default function App() {
   return (
     <DatabaseProvider>
@@ -61,12 +67,12 @@ export default function App() {
                 <Routes>
                   <Route element={<AppShell />}>
                     <Route index element={<DecksPage />} />
-                    <Route path="decks/new" element={<DeckFormPage />} />
-                    <Route path="decks/:id" element={<DeckHomePage />} />
-                    <Route path="decks/:id/cards" element={<CardBrowsePage />} />
-                    <Route path="decks/:id/edit" element={<DeckFormPage />} />
-                    <Route path="decks/:id/study" element={<StudyRedirect />} />
-                    <Route path="decks/:id/study/:mode" element={<StudySessionPage />} />
+                    <Route path="collections/new" element={<DeckFormPage />} />
+                    <Route path="collections/:id" element={<DeckHomePage />} />
+                    <Route path="collections/:id/cards" element={<CardBrowsePage />} />
+                    <Route path="collections/:id/edit" element={<DeckFormPage />} />
+                    <Route path="collections/:id/study" element={<StudyRedirect />} />
+                    <Route path="collections/:id/study/:mode" element={<StudySessionPage />} />
                     <Route path="cards/new" element={<CardFormPage />} />
                     <Route path="cards/:id/edit" element={<CardFormPage />} />
                     <Route path="stats" element={<StatisticsPage />} />
@@ -82,6 +88,7 @@ export default function App() {
                     <Route path="settings/voice" element={<VoicePage />} />
                     <Route path="settings/privacy" element={<PrivacyPage />} />
                     <Route path="welcome" element={<OnboardingPage />} />
+                    <Route path="decks/*" element={<OldDecksLink />} />
                     <Route path="*" element={<NotFound />} />
                   </Route>
                 </Routes>

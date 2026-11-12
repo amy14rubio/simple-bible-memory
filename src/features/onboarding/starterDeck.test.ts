@@ -27,10 +27,10 @@ describe('the starter deck text', () => {
 });
 
 describe('addStarterDeck()', () => {
-  it('adds an English deck with every verse, titled "Starter deck!"', async () => {
+  it('adds an English collection with every verse, titled "Starter collection!"', async () => {
     expect(await addStarterDeck(repos, 'en')).toBe(true);
     const [deck] = await repos.decks.list();
-    expect(deck).toMatchObject({ title: 'Starter deck!', description: "If you're new to the app, start here!", translationCode: 'WEB', bibleLanguage: 'en' });
+    expect(deck).toMatchObject({ title: 'Starter collection!', description: "If you're new to the app, start here!", translationCode: 'WEB', bibleLanguage: 'en' });
     const cards = await repos.cards.listByDeck(deck!.id);
     expect(cards.map((c) => c.reference)).toEqual(STARTER_TEXT.en.cards.map((c) => c.reference)); // in order
     expect(cards[0]!.verseText).toBe(STARTER_TEXT.en.cards[0]!.verseText);

@@ -13,15 +13,15 @@ async function seed(page: Page) {
   await page.addInitScript(([id, d]) => { if (!localStorage.getItem('sbm-fake-cloud')) localStorage.setItem('sbm-fake-cloud', JSON.stringify({ user: null, decks: { [id as string]: d }, offline: false })); }, [ID, publicDeck] as const);
 }
 
-test.describe('the Share button on a public deck', () => {
+test.describe('the Share button on a public collection', () => {
   test.beforeEach(async ({ page }) => { await seed(page); });
 
   test('in a browser it copies the link and says so, even where the browser has its own share menu', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.addInitScript(() => { (window as unknown as { __shared: number }).__shared = 0; Object.defineProperty(navigator, 'share', { value: () => { (window as unknown as { __shared: number }).__shared++; return Promise.resolve(); }, configurable: true }); });
     await page.goto(`/#/discover/${ID}`);
-    const flag = page.getByRole('button', { name: 'Report this deck' });
-    const share = page.getByRole('button', { name: 'Share this deck' });
+    const flag = page.getByRole('button', { name: 'Report this collection' });
+    const share = page.getByRole('button', { name: 'Share this collection' });
     await expect(share).toBeVisible();
     expect((await share.boundingBox())!.x).toBeLessThan((await flag.boundingBox())!.x); // next to the flag, on its left
     await share.click();
@@ -45,7 +45,7 @@ test.describe('the page a shared link opens', () => {
   const firestore = (page: Page, body: unknown, status = 200) => page.route('https://firestore.googleapis.com/**', (r) => r.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) }));
   const deckDoc = { fields: { title: { stringValue: 'Family & Relationships' }, description: { stringValue: 'Verses for families.\nMemorize them together.' }, cardCount: { integerValue: '13' } } };
 
-  test('on a computer: the deck name, open on the web, and the store', async ({ page }) => {
+  test('on a computer: the collection name, open on the web, and the store', async ({ page }) => {
     await firestore(page, deckDoc);
     await page.goto(`/deck-link.html?id=${ID}`);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Family & Relationships');
@@ -66,29 +66,29 @@ test.describe('the page a shared link opens', () => {
     });
   });
 
-  test('a deck that is gone says so, and offers nothing to open', async ({ page }) => {
+  test('a collection that is gone says so, and offers nothing to open', async ({ page }) => {
     await firestore(page, { error: { code: 404 } }, 404);
     await page.goto(`/deck-link.html?id=${ID}`);
-    await expect(page.getByText('This deck can’t be found. It may have been removed.')).toBeVisible();
+    await expect(page.getByText('This collection can’t be found. It may have been removed.')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Open in your browser' })).toBeHidden();
   });
 
-  test('a deck hidden after a report is treated as gone', async ({ page }) => {
+  test('a collection hidden after a report is treated as gone', async ({ page }) => {
     await firestore(page, { fields: { title: { stringValue: 'X' }, hidden: { booleanValue: true } } });
     await page.goto(`/deck-link.html?id=${ID}`);
-    await expect(page.getByText('This deck can’t be found. It may have been removed.')).toBeVisible();
+    await expect(page.getByText('This collection can’t be found. It may have been removed.')).toBeVisible();
   });
 
   test('if the catalogue cannot be reached the page still works', async ({ page }) => {
     await page.route('https://firestore.googleapis.com/**', (r) => r.abort());
     await page.goto(`/deck-link.html?id=${ID}`);
     await expect(page.getByRole('link', { name: 'Open in your browser' })).toBeVisible();
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('A Bible memory deck');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('A Bible memory collection');
   });
 
   test('a made-up id is not trusted', async ({ page }) => {
     await page.goto('/deck-link.html?id=../../etc');
-    await expect(page.getByText('This deck can’t be found. It may have been removed.')).toBeVisible();
+    await expect(page.getByText('This collection can’t be found. It may have been removed.')).toBeVisible();
   });
 
   test.describe('in Spanish', () => {

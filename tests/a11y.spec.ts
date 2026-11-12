@@ -15,20 +15,20 @@ for (const scheme of ['light', 'dark'] as const) {
     const page = await ctx.newPage();
 
     await page.goto('/');
-    await expect(page.getByText('No decks yet')).toBeVisible();
+    await expect(page.getByText('No collections yet')).toBeVisible();
     await audit(page, 'empty home');
     await page.goto('/#/stats');
     await audit(page, 'empty statistics');
 
-    await page.goto('/#/decks/new');
-    await audit(page, 'new deck form');
-    await page.getByLabel('Title').fill('Audit deck');
+    await page.goto('/#/collections/new');
+    await audit(page, 'new collection form');
+    await page.getByLabel('Title').fill('Audit collection');
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByText('Nothing to study yet')).toBeVisible();
-    await audit(page, 'empty deck');
-    const id = page.url().match(/#\/decks\/([0-9a-f-]{36})$/)![1]!;
+    await audit(page, 'empty collection');
+    const id = page.url().match(/#\/collections\/([0-9a-f-]{36})$/)![1]!;
 
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await page.getByLabel('Verse(s)').fill('John 3:16');
     await page.getByLabel('Passage', { exact: true }).fill('Example verse text typed by the user.');
     await audit(page, 'card form with the Find passage button');
@@ -46,31 +46,31 @@ for (const scheme of ['light', 'dark'] as const) {
     await audit(page, 'card browse with search');
 
     await page.goto('/');
-    await audit(page, 'home with a deck');
+    await audit(page, 'home with a collection');
     await page.getByRole('button', { name: 'Add' }).click();
-    await expect(page.getByRole('button', { name: 'New deck' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'New collection' })).toBeVisible();
     await audit(page, 'home with the add menu open');
     await closeWithEscape(page);
-    await page.getByRole('button', { name: 'Actions for Audit deck' }).click();
-    await expect(page.getByRole('dialog', { name: 'Audit deck' })).toBeVisible();
-    await audit(page, 'deck menu dialog');
+    await page.getByRole('button', { name: 'Actions for Audit collection' }).click();
+    await expect(page.getByRole('dialog', { name: 'Audit collection' })).toBeVisible();
+    await audit(page, 'collection menu dialog');
     await closeWithEscape(page);
 
-    await page.goto(`/#/decks/${id}`);
+    await page.goto(`/#/collections/${id}`);
     await expect(page.getByRole('link', { name: /Flashcard/ })).toBeVisible();
-    await audit(page, 'open deck view');
+    await audit(page, 'open collection view');
 
     await page.getByRole('link', { name: /Flashcard/ }).click();
     await audit(page, 'flashcard front');
     await page.getByRole('button', { name: 'Show answer' }).click();
     await audit(page, 'flashcard back with ratings');
-    await page.goto(`/#/decks/${id}`);
+    await page.goto(`/#/collections/${id}`);
     await page.getByRole('link', { name: /Type/ }).click();
     await page.getByLabel('Type the verse from memory').fill('example verse test typed by user');
     await audit(page, 'type input');
     await page.getByRole('button', { name: 'Show answer' }).click();
     await audit(page, 'type feedback');
-    await page.goto(`/#/decks/${id}`);
+    await page.goto(`/#/collections/${id}`);
     await page.getByRole('link', { name: /Blanks/ }).click();
     await audit(page, 'blanks word bank');
     await tapFirstBankWord(page);
@@ -79,7 +79,7 @@ for (const scheme of ['light', 'dark'] as const) {
     await audit(page, 'blanks result');
 
     // split into separate verses: the preview, and the explanation when it can't split
-    await page.goto(`/#/cards/new?deck=${id}`);
+    await page.goto(`/#/cards/new?collection=${id}`);
     await page.getByLabel('Verse(s)').fill('Psalm 130:1-2');
     await page.getByLabel('Passage', { exact: true }).fill('1 Example one first. 2 Example two second.');
     await audit(page, 'card form with split and add-another buttons');
@@ -97,22 +97,22 @@ for (const scheme of ['light', 'dark'] as const) {
     await page.goto('/#/settings');
     await audit(page, 'settings with card kinds');
     await setCardKinds(page, 'Identify the verse');
-    await page.goto(`/#/decks/${id}/study/flashcard`);
+    await page.goto(`/#/collections/${id}/study/flashcard`);
     await expect(page.getByRole('button', { name: 'Show answer' })).toBeVisible();
     await audit(page, 'identify flashcard front');
     await page.getByRole('button', { name: 'Show answer' }).click();
     await audit(page, 'identify flashcard back');
-    await page.goto(`/#/decks/${id}/study/type`);
+    await page.goto(`/#/collections/${id}/study/type`);
     await page.getByLabel(/Type the verse/).fill('jn 3:16');
     await audit(page, 'identify type input');
     await page.getByRole('button', { name: 'Show answer' }).click();
     await audit(page, 'identify type result');
-    await page.goto(`/#/decks/${id}/study/blanks`);
+    await page.goto(`/#/collections/${id}/study/blanks`);
     await expect(page.getByRole('group', { name: 'Choose the verse' })).toBeVisible();
     await audit(page, 'identify multiple choice');
     await page.getByRole('group', { name: 'Choose the verse' }).getByRole('button').first().click();
     await audit(page, 'identify multiple choice answered');
-    await page.goto(`/#/decks/${id}?practice=1`);
+    await page.goto(`/#/collections/${id}?practice=1`);
     await expect(page.getByRole('heading', { name: 'Extra practice' })).toBeVisible();
     await audit(page, 'extra practice');
 

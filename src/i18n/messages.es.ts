@@ -265,7 +265,8 @@ export const es: Dictionary = {
   'split.error.cannot-split': 'No se pudo separar esta referencia.',
 
   'settings.title': 'Ajustes',
-  'settings.general': 'General',
+  'settings.personalization': 'Personalización',
+  'settings.study': 'Estudio',
   'settings.language': 'Idioma',
   'settings.languageSystem': 'Sistema',
   'settings.languageHint':
@@ -425,10 +426,10 @@ export const es: Dictionary = {
   'toast.unpublished': 'Carpeta retirada',
   'toast.signedIn': 'Sesión iniciada',
   'account.signedInAs': 'Sesión iniciada como {name}',
-  'account.backup.synced': 'Tus carpetas y tu calendario de estudio están respaldados.',
-  'account.backup.syncing': 'Respaldando…',
+  'account.backup.synced': 'Sesión iniciada como {name}. Tus carpetas y tu calendario de estudio están respaldados.',
+  'account.backup.syncing': 'Sesión iniciada como {name}. Respaldando…',
   'account.backup.waiting':
-    'Esperando conexión. Los cambios se respaldarán cuando vuelvas a estar en línea.',
+    'Sesión iniciada como {name}. Esperando conexión. Los cambios se respaldarán cuando vuelvas a estar en línea.',
   'switch.title': 'Otra cuenta',
   'switch.thisAccount': 'esta cuenta',
   'switch.body': 'Este dispositivo tiene carpetas que no están en {who}. ¿Qué debe pasar con ellas?',
@@ -594,7 +595,7 @@ export const es: Dictionary = {
   'difficulty.easy': 'Fácil',
   'difficulty.medium': 'Media',
   'difficulty.hard': 'Difícil',
-  'settings.reminders': 'Recordatorios de estudio',
+  'settings.reminders': 'Notificaciones',
   'reminders.switch': 'Recuérdame estudiar',
   'reminders.unavailable': 'Los recordatorios solo están disponibles en la app móvil.',
   'reminders.defaultMessage': '¡No olvides estudiar tus versículos hoy!',

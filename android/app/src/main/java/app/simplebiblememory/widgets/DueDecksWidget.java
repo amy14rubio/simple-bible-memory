@@ -88,7 +88,7 @@ public class DueDecksWidget extends AppWidgetProvider {
             v.setTextColor(NAME[k], p.foreground);
             v.setTextViewText(COUNT[k], due > 0 ? String.valueOf(due) : "✓");
             v.setTextColor(COUNT[k], due > 0 ? p.foreground : p.muted);
-            v.setOnClickPendingIntent(ROW[k], AddCardWidget.open(context, "simplebiblememory://deck/" + deck.optString("id"), 30 + k));
+            v.setOnClickPendingIntent(ROW[k], AddCardWidget.open(context, "simplebiblememory://collection/" + deck.optString("id"), 30 + k));
         }
         if (fit > 0 && count > show && (spare || fit >= 3)) {
             v.setViewVisibility(R.id.due_more, View.VISIBLE);

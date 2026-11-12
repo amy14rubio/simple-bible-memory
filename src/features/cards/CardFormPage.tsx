@@ -25,7 +25,7 @@ import { isSwitchedOff } from '../../domain/bible/switch';
 import { useLicensedSwitch } from '../bible/remoteSwitch';
 import { SplitDialog } from './SplitDialog';
 
-/** "Add card" (/cards/new?deck=ID) and "Edit card" (/cards/:id/edit). */
+/** "Add card" (/cards/new?collection=ID; the older ?deck=ID still works) and "Edit card" (/cards/:id/edit). */
 export function CardFormPage() {
   const { t } = useI18n();
   const { id } = useParams();
@@ -42,11 +42,11 @@ export function CardFormPage() {
     return (
       <>
         <AppBar title={t('cardForm.add')} back={back} />
-        <EmptyState title={t('cardForm.createDeckFirst')} action={<ButtonLink to="/decks/new">{t('common.newDeck')}</ButtonLink>}>{t('cardForm.cardsLiveInDecks')}</EmptyState>
+        <EmptyState title={t('cardForm.createDeckFirst')} action={<ButtonLink to="/collections/new">{t('common.newDeck')}</ButtonLink>}>{t('cardForm.cardsLiveInDecks')}</EmptyState>
       </>
     );
   }
-  return <CardForm card={data.card} decks={data.decks} initialDeckId={params.get('deck') ?? data.decks[0]!.id} studyCardsPerVerse={data.studyCardsPerVerse} />;
+  return <CardForm card={data.card} decks={data.decks} initialDeckId={params.get('collection') ?? params.get('deck') ?? data.decks[0]!.id} studyCardsPerVerse={data.studyCardsPerVerse} />;
 }
 
 function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: { card?: Card; decks: DeckSummary[]; initialDeckId: string; studyCardsPerVerse: number }) {
