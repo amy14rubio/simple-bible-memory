@@ -5,6 +5,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { useRouteAnnouncer } from './useRouteAnnouncer';
 import { useScrollToTop } from './useScrollToTop';
 import { supportsViewTransitions, useMotion } from './motion';
+import { useWarmStats } from '../features/stats/StatisticsPage';
 import { useFirstLaunchTour } from '../features/onboarding/useFirstLaunchTour';
 import { CreateDrawer } from '../features/create/CreateDrawer';
 import { useReminderSync } from '../features/reminders/useReminderSync';
@@ -28,6 +29,7 @@ export function AppShell() {
   useRouteAnnouncer(main);
   useScrollToTop();
   const motion = useMotion();
+  useWarmStats();
   useFirstLaunchTour();
   useReminderSync();
   useWidgetSync();

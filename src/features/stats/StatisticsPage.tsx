@@ -1,6 +1,6 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useRepositories } from '../../app/repositories';
-import { useAsync } from '../../app/useAsync';
+import { primeCache, useAsync } from '../../app/useAsync';
 import { AppBar, BackButton, ButtonLink, EmptyState, ErrorMessage, Page } from '../../components/ui';
 import { DeckPicker } from '../../components/DeckPicker';
 // The charting library is large, so it is loaded only when Statistics is opened.
@@ -11,16 +11,29 @@ import { useI18n } from '../../i18n/I18nProvider';
 
 const ALL = 'all';
 
+/** The Statistics screen's data (also loaded quietly after the app starts, so the screen can open with it already there). */
+export async function loadStatsData(settings: ReturnType<typeof useRepositories>['settings'], decks: ReturnType<typeof useRepositories>['decks'], stats: ReturnType<typeof useRepositories>['stats'], scope: string) {
+  const kinds = await loadCardKinds(settings);
+  return { list: await decks.list(), kinds, overview: await stats.overview(scope === ALL ? null : scope, kinds) };
+}
+
+/** After the app has started and been left alone for a moment, loads the Statistics numbers, so the first visit slides in complete. */
+export function useWarmStats() {
+  const { decks, stats, settings } = useRepositories();
+  useEffect(() => {
+    const timer = setTimeout(() => { loadStatsData(settings, decks, stats, ALL).then((data) => primeCache(`stats:${ALL}`, data)).catch(() => {}); }, 1200);
+    return () => clearTimeout(timer);
+  }, [decks, stats, settings]);
+}
+
 export function StatisticsPage() {
   const { t, bookName, language } = useI18n();
   const { decks, stats, settings } = useRepositories();
   const [scope, setScope] = useState(ALL);
   const { data, error, loading } = useAsync(
-    async () => {
-      const kinds = await loadCardKinds(settings);
-      return { list: await decks.list(), kinds, overview: await stats.overview(scope === ALL ? null : scope, kinds) };
-    },
+    () => loadStatsData(settings, decks, stats, scope),
     [scope, decks, stats, settings],
+    `stats:${scope}`,
   );
 
   const back = <BackButton to="/" label={t('common.backToDecks')} />;
@@ -66,7 +79,7 @@ export function StatisticsPage() {
   return (
     <>
       <AppBar back={back} titleSlot={title} />
-      <Page className="space-y-4">
+      <Page className="content-enter space-y-4">
         <dl aria-label={t('stats.summary')} className="grid grid-cols-2 gap-x-6 gap-y-8 rounded-3xl bg-panel px-5 py-8 text-center">
           {headline.map(([label, n]) => (
             <div key={label}>
