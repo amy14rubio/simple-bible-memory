@@ -1,0 +1,27 @@
+import { test, expect } from '@playwright/test';
+
+/** A new screen starts at the top: opening Privacy from the bottom of Settings must not leave it scrolled to the bottom. */
+test.use({ viewport: { width: 390, height: 700 } });
+
+test('a screen opened from the bottom of Settings starts at the top; Back leaves Settings where it was', async ({ page }) => {
+  await page.goto('/#/settings');
+  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'Close' }).first().click({ timeout: 1500 }).catch(() => {}); // the first-visit guide, if it is up
+  const privacy = page.getByRole('link', { name: /Privacy/ });
+  await privacy.scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(100); // Settings is long: this is the bottom of it
+  await privacy.click();
+  await expect(page).toHaveURL(/#\/settings\/privacy$/);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+});
+
+test('changes that keep the same screen do not scroll to the top', async ({ page }) => {
+  await page.goto('/#/settings');
+  await page.getByRole('button', { name: 'Close' }).first().click({ timeout: 1500 }).catch(() => {});
+  await page.getByRole('link', { name: /Privacy/ }).scrollIntoViewIfNeeded();
+  const before = await page.evaluate(() => window.scrollY);
+  await page.getByRole('button', { name: 'Export data' }).click(); // a drawer: the screen behind it stays where it was
+  await expect(page.getByRole('dialog')).toBeVisible();
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThanOrEqual(before - 2);
+});

@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { ChartColumn, LibraryBig, PanelLeftOpen, Plus } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
 import { useRouteAnnouncer } from './useRouteAnnouncer';
+import { useScrollToTop } from './useScrollToTop';
 import { useFirstLaunchTour } from '../features/onboarding/useFirstLaunchTour';
 import { CreateDrawer } from '../features/create/CreateDrawer';
 import { useReminderSync } from '../features/reminders/useReminderSync';
@@ -24,6 +25,7 @@ export function AppShell() {
   const [creating, setCreating] = useState(false);
   const main = useRef<HTMLElement>(null);
   useRouteAnnouncer(main);
+  useScrollToTop();
   useFirstLaunchTour();
   useReminderSync();
   useWidgetSync();
