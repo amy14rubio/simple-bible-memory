@@ -173,29 +173,29 @@ select:focus-visible { outline: none; }
 @keyframes screen-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .screen-fade { animation: screen-fade-in 200ms cubic-bezier(0.2, 0, 0, 1) both; }
 
-/* 'material': the browser's view transition. Only the screen itself (main) moves; the rest of the page stays still. */
-html[data-motion='material'] main { view-transition-name: screen; }
+/* 'material': the browser's view transition. The picture that slides is the visible part of the page (the root), so a screen that was scrolled
+   does not seem to scroll back up as it leaves. The sidebar and the bottom bar have their own names, so they stay still. */
+html[data-motion='material'] [data-vt='sidebar'] { view-transition-name: vt-sidebar; }
+html[data-motion='material'] [data-vt='bottombar'] { view-transition-name: vt-bottombar; }
 html[data-motion='material']::view-transition-old(root),
-html[data-motion='material']::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
-html[data-motion='material']::view-transition-old(screen),
-html[data-motion='material']::view-transition-new(screen) { mix-blend-mode: normal; }
+html[data-motion='material']::view-transition-new(root) { mix-blend-mode: normal; }
 
-@keyframes vt-out-left { to { opacity: 0; transform: translateX(-30px); } }
-@keyframes vt-out-right { to { opacity: 0; transform: translateX(30px); } }
-@keyframes vt-in-right { from { opacity: 0; transform: translateX(30px); } }
-@keyframes vt-in-left { from { opacity: 0; transform: translateX(-30px); } }
+@keyframes vt-out-left { to { opacity: 0; transform: translateX(-14px); } }
+@keyframes vt-out-right { to { opacity: 0; transform: translateX(14px); } }
+@keyframes vt-in-right { from { opacity: 0; transform: translateX(14px); } }
+@keyframes vt-in-left { from { opacity: 0; transform: translateX(-14px); } }
 @keyframes vt-fade-out { to { opacity: 0; } }
-@keyframes vt-fade-through-in { from { opacity: 0; transform: scale(0.96); } }
+@keyframes vt-fade-through-in { from { opacity: 0; transform: scale(0.98); } }
 
 /* going deeper: the old screen leaves to the left as the new one arrives from the right (shared axis) */
-html[data-motion='material'][data-nav='forward']::view-transition-old(screen) { animation: vt-out-left 150ms cubic-bezier(0.4, 0, 1, 1) both; }
-html[data-motion='material'][data-nav='forward']::view-transition-new(screen) { animation: vt-in-right 300ms cubic-bezier(0.2, 0, 0, 1) 60ms both; }
+html[data-motion='material'][data-nav='forward']::view-transition-old(root) { animation: vt-out-left 170ms cubic-bezier(0.4, 0, 1, 1) both; }
+html[data-motion='material'][data-nav='forward']::view-transition-new(root) { animation: vt-in-right 320ms cubic-bezier(0.2, 0, 0, 1) 70ms both; }
 /* going back: the other way round */
-html[data-motion='material'][data-nav='back']::view-transition-old(screen) { animation: vt-out-right 150ms cubic-bezier(0.4, 0, 1, 1) both; }
-html[data-motion='material'][data-nav='back']::view-transition-new(screen) { animation: vt-in-left 300ms cubic-bezier(0.2, 0, 0, 1) 60ms both; }
-/* between the main tabs: fade through, no sliding */
-html[data-motion='material'][data-nav='tab']::view-transition-old(screen) { animation: vt-fade-out 90ms linear both; }
-html[data-motion='material'][data-nav='tab']::view-transition-new(screen) { animation: vt-fade-through-in 210ms cubic-bezier(0.2, 0, 0, 1) 90ms both; }
+html[data-motion='material'][data-nav='back']::view-transition-old(root) { animation: vt-out-right 170ms cubic-bezier(0.4, 0, 1, 1) both; }
+html[data-motion='material'][data-nav='back']::view-transition-new(root) { animation: vt-in-left 320ms cubic-bezier(0.2, 0, 0, 1) 70ms both; }
+/* between the main tabs: fade through, with the lightest zoom */
+html[data-motion='material'][data-nav='tab']::view-transition-old(root) { animation: vt-fade-out 100ms linear both; }
+html[data-motion='material'][data-nav='tab']::view-transition-new(root) { animation: vt-fade-through-in 220ms cubic-bezier(0.2, 0, 0, 1) 100ms both; }
 
 @media (prefers-reduced-motion: reduce) {
   .screen-fade { animation: none; }

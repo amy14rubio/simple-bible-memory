@@ -60,7 +60,7 @@ export function AppShell() {
 
       {showNav && (
         <>
-          <nav aria-label={t('nav.main')} className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background pb-[calc(0.75rem+var(--safe-bottom))]">
+          <nav data-vt="bottombar" aria-label={t('nav.main')} className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background pb-[calc(0.75rem+var(--safe-bottom))]">
             <div className="mx-auto flex max-w-2xl items-center px-4">
               <NavLink to="/" end className={tab}><LibraryBig size={22} aria-hidden />{t('nav.decks')}</NavLink>
               <button

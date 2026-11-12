@@ -14,7 +14,7 @@ export function Sidebar({ onHide, onAdd, adding }: { onHide: () => void; onAdd: 
   const browsing = pathname.endsWith('/cards') && pathname.startsWith('/collections/');
   const inDecks = !browsing && (pathname === '/' || pathname.startsWith('/collections') || pathname.startsWith('/cards') || pathname === '/import');
   return (
-    <aside className="sticky top-0 flex h-dvh w-64 shrink-0 flex-col gap-4 border-r border-border bg-background px-3 pb-[calc(0.75rem+var(--safe-bottom))] pt-[calc(var(--safe-top)+0.5rem)]">
+    <aside data-vt="sidebar" className="sticky top-0 flex h-dvh w-64 shrink-0 flex-col gap-4 border-r border-border bg-background px-3 pb-[calc(0.75rem+var(--safe-bottom))] pt-[calc(var(--safe-top)+0.5rem)]">
       <div className="flex items-center justify-between gap-1 pl-3">
         {/* The logo's heart sits in the middle 684 x 588 of its 1024 x 1024 canvas: cropped to the heart. */}
         <Link to="/" aria-label={t('app.name')} className="relative block aspect-[684/588] w-7 overflow-hidden">

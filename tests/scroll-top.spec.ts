@@ -25,3 +25,18 @@ test('changes that keep the same screen do not scroll to the top', async ({ page
   await expect(page.getByRole('dialog')).toBeVisible();
   expect(await page.evaluate(() => window.scrollY)).toBeGreaterThanOrEqual(before - 2);
 });
+
+test('going Back returns to where the screen was scrolled; a screen opened new still starts at the top', async ({ page }) => {
+  await page.goto('/#/settings');
+  await page.getByRole('button', { name: 'Close' }).first().click({ timeout: 1500 }).catch(() => {});
+  const privacy = page.getByRole('link', { name: /Privacy/ });
+  await privacy.scrollIntoViewIfNeeded();
+  const before = await page.evaluate(() => window.scrollY);
+  expect(before).toBeGreaterThan(100);
+  await privacy.click();
+  await expect(page).toHaveURL(/#\/settings\/privacy$/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0); // new: at the top
+  await page.getByRole('link', { name: 'Back', exact: true }).click();
+  await expect(page).toHaveURL(/#\/settings$/);
+  await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 3000 }).toBeGreaterThan(before - 4); // back: where it was
+});
