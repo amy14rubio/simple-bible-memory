@@ -79,7 +79,7 @@ export function StatisticsPage() {
   return (
     <>
       <AppBar back={back} titleSlot={title} />
-      <Page className="content-enter space-y-4">
+      <Page className="space-y-4">
         <dl aria-label={t('stats.summary')} className="grid grid-cols-2 gap-x-6 gap-y-8 rounded-3xl bg-panel px-5 py-8 text-center">
           {headline.map(([label, n]) => (
             <div key={label}>

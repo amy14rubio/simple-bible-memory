@@ -58,7 +58,7 @@ export function DeckHomePage() {
           {t('deckHome.emptyBody')}
         </EmptyState>
       ) : (
-        <Page className="content-enter space-y-8">
+        <Page className="space-y-8">
           {extraPractice ? (
             <>
               <section aria-labelledby="how" className="space-y-3 text-center">

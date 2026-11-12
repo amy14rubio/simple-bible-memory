@@ -135,7 +135,8 @@ export function Switch({ checked, onChange, labelledBy, disabled }: { checked: b
  * bar), so the last item never sits against the edge. `flush` drops the top padding, for lists that start right under the header.
  */
 export function Page({ children, className = '', flush = false, id }: { children: ReactNode; className?: string; flush?: boolean; id?: string }) {
-  return <div id={id} className={`px-5 py-6 pb-[calc(2.5rem+var(--safe-bottom))] ${flush ? 'pt-0' : ''} ${className}`}>{children}</div>;
+  // content-enter: the sections of a screen rise and fade in one after another when the screen opens (only when screen transitions are on; see tokens.css)
+  return <div id={id} className={`content-enter px-5 py-6 pb-[calc(2.5rem+var(--safe-bottom))] ${flush ? 'pt-0' : ''} ${className}`}>{children}</div>;
 }
 
 const fieldControl = 'w-full rounded-lg border border-border bg-surface px-3.5 py-3 text-base placeholder:text-muted';

@@ -20,6 +20,7 @@ export function MotionRouter({ children }: { children: ReactNode }) {
       from = update.location.pathname;
       if (!animated) { fn(update); return; }
       document.documentElement.dataset.nav = direction;
+      document.documentElement.dataset.navTarget = /\/study\//.test(update.location.pathname) ? 'study' : '';
       // Inside the callback the new screen is drawn at once (flushSync), so the browser can take its picture and slide the two.
       (document as Document & { startViewTransition: (cb: () => void) => unknown }).startViewTransition(() => { flushSync(() => fn(update)); });
     });
