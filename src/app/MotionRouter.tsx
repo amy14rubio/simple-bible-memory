@@ -2,7 +2,21 @@ import { useMemo, type ComponentProps, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import { unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
 import { createHashHistory } from 'history';
+import { dataPending } from './useAsync';
 import { directionOf, getMotion, prefersReducedMotion, supportsViewTransitions } from './motion';
+
+/** Resolves when the new screen has its data (or after 350 ms at most), checked every frame, so the picture that slides in is complete. */
+function screenReady(): Promise<void> {
+  return new Promise((resolve) => {
+    const t0 = performance.now();
+    let frames = 0;
+    const tick = () => {
+      frames++;
+      if ((frames > 2 && dataPending.n <= 0) || performance.now() - t0 > 350) resolve(); else requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+}
 
 /**
  * The app's router: a HashRouter (addresses like /#/collections/1 work from Capacitor's local files with no server), with one addition. When the
@@ -21,7 +35,7 @@ export function MotionRouter({ children }: { children: ReactNode }) {
       if (!animated) { fn(update); return; }
       document.documentElement.dataset.nav = direction;
       // Inside the callback the new screen is drawn at once (flushSync), so the browser can take its picture and slide the two.
-      (document as Document & { startViewTransition: (cb: () => void) => unknown }).startViewTransition(() => { flushSync(() => fn(update)); });
+      (document as Document & { startViewTransition: (cb: () => Promise<void>) => unknown }).startViewTransition(async () => { flushSync(() => fn(update)); await screenReady(); });
     });
     return h;
   }, []);
