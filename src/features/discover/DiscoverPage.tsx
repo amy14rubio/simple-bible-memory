@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ListFilter, Search } from 'lucide-react';
-import { AppBar, BackButton, Button, EmptyState, ErrorMessage, IconButton, Page, SearchBar } from '../../components/ui';
+import { AppBar, BackButton, Button, EmptyState, ErrorMessage, IconButton, Page, SearchBar, Bar } from '../../components/ui';
 import { loadBackends, sharingAvailable } from '../sharing/backend';
 import { useI18n } from '../../i18n/I18nProvider';
 import { NO_FILTERS, type DiscoverFilters, type PublicDeck } from './types';
@@ -79,7 +79,17 @@ export function DiscoverPage() {
         <Page className="space-y-4 pt-4">
           <h2 className="sr-only">{heading}</h2>
           <p role="status" className="sr-only">{state === 'ready' ? t('discover.count', { count: decks.length }) : ''}</p>
-          {state === 'loading' && <p role="status" className="text-muted">{t('discover.loading')}</p>}
+          {state === 'loading' && (
+            <>
+              <p role="status" className="sr-only">{t('discover.loading')}</p>
+              {/* the shapes of the collections that will be here, so nothing pops in */}
+              <ul aria-hidden className="-mx-5">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <li key={i} className="border-b border-border px-5 py-4"><Bar className="h-5 w-2/3" /><Bar className="mt-2 h-4 w-1/2" /><Bar className="mt-2 h-4 w-full" /></li>
+                ))}
+              </ul>
+            </>
+          )}
           {state === 'error' && (
             <div className="space-y-3">
               <ErrorMessage error={t('discover.error')} />

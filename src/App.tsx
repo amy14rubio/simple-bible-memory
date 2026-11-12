@@ -1,5 +1,4 @@
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
-import { MotionRouter } from './app/MotionRouter';
+import { HashRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { DatabaseProvider } from './app/DatabaseProvider';
 import { RepositoriesProvider } from './app/repositories';
 import { ThemeProvider } from './app/theme';
@@ -64,7 +63,7 @@ export default function App() {
             <ThemeProvider settings={settings}>
             <FontProvider settings={settings}>
               <Toasts>
-              <MotionRouter>
+              <HashRouter>
                 <Routes>
                   <Route element={<AppShell />}>
                     <Route index element={<DecksPage />} />
@@ -93,7 +92,7 @@ export default function App() {
                     <Route path="*" element={<NotFound />} />
                   </Route>
                 </Routes>
-              </MotionRouter>
+              </HashRouter>
               </Toasts>
             </FontProvider>
             </ThemeProvider>

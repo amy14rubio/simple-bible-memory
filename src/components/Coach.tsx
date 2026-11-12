@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRepositories } from '../app/repositories';
 import { X } from 'lucide-react';
 import { Button, IconButton } from './ui';
@@ -94,7 +95,17 @@ export function SettingsCoach({ onClose }: { onClose: () => void }) {
 }
 export const DeckCoach = ({ onClose }: { onClose: () => void }) => <Coach form="deck-form" all={DECK_STEPS} doneLabel="coach.add.done" onClose={onClose} />;
 
-function Coach({ form, all, autofill, doneLabel, onClose, resumeKey }: { form: string; all: CoachStep[]; autofill?: boolean; doneLabel: MessageKey; onClose: () => void; resumeKey?: string }) {
+/**
+ * The guide is drawn outside the screen (on the page itself), so it never slides with it, and it appears once the screen has finished arriving (300 ms),
+ * so its spotlight is measured on a screen that is standing still.
+ */
+function Coach(props: Parameters<typeof CoachSteps>[0]) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setReady(true), 320); return () => clearTimeout(t); }, []);
+  return ready ? createPortal(<CoachSteps {...props} />, document.body) : null;
+}
+
+function CoachSteps({ form, all, autofill, doneLabel, onClose, resumeKey }: { form: string; all: CoachStep[]; autofill?: boolean; doneLabel: MessageKey; onClose: () => void; resumeKey?: string }) {
   const { t } = useI18n();
   // Which steps there are follows the screen: a field that is not there is left out, and so is the advice for the other Autofill setting.
   const steps = all.filter((s) => (s.autofill === undefined || s.autofill === autofill) && find(form, s.anchor));

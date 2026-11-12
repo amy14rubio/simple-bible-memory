@@ -1,44 +1,13 @@
-import { useSyncExternalStore } from 'react';
-
 /**
- * Screen transitions (a prototype, to feel the options). 'off' is how the app has always behaved: one screen replaces the other at once.
- * 'fade' is a quiet 200ms fade-in with a small rise on the new screen. 'material' follows Google's Material motion: going deeper slides the
- * old screen out and the new one in from the right, going back reverses it, and switching between the main tabs fades through.
- * The switch (Settings, bottom) is shown only in a build made with VITE_MOTION_PROTOTYPE=1; every other build is 'off'.
+ * Screen transitions. A screen you go to slides in and fades in (Material motion's "shared axis", with only the new screen moving, so the screen
+ * is never covered by a picture and every tap works at once): deeper, or to a later main tab, comes in from the right; back, or to an earlier tab,
+ * from the left. The styles are in tokens.css (`.screen-root`); AppShell says which way a navigation goes. People who ask their phone for reduced
+ * motion get none.
  */
-export type Motion = 'off' | 'fade' | 'material';
-export const MOTION_PROTOTYPE = import.meta.env.VITE_MOTION_PROTOTYPE === '1';
-
-const KEY = 'sbm-motion';
-const read = (): Motion => {
-  if (!MOTION_PROTOTYPE) return 'off';
-  try {
-    const v = localStorage.getItem(KEY);
-    return v === 'off' || v === 'fade' || v === 'material' ? v : 'fade';
-  } catch {
-    return 'fade';
-  }
-};
-
-let current: Motion = read();
-const listeners = new Set<() => void>();
-
-export const getMotion = () => current;
-export function setMotion(next: Motion) {
-  current = next;
-  try { localStorage.setItem(KEY, next); } catch { /* the choice is just not remembered */ }
-  document.documentElement.dataset.motion = next;
-  listeners.forEach((l) => l());
-}
-export const useMotion = () => useSyncExternalStore((cb) => { listeners.add(cb); return () => { listeners.delete(cb); }; }, getMotion, getMotion);
-if (typeof document !== 'undefined') document.documentElement.dataset.motion = current;
-
-/** The browser's own cross-fade between two states of the page (Chrome and Android WebView 111+, Safari 18+). */
-export const supportsViewTransitions = () => typeof document !== 'undefined' && 'startViewTransition' in document;
 export const prefersReducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export type Direction = 'forward' | 'back' | 'tab';
-/** The main tabs, in order: Collections, then Statistics. Switching between them slides the way the tabs lie (to the right going to Statistics). */
+export type Direction = 'forward' | 'back';
+/** The main tabs, in order: Collections, then Statistics. Switching between them goes the way the tabs lie (to the right going to Statistics). */
 const TABS = ['/', '/stats'];
 const depth = (p: string) => p.split('/').filter(Boolean).length;
 /** Which way a navigation goes: deeper or to a later tab (forward), up or to an earlier tab (back). */

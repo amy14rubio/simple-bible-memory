@@ -113,6 +113,14 @@ export function HiddenClose({ label, ...props }: { label: string } & ButtonHTMLA
   return <button type="button" className="fixed inset-x-0 top-0 z-10 h-10 cursor-default overflow-hidden bg-transparent text-[0px]" {...props}>{label}</button>;
 }
 
+/**
+ * A soft grey bar that stands where text will be while a screen loads, in the same size and place, so the real content replaces it without
+ * anything shifting. It is only a shape (no animation, hidden from screen readers).
+ */
+export function Bar({ className = '' }: { className?: string }) {
+  return <div aria-hidden className={`later rounded-md bg-surface ${className}`} />;
+}
+
 /** An on/off switch. Give it the id of the text that labels it. */
 export function Switch({ checked, onChange, labelledBy, disabled }: { checked: boolean; onChange: (checked: boolean) => void; labelledBy: string; disabled?: boolean }) {
   return (
@@ -134,9 +142,8 @@ export function Switch({ checked, onChange, labelledBy, disabled }: { checked: b
  * The padding around a screen's content. The bottom leaves room for the phone's gesture bar (like the header does for the status
  * bar), so the last item never sits against the edge. `flush` drops the top padding, for lists that start right under the header.
  */
-export function Page({ children, className = '', flush = false, id }: { children: ReactNode; className?: string; flush?: boolean; id?: string }) {
-  // content-enter: the sections of a screen rise and fade in one after another when the screen opens (only when screen transitions are on; see tokens.css)
-  return <div id={id} className={`content-enter px-5 py-6 pb-[calc(2.5rem+var(--safe-bottom))] ${flush ? 'pt-0' : ''} ${className}`}>{children}</div>;
+export function Page({ children, className = '', flush = false, id, busy = false }: { children: ReactNode; className?: string; flush?: boolean; id?: string; /** The screen is still loading (a screen reader is told). */ busy?: boolean }) {
+  return <div id={id} aria-busy={busy || undefined} className={`${busy ? 'later ' : ''}px-5 py-6 pb-[calc(2.5rem+var(--safe-bottom))] ${flush ? 'pt-0' : ''} ${className}`}>{children}</div>;
 }
 
 const fieldControl = 'w-full rounded-lg border border-border bg-surface px-3.5 py-3 text-base placeholder:text-muted';

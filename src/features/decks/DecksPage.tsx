@@ -8,7 +8,7 @@ import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { useRefreshOnWrites } from '../../app/useRefreshOnWrites';
-import { AppBar, ButtonLink, EmptyState, ErrorMessage, IconButton, IconLink, SearchBar } from '../../components/ui';
+import { AppBar, ButtonLink, EmptyState, ErrorMessage, IconButton, IconLink, SearchBar, Bar } from '../../components/ui';
 import { DeckMenu } from './DeckMenu';
 import { loadCardKinds } from '../study/cardKinds';
 import { loadNewPerDay } from '../study/newPerDay';
@@ -215,6 +215,16 @@ export function DecksPage() {
         />
       )}
       {error && <div className="p-5"><ErrorMessage error={error} /></div>}
+      {/* While the list loads, the shapes of its rows, so nothing pops in. */}
+      {loading && !data && !error && (
+        <ul aria-hidden className={`wide:grid wide:gap-3 wide:p-5 ${wide ? 'wide:grid-cols-2' : ''}`}>
+          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+            <li key={i} className="flex items-center justify-between gap-4 border-b border-border py-3 pl-5 pr-7 min-h-16 wide:rounded-xl wide:border">
+              <Bar className="h-5 w-40" /><Bar className="h-5 w-6" />
+            </li>
+          ))}
+        </ul>
+      )}
       {!loading && data?.length === 0 && (
         <EmptyState title={t('decks.emptyTitle')} action={<ButtonLink to="/collections/new">{t('decks.emptyAction')}</ButtonLink>}>
           {t('decks.emptyBody')}
