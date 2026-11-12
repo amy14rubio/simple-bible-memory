@@ -120,7 +120,10 @@ function CoachSteps({ form, all, autofill, doneLabel, onClose, resumeKey }: { fo
   const measure = useCallback(() => {
     const el = step && find(form, step.anchor);
     if (!el) return;
-    const r = el.getBoundingClientRect();
+    let r = el.getBoundingClientRect();
+    // A row inside a grey panel is lit across the whole panel (its sides, not just the row's text), so the highlight reads as the panel's row.
+    const panel = el.closest<HTMLElement>('.bg-panel');
+    if (panel && panel !== el) { const pr = panel.getBoundingClientRect(); r = new DOMRect(pr.left, r.top, pr.width, r.height); }
     setRect(r);
     if (tip.current) setTipHeight(tip.current.offsetHeight);
   }, [step, form]);
@@ -165,7 +168,7 @@ function CoachSteps({ form, all, autofill, doneLabel, onClose, resumeKey }: { fo
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  if (!step || !rect) return steps.length === 0 ? null : <div aria-hidden className="fixed inset-0 z-40 bg-black/50" />;
+  if (!step || !rect) return steps.length === 0 ? null : <div aria-hidden className="coach-fade fixed inset-0 z-40 bg-black/50" />;
 
   const pad = 6;
   const viewport = window.visualViewport?.height ?? window.innerHeight;
@@ -176,7 +179,7 @@ function CoachSteps({ form, all, autofill, doneLabel, onClose, resumeKey }: { fo
     <>
       <div
         aria-hidden
-        className="pointer-events-none fixed z-40 rounded-xl transition-all duration-200"
+        className="coach-fade pointer-events-none fixed z-40 rounded-xl"
         style={{ top: rect.top - pad, left: rect.left - pad, width: rect.width + pad * 2, height: rect.height + pad * 2, boxShadow: '0 0 0 100vmax rgba(0,0,0,0.55)' }}
       />
       <div
@@ -184,7 +187,7 @@ function CoachSteps({ form, all, autofill, doneLabel, onClose, resumeKey }: { fo
         role="dialog"
         aria-labelledby="coach-title"
         aria-describedby="coach-body"
-        className="fixed left-1/2 z-50 w-[min(21rem,calc(100vw-2rem))] -translate-x-1/2 space-y-5 rounded-2xl border border-border bg-background px-5 pb-5 pt-6 shadow-lg"
+        className="coach-fade fixed left-1/2 z-50 w-[min(21rem,calc(100vw-2rem))] -translate-x-1/2 space-y-5 rounded-2xl border border-border bg-background px-5 pb-5 pt-6 shadow-lg"
         style={{ top }}
       >
         <IconButton label={t('common.close')} onClick={onClose} className="absolute right-2 top-2"><X size={20} aria-hidden /></IconButton>
