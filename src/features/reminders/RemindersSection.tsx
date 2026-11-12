@@ -72,7 +72,7 @@ export function RemindersSection() {
 
   return (
     <div role="group" aria-labelledby="reminders">
-      <h2 id="reminders" className="mb-2.5 font-serif text-xl">{t('settings.reminders')}</h2>
+      <h2 id="reminders" className="mb-2.5 px-2 font-serif text-xl">{t('settings.reminders')}</h2>
       <div className="rounded-3xl bg-panel px-5 py-1 [&>*:last-child]:border-b-0">
       {!notifier.available ? (
         <div data-coach="reminders" className={row}>

@@ -25,7 +25,7 @@ import { RemindersSection } from '../reminders/RemindersSection';
 const THEME_LABEL = { system: 'settings.themeSystem', light: 'settings.themeLight', dark: 'settings.themeDark', custom: 'settings.themeCustom' } as const;
 
 const row = 'flex min-h-13 items-center justify-between gap-4 border-b border-border py-1.5';
-const heading = 'mb-2.5 font-serif text-xl';
+const heading = 'mb-2.5 px-2 font-serif text-xl'; // px-2: the title is nudged in a little from the panel's edge
 /** One group of settings: a grey panel like the sections of Statistics, its rows divided by thin lines (none under the last one). */
 const panel = 'rounded-3xl bg-panel px-5 py-1 [&>*:last-child]:border-b-0';
 
@@ -138,7 +138,7 @@ export function SettingsPage() {
         <RemindersSection />
 
         <section aria-labelledby="backup" data-coach="backup">
-          <h2 id="backup" className={heading}><InfoLabel title={t('settings.backup')} info={t('settings.backupBody')} className="py-2" /></h2>
+          <h2 id="backup" className={heading}><InfoLabel title={t('settings.backup')} info={t('settings.backupBody')} className="-my-2.5" /></h2>
           <div className={panel}>
           {/* One line says who is signed in and how the backup is going (when there is no backup status, "Signed in as" stands alone below). */}
           {share.available && share.user && share.accountStatus.state !== 'off' && (
