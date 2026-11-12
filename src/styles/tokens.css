@@ -180,24 +180,19 @@ html[data-motion='material'] [data-vt='bottombar'] { view-transition-name: vt-bo
 html[data-motion='material']::view-transition-old(root),
 html[data-motion='material']::view-transition-new(root) { mix-blend-mode: normal; }
 
-/* Quick and responsive: the old screen leaves in 150 ms; the new one starts 60 ms later and takes 300 ms, with a fast start and a soft landing.
-   The slide is 20px. */
-@keyframes vt-out-left { to { opacity: 0; transform: translateX(-20px); } }
-@keyframes vt-out-right { to { opacity: 0; transform: translateX(20px); } }
-@keyframes vt-in-right { from { opacity: 0; transform: translateX(20px); } }
-@keyframes vt-in-left { from { opacity: 0; transform: translateX(-20px); } }
-@keyframes vt-fade-out { to { opacity: 0; } }
-@keyframes vt-tab-in { from { opacity: 0; transform: scale(0.96); } }
+/* Quick and responsive, and easy to see: the old screen leaves in 150 ms (24px); the new one starts 40 ms later and glides in over 360 ms from 36px
+   away, with a fast start and a soft landing. */
+@keyframes vt-out-left { to { opacity: 0; transform: translateX(-24px); } }
+@keyframes vt-out-right { to { opacity: 0; transform: translateX(24px); } }
+@keyframes vt-in-right { from { opacity: 0; transform: translateX(36px); } }
+@keyframes vt-in-left { from { opacity: 0; transform: translateX(-36px); } }
 
-/* going deeper: the old screen leaves to the left as the new one arrives from the right (shared axis) */
+/* going deeper (or to a later tab): the old screen leaves to the left as the new one arrives from the right (shared axis) */
 html[data-motion='material'][data-nav='forward']::view-transition-old(root) { animation: vt-out-left 150ms cubic-bezier(0.4, 0, 1, 1) both; }
-html[data-motion='material'][data-nav='forward']::view-transition-new(root) { animation: vt-in-right 300ms cubic-bezier(0.2, 0, 0, 1) 60ms both; }
-/* going back: the other way round */
+html[data-motion='material'][data-nav='forward']::view-transition-new(root) { animation: vt-in-right 360ms cubic-bezier(0.2, 0, 0, 1) 40ms both; }
+/* going back (or to an earlier tab): the other way round */
 html[data-motion='material'][data-nav='back']::view-transition-old(root) { animation: vt-out-right 150ms cubic-bezier(0.4, 0, 1, 1) both; }
-html[data-motion='material'][data-nav='back']::view-transition-new(root) { animation: vt-in-left 300ms cubic-bezier(0.2, 0, 0, 1) 60ms both; }
-/* between the main tabs: fade through, with a small zoom */
-html[data-motion='material'][data-nav='tab']::view-transition-old(root) { animation: vt-fade-out 90ms linear both; }
-html[data-motion='material'][data-nav='tab']::view-transition-new(root) { animation: vt-tab-in 210ms cubic-bezier(0.2, 0, 0, 1) 90ms both; }
+html[data-motion='material'][data-nav='back']::view-transition-new(root) { animation: vt-in-left 360ms cubic-bezier(0.2, 0, 0, 1) 40ms both; }
 
 @media (prefers-reduced-motion: reduce) {
   .screen-fade { animation: none; }
