@@ -62,11 +62,11 @@ export function AppShell() {
   }, [pathname]);
   // The bottom bar is for phones and tablets standing up; on a wide screen the sidebar replaces it.
   const showNav = pathname === '/' && !wide;
-  // The deck list, the statistics and Discover use the room; everything else is a reading column.
-  const roomy = pathname === '/' || pathname === '/stats' || pathname === '/discover';
+  // The collection list, the statistics, Discover, a collection's page and its card list use the room; everything else is a reading column.
+  const roomy = pathname === '/' || pathname === '/stats' || pathname === '/discover' || /^\/collections\/(?!new$)[^/]+(\/cards)?$/.test(pathname);
 
   return (
-    <div className={sidebar ? 'flex min-h-dvh' : 'mx-auto min-h-dvh max-w-2xl sm:border-x sm:border-border'}>
+    <div className={sidebar ? 'flex min-h-dvh' : 'mx-auto min-h-dvh max-w-2xl'}>
       {sidebar && open && <Sidebar onHide={() => setOpen(false)} onAdd={() => setCreating(true)} adding={creating} />}
       {sidebar && !open && (
         <div className="sticky top-0 h-dvh w-16 shrink-0 pl-3 pt-[calc(var(--safe-top)+0.75rem)]">
