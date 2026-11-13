@@ -7,7 +7,8 @@ import { usfmBook } from '../../domain/bible/usfm';
  * the translation or language the person reads in, so one verse reference is enough to ask for them.
  * What is asked for is kept on the device (the browser's Cache Storage), so a chapter or an entry is fetched once.
  */
-const API = 'https://bible.helloao.org/api/d';
+const ROOT = 'https://bible.helloao.org/api';
+const API = `${ROOT}/d`;
 const CACHE = 'sbm-word-study-v1';
 
 export interface OriginalWord {
@@ -68,6 +69,14 @@ export async function originalWords(ref: VerseRef): Promise<OriginalWord[]> {
   const data = await getJson<ChapterJson>(`${API}/bsb-interlinear/${ref.code}/${ref.chapter}.json`);
   const verse = data.chapter.content.find((c) => c.verse === ref.verse);
   return (verse?.words ?? []).map((w) => ({ pos: w.pos, language: w.language, text: w.text, transliteration: w.transliteration, parsingFull: w.parsingFull ?? null, strongs: w.strongs, gloss: w.gloss ?? null }));
+}
+
+/** The Berean Standard Bible's own words for a verse (the English the original words are matched to), as plain text. */
+export async function bsbVerseText(ref: VerseRef): Promise<string> {
+  const data = await getJson<{ chapter: { content: { type?: string; number?: number; content?: unknown[] }[] } }>(`${ROOT}/BSB/${ref.code}/${ref.chapter}.json`);
+  const verse = data.chapter.content.find((c) => c.type === 'verse' && c.number === ref.verse);
+  const pieces = (verse?.content ?? []).map((c) => (typeof c === 'string' ? c : typeof (c as { text?: unknown }).text === 'string' ? (c as { text: string }).text : ''));
+  return pieces.join(' ').replace(/\s+/g, ' ').replace(/\s+([,.;:!?])/g, '$1').trim();
 }
 
 /** "G0649" is how the interlinear writes it and also how the lexicon files are named; people know it as G649. */

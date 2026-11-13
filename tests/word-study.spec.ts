@@ -14,6 +14,7 @@ const cors = { 'access-control-allow-origin': '*' };
 
 async function mockApi(page: Page, chapter: unknown = CHAPTER) {
   await page.route('**/bible.helloao.org/api/d/bsb-interlinear/JHN/3.json', (r) => r.fulfill({ json: chapter, headers: cors }));
+  await page.route('**/bible.helloao.org/api/BSB/JHN/3.json', (r) => r.fulfill({ json: { chapter: { content: [{ type: 'verse', number: 16, content: ['For God so loved the world that He gave His one and only', { noteId: 1 }, 'Son.'] }] } }, headers: cors }));
   await page.route('**/bible.helloao.org/api/d/stepbible-lexicon/lexicon/*.json', (r) => r.fulfill({ json: ENTRY, headers: cors }));
 }
 
@@ -34,7 +35,7 @@ async function openFlashcard(page: Page, passage: string) {
   await page.getByRole('button', { name: 'Show answer' }).click();
 }
 
-const drawer = (page: Page) => page.getByRole('dialog', { name: 'Original words' });
+const drawer = (page: Page) => page.getByRole('dialog', { name: 'Word study' });
 
 test('on a card that is not Berean, holding the verse opens a drawer with the page and the two ways to read on; the page is a table of every word', async ({ page }) => {
   await mockApi(page);
@@ -51,7 +52,10 @@ test('on a card that is not Berean, holding the verse opens a drawer with the pa
   await expect(row).toContainText('ēgapēsen');
   await expect(row).toContainText('loved');
   await expect(row).toContainText('G25');
-  await expect(row).toContainText('Aorist Indicative Active');
+  await expect(page.getByRole('heading', { name: 'Interlinear' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'John 3:16' })).toBeVisible(); // the passage is spelled out at the top, in the Berean text the words are matched to
+  await expect(page.getByText('For God so loved the world that He gave His one and only Son.')).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: /Grammar/ })).toHaveCount(0);
   await page.getByRole('button', { name: /ἠγάπησεν/ }).click();
   await expect(drawer(page).getByText('to love, wish well to')).toBeVisible();
   await expect(drawer(page).getByRole('link', { name: 'Explore in Blue Letter Bible' })).toHaveAttribute('href', 'https://www.blueletterbible.org/lexicon/g25/kjv/tr/0-1/');
@@ -129,4 +133,8 @@ test('in the Berean text a word with an original word opens its definition, and 
   // "text" has one: its definition opens at once
   await holdOn('text');
   await expect(drawer(page).getByText('to love, wish well to')).toBeVisible();
+  // from there, the page opens with that word's row marked
+  await drawer(page).getByRole('button', { name: 'See every word of this verse' }).click();
+  await expect(page).toHaveURL(/w=16\.1/);
+  await expect(page.locator('#word-16-1')).toHaveClass(/bg-surface/);
 });

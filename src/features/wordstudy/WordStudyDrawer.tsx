@@ -63,7 +63,7 @@ export function WordStudyDrawer({ target, onClose, hidePage = false }: { target:
           {verse && target && (
             <div className="space-y-2">
               {!hidePage && (
-                <button type="button" className={`${button} bg-primary text-primary-foreground`} onClick={() => { onClose(); navigate(`/word-study?ref=${encodeURIComponent(target.reference)}`); }}>
+                <button type="button" className={`${button} bg-primary text-primary-foreground`} onClick={() => { onClose(); navigate(`/word-study?ref=${encodeURIComponent(target.reference)}${word && target.ref ? `&w=${target.ref.verse}.${word.pos}` : ''}`); }}>
                   {t('wordstudy.page')}
                 </button>
               )}
@@ -71,7 +71,10 @@ export function WordStudyDrawer({ target, onClose, hidePage = false }: { target:
               <ExternalLink href={commentaryUrl(verse)} className={`${button} border border-border`}>{t('wordstudy.commentary')}</ExternalLink>
             </div>
           )}
-          <p className="text-xs text-muted">{t('wordstudy.credit')}</p>
+          <div className="space-y-0.5 text-xs text-muted">
+            <p>{t('wordstudy.creditWords')}</p>
+            <p>{t('wordstudy.creditDefinitions')}</p>
+          </div>
         </div>
         <div className="h-4" />
       </DrawerContent>
