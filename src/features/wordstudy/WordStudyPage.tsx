@@ -2,17 +2,17 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AppBar, BackButton, ErrorMessage, Page } from '../../components/ui';
 import { useI18n } from '../../i18n/I18nProvider';
-import { bsbVerseText, englishKey, lookableEnglish, originalWords, strongsNumber, wordForEnglish, versesOfReference, type OriginalWord, type VerseRef } from './wordData';
+import { bsbVerseText, englishKey, lookableEnglish, originalWords, spanishVerseText, strongsNumber, wordForEnglish, versesOfReference, type OriginalWord, type VerseRef } from './wordData';
 import { WordStudyDrawer, type WordStudyTarget } from './WordStudyDrawer';
 
-interface Loaded { ref: VerseRef; words: OriginalWord[]; text: string }
+interface Loaded { ref: VerseRef; words: OriginalWord[]; text: string; spanish: string }
 
 /**
  * Every original word of a verse (or a few verses) in a table, like an interlinear Bible: the Greek or Hebrew word with its transliteration, the
  * English it stands for in the Berean text, its Strong's number and its grammar. Tapping a row opens the word's definition.
  */
 export function WordStudyPage() {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [params] = useSearchParams();
   const reference = params.get('ref') ?? '';
   const jump = params.get('w'); // "16.2": the word to bring into view, when the page was opened from a press on it
@@ -26,7 +26,7 @@ export function WordStudyPage() {
     if (!refs) return;
     let cancelled = false;
     setVerses('loading');
-    Promise.all(refs.map(async (ref) => ({ ref, words: await originalWords(ref), text: await bsbVerseText(ref).catch(() => '') })))
+    Promise.all(refs.map(async (ref) => ({ ref, words: await originalWords(ref), text: await bsbVerseText(ref).catch(() => ''), spanish: language === 'es' ? await spanishVerseText(ref).catch(() => '') : '' })))
       .then((v) => { if (!cancelled) setVerses(v); })
       .catch(() => { if (!cancelled) setVerses('error'); });
     return () => { cancelled = true; };
@@ -61,14 +61,22 @@ export function WordStudyPage() {
       <Page className="space-y-6">
         <div className="space-y-2">
           <h2 className="font-serif text-2xl">{reference}</h2>
+          <div className="space-y-6 pt-2">
+          {Array.isArray(verses) && verses.some((v) => v.spanish) && (
+            <div className="space-y-1">
+              <p lang="es" className="scripture text-lg">{verses.map((v, i) => (v.spanish ? <span key={i}>{verses.length > 1 && <sup className="mr-1 text-xs text-muted">{v.ref.verse}</sup>}{v.spanish} </span> : null))}</p>
+              <p className="text-sm text-muted">{t('wordstudy.rv1909')}</p>
+            </div>
+          )}
           {Array.isArray(verses) && verses.some((v) => v.text) && (
-            <>
-              <p className="scripture text-lg">
+            <div className="space-y-1">
+              <p lang="en" className="scripture text-lg">
                 {verses.filter((v) => v.text).map((v) => <PassageVerse key={v.ref.verse} verse={v} numbered={verses.length > 1} hint={hint} onWord={tapWord} />)}
               </p>
-              <p className="text-sm text-muted">{t('wordstudy.bsb')} · {t('wordstudy.tapWord')}</p>
-            </>
+              <p className="text-sm text-muted">{t('wordstudy.bsb')} · {t('wordstudy.tapWord')}{language === 'es' && <> {t('wordstudy.tableFollows')}</>}</p>
+            </div>
           )}
+          </div>
         </div>
         {!refs && <p className="text-muted">{t('wordstudy.unsupported')}</p>}
         {refs && verses === 'loading' && <p role="status" className="text-muted">{t('wordstudy.loading')}</p>}

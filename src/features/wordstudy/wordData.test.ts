@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { blueLetterUrl, commentarySite, commentaryUrl, strongsNumber, versesOfReference, wordForEnglish, type OriginalWord } from './wordData';
 import { wordAt } from './useLongPressWord';
@@ -59,5 +60,23 @@ describe('the word under a finger', () => {
     expect(wordAt('For God so loved', 3)?.word).toBe('For');
     expect(wordAt('the world, that', 9)?.word).toBe('world');
     expect(wordAt('a  b', 2)).toBeNull();
+  });
+});
+
+describe('the Spanish Greek dictionary file (UBS, CC BY-SA 4.0)', () => {
+  const file = JSON.parse(readFileSync('web-data/ubs-es/greek.json', 'utf8')) as { license: string; entries: Record<string, { l: string; s: { g?: string[]; d?: string }[] }> };
+  it('has the Greek words by Strong number, in Spanish, under the UBS license', () => {
+    expect(file.license).toBe('CC BY-SA 4.0');
+    expect(Object.keys(file.entries).length).toBeGreaterThan(5300);
+    expect(file.entries['G0025']!.l.normalize('NFC')).toBe('ἀγαπάω'.normalize('NFC'));
+    expect(file.entries['G0025']!.s[0]!.g).toContain('amar');
+    expect(file.entries['G2316']!.s[0]!.g).toContain('Dios');
+  });
+  it('has no leftover UBS markup, and every entry has a sense', () => {
+    for (const [code, entry] of Object.entries(file.entries)) {
+      expect(code).toMatch(/^G\d{4}[a-z]?$/);
+      expect(entry.s.length).toBeGreaterThan(0);
+    }
+    expect(JSON.stringify(file.entries)).not.toMatch(/\{[A-Z]:|\bS:\d|\d{12,}/);
   });
 });

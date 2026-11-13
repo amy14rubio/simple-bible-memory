@@ -14,6 +14,7 @@ const cors = { 'access-control-allow-origin': '*' };
 
 async function mockApi(page: Page, chapter: unknown = CHAPTER) {
   await page.route('**/bible.helloao.org/api/d/bsb-interlinear/JHN/3.json', (r) => r.fulfill({ json: chapter, headers: cors }));
+  await page.route('**/bible.helloao.org/api/spa_r09/JHN/3.json', (r) => r.fulfill({ json: { chapter: { content: [{ type: 'verse', number: 16, content: ['Porque de tal manera amó Dios al mundo.'] }] } }, headers: cors }));
   await page.route('**/bible.helloao.org/api/BSB/JHN/3.json', (r) => r.fulfill({ json: { chapter: { content: [{ type: 'verse', number: 16, content: ['For God so loved the world that He gave His one and only', { noteId: 1 }, 'Son.'] }] } }, headers: cors }));
   await page.route('**/bible.helloao.org/api/d/stepbible-lexicon/lexicon/*.json', (r) => r.fulfill({ json: ENTRY, headers: cors }));
 }
@@ -147,3 +148,42 @@ test('in the Berean text a word with an original word opens its definition, and 
   await expect(page).toHaveURL(/w=16\.1/);
   await expect(page.locator('#word-16-1')).toHaveClass(/bg-surface/);
 });
+
+test('in Spanish the Interlinear page shows the verse in Reina-Valera 1909 and keeps the English text the table follows, with the definitions left in English', async ({ browser }) => {
+  const context = await browser.newContext({ locale: 'es-ES' });
+  const page = await context.newPage();
+  await mockApi(page);
+  await page.goto('/#/word-study?ref=Juan%203%3A16');
+  await expect(page.getByRole('heading', { name: 'Interlineal' })).toBeVisible();
+  await expect(page.getByText('Porque de tal manera amó Dios al mundo.')).toBeVisible();
+  await expect(page.getByText('Reina-Valera 1909')).toBeVisible();
+  await expect(page.getByText('For God so loved the world that He gave His one and only Son.')).toBeVisible();
+  await expect(page.getByText(/La tabla sigue este texto/)).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'Palabra original' })).toBeVisible();
+  await page.getByRole('button', { name: 'loved', exact: true }).click();
+  await expect(page.locator('#word-16-2')).toHaveClass(/bg-surface/);
+  await context.close();
+});
+
+test('in Spanish a Greek word is defined by the United Bible Societies\' own Spanish entry, with the credit and the license; a word without one keeps the English', async ({ browser }) => {
+  const context = await browser.newContext({ locale: 'es-ES' });
+  const page = await context.newPage();
+  await mockApi(page);
+  await page.route('**/ubs-es/greek.json', (r) => r.fulfill({ json: { entries: { G0025: { l: 'ἀγαπάω', s: [{ g: ['amar', 'mirar con afecto'], d: 'tener amor por alguien o algo', c: 'Una nota del diccionario.' }], n: ['Una nota al pie.'] } } }, headers: cors }));
+  await page.goto('/#/word-study?ref=Juan%203%3A16');
+  await page.getByRole('button', { name: /ἠγάπησεν/ }).click();
+  const sheet = page.getByRole('dialog');
+  await expect(sheet.getByText('amar, mirar con afecto')).toBeVisible();
+  await expect(sheet.getByText('tener amor por alguien o algo')).toBeVisible();
+  await expect(sheet.getByText('[1] Una nota al pie.')).toBeVisible();
+  await expect(sheet.getByText('to love, wish well to')).toHaveCount(0); // not the English one
+  await expect(sheet.getByText(/© Sociedades Bíblicas Unidas 2023/)).toBeVisible();
+  await expect(sheet.getByRole('link', { name: 'CC BY-SA 4.0' })).toHaveAttribute('href', 'https://creativecommons.org/licenses/by-sa/4.0/');
+  await page.keyboard.press('Escape');
+  // a word the Spanish dictionary does not have: the English entry, and it says so
+  await page.getByRole('button', { name: /κόσμον/ }).click();
+  await expect(page.getByRole('dialog').getByText(/Definición en inglés/)).toBeVisible();
+  await expect(page.getByRole('dialog').getByText('to love, wish well to')).toBeVisible(); // (the mocked English entry is the same for every word)
+  await context.close();
+});
+

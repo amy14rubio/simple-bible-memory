@@ -71,12 +71,35 @@ export async function originalWords(ref: VerseRef): Promise<OriginalWord[]> {
   return (verse?.words ?? []).map((w) => ({ pos: w.pos, language: w.language, text: w.text, transliteration: w.transliteration, parsingFull: w.parsingFull ?? null, strongs: w.strongs, gloss: w.gloss ?? null }));
 }
 
-/** The Berean Standard Bible's own words for a verse (the English the original words are matched to), as plain text. */
-export async function bsbVerseText(ref: VerseRef): Promise<string> {
-  const data = await getJson<{ chapter: { content: { type?: string; number?: number; content?: unknown[] }[] } }>(`${ROOT}/BSB/${ref.code}/${ref.chapter}.json`);
+/** A verse's text in one of the free translations the API has ("BSB", "spa_r09"), as plain text. */
+export async function verseText(translation: string, ref: VerseRef): Promise<string> {
+  const data = await getJson<{ chapter: { content: { type?: string; number?: number; content?: unknown[] }[] } }>(`${ROOT}/${translation}/${ref.code}/${ref.chapter}.json`);
   const verse = data.chapter.content.find((c) => c.type === 'verse' && c.number === ref.verse);
   const pieces = (verse?.content ?? []).map((c) => (typeof c === 'string' ? c : typeof (c as { text?: unknown }).text === 'string' ? (c as { text: string }).text : ''));
   return pieces.join(' ').replace(/\s+/g, ' ').replace(/\s+([,.;:!?])/g, '$1').trim();
+}
+
+/** The Berean Standard Bible's own words for a verse (the English the original words are matched to). */
+export const bsbVerseText = (ref: VerseRef) => verseText('BSB', ref);
+
+/** The Reina-Valera 1909 (public domain), the Spanish text shown with the table: no free Spanish Bible is matched word by word to the original words. */
+export const spanishVerseText = (ref: VerseRef) => verseText('spa_r09', ref);
+
+/** One sense in the UBS's Spanish dictionary: its glosses, short definition and comment. */
+export interface UbsSense { g?: string[]; d?: string; c?: string }
+export interface UbsEntry { l: string; s: UbsSense[]; n?: string[] }
+
+/**
+ * The Spanish dictionaries (United Bible Societies, CC BY-SA 4.0) are files of the website, not part of the app (web-data/ubs-es/): one file for the
+ * Greek New Testament, keyed by Strong's number. In development the dev server serves them; otherwise they come from the website.
+ */
+const UBS_HOST = import.meta.env.DEV ? '' : 'https://simple-bible-memory.web.app';
+export async function ubsEntry(strongs: string): Promise<UbsEntry | null> {
+  if (!strongs.startsWith('G')) return null; // the Hebrew one is not in yet
+  try {
+    const data = await getJson<{ entries: Record<string, UbsEntry> }>(`${UBS_HOST}/ubs-es/greek.json`);
+    return data.entries[strongs] ?? null;
+  } catch { return null; }
 }
 
 /** "G0649" is how the interlinear writes it and also how the lexicon files are named; people know it as G649. */

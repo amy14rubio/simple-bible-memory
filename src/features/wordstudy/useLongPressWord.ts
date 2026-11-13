@@ -30,7 +30,7 @@ export function wordAt(text: string, offset: number): { word: string; place: num
  * and the system's own press-to-select menu is turned off on this text (the element needs `select-none` and `[-webkit-touch-callout:none]`).
  */
 export function useLongPressWord(onWord: (word: string, place: number) => void) {
-  const timer = useRef<number>();
+  const timer = useRef<number | undefined>(undefined);
   const start = useRef<{ x: number; y: number } | null>(null);
   const cancel = useCallback(() => { window.clearTimeout(timer.current); start.current = null; }, []);
 
