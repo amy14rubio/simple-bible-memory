@@ -130,7 +130,7 @@ export const en = {
   'wordstudy.blueLetter': 'Explore in Blue Letter Bible',
   'wordstudy.commentary': 'Explore commentaries in {site}',
   'wordstudy.creditWords': 'Words: Berean Interlinear Bible (public domain).',
-  'wordstudy.creditDefinitions': 'Definitions: STEPBible Brief Lexicons, Tyndale House, CC BY 4.0.',
+  'wordstudy.creditDefinitions': 'Definitions: STEPBible Brief Lexicons (Translators Brief Lexicons of Extended Strongs), from Tyndale House, Cambridge, adapted to this format by the Free Use Bible API. Not endorsed by STEPBible.',
   'wordstudy.bsb': 'Berean Standard Bible',
   'wordstudy.tapWord': 'Tap a word to find it in the table.',
   'wordstudy.sectionDefinition': 'Definition',

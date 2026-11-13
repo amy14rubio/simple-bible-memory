@@ -120,7 +120,7 @@ export const es: Dictionary = {
   'wordstudy.blueLetter': 'Explorar interlineal en La Biblia Todo',
   'wordstudy.commentary': 'Explorar comentarios en {site}',
   'wordstudy.creditWords': 'Palabras: Berean Interlinear Bible (dominio público).',
-  'wordstudy.creditDefinitions': 'Definiciones: STEPBible Brief Lexicons, Tyndale House, CC BY 4.0.',
+  'wordstudy.creditDefinitions': 'Definiciones (en inglés): STEPBible Brief Lexicons (Translators Brief Lexicons of Extended Strongs), de Tyndale House, Cambridge, adaptados a este formato por la Free Use Bible API. STEPBible no respalda esta app.',
   'wordstudy.bsb': 'Berean Standard Bible (en inglés)',
   'wordstudy.tapWord': 'Toca una palabra para encontrarla en la tabla.',
   'wordstudy.sectionDefinition': 'Definición',
