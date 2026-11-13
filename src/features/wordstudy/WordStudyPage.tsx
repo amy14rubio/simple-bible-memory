@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AppBar, BackButton, ErrorMessage, Page } from '../../components/ui';
 import { useI18n } from '../../i18n/I18nProvider';
-import { bsbVerseText, originalWords, strongsNumber, versesOfReference, type OriginalWord, type VerseRef } from './wordData';
+import { bsbVerseText, englishKey, lookableEnglish, originalWords, strongsNumber, wordForEnglish, versesOfReference, type OriginalWord, type VerseRef } from './wordData';
 import { WordStudyDrawer, type WordStudyTarget } from './WordStudyDrawer';
 
 interface Loaded { ref: VerseRef; words: OriginalWord[]; text: string }
@@ -17,6 +17,7 @@ export function WordStudyPage() {
   const reference = params.get('ref') ?? '';
   const jump = params.get('w'); // "16.2": the word to bring into view, when the page was opened from a press on it
   const jumped = useRef(false);
+  const [marked, setMarked] = useState<string | null>(jump); // "16.2": the row that is shaded
   const refs = versesOfReference(reference);
   const [verses, setVerses] = useState<Loaded[] | 'loading' | 'error'>('loading');
   const [target, setTarget] = useState<WordStudyTarget | null>(null);
@@ -39,6 +40,21 @@ export function WordStudyPage() {
     document.getElementById(`word-${jump.replace('.', '-')}`)?.scrollIntoView({ block: 'center', behavior: 'instant' as ScrollBehavior });
   }, [verses, jump]);
 
+  // A word of the passage was tapped: its row in the table is shaded and brought into view. A word with no original word underlines the ones that have one.
+  const [hint, setHint] = useState(false);
+  useEffect(() => {
+    if (!hint) return;
+    const timer = window.setTimeout(() => setHint(false), 3000);
+    return () => window.clearTimeout(timer);
+  }, [hint]);
+  const tapWord = ({ ref, words, text }: Loaded, token: string, start: number) => {
+    const found = wordForEnglish(words, token, text.length > 1 ? start / (text.length - 1) : 0);
+    if (!found) { setHint(true); return; }
+    const key = `${ref.verse}.${found.pos}`;
+    setMarked(key);
+    document.getElementById(`word-${ref.verse}-${found.pos}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  };
+
   return (
     <>
       <AppBar title={t('wordstudy.pageTitle')} back={<BackButton label={t('common.back')} />} />
@@ -47,8 +63,10 @@ export function WordStudyPage() {
           <h2 className="font-serif text-2xl">{reference}</h2>
           {Array.isArray(verses) && verses.some((v) => v.text) && (
             <>
-              <p className="scripture text-lg">{verses.map((v) => v.text).filter(Boolean).join(' ')}</p>
-              <p className="text-sm text-muted">{t('wordstudy.bsb')}</p>
+              <p className="scripture text-lg">
+                {verses.filter((v) => v.text).map((v) => <PassageVerse key={v.ref.verse} verse={v} numbered={verses.length > 1} hint={hint} onWord={tapWord} />)}
+              </p>
+              <p className="text-sm text-muted">{t('wordstudy.bsb')} · {t('wordstudy.tapWord')}</p>
             </>
           )}
         </div>
@@ -69,7 +87,7 @@ export function WordStudyPage() {
                 </thead>
                 <tbody>
                   {words.map((w) => (
-                    <tr key={w.pos} id={`word-${ref.verse}-${w.pos}`} className={`border-b border-border align-top ${jump === `${ref.verse}.${w.pos}` ? 'bg-surface' : ''}`}>
+                    <tr key={w.pos} id={`word-${ref.verse}-${w.pos}`} className={`border-b border-border align-top ${marked === `${ref.verse}.${w.pos}` ? 'bg-surface' : ''}`}>
                       <th scope="row" className="py-2.5 pr-3 text-left font-normal">
                         <button type="button" onClick={() => setTarget({ reference: `${ref.book} ${ref.chapter}:${ref.verse}`, ref, word: w })} className="block text-left">
                           <span lang={w.language === 'hebrew' ? 'he' : 'el'} dir={w.language === 'hebrew' ? 'rtl' : 'ltr'} className="block font-serif text-xl leading-tight underline decoration-dotted underline-offset-4">{w.text}</span>
@@ -89,4 +107,27 @@ export function WordStudyPage() {
       <WordStudyDrawer target={target} onClose={() => setTarget(null)} hidePage />
     </>
   );
+}
+
+/** One verse of the passage, each word a button: the ones with an original word are underlined softly, and tapping one finds its row in the table. */
+function PassageVerse({ verse, numbered, hint, onWord }: { verse: Loaded; numbered: boolean; hint: boolean; onWord: (verse: Loaded, token: string, start: number) => void }) {
+  const lookable = lookableEnglish(verse.words);
+  let at = 0;
+  const pieces = verse.text.split(/(\p{L}[\p{L}\p{M}'’-]*)/u).map((piece, i) => {
+    const start = at;
+    at += piece.length;
+    if (i % 2 === 0) return piece;
+    const has = lookable.has(englishKey(piece));
+    return (
+      <button
+        key={i}
+        type="button"
+        onClick={() => onWord(verse, piece, start)}
+        className={`inline rounded-sm p-0 text-left ${has ? `underline decoration-dotted underline-offset-4 ${hint ? 'decoration-2' : 'decoration-1'}` : hint ? 'opacity-50' : ''}`}
+      >
+        {piece}
+      </button>
+    );
+  });
+  return <>{numbered && <sup className="mr-1 text-xs text-muted">{verse.ref.verse}</sup>}{pieces} </>;
 }

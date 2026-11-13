@@ -37,46 +37,53 @@ export function WordStudyDrawer({ target, onClose, hidePage = false }: { target:
   const verse = target?.ref ?? (target ? versesOfReference(target.reference)?.[0] : undefined);
   const sense = entry && entry !== 'loading' ? entry.senses[0] : undefined;
   const lang = word?.language === 'hebrew' ? 'he' : 'el';
+  // On the table page the title is the English the word has in the Berean text ("loved"); everywhere else (and for a word with no English), the verse.
+  const english = hidePage ? word?.gloss?.replace(/[[\]{}]/g, '').trim() : undefined;
+  const title = english || target?.reference || t('wordstudy.title');
 
   return (
     <Drawer open={open} onOpenChange={(o) => { if (!o) onClose(); }} showSwipeHandle>
-      <DrawerContent className="mx-auto max-w-2xl pb-[calc(0.75rem+var(--safe-bottom))]" closeLabel={t('common.close')}>
+      <DrawerContent className="mx-auto max-h-[90dvh] max-w-2xl overflow-y-auto pb-[calc(1.5rem+var(--safe-bottom))]" closeLabel={t('common.close')}>
         <DrawerHeader className="px-6 pb-2 pt-1 group-data-[swipe-axis=y]/drawer-popup:text-left">
-          <DrawerTitle className="font-serif text-xl font-medium tracking-tight">{t('wordstudy.title')}</DrawerTitle>
-          <DrawerDescription>{target?.reference}</DrawerDescription>
+          <DrawerTitle className="font-serif text-2xl font-medium tracking-tight">{title}</DrawerTitle>
+          <DrawerDescription className="sr-only">{target?.reference}</DrawerDescription> {/* the title already says it, for the eye */}
         </DrawerHeader>
-        <div className="max-h-[70dvh] space-y-4 overflow-y-auto px-6 pb-2">
+        <div className="space-y-5 px-6 pb-2">
           {word && (
-            <section aria-live="polite" className="space-y-2">
-              <p lang={lang} dir={word.language === 'hebrew' ? 'rtl' : 'ltr'} className="font-serif text-3xl">{sense?.lemma ?? word.text}</p>
-              <p className="text-sm text-muted">
-                {sense?.transliteration ?? word.transliteration} · {strongsNumber(word.strongs)}
-                {word.parsingFull && <> · {word.parsingFull}</>}
-              </p>
-              {entry === 'loading' && <p role="status" className="text-muted">{t('wordstudy.loading')}</p>}
-              {sense?.gloss && <p className="text-lg">{sense.gloss}</p>}
-              {sense && <p className="max-h-40 overflow-y-auto whitespace-pre-line text-[0.9375rem] leading-snug text-muted">{sense.definition}</p>}
-              {entry === null && <p className="text-muted">{t('wordstudy.noEntry')}</p>}
-            </section>
+            <>
+              <section aria-live="polite" className="space-y-3">
+                <p lang={lang} dir={word.language === 'hebrew' ? 'rtl' : 'ltr'} className="font-serif text-xl">{sense?.lemma ?? word.text}</p>
+                <dl className="divide-y divide-border border-y border-border text-[0.9375rem]">
+                  <div className="flex justify-between gap-4 py-2"><dt className="text-muted">{t('wordstudy.factSounds')}</dt><dd className="text-right">{sense?.transliteration ?? word.transliteration}</dd></div>
+                  <div className="flex justify-between gap-4 py-2"><dt className="text-muted">{t('wordstudy.colStrongs')}</dt><dd className="text-right">{strongsNumber(word.strongs)}</dd></div>
+                  {word.parsingFull && <div className="flex justify-between gap-4 py-2"><dt className="text-muted">{t('wordstudy.factType')}</dt><dd className="text-right">{word.parsingFull}</dd></div>}
+                </dl>
+              </section>
+              <section className="space-y-1">
+                <h3 className="text-sm font-medium text-muted">{t('wordstudy.sectionDefinition')}</h3>
+                {entry === 'loading' && <p role="status" className="text-muted">{t('wordstudy.loading')}</p>}
+                {sense?.gloss && <p className="text-lg">{sense.gloss}</p>}
+                {sense && <p className="whitespace-pre-line text-[0.9375rem] leading-snug text-muted">{sense.definition}</p>}
+                {entry === null && <p className="text-muted">{t('wordstudy.noEntry')}</p>}
+              </section>
+            </>
           )}
           {!verse && <p className="text-muted">{t('wordstudy.unsupported')}</p>}
-          {verse && target && (
-            <div className="space-y-2">
-              {!hidePage && (
-                <button type="button" className={`${button} bg-primary text-primary-foreground`} onClick={() => { onClose(); navigate(`/word-study?ref=${encodeURIComponent(target.reference)}${word && target.ref ? `&w=${target.ref.verse}.${word.pos}` : ''}`); }}>
-                  {t('wordstudy.page')}
-                </button>
-              )}
+          {verse && target && !hidePage && (
+            <section className={`space-y-2 ${word ? '' : 'pt-6'}`}>
+              <button type="button" className={`${button} bg-primary text-primary-foreground`} onClick={() => { onClose(); navigate(`/word-study?ref=${encodeURIComponent(target.reference)}${word && target.ref ? `&w=${target.ref.verse}.${word.pos}` : ''}`); }}>
+                {t('wordstudy.page')}
+              </button>
               <ExternalLink href={word ? blueLetterUrl(word.strongs) : blueLetterVerseUrl(verse)} className={`${button} border border-border`}>{t('wordstudy.blueLetter')}</ExternalLink>
               <ExternalLink href={commentaryUrl(verse)} className={`${button} border border-border`}>{t('wordstudy.commentary')}</ExternalLink>
-            </div>
+            </section>
           )}
           <div className="space-y-0.5 text-xs text-muted">
             <p>{t('wordstudy.creditWords')}</p>
             <p>{t('wordstudy.creditDefinitions')}</p>
           </div>
         </div>
-        <div className="h-4" />
+        <div className="h-6" />
       </DrawerContent>
     </Drawer>
   );

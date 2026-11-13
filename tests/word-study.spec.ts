@@ -35,7 +35,8 @@ async function openFlashcard(page: Page, passage: string) {
   await page.getByRole('button', { name: 'Show answer' }).click();
 }
 
-const drawer = (page: Page) => page.getByRole('dialog', { name: 'Word study' });
+// the drawer is named for the English word ("loved"), or for the verse when no single word is known
+const drawer = (page: Page) => page.getByRole('dialog', { name: /^(loved|text|John 3)/ });
 
 test('on a card that is not Berean, holding the verse opens a drawer with the page and the two ways to read on; the page is a table of every word', async ({ page }) => {
   await mockApi(page);
@@ -44,7 +45,7 @@ test('on a card that is not Berean, holding the verse opens a drawer with the pa
   await expect(drawer(page)).toBeVisible();
   await expect(drawer(page).getByText('ἀγαπάω')).toHaveCount(0); // no word known, so no definition
   await expect(drawer(page).getByRole('link', { name: 'Explore in Blue Letter Bible' })).toHaveAttribute('href', 'https://www.blueletterbible.org/kjv/jhn/3/16/');
-  await expect(drawer(page).getByRole('link', { name: 'Read verse commentaries' })).toHaveAttribute('href', 'https://www.studylight.org/commentary/john/3-16.html');
+  await expect(drawer(page).getByRole('link', { name: 'Explore commentaries in StudyLight' })).toHaveAttribute('href', 'https://www.studylight.org/commentary/john/3-16.html');
   await drawer(page).getByRole('button', { name: 'See every word of this verse' }).click();
 
   await expect(page).toHaveURL(/#\/word-study\?ref=John%203%3A16/);
@@ -56,10 +57,18 @@ test('on a card that is not Berean, holding the verse opens a drawer with the pa
   await expect(page.getByRole('heading', { name: 'John 3:16' })).toBeVisible(); // the passage is spelled out at the top, in the Berean text the words are matched to
   await expect(page.getByText('For God so loved the world that He gave His one and only Son.')).toBeVisible();
   await expect(page.getByRole('columnheader', { name: /Grammar/ })).toHaveCount(0);
+  // tapping a word of the passage shades its row in the table
+  await page.getByRole('button', { name: 'loved', exact: true }).click();
+  await expect(page.locator('#word-16-2')).toHaveClass(/bg-surface/);
   await page.getByRole('button', { name: /ἠγάπησεν/ }).click();
   await expect(drawer(page).getByText('to love, wish well to')).toBeVisible();
-  await expect(drawer(page).getByRole('link', { name: 'Explore in Blue Letter Bible' })).toHaveAttribute('href', 'https://www.blueletterbible.org/lexicon/g25/kjv/tr/0-1/');
-  await expect(drawer(page).getByRole('button', { name: 'See every word of this verse' })).toHaveCount(0); // already on that page
+  await expect(drawer(page).getByRole('heading', { name: 'Definition' })).toBeVisible();
+  await expect(drawer(page).getByText('Sounds like')).toBeVisible();
+  await expect(drawer(page).getByText('G25')).toBeVisible();
+  await expect(drawer(page).getByText('Verb - Aorist Indicative Active - 3rd Person Singular')).toBeVisible();
+  // on the table page the drawer is only the word and its definition: no buttons to go on, no reference under the title
+  await expect(drawer(page).getByRole('link')).toHaveCount(0);
+  await expect(drawer(page).getByRole('button', { name: 'See every word of this verse' })).toHaveCount(0);
 });
 
 test('holding the reference does nothing, and a quick tap on the verse does nothing', async ({ page }) => {
