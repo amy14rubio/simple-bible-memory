@@ -96,7 +96,7 @@ test('a reference that is not a verse or a few in a chapter says so instead of g
   await expect(drawer(page).getByRole('button', { name: 'See every word of this verse' })).toHaveCount(0);
 });
 
-test('in the Berean text a word with an original word opens its definition, and one without underlines the words that have one', async ({ page }) => {
+test('a Berean card is treated like any other: holding a word opens the same drawer for the verse, with no word looked up', async ({ page }) => {
   // The test version of the text is "Fake BSB text of John 3:16." so the glosses are made to match some of those words.
   await mockApi(page, { chapter: { content: [{ verse: 16, words: [
     word(1, 'λόγος', 'logos', 'Noun', 'G3056', 'text'),
@@ -118,36 +118,22 @@ test('in the Berean text a word with an original word opens its definition, and 
   await page.goto(`/#/collections/${id}/study/flashcard`);
   await page.getByRole('button', { name: 'Show answer' }).click();
 
-  // The middle of a word of the verse, found from where the browser drew it.
-  const holdOn = async (target: string) => {
-    const at = await page.evaluate((w) => {
-      // (while some words are underlined the verse is in pieces, so look through every piece)
-      const walker = document.createTreeWalker(document.querySelector('p.scripture')!, NodeFilter.SHOW_TEXT);
-      let node = walker.nextNode() as Text, i = -1;
-      for (; node; node = walker.nextNode() as Text) {
-        i = node.data === w ? 0 : node.data.indexOf(` ${w} `) + 1 || -1;
-        if (i >= 0) break;
-      }
-      const r = document.createRange();
-      r.setStart(node, i); r.setEnd(node, i + w.length);
-      const b = r.getBoundingClientRect();
-      return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
-    }, target);
-    await page.mouse.move(at.x, at.y); await page.mouse.down(); await page.waitForTimeout(700); await page.mouse.up();
-  };
-  const verse = page.locator('p.scripture');
-  // "of" has no original word: nothing opens; "text" and "John" are underlined for a moment
-  await holdOn('of');
-  await expect(drawer(page)).toHaveCount(0);
-  await expect(verse.locator('span.underline')).toHaveCount(2);
-
-  // "text" has one: its definition opens at once
-  await holdOn('text');
-  await expect(drawer(page).getByText('to love, wish well to')).toBeVisible();
-  // from there, the page opens with that word's row marked
+  // Holding any word (here "text", which has an original word in the mocked data) does not look the word up: the drawer is the verse's, with its buttons
+  const at = await page.evaluate(() => {
+    const node = document.querySelector('p.scripture')!.firstChild as Text;
+    const i = node.data.indexOf(' text ') + 1;
+    const r = document.createRange();
+    r.setStart(node, i); r.setEnd(node, i + 4);
+    const b = r.getBoundingClientRect();
+    return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+  });
+  await page.mouse.move(at.x, at.y); await page.mouse.down(); await page.waitForTimeout(700); await page.mouse.up();
+  await expect(drawer(page)).toBeVisible();
+  await expect(drawer(page).getByText('Study the original Greek or Hebrew behind this verse.')).toBeVisible();
+  await expect(drawer(page).getByText('to love, wish well to')).toHaveCount(0); // no definition: no word was matched
+  await expect(page.locator('p.scripture span.underline')).toHaveCount(0);
   await drawer(page).getByRole('button', { name: 'See every word of this verse' }).click();
-  await expect(page).toHaveURL(/w=16\.1/);
-  await expect(page.locator('#word-16-1')).toHaveClass(/bg-surface/);
+  await expect(page).toHaveURL(/#\/word-study\?ref=John%203%3A16$/); // no word to bring into view
 });
 
 test('in Spanish the Interlinear page shows the verse in Reina-Valera 1909 and keeps the English text the table follows, with the definitions left in English', async ({ browser }) => {
@@ -186,5 +172,22 @@ test('in Spanish a Greek word is defined by the United Bible Societies\' own Spa
   await expect(page.getByRole('dialog').getByText(/Definición en inglés/)).toBeVisible();
   await expect(page.getByRole('dialog').getByText('to love, wish well to')).toBeVisible(); // (the mocked English entry is the same for every word)
   await context.close();
+});
+
+test('on the card that shows the verse first, holding a word works only once the reference has been shown', async ({ page }) => {
+  await mockApi(page);
+  const id = await createDeck(page);
+  await addCard(page, id, 'John 3:16', 'For God so loved the world.');
+  await setCardKinds(page, 'Identify the verse');
+  await page.goto(`/#/collections/${id}/study/flashcard`);
+  const verse = page.getByText('For God so loved the world.');
+  await expect(verse).toBeVisible();
+  await hold(page, 'For God so loved the world.'); // the drawer would show "John 3:16", which is the answer
+  await expect(drawer(page)).toHaveCount(0);
+  await page.getByRole('button', { name: 'Show answer' }).click();
+  await expect(page.getByText('John 3:16', { exact: true })).toBeVisible();
+  await hold(page, 'For God so loved the world.');
+  await expect(drawer(page)).toBeVisible();
+  await expect(drawer(page).getByRole('link', { name: 'Explore in Blue Letter Bible' })).toBeVisible();
 });
 

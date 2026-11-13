@@ -12,6 +12,7 @@ import { PaintedText } from './PaintedText';
 import { AnswerRegion } from './AnswerRegion';
 import { useVerseLang } from './verseLang';
 import { CARD_PROMPT_ID, CardPrompt } from './cardPosition';
+import { useCardWordStudy } from '../wordstudy/useCardWordStudy';
 
 interface ModeProps {
   card: Card;
@@ -19,11 +20,12 @@ interface ModeProps {
   onRate: (r: Rating) => void;
 }
 
-const Passage = ({ text, code }: { text: string; code: string | null }) => {
+/** The passage. With `study`, holding a word of it opens word study (only offered once the reference has been shown, which the drawer would give away). */
+const Passage = ({ text, code, study }: { text: string; code: string | null; study?: ReturnType<typeof useCardWordStudy> }) => {
   const lang = useVerseLang();
   return (
     <>
-      <blockquote lang={lang} className="scripture whitespace-pre-line text-center text-xl">{text}</blockquote>
+      <blockquote lang={lang} {...study?.press} className={`scripture whitespace-pre-line text-center text-xl ${study ? 'select-none [-webkit-touch-callout:none]' : ''}`}>{text}</blockquote>
       <Attribution code={code} compact className="text-center" />
     </>
   );
@@ -34,17 +36,19 @@ export function IdentifyFlashcard({ card, intervals, onRate }: ModeProps) {
   const { t } = useI18n();
   const [revealed, setRevealed] = useState(false);
   const lang = useVerseLang();
+  const study = useCardWordStudy(card);
   return (
     <>
       <CardPrompt prompt={t('study.promptName')} />
       <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
-        <Passage text={card.verseText} code={card.translationCode} />
+        <Passage text={card.verseText} code={card.translationCode} study={revealed ? study : undefined} />
         {revealed && (
           <AnswerRegion labelOnly label={`${t('study.answer')}: ${card.reference}`} className="space-y-1">
             <p lang={lang} className="font-serif text-3xl font-medium tracking-tight">{card.reference}</p>
           </AnswerRegion>
         )}
       </div>
+      {study.drawer}
       <ActionBar>
         {revealed ? <RatingBar intervals={intervals} onRate={onRate} /> : <Button className="w-full" onClick={() => setRevealed(true)} autoFocus aria-describedby={CARD_PROMPT_ID}>{t('study.showAnswer')}</Button>}
       </ActionBar>
