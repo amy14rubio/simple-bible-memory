@@ -24,6 +24,7 @@ import { PrivacyPage } from './features/settings/PrivacyPage';
 import { OnboardingPage } from './features/onboarding/OnboardingPage';
 import { ImportPage } from './features/exchange/ImportPage';
 import { DiscoverPage } from './features/discover/DiscoverPage';
+import { WordStudyPage } from './features/wordstudy/WordStudyPage';
 import { DiscoverDeckPage } from './features/discover/DiscoverDeckPage';
 import { Toaster } from './components/shadcn/toast';
 
@@ -79,6 +80,7 @@ export default function App() {
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="import" element={<ImportPage />} />
                     <Route path="discover" element={<DiscoverPage />} />
+                    <Route path="word-study" element={<WordStudyPage />} />
                     <Route path="discover/:id" element={<DiscoverDeckPage />} />
                     <Route path="settings/theme" element={<ThemePage />} />
                     <Route path="settings/language" element={<LanguagePage />} />
