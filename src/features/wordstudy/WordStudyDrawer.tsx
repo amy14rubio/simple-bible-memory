@@ -5,7 +5,7 @@ import { ExternalLink } from '../../components/ExternalLink';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useI18n } from '../../i18n/I18nProvider';
 import {
-  blueLetterUrl, blueLetterVerseUrl, commentarySite, commentaryUrl, lexiconEntry, strongsNumber, ubsEntry, versesOfReference,
+  bibliaTodoUrl, blueLetterUrl, blueLetterVerseUrl, commentarySite, commentaryUrl, lexiconEntry, strongsNumber, ubsEntry, versesOfReference,
   type LexiconEntry, type UbsEntry, type OriginalWord, type VerseRef,
 } from './wordData';
 
@@ -108,7 +108,7 @@ export function WordStudyDrawer({ target, onClose, hidePage = false }: { target:
               <button type="button" className={`${button} bg-primary text-primary-foreground`} onClick={() => { onClose(); navigate(`/word-study?ref=${encodeURIComponent(target.reference)}${word && target.ref ? `&w=${target.ref.verse}.${word.pos}` : ''}`); }}>
                 {t('wordstudy.page')}
               </button>
-              <ExternalLink href={word ? blueLetterUrl(word.strongs) : blueLetterVerseUrl(verse)} className={`${button} border border-border`}>{t('wordstudy.blueLetter')}</ExternalLink>
+              <ExternalLink href={spanish ? bibliaTodoUrl(verse) : word ? blueLetterUrl(word.strongs) : blueLetterVerseUrl(verse)} className={`${button} border border-border`}>{t('wordstudy.blueLetter')}</ExternalLink>
               <ExternalLink href={commentaryUrl(verse, language)} className={`${button} border border-border`}>{t('wordstudy.commentary', { site: commentarySite(language) })}</ExternalLink>
             </section>
           )}

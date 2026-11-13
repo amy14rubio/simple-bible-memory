@@ -1,5 +1,6 @@
 import { parseReference } from '../../domain/bible/reference';
 import { usfmBook } from '../../domain/bible/usfm';
+import { BOOK_NAMES_ES } from '../../i18n/books.es';
 
 /**
  * The original-language words of a verse, and the dictionary entry of each, from the Free Use Bible API (https://bible.helloao.org):
@@ -122,6 +123,15 @@ export const blueLetterUrl = (strongs: string) => {
 export const blueLetterVerseUrl = (ref: VerseRef) => {
   const code = ({ EZK: 'eze', JOL: 'joe', NAM: 'nah' } as Record<string, string>)[ref.code] ?? ref.code.toLowerCase();
   return `https://www.blueletterbible.org/kjv/${code}/${ref.chapter}/${ref.verse}/`;
+};
+
+/**
+ * La Biblia Todo's interlinear page for a verse, in Spanish ("Romans 5:8" -> .../interlineal/romanos-5-8?v=RV1960): the Spanish book name without accents,
+ * hyphens for spaces. It is for the verse, whichever word was pressed.
+ */
+export const bibliaTodoUrl = (ref: VerseRef) => {
+  const slug = (BOOK_NAMES_ES[ref.book] ?? ref.book).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/ /g, '-');
+  return `https://www.bibliatodo.com/interlineal/${slug}-${ref.chapter}-${ref.verse}?v=RV1960`;
 };
 
 /**

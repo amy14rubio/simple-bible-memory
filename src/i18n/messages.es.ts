@@ -117,7 +117,7 @@ export const es: Dictionary = {
   'wordstudy.error': 'No se pudieron cargar las palabras originales. Revisa tu conexión e inténtalo de nuevo.',
   'wordstudy.unsupported': 'Las palabras originales se muestran para un versículo o varios en un mismo capítulo.',
   'wordstudy.noEntry': 'No hay entrada de diccionario para esta palabra.',
-  'wordstudy.blueLetter': 'Explorar en Blue Letter Bible',
+  'wordstudy.blueLetter': 'Explorar interlineal en La Biblia Todo',
   'wordstudy.commentary': 'Explorar comentarios en {site}',
   'wordstudy.creditWords': 'Palabras: Berean Interlinear Bible (dominio público).',
   'wordstudy.creditDefinitions': 'Definiciones: STEPBible Brief Lexicons, Tyndale House, CC BY 4.0.',

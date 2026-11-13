@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { blueLetterUrl, commentarySite, commentaryUrl, strongsNumber, versesOfReference, wordForEnglish, type OriginalWord } from './wordData';
+import { bibliaTodoUrl, blueLetterUrl, commentarySite, commentaryUrl, strongsNumber, versesOfReference, wordForEnglish, type OriginalWord } from './wordData';
 import { wordAt } from './useLongPressWord';
 
 const w = (pos: number, gloss: string | null, strongs = 'G0001'): OriginalWord => ({ pos, language: 'greek', text: 'x', transliteration: 'x', parsingFull: null, strongs, gloss });
@@ -38,6 +38,16 @@ describe('links', () => {
     }
     expect(commentarySite('en')).toBe('Bible Hub');
     expect(commentarySite('es')).toBe('StudyLight');
+  });
+});
+
+describe('La Biblia Todo (Spanish)', () => {
+  it('points at the verse\'s interlinear page, by the Spanish book name without accents', () => {
+    const at = (r: string) => versesOfReference(r)![0]!;
+    expect(bibliaTodoUrl(at('Romans 5:8'))).toBe('https://www.bibliatodo.com/interlineal/romanos-5-8?v=RV1960');
+    expect(bibliaTodoUrl(at('Génesis 1:1'))).toBe('https://www.bibliatodo.com/interlineal/genesis-1-1?v=RV1960');
+    expect(bibliaTodoUrl(at('1 Corintios 13:4'))).toBe('https://www.bibliatodo.com/interlineal/1-corintios-13-4?v=RV1960');
+    expect(bibliaTodoUrl(at('Salmos 23:1'))).toBe('https://www.bibliatodo.com/interlineal/salmos-23-1?v=RV1960');
   });
 });
 
