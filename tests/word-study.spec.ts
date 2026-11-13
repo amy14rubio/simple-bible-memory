@@ -69,7 +69,9 @@ test('on a card that is not Berean, holding the verse opens a drawer with the pa
   await expect(drawer(page).getByText('G25')).toBeVisible();
   await expect(drawer(page).getByText('Verb - Aorist Indicative Active - 3rd Person Singular')).toBeVisible();
   // on the table page the drawer is only the word and its definition: no buttons to go on, no reference under the title
-  await expect(drawer(page).getByRole('link')).toHaveCount(0);
+  await expect(drawer(page).getByRole('link', { name: /Blue Letter|Bible Hub|StudyLight|Biblia Todo/ })).toHaveCount(0);
+  await expect(drawer(page).getByRole('link', { name: 'STEPBible.org' })).toHaveAttribute('href', 'https://www.stepbible.org/'); // the credit links to its source
+  await expect(drawer(page).getByRole('link', { name: 'CC BY 4.0' })).toHaveAttribute('href', 'https://creativecommons.org/licenses/by/4.0/');
   await expect(drawer(page).getByRole('button', { name: 'See every word of this verse' })).toHaveCount(0);
 });
 

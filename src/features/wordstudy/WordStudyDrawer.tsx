@@ -117,7 +117,7 @@ export function WordStudyDrawer({ target, onClose, hidePage = false }: { target:
             <p>{t('wordstudy.creditWords')}</p>
             {spanish && ubs && ubs !== 'loading'
               ? <p>{t('wordstudy.creditUbs')} <ExternalLink href="https://creativecommons.org/licenses/by-sa/4.0/" className="underline underline-offset-2">CC BY-SA 4.0</ExternalLink></p>
-              : <p>{t('wordstudy.creditDefinitions')}</p>}
+              : <p>{t('wordstudy.creditDefinitions')} <ExternalLink href="https://www.stepbible.org/" className="underline underline-offset-2">STEPBible.org</ExternalLink> · <ExternalLink href="https://creativecommons.org/licenses/by/4.0/" className="underline underline-offset-2">CC BY 4.0</ExternalLink></p>}
           </div>
         </div>
         <div className="h-6" />

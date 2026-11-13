@@ -29,3 +29,10 @@ The FSRS algorithm comes from the open-spaced-repetition project (https://github
 
 The Spanish definitions in the word-study drawer come from the United Bible Societies' open data, **CC BY-SA 4.0**: *UBS Dictionary of the Greek New Testament* (Spanish), © United Bible Societies 2023, adapted from the *Semantic Dictionary of Biblical Greek* and from Louw and Nida's *Greek-English Lexicon of the New Testament: Based on Semantic Domains* (© United Bible Societies 1988, 1989). Source: https://github.com/ubsicap/ubs-open-license. The adapted files are in `web-data/ubs-es/` (with the credit and the list of changes in its README), are hosted by the website, are not bundled in the app, and are released under CC BY-SA 4.0 as well. English definitions come from the STEPBible Brief Lexicons (CC BY 4.0, Tyndale House) and the words from the Berean Interlinear Bible (public domain), both through the Free Use Bible API.
 
+## Greek and Hebrew word data (word study)
+
+- **STEPBible Data** (https://github.com/STEPBible/STEPBible-Data, https://www.stepbible.org/): the Translators Brief Lexicons of Extended Strongs (TBESG and TBESH), created by STEPBible.org from work at Tyndale House, Cambridge, **CC BY 4.0** (https://creativecommons.org/licenses/by/4.0/). The Greek brief lexicon is based on the Abbott-Smith definitions. We show the entries unchanged (lemma, transliteration, gloss and definition); the Free Use Bible API adapted them to its JSON format. Credit and a link to STEPBible and to the license are in the word-study drawer. STEPBible does not endorse this app.
+- **Berean Interlinear Bible and Berean Standard Bible** (https://bereanbible.com/): public domain. The words of each verse come from the interlinear tables.
+- **Free Use Bible API** (https://bible.helloao.org/, AO Lab): serves the data above and the Reina-Valera 1909 text (public domain). Its software is MIT.
+- Links only (no content copied): Blue Letter Bible, Bible Hub, StudyLight and La Biblia Todo.
+
