@@ -5,7 +5,7 @@ import { ExternalLink } from '../../components/ExternalLink';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useI18n } from '../../i18n/I18nProvider';
 import {
-  blueLetterUrl, blueLetterVerseUrl, commentaryUrl, lexiconEntry, strongsNumber, versesOfReference,
+  blueLetterUrl, blueLetterVerseUrl, commentarySite, commentaryUrl, lexiconEntry, strongsNumber, versesOfReference,
   type LexiconEntry, type OriginalWord, type VerseRef,
 } from './wordData';
 
@@ -19,7 +19,7 @@ const button = 'flex min-h-12 w-full items-center justify-center rounded-lg px-5
  * the word-by-word page for the verse, Blue Letter Bible, and a verse commentary.
  */
 export function WordStudyDrawer({ target, onClose, hidePage = false }: { target: WordStudyTarget | null; onClose: () => void; /** Already on the word-by-word page: no button to it. */ hidePage?: boolean }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const navigate = useNavigate();
   const open = target !== null;
   usePopupHistory(open, onClose);
@@ -75,7 +75,7 @@ export function WordStudyDrawer({ target, onClose, hidePage = false }: { target:
                 {t('wordstudy.page')}
               </button>
               <ExternalLink href={word ? blueLetterUrl(word.strongs) : blueLetterVerseUrl(verse)} className={`${button} border border-border`}>{t('wordstudy.blueLetter')}</ExternalLink>
-              <ExternalLink href={commentaryUrl(verse)} className={`${button} border border-border`}>{t('wordstudy.commentary')}</ExternalLink>
+              <ExternalLink href={commentaryUrl(verse, language)} className={`${button} border border-border`}>{t('wordstudy.commentary', { site: commentarySite(language) })}</ExternalLink>
             </section>
           )}
           <div className="space-y-0.5 text-xs text-muted">

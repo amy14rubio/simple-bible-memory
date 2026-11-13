@@ -128,7 +128,7 @@ export const en = {
   'wordstudy.unsupported': 'Original words are shown for a verse or a few verses in one chapter.',
   'wordstudy.noEntry': 'No dictionary entry for this word.',
   'wordstudy.blueLetter': 'Explore in Blue Letter Bible',
-  'wordstudy.commentary': 'Explore commentaries in StudyLight',
+  'wordstudy.commentary': 'Explore commentaries in {site}',
   'wordstudy.creditWords': 'Words: Berean Interlinear Bible (public domain).',
   'wordstudy.creditDefinitions': 'Definitions: STEPBible Brief Lexicons, Tyndale House, CC BY 4.0.',
   'wordstudy.bsb': 'Berean Standard Bible',

@@ -45,7 +45,7 @@ test('on a card that is not Berean, holding the verse opens a drawer with the pa
   await expect(drawer(page)).toBeVisible();
   await expect(drawer(page).getByText('ἀγαπάω')).toHaveCount(0); // no word known, so no definition
   await expect(drawer(page).getByRole('link', { name: 'Explore in Blue Letter Bible' })).toHaveAttribute('href', 'https://www.blueletterbible.org/kjv/jhn/3/16/');
-  await expect(drawer(page).getByRole('link', { name: 'Explore commentaries in StudyLight' })).toHaveAttribute('href', 'https://www.studylight.org/commentary/john/3-16.html');
+  await expect(drawer(page).getByRole('link', { name: 'Explore commentaries in Bible Hub' })).toHaveAttribute('href', 'https://biblehub.com/commentaries/john/3-16.htm');
   await drawer(page).getByRole('button', { name: 'See every word of this verse' }).click();
 
   await expect(page).toHaveURL(/#\/word-study\?ref=John%203%3A16/);

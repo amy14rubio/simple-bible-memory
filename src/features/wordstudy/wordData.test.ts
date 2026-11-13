@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blueLetterUrl, commentaryUrl, strongsNumber, versesOfReference, wordForEnglish, type OriginalWord } from './wordData';
+import { blueLetterUrl, commentarySite, commentaryUrl, strongsNumber, versesOfReference, wordForEnglish, type OriginalWord } from './wordData';
 import { wordAt } from './useLongPressWord';
 
 const w = (pos: number, gloss: string | null, strongs = 'G0001'): OriginalWord => ({ pos, language: 'greek', text: 'x', transliteration: 'x', parsingFull: null, strongs, gloss });
@@ -22,9 +22,21 @@ describe('links', () => {
     expect(blueLetterUrl('G0025')).toBe('https://www.blueletterbible.org/lexicon/g25/kjv/tr/0-1/');
     expect(blueLetterUrl('H0430')).toBe('https://www.blueletterbible.org/lexicon/h430/kjv/wlc/0-1/');
   });
-  it('points at the verse in StudyLight', () => {
-    expect(commentaryUrl(versesOfReference('Psalm 23:1')![0]!)).toBe('https://www.studylight.org/commentary/psalms/23-1.html');
-    expect(commentaryUrl(versesOfReference('1 Corinthians 13:4')![0]!)).toBe('https://www.studylight.org/commentary/1-corinthians/13-4.html');
+  it('points at the verse in Bible Hub for English and StudyLight for Spanish', () => {
+    const at = (r: string) => versesOfReference(r)![0]!;
+    expect(commentaryUrl(at('John 3:16'))).toBe('https://biblehub.com/commentaries/john/3-16.htm');
+    expect(commentaryUrl(at('Psalm 23:1'))).toBe('https://biblehub.com/commentaries/psalms/23-1.htm');
+    expect(commentaryUrl(at('1 Corinthians 13:4'))).toBe('https://biblehub.com/commentaries/1_corinthians/13-4.htm');
+    expect(commentaryUrl(at('Song of Solomon 1:1'))).toBe('https://biblehub.com/commentaries/songs/1-1.htm');
+    expect(commentaryUrl(at('Juan 3:16'), 'es')).toBe('https://www.studylight.org/commentaries/spa/mhm/john-3.html');
+    expect(commentaryUrl(at('1 Corinthians 13:4'), 'es')).toBe('https://www.studylight.org/commentaries/spa/mhm/1-corinthians-13.html');
+    // the StudyLight pages that were opened by hand, one per kind of book name
+    for (const [reference, page] of [['Psalm 1:1', 'psalms-1'], ['1 Chronicles 1:1', '1-chronicles-1'], ['1 Corinthians 1:1', '1-corinthians-1'], ['Acts 1:1', 'acts-1'], ['Ecclesiastes 1:1', 'ecclesiastes-1'],
+      ['Lamentations 1:1', 'lamentations-1'], ['Jude 1', 'jude-1'], ['Genesis 1:1', 'genesis-1'], ['Song of Solomon 1:1', 'song-of-solomon-1'], ['Romans 5:8', 'romans-5']] as const) {
+      expect(commentaryUrl(versesOfReference(reference)![0]!, 'es')).toBe(`https://www.studylight.org/commentaries/spa/mhm/${page}.html`);
+    }
+    expect(commentarySite('en')).toBe('Bible Hub');
+    expect(commentarySite('es')).toBe('StudyLight');
   });
 });
 

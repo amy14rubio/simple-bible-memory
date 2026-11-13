@@ -101,10 +101,17 @@ export const blueLetterVerseUrl = (ref: VerseRef) => {
   return `https://www.blueletterbible.org/kjv/${code}/${ref.chapter}/${ref.verse}/`;
 };
 
-/** StudyLight's commentaries for one verse ("John 3:16" -> .../commentary/john/3-16.html). */
-export const commentaryUrl = (ref: VerseRef) => {
-  const slug = (ref.book === 'Psalm' ? 'Psalms' : ref.book).toLowerCase().replace(/ /g, '-');
-  return `https://www.studylight.org/commentary/${slug}/${ref.chapter}-${ref.verse}.html`;
+/**
+ * Where the commentaries for one verse are read: Bible Hub for English ("John 3:16" -> .../commentaries/john/3-16.htm; its book names are the English
+ * ones with an underscore, and "songs" for the Song of Solomon), StudyLight for Spanish: its Spanish commentaries live under /spa/, by chapter
+ * ("John 3:16" -> .../commentaries/spa/mhm/john-3.html, Matthew Henry).
+ */
+export const commentarySite = (language: 'en' | 'es') => (language === 'es' ? 'StudyLight' : 'Bible Hub');
+export const commentaryUrl = (ref: VerseRef, language: 'en' | 'es' = 'en') => {
+  const book = ref.book === 'Psalm' ? 'Psalms' : ref.book;
+  if (language === 'es') return `https://www.studylight.org/commentaries/spa/mhm/${book.toLowerCase().replace(/ /g, '-')}-${ref.chapter}.html`;
+  const slug = book === 'Song of Solomon' ? 'songs' : book.toLowerCase().replace(/ /g, '_');
+  return `https://biblehub.com/commentaries/${slug}/${ref.chapter}-${ref.verse}.htm`;
 };
 
 const plain = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}' ]/gu, ' ').split(/\s+/).filter(Boolean);

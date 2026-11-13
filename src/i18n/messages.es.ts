@@ -118,7 +118,7 @@ export const es: Dictionary = {
   'wordstudy.unsupported': 'Las palabras originales se muestran para un versículo o varios en un mismo capítulo.',
   'wordstudy.noEntry': 'No hay entrada de diccionario para esta palabra.',
   'wordstudy.blueLetter': 'Explorar en Blue Letter Bible',
-  'wordstudy.commentary': 'Explorar comentarios en StudyLight',
+  'wordstudy.commentary': 'Explorar comentarios en {site}',
   'wordstudy.creditWords': 'Palabras: Berean Interlinear Bible (dominio público).',
   'wordstudy.creditDefinitions': 'Definiciones: STEPBible Brief Lexicons, Tyndale House, CC BY 4.0.',
   'wordstudy.bsb': 'Berean Standard Bible (en inglés)',
