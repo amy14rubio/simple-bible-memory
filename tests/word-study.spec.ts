@@ -45,6 +45,7 @@ test('on a card that is not Berean, holding the verse opens a drawer with the pa
   await hold(page, 'For God so loved the world.');
   await expect(drawer(page)).toBeVisible();
   await expect(drawer(page).getByText('ἀγαπάω')).toHaveCount(0); // no word known, so no definition
+  await expect(drawer(page).getByText('Study the original Greek or Hebrew behind this verse.')).toBeVisible();
   await expect(drawer(page).getByRole('link', { name: 'Explore in Blue Letter Bible' })).toHaveAttribute('href', 'https://www.blueletterbible.org/kjv/jhn/3/16/');
   await expect(drawer(page).getByRole('link', { name: 'Explore commentaries in Bible Hub' })).toHaveAttribute('href', 'https://biblehub.com/commentaries/john/3-16.htm');
   await drawer(page).getByRole('button', { name: 'See every word of this verse' }).click();

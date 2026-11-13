@@ -131,6 +131,7 @@ export const es: Dictionary = {
   'wordstudy.notes': 'Notas',
   'wordstudy.englishOnly': 'Definición en inglés: esta palabra aún no tiene entrada en español.',
   'wordstudy.creditUbs': 'Definiciones: UBS Dictionary of the Greek New Testament (en español), © Sociedades Bíblicas Unidas 2023, adaptado.',
+  'wordstudy.explain': 'Estudia el griego o hebreo original de este versículo. El interlineal usa la Biblia en inglés (BSB), porque no hay una Biblia en español gratuita que conecte cada palabra con el original.',
   'wordstudy.page': 'Ver cada palabra de este versículo',
   'wordstudy.pageTitle': 'Interlineal',
   'wordstudy.colWord': 'Palabra original',

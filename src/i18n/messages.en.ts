@@ -141,6 +141,7 @@ export const en = {
   'wordstudy.notes': 'Notes',
   'wordstudy.englishOnly': 'Definition in English: this word has no Spanish entry yet.',
   'wordstudy.creditUbs': 'Definitions: UBS Dictionary of the Greek New Testament (Spanish), © United Bible Societies 2023, adapted.',
+  'wordstudy.explain': 'Study the original Greek or Hebrew behind this verse.',
   'wordstudy.page': 'See every word of this verse',
   'wordstudy.pageTitle': 'Interlinear',
   'wordstudy.colWord': 'Original word',

@@ -60,6 +60,7 @@ export function WordStudyDrawer({ target, onClose, hidePage = false }: { target:
           <DrawerDescription className="sr-only">{target?.reference}</DrawerDescription> {/* the title already says it, for the eye */}
         </DrawerHeader>
         <div className="space-y-5 px-6 pb-2">
+          {verse && !hidePage && <p className="pt-2 text-[0.9375rem] leading-snug">{t('wordstudy.explain')}</p>}
           {word && (
             <>
               <section aria-live="polite" className="space-y-3">
@@ -104,7 +105,7 @@ export function WordStudyDrawer({ target, onClose, hidePage = false }: { target:
           )}
           {!verse && <p className="text-muted">{t('wordstudy.unsupported')}</p>}
           {verse && target && !hidePage && (
-            <section className={`space-y-2 ${word ? '' : 'pt-6'}`}>
+            <section className={`space-y-2 ${word ? '' : '-mt-1'}`}>
               <button type="button" className={`${button} bg-primary text-primary-foreground`} onClick={() => { onClose(); navigate(`/word-study?ref=${encodeURIComponent(target.reference)}${word && target.ref ? `&w=${target.ref.verse}.${word.pos}` : ''}`); }}>
                 {t('wordstudy.page')}
               </button>
