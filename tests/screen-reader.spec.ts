@@ -70,8 +70,8 @@ test.describe('studying', () => {
   test('the study screen has a real heading', async ({ page }) => {
     const id = await deckWithCard(page);
     await page.goto(`/#/collections/${id}/study/flashcard`);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Studying Psalms: Flashcard');
-    await expect(page).toHaveTitle('Studying Psalms: Flashcard · Simple Bible Memory');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Studying Psalms: Flashcard & Study');
+    await expect(page).toHaveTitle('Studying Psalms: Flashcard & Study · Simple Bible Memory');
   });
 
   test('Flashcard: Show answer moves focus to the answer, which has the verse as its name', async ({ page }) => {

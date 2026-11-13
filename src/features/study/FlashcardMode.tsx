@@ -8,11 +8,13 @@ import { AnswerRegion } from './AnswerRegion';
 import { useVerseLang } from './verseLang';
 import { CARD_PROMPT_ID, CardPrompt } from './cardPosition';
 import { useI18n } from '../../i18n/I18nProvider';
+import { useCardWordStudy } from '../wordstudy/useCardWordStudy';
 
 export function FlashcardMode({ card, intervals, onRate }: { card: Card; intervals?: Record<Rating, string>; onRate: (r: Rating) => void }) {
   const { t } = useI18n();
   const [revealed, setRevealed] = useState(false);
   const lang = useVerseLang();
+  const word = useCardWordStudy(card);
   return (
     <>
       <CardPrompt prompt={card.reference} />
@@ -21,13 +23,14 @@ export function FlashcardMode({ card, intervals, onRate }: { card: Card; interva
         {revealed && (
           <div className="space-y-3">
             <AnswerRegion labelOnly label={`${t('study.answer')}: ${card.verseText}`}>
-              <p lang={lang} className="scripture whitespace-pre-line text-xl">{card.verseText}</p>
+              <p lang={lang} {...word.press} className="scripture select-none whitespace-pre-line text-xl [-webkit-touch-callout:none]">{card.verseText}</p>
             </AnswerRegion>
             {/* outside the group above, which is hidden from screen readers (its name already reads the verse) */}
             <Attribution code={card.translationCode} compact />
           </div>
         )}
       </div>
+      {word.drawer}
       <ActionBar>
         {revealed ? <RatingBar intervals={intervals} onRate={onRate} /> : <Button className="w-full" onClick={() => setRevealed(true)} autoFocus aria-describedby={CARD_PROMPT_ID}>{t('study.showAnswer')}</Button>}
       </ActionBar>

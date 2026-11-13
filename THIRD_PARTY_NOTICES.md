@@ -24,3 +24,8 @@ Checked against each installed package's license metadata (2026-10-13). Bible te
 Design: the original wireframes are the layout reference. The Minimal Design System skill (MIT) informed the first neutral palette as an idea only; no code was copied.
 
 The FSRS algorithm comes from the open-spaced-repetition project (https://github.com/open-spaced-repetition). Bible Gateway is a separate service; we only link to it.
+
+## Spanish word-study dictionaries (UBS)
+
+The Spanish definitions in the word-study drawer come from the United Bible Societies' open data, **CC BY-SA 4.0**: *UBS Dictionary of the Greek New Testament* (Spanish), © United Bible Societies 2023, adapted from the *Semantic Dictionary of Biblical Greek* and from Louw and Nida's *Greek-English Lexicon of the New Testament: Based on Semantic Domains* (© United Bible Societies 1988, 1989). Source: https://github.com/ubsicap/ubs-open-license. The adapted files are in `web-data/ubs-es/` (with the credit and the list of changes in its README), are hosted by the website, are not bundled in the app, and are released under CC BY-SA 4.0 as well. English definitions come from the STEPBible Brief Lexicons (CC BY 4.0, Tyndale House) and the words from the Berean Interlinear Bible (public domain), both through the Free Use Bible API.
+
