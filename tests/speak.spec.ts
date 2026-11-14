@@ -86,3 +86,27 @@ test('speak: the "i" on the start screen says why what you say is not graded', a
   await expect(page.getByRole('dialog', { name: 'Hands-free study' })).toContainText("Speak mode doesn't grade what you say. Speech recognition can mishear");
   await expect(page.getByRole('dialog', { name: 'Hands-free study' })).toContainText('rate how you did');
 });
+
+for (const [width, height] of [[375, 667], [360, 640]] as const) {
+  test(`the Hands-free start screen fits a ${width}x${height} phone with no scrolling, Start button in view`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await hear(page, [], [], []);
+    const id = await setup(page);
+    await page.goto(`/#/collections/${id}/study/speak`);
+    await expect(page.getByRole('heading', { name: 'Hands-free study' })).toBeVisible();
+    const start = (await page.getByRole('button', { name: 'Start' }).boundingBox())!;
+    expect(start.y + start.height).toBeLessThanOrEqual(height);
+    const extra = await page.evaluate(() => document.documentElement.scrollHeight - document.documentElement.clientHeight);
+    expect(extra).toBeLessThanOrEqual(0);
+  });
+}
+
+test('on a wide screen the Start button is as wide as the list of commands', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await hear(page, [], [], []);
+  const id = await setup(page);
+  await page.goto(`/#/collections/${id}/study/speak`);
+  const list = (await page.locator('dl').boundingBox())!;
+  const start = (await page.getByRole('button', { name: 'Start' }).boundingBox())!;
+  expect(Math.abs(list.width - start.width)).toBeLessThanOrEqual(1);
+});

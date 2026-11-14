@@ -40,21 +40,20 @@ export function SpeakStart({ onStart }: { onStart: () => void }) {
     }
   };
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6 py-8 text-center">
-      <Mic size={40} aria-hidden className="text-muted" />
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 py-2 text-center">
       {/* The "i" says why Speak never grades what you say. */}
       <h1 className="flex justify-center font-serif text-3xl font-medium tracking-tight"><InfoLabel title={t('speak.title')} info={t('speak.info')} /></h1>
       {/* What to say, in the words the app listens for. */}
       <dl className="w-full max-w-sm divide-y divide-border rounded-lg border border-border text-left">
         {COMMANDS.map((c) => (
-          <div key={c} className="flex flex-col gap-0.5 px-4 py-2.5">
+          <div key={c} className="flex flex-col px-4 py-2">
             <dt className="font-medium">{t(`speak.word.${c}` as MessageKey)}</dt>
             <dd className="text-sm text-muted">{t(`speak.cmd.${c}` as MessageKey)}</dd>
           </div>
         ))}
       </dl>
       {problem && <ErrorMessage error={problem} />}
-      <Button className="w-full max-w-xs" onClick={start} disabled={busy} autoFocus>{t('speak.start')}</Button>
+      <Button className="w-full max-w-sm" onClick={start} disabled={busy} autoFocus>{t('speak.start')}</Button>
     </div>
   );
 }
