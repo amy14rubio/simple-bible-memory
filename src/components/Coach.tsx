@@ -225,11 +225,16 @@ function CoachSteps({ form, all, autofill, doneLabel, onClose, resumeKey }: { fo
 
   return (
     <>
-      <div
-        aria-hidden
-        className="coach-fade pointer-events-none fixed z-40 rounded-xl"
-        style={{ top: rect.top - pad, left: rect.left - pad, width: rect.width + pad * 2, height: rect.height + pad * 2, boxShadow: '0 0 0 100vmax rgba(0,0,0,0.55)' }}
-      />
+      {/* The dimmed screen with a rounded hole over the highlighted part. (Not a huge box-shadow around the hole: Safari rounds such a shadow's far corners and leaves part of a big screen undimmed.) */}
+      <svg aria-hidden className="coach-fade pointer-events-none fixed inset-0 z-40 h-full w-full">
+        <defs>
+          <mask id="coach-hole">
+            <rect width="100%" height="100%" fill="white" />
+            <rect x={rect.left - pad} y={rect.top - pad} width={rect.width + pad * 2} height={rect.height + pad * 2} rx="12" fill="black" />
+          </mask>
+        </defs>
+        <rect width="100%" height="100%" fill="rgba(0,0,0,0.55)" mask="url(#coach-hole)" />
+      </svg>
       <div
         ref={tip}
         role="dialog"

@@ -158,3 +158,12 @@ test.describe('the box stays below the highlighted part when the page can scroll
     });
   }
 });
+
+test('the dimmed screen covers the whole screen, even a big one with the highlight in a corner (Safari left part of it bright when it was a huge shadow)', async ({ page }) => {
+  await page.setViewportSize({ width: 1720, height: 1620 });
+  await page.goto('/#/collections/new');
+  await expect(guide(page)).toBeVisible();
+  const dim = page.locator('svg:has(mask#coach-hole)');
+  const box = (await dim.boundingBox())!;
+  expect(box).toMatchObject({ x: 0, y: 0, width: 1720, height: 1620 });
+});
