@@ -7,6 +7,13 @@ import { parseFontFaces } from './googleCss';
  */
 const CACHE_NAME = 'fonts-v1';
 
+/**
+ * The name a font file is kept under in Cache Storage. It has to be a full http(s) address: the Cache API refuses any other scheme, and on iPhone and iPad
+ * the app itself lives at capacitor://localhost, so a bare path such as "/fonts/Lora/0.woff2" is read as a capacitor:// address and cannot be saved there.
+ * Nothing is ever fetched from this address; it is only a name. (Fonts saved earlier under a bare path keep working: their saved key is used as it is.)
+ */
+export const fontFileKey = (family: string, index: number) => `https://fonts.sbm.invalid/${encodeURIComponent(family)}/${index}.woff2`;
+
 export interface StoredFace { key: string; weight: string; style: string; unicodeRange: string }
 export interface StoredFont { family: string; category: FontCategory; bytes: number; faces: StoredFace[] }
 
@@ -29,7 +36,7 @@ export async function downloadFont(font: CatalogueFont): Promise<StoredFont> {
       if (!file.ok) throw new Error(`Could not download a ${font.family} file (${file.status}).`);
       const blob = await file.blob();
       bytes += blob.size;
-      const key = `/fonts/${encodeURIComponent(font.family)}/${i}.woff2`;
+      const key = fontFileKey(font.family, i);
       await cache.put(key, new Response(blob, { headers: { 'content-type': 'font/woff2' } }));
       stored.push({ key, weight: face.weight, style: face.style, unicodeRange: face.unicodeRange });
     }
