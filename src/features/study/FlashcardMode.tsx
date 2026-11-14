@@ -10,11 +10,11 @@ import { CARD_PROMPT_ID, CardPrompt } from './cardPosition';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useCardWordStudy } from '../wordstudy/useCardWordStudy';
 
-export function FlashcardMode({ card, intervals, onRate }: { card: Card; intervals?: Record<Rating, string>; onRate: (r: Rating) => void }) {
+export function FlashcardMode({ card, intervals, onRate, onReveal }: { card: Card; intervals?: Record<Rating, string>; onRate: (r: Rating) => void; onReveal?: () => void }) {
   const { t } = useI18n();
-  const [revealed, setRevealed] = useState(false);
-  const lang = useVerseLang();
   const word = useCardWordStudy(card);
+  const [revealed, setRevealed] = useState(word.reopened); // back from this card's Interlinear page: as it was left
+  const lang = useVerseLang();
   return (
     <>
       <CardPrompt prompt={card.reference} />
@@ -32,7 +32,7 @@ export function FlashcardMode({ card, intervals, onRate }: { card: Card; interva
       </div>
       {word.drawer}
       <ActionBar>
-        {revealed ? <RatingBar intervals={intervals} onRate={onRate} /> : <Button className="w-full" onClick={() => setRevealed(true)} autoFocus aria-describedby={CARD_PROMPT_ID}>{t('study.showAnswer')}</Button>}
+        {revealed ? <RatingBar intervals={intervals} onRate={onRate} /> : <Button className="w-full" onClick={() => { setRevealed(true); onReveal?.(); }} autoFocus aria-describedby={CARD_PROMPT_ID}>{t('study.showAnswer')}</Button>}
       </ActionBar>
     </>
   );

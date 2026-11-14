@@ -102,7 +102,7 @@ function StudyTiles({ id, practice = false }: { id: string; practice?: boolean }
             <Icon size={22} aria-hidden className="text-muted" />
             <span>
               <span className="block font-serif text-lg">{t(title)}</span>
-              <span className="text-sm text-muted">{t(hint)}</span>
+              <span className="text-[0.8125rem] text-muted">{t(hint)}</span>
             </span>
           </Link>
         </li>
@@ -110,7 +110,7 @@ function StudyTiles({ id, practice = false }: { id: string; practice?: boolean }
       <li className="flex">
         <Link to={`/collections/${id}/study/speak${practice ? '?practice=1' : ''}`} className={`${tile} border-border bg-background hover:bg-surface`}>
           <Mic size={22} aria-hidden className="text-muted" />
-          <span><span className="block font-serif text-lg">{t('mode.speak')}</span><span className="text-sm text-muted">{t('mode.speakHint')}</span></span>
+          <span><span className="block font-serif text-lg">{t('mode.speak')}</span><span className="text-[0.8125rem] text-muted">{t('mode.speakHint')}</span></span>
         </Link>
       </li>
     </ul>

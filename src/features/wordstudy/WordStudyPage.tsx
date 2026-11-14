@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { AppBar, BackButton, ErrorMessage, Page } from '../../components/ui';
+import { CircleHelp } from 'lucide-react';
+import { AppBar, BackButton, ErrorMessage, IconButton, Page } from '../../components/ui';
+import { InterlinearCoach, useInterlinearCoach } from '../../components/Coach';
 import { useI18n } from '../../i18n/I18nProvider';
-import { bsbVerseText, englishKey, lookableEnglish, originalWords, spanishVerseText, strongsNumber, wordForEnglish, versesOfReference, type OriginalWord, type VerseRef } from './wordData';
+import { bsbVerseText, englishKey, lookableEnglish, originalWords, spanishVerseText, wordForEnglish, versesOfReference, type OriginalWord, type VerseRef } from './wordData';
 import { WordStudyDrawer, type WordStudyTarget } from './WordStudyDrawer';
 
 interface Loaded { ref: VerseRef; words: OriginalWord[]; text: string; spanish: string }
@@ -21,6 +23,7 @@ export function WordStudyPage() {
   const refs = versesOfReference(reference);
   const [verses, setVerses] = useState<Loaded[] | 'loading' | 'error'>('loading');
   const [target, setTarget] = useState<WordStudyTarget | null>(null);
+  const coach = useInterlinearCoach();
 
   useEffect(() => {
     if (!refs) return;
@@ -57,23 +60,27 @@ export function WordStudyPage() {
 
   return (
     <>
-      <AppBar title={t('wordstudy.pageTitle')} back={<BackButton label={t('common.back')} />} />
-      <Page className="space-y-6">
+      <AppBar
+        title={t('wordstudy.pageTitle')}
+        back={<BackButton label={t('common.back')} />}
+        actions={<IconButton label={t('coach.interlinear.replay')} onClick={coach.start}><CircleHelp size={22} aria-hidden /></IconButton>}
+      />
+      <Page id="interlinear-page" className="space-y-6">
         <div className="space-y-2">
           <h2 className="font-serif text-2xl">{reference}</h2>
           <div className="space-y-6 pt-2">
           {Array.isArray(verses) && verses.some((v) => v.spanish) && (
-            <div className="space-y-1">
+            <div data-coach="spanish" className="space-y-1">
               <p lang="es" className="scripture text-lg">{verses.map((v, i) => (v.spanish ? <span key={i}>{verses.length > 1 && <sup className="mr-1 text-xs text-muted">{v.ref.verse}</sup>}{v.spanish} </span> : null))}</p>
               <p className="text-sm text-muted">{t('wordstudy.rv1909')}</p>
             </div>
           )}
           {Array.isArray(verses) && verses.some((v) => v.text) && (
-            <div className="space-y-1">
+            <div data-coach="passage" className="space-y-1">
               <p lang="en" className="scripture text-lg">
                 {verses.filter((v) => v.text).map((v) => <PassageVerse key={v.ref.verse} verse={v} numbered={verses.length > 1} hint={hint} onWord={tapWord} />)}
               </p>
-              <p className="text-sm text-muted">{t('wordstudy.bsb')} · {t('wordstudy.tapWord')}{language === 'es' && <> {t('wordstudy.tableFollows')}</>}</p>
+              <p className="text-sm text-muted">{t('wordstudy.bsb')}</p>
             </div>
           )}
           </div>
@@ -84,26 +91,30 @@ export function WordStudyPage() {
         {Array.isArray(verses) && verses.map(({ ref, words }) => (
           <section key={ref.verse} aria-label={`${ref.book} ${ref.chapter}:${ref.verse}`}>
             {verses.length > 1 && <h3 className="mb-2 font-serif text-lg">{ref.book} {ref.chapter}:{ref.verse}</h3>}
-            <div className="-mx-5 overflow-x-auto px-5">
-              <table className="w-full min-w-[22rem] border-collapse text-left">
+            <div>
+              <table className="w-full border-collapse text-left">
                 <thead>
                   <tr className="border-b border-border text-sm text-muted">
                     <th scope="col" className="py-2 pr-3 font-normal">{t('wordstudy.colWord')}</th>
-                    <th scope="col" className="py-2 pr-3 font-normal">{t('wordstudy.colEnglish')}</th>
-                    <th scope="col" className="py-2 font-normal">{t('wordstudy.colStrongs')}</th>
+                    <th scope="col" className="py-2 font-normal">{t('wordstudy.colEnglish')}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {words.map((w) => (
-                    <tr key={w.pos} id={`word-${ref.verse}-${w.pos}`} className={`border-b border-border align-top ${marked === `${ref.verse}.${w.pos}` ? 'bg-surface' : ''}`}>
+                  {words.map((w, n) => (
+                    <tr
+                      key={w.pos}
+                      id={`word-${ref.verse}-${w.pos}`}
+                      data-coach={n === 0 && ref === verses[0]!.ref ? 'row' : undefined}
+                      onClick={() => setTarget({ reference: `${ref.book} ${ref.chapter}:${ref.verse}`, ref, word: w })}
+                      className={`cursor-pointer border-b border-border align-top hover:bg-surface ${marked === `${ref.verse}.${w.pos}` ? 'bg-surface' : ''}`}
+                    >
                       <th scope="row" className="py-2.5 pr-3 text-left font-normal">
-                        <button type="button" onClick={() => setTarget({ reference: `${ref.book} ${ref.chapter}:${ref.verse}`, ref, word: w })} className="block text-left">
-                          <span lang={w.language === 'hebrew' ? 'he' : 'el'} dir={w.language === 'hebrew' ? 'rtl' : 'ltr'} className="block font-serif text-xl leading-tight underline decoration-dotted underline-offset-4">{w.text}</span>
+                        <button type="button" className="block text-left">
+                          <span lang={w.language === 'hebrew' ? 'he' : 'el'} dir={w.language === 'hebrew' ? 'rtl' : 'ltr'} className="block font-serif text-lg leading-tight underline decoration-dotted underline-offset-4">{w.text}</span>
                           <span className="block text-sm text-muted">{w.transliteration}</span>
                         </button>
                       </th>
-                      <td className="py-2.5 pr-3">{w.gloss ?? <span aria-hidden className="text-muted">·</span>}</td>
-                      <td className="py-2.5 text-sm">{strongsNumber(w.strongs)}</td>
+                      <td className="break-words py-2.5">{w.gloss ?? <span aria-hidden className="text-muted">·</span>}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -112,6 +123,7 @@ export function WordStudyPage() {
           </section>
         ))}
       </Page>
+      {coach.open && Array.isArray(verses) && verses.length > 0 && <InterlinearCoach onClose={coach.close} />}
       <WordStudyDrawer target={target} onClose={() => setTarget(null)} hidePage />
     </>
   );

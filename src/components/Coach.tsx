@@ -11,6 +11,8 @@ import { onboardingDisabledForTests } from '../features/onboarding/onboarding';
 export const COACH_ADD_DONE = 'coach_add_done';
 export const COACH_DECK_DONE = 'coach_deck_done';
 export const COACH_SETTINGS_DONE = 'coach_settings_done';
+export const COACH_FLASHCARD_DONE = 'coach_flashcard_done';
+export const COACH_INTERLINEAR_DONE = 'coach_interlinear_done';
 
 export interface CoachStep { anchor: string; title: MessageKey; body: MessageKey; /** Only while Autofill is on (true) or off (false); a step with no value is always shown. */ autofill?: boolean }
 /** In order down the screen. A step whose field is not on the screen (Autofill, when it is not offered) is left out. */
@@ -41,6 +43,13 @@ export const SETTINGS_STEPS: CoachStep[] = [
   { anchor: 'tour', title: 'coach.settings.tour.title', body: 'coach.settings.tour.body' },
 ];
 
+/** The Interlinear guide: the Spanish text (only there when the app is in Spanish), the passage in English, then the table's rows. */
+export const INTERLINEAR_STEPS: CoachStep[] = [
+  { anchor: 'spanish', title: 'coach.interlinear.spanish.title', body: 'coach.interlinear.spanish.body' },
+  { anchor: 'passage', title: 'coach.interlinear.passage.title', body: 'coach.interlinear.passage.body' },
+  { anchor: 'row', title: 'coach.interlinear.row.title', body: 'coach.interlinear.row.body' },
+];
+
 /** The box that scrolls the element (the page itself, unless something around it has its own scrolling). */
 const scrollParent = (el: HTMLElement): Element => {
   for (let p = el.parentElement; p; p = p.parentElement) {
@@ -50,7 +59,8 @@ const scrollParent = (el: HTMLElement): Element => {
   return document.scrollingElement ?? document.documentElement;
 };
 
-const find = (form: string, anchor: string) => document.querySelector<HTMLElement>(`#${form} [data-coach="${anchor}"], header [data-coach="${anchor}"]`);
+/** An empty `form` looks across the whole screen (for a guide on a screen that is not a form). */
+const find = (form: string, anchor: string) => document.querySelector<HTMLElement>(form ? `#${form} [data-coach="${anchor}"], header [data-coach="${anchor}"]` : `[data-coach="${anchor}"]`);
 
 /** Where each guide was when its screen was left for one of its own pages (kept only while the app is open). */
 const resume = new Map<string, number>();
@@ -78,6 +88,22 @@ export function useCoach(isNew: boolean, doneSetting: string, resumeKey?: string
 export const useAddCoach = (isNewCard: boolean) => useCoach(isNewCard, COACH_ADD_DONE);
 export const useDeckCoach = (isNewDeck: boolean) => useCoach(isNewDeck, COACH_DECK_DONE);
 export const useSettingsCoach = () => useCoach(true, COACH_SETTINGS_DONE, 'settings');
+/**
+ * The Flashcard tip is not a spotlight but a note in the middle of the screen, and it comes up the first time an answer is shown (that is when
+ * holding a word makes sense). The ? button brings it back at any time.
+ */
+export function useFlashcardCoach() {
+  const { settings } = useRepositories();
+  const [open, setOpen] = useState(false);
+  const start = useCallback(() => setOpen(true), []);
+  const close = useCallback(() => { setOpen(false); void settings.set(COACH_FLASHCARD_DONE, true); }, [settings]);
+  const answerShown = useCallback(() => {
+    if (onboardingDisabledForTests()) return;
+    void settings.get<boolean>(COACH_FLASHCARD_DONE).then((done) => { if (!done) setOpen(true); });
+  }, [settings]);
+  return { open, start, close, answerShown };
+}
+export const useInterlinearCoach = () => useCoach(true, COACH_INTERLINEAR_DONE);
 
 export const AddCoach = ({ onClose, autofill }: { onClose: () => void; autofill: boolean }) => <Coach form="card-form" all={ADD_STEPS} autofill={autofill} doneLabel="coach.add.done" onClose={onClose} />;
 /**
@@ -93,6 +119,28 @@ export function SettingsCoach({ onClose }: { onClose: () => void }) {
   }, [close]);
   return <Coach form="settings-page" all={SETTINGS_STEPS} resumeKey="settings" doneLabel="coach.add.done" onClose={close} />;
 }
+export function FlashcardCoach({ onClose }: { onClose: () => void }) {
+  const { t } = useI18n();
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+  return createPortal(
+    <div className="coach-fade fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4">
+      <div role="dialog" aria-labelledby="coach-title" aria-describedby="coach-body" className="relative w-[min(21rem,100%)] space-y-5 rounded-2xl border border-border bg-background px-5 pb-5 pt-6 shadow-lg">
+        <IconButton label={t('common.close')} onClick={onClose} className="absolute right-2 top-2"><X size={20} aria-hidden /></IconButton>
+        <div className="space-y-2 pr-8">
+          <h2 id="coach-title" className="font-serif text-lg font-medium leading-tight">{t('coach.flashcard.reveal.title')}</h2>
+          <p id="coach-body" className="text-[0.9375rem] leading-snug text-muted">{t('coach.flashcard.reveal.body')}</p>
+        </div>
+        <Button autoFocus className="w-full" onClick={onClose}>{t('coach.add.done')}</Button>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+export const InterlinearCoach = ({ onClose }: { onClose: () => void }) => <Coach form="interlinear-page" all={INTERLINEAR_STEPS} doneLabel="coach.add.done" onClose={onClose} />;
 export const DeckCoach = ({ onClose }: { onClose: () => void }) => <Coach form="deck-form" all={DECK_STEPS} doneLabel="coach.add.done" onClose={onClose} />;
 
 /**

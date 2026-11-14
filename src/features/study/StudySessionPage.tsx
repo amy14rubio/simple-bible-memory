@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
-import { AppBar, BackButton, Button, ButtonLink, ErrorMessage, Page, Bar } from '../../components/ui';
+import { CircleHelp } from 'lucide-react';
+import { AppBar, BackButton, Button, ButtonLink, ErrorMessage, IconButton, Page, Bar } from '../../components/ui';
+import { FlashcardCoach, useFlashcardCoach } from '../../components/Coach';
 import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
 import type { Rating } from '../../domain/study/rating';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -92,6 +94,7 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
   const { t, formatInterval, formatIntervalSpoken, describeError } = useI18n();
   const { reviews, scheduler, settings } = useRepositories();
   const navigate = useNavigate();
+  const coach = useFlashcardCoach();
   const [started, setStarted] = useState(mode !== 'speak');
   const [queue, setQueue] = useState<SessionEntry[]>(initialQueue);
   const [index, setIndex] = useState(0);
@@ -217,7 +220,8 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
       {bannerEl}
       {/* Not drawn, but screen readers can still read how far through the session you are. */}
       <progress className="sr-only" max={queue.length} value={index} aria-label={t('study.progress')} />
-      <AppBar back={exit} title={extraPractice ? t('study.extraTitle') : <span className="sr-only">{heading}</span>} />
+      <AppBar back={exit} title={extraPractice ? t('study.extraTitle') : <span className="sr-only">{heading}</span>} actions={mode === 'flashcard' ? <IconButton label={t('coach.flashcard.replay')} onClick={coach.start}><CircleHelp size={22} aria-hidden /></IconButton> : undefined} />
+      {coach.open && <FlashcardCoach onClose={coach.close} />}
       <VerseLangProvider value={verseLang}>
       <SpokenIntervalsProvider value={spokenIntervals}>
       <CardPositionProvider value={{ n: index + 1, total: queue.length }}>
@@ -232,7 +236,7 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
           started ? <SpeakMode key={index} card={entry.card} kind={entry.kind} intervals={intervals} onRate={rate} onSkip={skip} onStop={stop} /> : <SpeakStart onStart={() => setStarted(true)} />
         ) : entry.kind === 'recall' ? (
           <>
-            {mode === 'flashcard' && <FlashcardMode key={index} card={entry.card} intervals={intervals} onRate={rate} />}
+            {mode === 'flashcard' && <FlashcardMode key={index} card={entry.card} intervals={intervals} onRate={rate} onReveal={coach.answerShown} />}
             {mode === 'type' && <TypeMode key={index} card={entry.card} intervals={intervals} onRate={rate} />}
             {mode === 'blanks' && <BlanksMode key={index} card={entry.card} intervals={intervals} sessionSeed={seed} difficulty={difficulty} deckPassages={passages} onRate={rate} />}
           </>

@@ -34,9 +34,9 @@ const Passage = ({ text, code, study }: { text: string; code: string | null; stu
 /** Identify card, Flashcard mode: see the passage, recall the verse, reveal, rate. */
 export function IdentifyFlashcard({ card, intervals, onRate }: ModeProps) {
   const { t } = useI18n();
-  const [revealed, setRevealed] = useState(false);
-  const lang = useVerseLang();
   const study = useCardWordStudy(card);
+  const [revealed, setRevealed] = useState(study.reopened);
+  const lang = useVerseLang();
   return (
     <>
       <CardPrompt prompt={t('study.promptName')} />

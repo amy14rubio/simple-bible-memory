@@ -242,7 +242,7 @@ test.describe('the app in Spanish', () => {
     await expect(page.getByRole('link', { name: /Tarjeta/ })).toBeVisible();
     await expect(page.getByRole('link', { name: /Escribir/ })).toBeVisible();
     await expect(page.getByRole('link', { name: /Espacio en blanco/ })).toBeVisible();
-    await expect(page.getByText('Sin manos, en voz alta')).toBeVisible();
+    await expect(page.getByText('Modo audio')).toBeVisible();
 
     await page.getByRole('link', { name: /Tarjeta/ }).click();
     await expect(page.getByRole('list', { name: 'Tarjetas restantes' })).toContainText('Nuevas: 2');

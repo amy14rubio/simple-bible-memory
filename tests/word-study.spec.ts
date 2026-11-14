@@ -54,7 +54,7 @@ test('on a card that is not Berean, holding the verse opens a drawer with the pa
   const row = page.getByRole('row', { name: /ἠγάπησεν/ });
   await expect(row).toContainText('ēgapēsen');
   await expect(row).toContainText('loved');
-  await expect(row).toContainText('G25');
+  await expect(row).not.toContainText('G25'); // the table has no Strong's column (the drawer shows the number)
   await expect(page.getByRole('heading', { name: 'Interlinear' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'John 3:16' })).toBeVisible(); // the passage is spelled out at the top, in the Berean text the words are matched to
   await expect(page.getByText('For God so loved the world that He gave His one and only Son.')).toBeVisible();
@@ -147,7 +147,6 @@ test('in Spanish the Interlinear page shows the verse in Reina-Valera 1909 and k
   await expect(page.getByText('Porque de tal manera amó Dios al mundo.')).toBeVisible();
   await expect(page.getByText('Reina-Valera 1909')).toBeVisible();
   await expect(page.getByText('For God so loved the world that He gave His one and only Son.')).toBeVisible();
-  await expect(page.getByText(/La tabla sigue este texto/)).toBeVisible();
   await expect(page.getByRole('columnheader', { name: 'Palabra original' })).toBeVisible();
   await page.getByRole('button', { name: 'loved', exact: true }).click();
   await expect(page.locator('#word-16-2')).toHaveClass(/bg-surface/);
@@ -193,3 +192,82 @@ test('on the card that shows the verse first, holding a word works only once the
   await expect(drawer(page).getByRole('link', { name: 'Explore in Blue Letter Bible' })).toBeVisible();
 });
 
+
+test('the whole row of the table opens the word, and the table never scrolls sideways, even on a 320px screen', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await mockApi(page);
+  await page.goto('/#/word-study?ref=John%203%3A16');
+  await expect(page.locator('#word-16-2')).toBeVisible();
+  await page.locator('#word-16-2 td').first().click(); // not the Greek word itself: the English column
+  await expect(drawer(page)).toBeVisible();
+  await page.keyboard.press('Escape');
+  const overflow = await page.evaluate(() => { const t = document.querySelector('table')!; return { table: t.scrollWidth - t.clientWidth, page: document.documentElement.scrollWidth - document.documentElement.clientWidth }; });
+  expect(overflow.table).toBeLessThanOrEqual(0);
+  expect(overflow.page).toBeLessThanOrEqual(0);
+});
+
+test.describe('the guides', () => {
+  const guide = (page: Page) => page.getByRole('dialog').filter({ has: page.locator('#coach-title') });
+
+  test('the Interlinear page in Spanish explains the two texts, then the words, then the rows; English skips the first', async ({ browser }) => {
+    const context = await browser.newContext({ locale: 'es-ES' });
+    const page = await context.newPage();
+    await page.addInitScript(() => localStorage.setItem('sbm-force-onboarding', '1'));
+    await mockApi(page);
+    await page.goto('/#/word-study?ref=Juan%203%3A16');
+    for (const title of ['Español e inglés', 'Toca una palabra', 'Toca una fila']) {
+      await expect(guide(page).getByRole('heading', { level: 2 })).toHaveText(title);
+      await guide(page).getByRole('button').last().click();
+    }
+    await expect(guide(page)).toHaveCount(0);
+    await context.close();
+  });
+
+  test('English: two steps', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('sbm-force-onboarding', '1'));
+    await mockApi(page);
+    await page.goto('/#/word-study?ref=John%203%3A16');
+    await expect(guide(page).getByRole('heading', { level: 2 })).toHaveText('Tap a word');
+    await guide(page).getByRole('button', { name: 'Next' }).click();
+    await expect(guide(page).getByRole('heading', { level: 2 })).toHaveText('Tap a row');
+    await guide(page).getByRole('button', { name: 'Got it' }).click();
+    await page.getByRole('button', { name: 'How to use the Interlinear' }).click(); // the ? at the far right
+    await expect(guide(page).getByRole('heading', { level: 2 })).toHaveText('Tap a word');
+  });
+
+  test('Flashcard: nothing until the answer is shown, then a note in the middle of the screen; the ? button brings it back', async ({ page }) => {
+    await mockApi(page);
+    const id = await createDeck(page);
+    await addCard(page, id, 'John 3:16', 'For God so loved the world that He gave His one and only Son.');
+    await setCardKinds(page, 'Recall the passage');
+    await page.evaluate(() => localStorage.setItem('sbm-force-onboarding', '1'));
+    await page.goto(`/#/collections/${id}/study/flashcard`);
+    await expect(page.getByRole('button', { name: 'Show answer' })).toBeVisible();
+    await expect(guide(page)).toHaveCount(0);
+    await page.getByRole('button', { name: 'Show answer' }).click();
+    await expect(guide(page).getByRole('heading', { level: 2 })).toHaveText('Study the original words');
+    await expect(guide(page)).toContainText('press and hold');
+    const box = (await guide(page).boundingBox())!;
+    const view = page.viewportSize()!;
+    expect(Math.abs(box.y + box.height / 2 - view.height / 2)).toBeLessThan(40); // in the middle
+    await guide(page).getByRole('button', { name: 'Got it' }).click();
+    await expect(guide(page)).toHaveCount(0);
+    await page.getByRole('button', { name: 'How to study the words' }).click();
+    await expect(guide(page)).toBeVisible();
+  });
+});
+
+test('Back from the Interlinear page lands on the same card with its answer shown and the drawer open again, once', async ({ page }) => {
+  await mockApi(page);
+  await openFlashcard(page, 'For God so loved the world that He gave His one and only Son.');
+  await hold(page, 'loved');
+  await drawer(page).getByRole('button', { name: 'See every word of this verse' }).click();
+  await expect(page).toHaveURL(/word-study/);
+  await page.getByRole('button', { name: 'Back' }).click();
+  await expect(page).toHaveURL(/study\/flashcard/);
+  await expect(drawer(page)).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(drawer(page)).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Show answer' })).toHaveCount(0); // the answer stays shown
+  await expect(page.getByRole('button', { name: 'Good' })).toBeVisible();
+});

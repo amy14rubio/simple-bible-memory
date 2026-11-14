@@ -18,7 +18,7 @@ const button = 'flex min-h-12 w-full items-center justify-center rounded-lg px-5
  * The drawer behind a word: when the word is known, its original spelling, Strong's number and definition; always three ways to go on:
  * the word-by-word page for the verse, Blue Letter Bible, and a verse commentary.
  */
-export function WordStudyDrawer({ target, onClose, hidePage = false }: { target: WordStudyTarget | null; onClose: () => void; /** Already on the word-by-word page: no button to it. */ hidePage?: boolean }) {
+export function WordStudyDrawer({ target, onClose, onLeave, hidePage = false }: { target: WordStudyTarget | null; onClose: () => void; /** Called just before going to the Interlinear page. */ onLeave?: () => void; /** Already on the word-by-word page: no button to it. */ hidePage?: boolean }) {
   const { t, language } = useI18n();
   const navigate = useNavigate();
   const open = target !== null;
@@ -106,19 +106,19 @@ export function WordStudyDrawer({ target, onClose, hidePage = false }: { target:
           {!verse && <p className="text-muted">{t('wordstudy.unsupported')}</p>}
           {verse && target && !hidePage && (
             <section className={`space-y-2 ${word ? '' : '-mt-1'}`}>
-              <button type="button" className={`${button} bg-primary text-primary-foreground`} onClick={() => { onClose(); navigate(`/word-study?ref=${encodeURIComponent(target.reference)}${word && target.ref ? `&w=${target.ref.verse}.${word.pos}` : ''}`); }}>
+              <button type="button" className={`${button} bg-primary text-primary-foreground`} onClick={() => { onLeave?.(); onClose(); navigate(`/word-study?ref=${encodeURIComponent(target.reference)}${word && target.ref ? `&w=${target.ref.verse}.${word.pos}` : ''}`); }}>
                 {t('wordstudy.page')}
               </button>
               <ExternalLink href={spanish ? bibliaTodoUrl(verse) : word ? blueLetterUrl(word.strongs) : blueLetterVerseUrl(verse)} className={`${button} border border-border`}>{t('wordstudy.blueLetter')}</ExternalLink>
               <ExternalLink href={commentaryUrl(verse, language)} className={`${button} border border-border`}>{t('wordstudy.commentary', { site: commentarySite(language) })}</ExternalLink>
             </section>
           )}
-          <div className="space-y-0.5 text-xs text-muted">
+          {word && <div className="space-y-0.5 text-xs text-muted">
             <p>{t('wordstudy.creditWords')}</p>
             {spanish && ubs && ubs !== 'loading'
               ? <p>{t('wordstudy.creditUbs')} <ExternalLink href="https://creativecommons.org/licenses/by-sa/4.0/" className="underline underline-offset-2">CC BY-SA 4.0</ExternalLink></p>
               : <p>{t('wordstudy.creditDefinitions')} <ExternalLink href="https://www.stepbible.org/" className="underline underline-offset-2">STEPBible.org</ExternalLink> · <ExternalLink href="https://creativecommons.org/licenses/by/4.0/" className="underline underline-offset-2">CC BY 4.0</ExternalLink></p>}
-          </div>
+          </div>}
         </div>
         <div className="h-6" />
       </DrawerContent>
