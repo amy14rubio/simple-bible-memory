@@ -127,10 +127,10 @@ export const blueLetterVerseUrl = (ref: VerseRef) => {
 
 /**
  * La Biblia Todo's interlinear page for a verse, in Spanish ("Romans 5:8" -> .../interlineal/romanos-5-8?v=RV1960): the Spanish book name without accents,
- * hyphens for spaces. It is for the verse, whichever word was pressed.
+ * hyphens for spaces, except that the number of a numbered book is joined to its name ("1 Juan" -> .../1juan-1-1). It is for the verse, whichever word was pressed.
  */
 export const bibliaTodoUrl = (ref: VerseRef) => {
-  const slug = (BOOK_NAMES_ES[ref.book] ?? ref.book).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/ /g, '-');
+  const slug = (BOOK_NAMES_ES[ref.book] ?? ref.book).replace(/^(\d) /, '$1').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/ /g, '-');
   return `https://www.bibliatodo.com/interlineal/${slug}-${ref.chapter}-${ref.verse}?v=RV1960`;
 };
 

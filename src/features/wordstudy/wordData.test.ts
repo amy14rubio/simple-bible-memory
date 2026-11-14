@@ -46,7 +46,12 @@ describe('La Biblia Todo (Spanish)', () => {
     const at = (r: string) => versesOfReference(r)![0]!;
     expect(bibliaTodoUrl(at('Romans 5:8'))).toBe('https://www.bibliatodo.com/interlineal/romanos-5-8?v=RV1960');
     expect(bibliaTodoUrl(at('Génesis 1:1'))).toBe('https://www.bibliatodo.com/interlineal/genesis-1-1?v=RV1960');
-    expect(bibliaTodoUrl(at('1 Corintios 13:4'))).toBe('https://www.bibliatodo.com/interlineal/1-corintios-13-4?v=RV1960');
+    expect(bibliaTodoUrl(at('1 Corintios 13:4'))).toBe('https://www.bibliatodo.com/interlineal/1corintios-13-4?v=RV1960');
+    expect(bibliaTodoUrl(at('1 Juan 1:1'))).toBe('https://www.bibliatodo.com/interlineal/1juan-1-1?v=RV1960'); // the link that works on the site
+    // the addresses the site itself uses, checked by hand
+    for (const [ref, slug] of [['Cantares 1:1', 'cantares'], ['Éxodo 1:1', 'exodo'], ['2 Timoteo 1:1', '2timoteo'], ['Hechos 1:1', 'hechos'], ['Apocalipsis 1:1', 'apocalipsis']] as const) {
+      expect(bibliaTodoUrl(at(ref))).toBe(`https://www.bibliatodo.com/interlineal/${slug}-1-1?v=RV1960`);
+    }
     expect(bibliaTodoUrl(at('Salmos 23:1'))).toBe('https://www.bibliatodo.com/interlineal/salmos-23-1?v=RV1960');
   });
 });
