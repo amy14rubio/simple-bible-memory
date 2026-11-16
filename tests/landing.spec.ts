@@ -325,6 +325,19 @@ for (const [lang, path, title] of [['English', '/landing.html', 'Simple Bible Me
       await expect(foot).toHaveAttribute('data-revealed', '');
     });
 
+    test('the paragraphs of the note come in one after another, once the letter is in view', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 700 });
+      await page.goto(path);
+      const paras = page.locator('#hello .letter p');
+      await expect(paras).toHaveCount(4);
+      expect(await paras.evaluateAll((els) => els.map((e) => (e as HTMLElement).style.getPropertyValue('--d')))).toEqual(['0ms', '110ms', '220ms', '330ms']); // staggered
+      for (let i = 0; i < 4; i++) await expect(paras.nth(i)).not.toHaveClass(/rv-go/); // not shown while the note is below the screen
+      expect(await paras.first().evaluate((el) => getComputedStyle(el).opacity)).toBe('0');
+      await page.locator('#hello .letter').scrollIntoViewIfNeeded();
+      for (let i = 0; i < 4; i++) await expect(paras.nth(i)).toHaveAttribute('data-revealed', '', { timeout: 4000 }); // all of them end up shown, back to their normal styles
+      expect(await paras.last().evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+    });
+
     test('the hero buttons are quick to appear and, once there, react to hover with no reveal delay', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto(path);

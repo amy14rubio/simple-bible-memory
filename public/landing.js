@@ -27,7 +27,7 @@
     { sel: ['.top .brand', '.top nav .button'], base: 0 }, // the top bar and the hero buttons play on load, after the title
     { sel: ['.hero .stores .badge'], base: 420, step: 70 },
     { sel: ['#demo'], base: 0 },
-    { sel: ['.hello .letter'], base: 0 },
+    { sel: ['.hello .letter p'], base: 0 }, // each paragraph of the note comes in a moment after the one before (they all start when the letter comes into view)
     { sel: ['.notes li'], base: 0 }, // the pictures with their notes come in one after another
     { sel: ['.free .button'], base: 0 },
     { sel: ['footer .foot-brand', 'footer .foot-col', 'footer .lang'], base: 0 }
@@ -63,7 +63,19 @@
     var po = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('rv-go'); po.unobserve(e.target); } });
     }, { threshold: 0.5 });
-    blocks.forEach(function (b) { (b.matches('.notes li') ? po : bo).observe(b); });
+    blocks.forEach(function (b) { if (!b.matches('.hello .letter p')) (b.matches('.notes li') ? po : bo).observe(b); });
+    // The paragraphs of the note are not watched one by one: when the letter comes into view they all start, 110ms apart.
+    var letter = document.querySelector('.hello .letter');
+    if (letter) {
+      var lo = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          Array.prototype.forEach.call(letter.querySelectorAll('p'), function (p) { p.classList.add('rv-go'); });
+          lo.unobserve(letter);
+        });
+      }, { threshold: 0.15 });
+      lo.observe(letter);
+    }
   } else heads.concat(subs, blocks).forEach(function (h) { h.classList.add('rv-go'); });
 })();
 /* The little demo on the landing page: it looks like the app's own study screens. Flip and rate a flashcard, type a verse, fill in the blanks,
