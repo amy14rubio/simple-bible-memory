@@ -167,11 +167,19 @@ for (const p of PAGES) {
       }
     });
 
+    test('the app has one name on the page, in the page\'s language: the top bar, the donation line and the footer all use it', async ({ page }) => {
+      await page.goto(p.url);
+      await expect(page.locator('header .brand')).toContainText(p.heading);
+      await expect(page.locator('footer .brand')).toContainText(p.heading);
+      await expect(page.locator('.free p')).toContainText(p.heading);
+      if (p.lang === 'Spanish') await expect(page.locator('body')).not.toContainText('Simple Bible Memory'); // no English name left on the Spanish page
+    });
+
     test('the footer has the logo, columns of links, and a language picker that opens upwards', async ({ page }) => {
       await page.goto(p.url);
       const footer = page.locator('footer');
       await expect(footer.locator('img[src="/logo.svg"]')).toBeVisible();
-      await expect(footer.getByRole('link', { name: 'Simple Bible Memory' })).toBeVisible();
+      await expect(footer.getByRole('link', { name: p.heading })).toBeVisible(); // the app's name in this language
       const summary = footer.locator('summary');
       await expect(summary).toContainText(p.langName);
       const menu = footer.getByRole('list', { name: p.langLabel });

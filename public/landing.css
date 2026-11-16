@@ -717,11 +717,9 @@ h1 {
   line-height: 1.6;
   text-wrap: pretty;
 }
-.letter p:nth-last-child(-n + 2) {
-  text-wrap: balance; /* the short closing lines: even lines, so a last line is never just "to use!" or "bless! ❤︎" */
-}
 .letter .signoff {
   margin: 1.5rem 0 0; /* set apart by space only: the same type as the rest of the letter */
+  text-wrap: balance; /* a short closing line: even lines, so a last line is never just "bless! ❤︎" */
 }
 .notes {
   list-style: none;
