@@ -628,6 +628,7 @@ export const en = {
   'reminders.defaultMessage': "Don't forget to study your verses today!",
   'reminders.add': 'Add a reminder',
   'reminders.denied': "Notifications are blocked for this app. Turn them on in your phone's settings, then try again.",
+  'reminders.androidTip': "Are your reminders late?\n\nOpen your phone's Settings > Apps > Simple Bible Memory > Battery, and choose Unrestricted.\n\nOn Samsung, also remove the app from Settings > Battery > Background usage limits > Sleeping apps.",
   'reminders.list': 'Your reminders',
   'reminders.new': 'New reminder',
   'reminders.edit': 'Edit reminder',

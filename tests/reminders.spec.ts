@@ -257,3 +257,33 @@ test('everywhere else the time button opens the clock from code, and the field u
   const topmost = await page.evaluate(([x, y]) => (document.elementFromPoint(x!, y!) as HTMLElement | null)?.tagName, [box.x + box.width / 2, box.y + box.height / 2]);
   expect(topmost).toBe('BUTTON');
 });
+
+test('on Android, an "i" next to Notifications says what to do when reminders are late, with > between the steps; it is not shown anywhere else', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('sbm-fake-android', '1'));
+  await page.goto('/#/settings');
+  await page.getByRole('button', { name: 'Notifications' }).click(); // the heading is the "i": tapping it opens the tip, even before reminders are on
+  const tip = page.getByRole('dialog', { name: 'Notifications' });
+  await expect(tip).toContainText('Are your reminders late?');
+  await expect(tip).toContainText(/Settings\s> Apps\s> Simple Bible Memory\s> Battery/); // (a no-break space before each >, so a line never starts with one)
+  await expect(tip).toContainText('Unrestricted');
+  await expect(tip).toContainText('Samsung');
+  await expect(tip).not.toContainText('On Android'); // it is only ever shown on Android, so it does not need to say so
+});
+
+test('the "i" is not shown on iPhone, iPad or the web: Notifications is just a heading there', async ({ page }) => {
+  await page.goto('/#/settings');
+  await expect(page.getByRole('heading', { name: 'Notifications' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Notifications' })).toHaveCount(0);
+});
+
+test('the Android tip is in Spanish too, with the Spanish app name', async ({ browser }) => {
+  const ctx = await browser.newContext({ locale: 'es-ES' });
+  const page = await ctx.newPage();
+  await page.addInitScript(() => localStorage.setItem('sbm-fake-android', '1'));
+  await page.goto('/#/settings');
+  await page.getByRole('button', { name: es['settings.reminders'] as string }).click();
+  const tip = page.getByRole('dialog');
+  await expect(tip).toContainText('¿Te llegan tarde los recordatorios?');
+  await expect(tip).toContainText(/Aplicaciones\s> Memoria Bíblica Simple\s> Batería/);
+  await ctx.close();
+});
