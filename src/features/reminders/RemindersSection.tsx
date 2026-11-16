@@ -53,12 +53,13 @@ export function RemindersSection() {
     return commit({ enabled: true, reminders });
   };
 
-  const save = (r: Reminder) => {
-    const exists = state.reminders.some((x) => x.id === r.id);
-    const reminders = exists ? state.reminders.map((x) => (x.id === r.id ? r : x)) : [...state.reminders, r];
+  /** A new reminder, confirmed with "Add": it joins the list and the sheet closes. */
+  const add = (r: Reminder) => {
     setEditing(null);
-    return commit({ ...state, reminders });
+    return commit({ ...state, reminders: [...state.reminders, r] });
   };
+  /** An existing reminder was changed in the sheet: it is saved at once and the sheet stays open. */
+  const change = (r: Reminder) => commit({ ...state, reminders: state.reminders.map((x) => (x.id === r.id ? r : x)) });
   const remove = (id: string) => {
     const reminders = state.reminders.filter((x) => x.id !== id);
     setEditing(null);
@@ -122,7 +123,8 @@ export function RemindersSection() {
       <ReminderDrawer
         reminder={editing}
         isNew={editing !== null && !state.reminders.some((x) => x.id === editing.id)}
-        onSave={(r) => void save(r)}
+        onChange={(r) => void change(r)}
+        onAdd={(r) => void add(r)}
         onDelete={(id) => void remove(id)}
         onClose={() => setEditing(null)}
       />

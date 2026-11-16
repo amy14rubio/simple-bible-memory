@@ -646,7 +646,7 @@ export const es: Dictionary = {
   'reminders.time': 'Hora',
   'reminders.day': 'Día',
   'reminders.message': 'Mensaje',
-  'reminders.save': 'Guardar',
+  'reminders.addButton': 'Añadir',
   'reminders.delete': 'Eliminar recordatorio',
   'reminders.summary.daily': 'Cada día a las {time}',
   'reminders.summary.every2days': 'Cada 2 días a las {time}',

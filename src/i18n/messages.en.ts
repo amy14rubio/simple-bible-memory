@@ -640,7 +640,7 @@ export const en = {
   'reminders.time': 'Time',
   'reminders.day': 'Day',
   'reminders.message': 'Message',
-  'reminders.save': 'Save',
+  'reminders.addButton': 'Add',
   'reminders.delete': 'Delete reminder',
   'reminders.summary.daily': 'Every day at {time}',
   'reminders.summary.every2days': 'Every 2 days at {time}',
