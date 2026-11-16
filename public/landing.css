@@ -61,6 +61,8 @@
   display: none !important;
 }
 html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
   scroll-padding-top: 5rem;
@@ -201,13 +203,26 @@ button:focus-visible,
   background: var(--primary);
   color: var(--primary-fg);
   cursor: pointer;
+  transition: transform 0.15s ease-out; /* only the press; the reveal sets its own transition while it plays */
+}
+.button:not(:disabled):active {
+  transform: scale(0.96);
+}
+.button:has(> .icon:first-child) {
+  padding-left: calc(1.5rem - 2px); /* optical: the icon side has a little less padding than the text side */
 }
 .button:hover {
   opacity: 0.9;
 }
 .button.small {
+  position: relative;
   min-height: 2.5rem;
   padding: 0 1rem;
+}
+.button.small::after {
+  content: ''; /* the touch target is 48px tall, though the button is drawn 40px */
+  position: absolute;
+  inset: -0.25rem 0;
 }
 .button.secondary {
   background: transparent;
@@ -306,12 +321,16 @@ h2 {
 } /* dark mode: just a whisper of grain, so the black stays black */
 .hero {
   text-align: center;
-  padding-top: 8rem;
+  padding-top: 11rem; /* lower than the original 8rem */
   padding-bottom: 5rem; /* phones: more room, so "Try it right here" starts lower on the screen */
+  /* The hero is as tall as the first screen (the screen's height less the top bar), so the note below it starts out of sight and nothing of it shows until you scroll.
+     Only the space under the hero grows: its content stays exactly where it was (at the top, under its own padding). Content taller than that simply makes it taller. */
+  min-height: calc(100vh - 4rem);
+  min-height: calc(100svh - 4rem);
 }
 @media (min-width: 48rem) {
   .hero {
-    padding-top: 10rem;
+    padding-top: 12.75rem; /* lower than the original 10rem */
     padding-bottom: 9rem;
   }
   .lead {
@@ -386,7 +405,7 @@ h1 {
   border-radius: 0.75rem;
 }
 .tab {
-  min-height: 2.5rem;
+  min-height: 2.75rem; /* 44px: a comfortable touch target */
   padding: 0.25rem 0.4rem;
   border: 0;
   border-radius: 0.5rem;
@@ -403,7 +422,7 @@ h1 {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-/* On a tablet or desktop the demo is laid out sideways, as wide as the screenshots below: the ways to study down the left, the card on the right */
+/* On a tablet or desktop the demo is laid out sideways, as wide as the page's other blocks: the ways to study down the left, the card on the right */
 @media (min-width: 48rem) {
   .demo {
     display: grid;
@@ -453,6 +472,9 @@ h1 {
   gap: 1.5rem;
   padding: 2.5rem 1.75rem 1rem;
   text-align: center;
+}
+.d-body.top {
+  justify-content: flex-start; /* typing and the blanks, like the app: the reference at the top, the line or the verse right under it */
 }
 .d-bar {
   display: grid;
@@ -610,15 +632,22 @@ h1 {
 .d-results {
   width: 100%;
   display: grid;
-  gap: 1.25rem;
+  gap: 1.5rem; /* as in the app: your answer and the correct verse are two groups with room between them… */
   text-align: left;
 }
+.d-group {
+  display: grid;
+  gap: 0.25rem; /* …and each label sits right over its own text */
+}
 .d-label {
-  margin: 0 0 0.25rem;
+  margin: 0;
   font: inherit;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--muted);
+}
+.nb {
+  white-space: nowrap; /* a blank and the comma or full stop right after it stay together */
 }
 .ok {
   color: var(--good);
@@ -669,117 +698,119 @@ h1 {
   line-height: 1.6;
 }
 
-/* screenshots */
-.screens h2 {
-  margin-bottom: 3.5rem;
-} /* room between the heading and the first screenshot */
-.shots {
-  scrollbar-width: none;
+/* a note from me (.hello): the letter on the left, four pictures with notes beside it (stacked below it on a phone) */
+.hello {
+  text-align: left;
+  padding-top: 4.5rem;
+}
+.hello-wrap {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 3rem;
-  justify-items: center;
-  max-width: 56rem;
-  margin: 0 auto;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); /* the pictures on the left (40%), the letter on the right (60%) */
+  gap: 2.5rem;
+  align-items: start;
 }
-.shot {
+.hello .pics {
+  grid-column: 1;
+  grid-row: 1;
+}
+.hello-text {
+  grid-column: 2;
+  grid-row: 1;
+}
+.hello h2 {
+  text-align: left;
+  margin-bottom: 1rem;
+}
+.letter p {
+  margin: 0 0 0.85rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.letter .signoff {
+  margin: 1.5rem 0 0; /* set apart by space only: the same type as the rest of the letter */
+  text-wrap: balance; /* a short closing line: even lines, so a last line is never just "bless! ❤︎" */
+}
+.notes {
+  list-style: none;
   margin: 0;
-  width: 100%;
-  max-width: 17rem;
+  padding: 0.5rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem 1.25rem;
+  align-items: start;
 }
-.phone {
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 1.75rem;
-  background: var(--surface);
-  box-shadow:
-    0 1px 0 var(--border),
-    0 12px 32px -16px rgb(0 0 0 / 0.25);
-  line-height: 0;
+.notes li:nth-child(2) {
+  grid-column: 2;
+  grid-row: 1 / span 2; /* the tall Anki list runs down the right, beside the other two, which stack on the left */
+  margin-top: 2rem; /* a little lower, so the pictures don't line up like a table */
 }
-.phone img {
+.notes li:nth-child(1) {
+  grid-column: 1;
+  grid-row: 1;
+}
+.notes li:nth-child(3) {
+  grid-column: 1;
+  grid-row: 2;
+}
+.notes figure {
+  margin: 0;
+}
+.notes img {
   display: block;
   width: 100%;
   height: auto;
-}
-.shot figcaption {
-  margin-top: 0.9rem;
-  text-align: center;
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-@media (max-width: 48rem) {
-  .shots::-webkit-scrollbar {
-    display: none;
-  }
-  .shots {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    gap: 1.5rem;
-    max-width: none;
-    margin: 0 calc(var(--gutter) * -1);
-    padding: 0.25rem calc((100vw - min(15rem, 68vw)) / 2) 1.25rem;
-    justify-content: flex-start;
-  }
-  .shot {
-    flex: 0 0 min(15rem, 68vw);
-    max-width: none;
-    scroll-snap-align: center;
-  }
-}
-
-/* features */
-.grid {
-  list-style: none;
-  margin: 3rem 0 0;
-  padding: 0;
-  display: grid;
-  gap: 1.25rem;
-  grid-template-columns: repeat(2, 1fr);
-}
-@media (min-width: 48rem) {
-  /* desktop: the cards line up with the phone screenshots above (the same 56rem, centered; both shrink together on smaller screens) */
-  .grid {
-    max-width: 56rem;
-    margin-inline: auto;
-  }
-}
-.grid li {
-  display: flex;
-  gap: 1.25rem;
-  align-items: center;
-  padding: 1.5rem 1.5rem 1.6rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
   border-radius: 0.75rem;
-  min-height: 8.4rem; /* as tall as on a phone, even where the text fits on one line */
+  outline: 1px solid oklch(0 0 0 / 0.1); /* a hairline outline, pure black on a light page (a tinted one reads as dirt on the edge) */
+  outline-offset: -1px;
+  box-shadow: 0 12px 28px -16px rgb(0 0 0 / 0.35);
+  transform: rotate(-1.2deg); /* the picture is tilted, the caption stays straight and crisp */
 }
-@media (min-width: 40.01rem) {
-  .grid li {
-    padding-block: 3rem; /* taller cards on desktop */
-    justify-content: center; /* the icon and its text sit in the middle of the card, as one group */
+.notes li:nth-child(even) img {
+  transform: rotate(1.2deg);
+}
+@media (prefers-color-scheme: dark) {
+  .notes img {
+    outline-color: oklch(1 0 0 / 0.1); /* pure white on a dark page */
   }
 }
-.grid .icon {
-  width: 2.5rem;
-  height: 2.5rem;
-  color: var(--fg);
-} /* the text color: white in dark mode, black in light mode */
-.grid h3 {
-  font-size: 1.15rem;
-  font-weight: 500;
-  margin: 0 0 0.25rem;
+.notes figcaption {
+  margin-top: 0.75rem; /* a little more, since the tilted corner dips into the gap */
+  text-wrap: pretty;
+  color: var(--fg); /* the page's text color: white-ish on a dark page */
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
-.grid p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.975rem;
-  line-height: 1.55;
+.hello .credit {
+  margin: 1.25rem 0 0;
+  color: color-mix(in srgb, var(--muted) 92%, var(--bg)); /* lighter than the captions */
+  font-size: 0.6rem;
+  line-height: 1.5;
+  text-wrap: pretty;
 }
-@media (max-width: 40rem) {
-  .grid {
-    grid-template-columns: 1fr;
+@media (max-width: 56rem) {
+  .hello-wrap {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+  .hello-text,
+  .hello .pics {
+    grid-column: 1; /* stacked: the letter first, the pictures under it */
+  }
+  .hello-text {
+    grid-row: 1;
+    max-width: 38rem;
+  }
+  .hello .pics {
+    grid-row: 2;
+  }
+}
+@media (max-width: 30rem) {
+  .notes {
+    gap: 1.25rem 0.9rem;
+  }
+  .notes figcaption {
+    font-size: 0.85rem;
   }
 }
 
@@ -842,6 +873,9 @@ h1 {
   transition-delay: var(--d, 0ms); /* the delay applies only while it appears; landing.js removes these classes afterwards */
 }
 @media (prefers-reduced-motion: reduce) {
+  .button:not(:disabled):active {
+    transform: none;
+  }
   .rv-word {
     animation: none;
   }
@@ -867,4 +901,10 @@ img[src*='play-es'] {
     text-align: center;
     text-wrap: balance;
   }
+}
+/* but the typing results are left-aligned on the whole card, as in the app: "Your answer" / "Correct verse" and their text start at the same edge */
+.d-results .d-verse.left {
+  max-width: none;
+  text-align: left;
+  text-wrap: pretty;
 }

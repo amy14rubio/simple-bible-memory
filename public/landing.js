@@ -22,14 +22,13 @@
   // The lines under the headings reveal word by word too, just after their heading.
   var subs = Array.prototype.slice.call(document.querySelectorAll('main .sub, .free p'));
   subs.forEach(function (el) { split(el, 450); });
-  // Cards, screenshots, the demo, the donation button and the footer fade and rise in, one after another within their group.
-  var phoneStrip = matchMedia('(max-width: 48rem)').matches; // on a phone the screenshots are a swipeable strip, so it reveals as one piece
+  // The letter, the demo, the donation button and the footer fade and rise in, one after another within their group.
   var groups = [
     { sel: ['.top .brand', '.top nav .button'], base: 0 }, // the top bar and the hero buttons play on load, after the title
     { sel: ['.hero .stores .badge'], base: 420, step: 70 },
     { sel: ['#demo'], base: 0 },
-    { sel: phoneStrip ? ['.shots'] : ['.shots .shot'], base: 0 },
-    { sel: ['.grid li'], base: 0 },
+    { sel: ['.hello .letter p'], base: 0 }, // each paragraph of the note comes in a moment after the one before (they all start when the letter comes into view)
+    { sel: ['.notes li'], base: 0 }, // the pictures with their notes come in one after another
     { sel: ['.free .button'], base: 0 },
     { sel: ['footer .foot-brand', 'footer .foot-col', 'footer .lang'], base: 0 }
   ];
@@ -60,7 +59,23 @@
     var bo = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('rv-go'); bo.unobserve(e.target); } });
     }, { threshold: 0.15 });
-    blocks.forEach(function (b) { bo.observe(b); });
+    // The pictures beside the note wait until they are half in view, so on the first screen only the note's title shows, not a corner of a picture.
+    var po = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('rv-go'); po.unobserve(e.target); } });
+    }, { threshold: 0.5 });
+    blocks.forEach(function (b) { if (!b.matches('.hello .letter p')) (b.matches('.notes li') ? po : bo).observe(b); });
+    // The paragraphs of the note are not watched one by one: when the letter comes into view they all start, 110ms apart.
+    var letter = document.querySelector('.hello .letter');
+    if (letter) {
+      var lo = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          Array.prototype.forEach.call(letter.querySelectorAll('p'), function (p) { p.classList.add('rv-go'); });
+          lo.unobserve(letter);
+        });
+      }, { threshold: 0.15 });
+      lo.observe(letter);
+    }
   } else heads.concat(subs, blocks).forEach(function (h) { h.classList.add('rv-go'); });
 })();
 /* The little demo on the landing page: it looks like the app's own study screens. Flip and rate a flashcard, type a verse, fill in the blanks,
@@ -99,7 +114,7 @@
           show: 'Show answer', next: 'Try another verse', again: 'Try again', bank: 'Word bank',
           rates: [['Again', '1m', 'again'], ['Hard', '6m', 'hard'], ['Good', '10m', 'good'], ['Easy', '2d', 'easy']],
           rated: function (label, when) { return label + '! You’d see this verse again in ' + when + '. The better you remember it, the longer it waits.'; },
-          right: 'Correct.', wrong: function (w) { return 'Not quite: the word was “' + w + '”.'; }, done: 'That’s it! In the app you’d now rate how it went.',
+          right: 'Correct.', wrong: function (w) { return 'Not quite: the word was “' + w + '”.'; },
           typeLabel: 'Type the verse from memory', typePlaceholder: 'Type the verse from memory…', yourAnswer: 'Your answer', correctVerse: 'Correct verse',
           typed: function (n, total) { return 'You remembered ' + n + ' of ' + total + ' words.'; },
           speakText: ['Recite verses hands-free while you drive or go about your day. The app reads them back, and you rate yourself for easy, relaxed practice.'] },
@@ -107,7 +122,7 @@
           show: 'Mostrar respuesta', next: 'Probar otro versículo', again: 'Probar otra vez', bank: 'Banco de palabras',
           rates: [['Otra vez', '1 min', 'again'], ['Difícil', '6 min', 'hard'], ['Bien', '10 min', 'good'], ['Fácil', '2 d', 'easy']],
           rated: function (label, when) { return '¡' + label + '! Volverías a ver este versículo en ' + when + '. Mientras mejor lo recuerdes, más tarde vuelve.'; },
-          right: 'Correcto.', wrong: function (w) { return 'Casi: la palabra era “' + w + '”.'; }, done: '¡Eso es! En la app ahora calificarías cómo te fue.',
+          right: 'Correcto.', wrong: function (w) { return 'Casi: la palabra era “' + w + '”.'; },
           typeLabel: 'Escribe el versículo de memoria', typePlaceholder: 'Escribe el versículo de memoria…', yourAnswer: 'Tu respuesta', correctVerse: 'Versículo correcto',
           typed: function (n, total) { return 'Recordaste ' + n + ' de ' + total + ' palabras.'; },
           speakText: ['Recita versículos sin manos mientras manejas o sigues con tu día. La app te los lee de vuelta, y tú te calificas para una práctica fácil y tranquila.'] }
@@ -171,7 +186,9 @@
   }
 
   // ---- typing: like the app, a plain line to type on, then your answer and the correct verse with right words green and missed ones red
-  function norm(w) { return w.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9ñ-]/g, ''); }
+  var WORDS = /[\p{L}\p{M}'’]+/gu; // a word is letters (and an apostrophe): a hyphen or a comma is not part of it, so only the word itself is ever painted
+  function wordsOf(text) { return text.match(WORDS) || []; }
+  function norm(w) { return w.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/['’]/g, ''); }
   // Compares the words typed with the verse's words (longest run in common), and says for each step whether it was a match, a verse word that
   // was left out ('x'), or an extra word that was typed ('i').
   function align(expected, typed) {
@@ -186,10 +203,13 @@
     while (b < m) ops.push(['i', b++]);
     return ops;
   }
-  function paintedExpected(words, ops) {
+  function paintedExpected(text, ops) {
     var cls = []; ops.forEach(function (o) { if (o[0] === 'm') cls[o[1]] = 'ok'; if (o[0] === 'x') cls[o[1]] = 'miss'; });
-    var p = el('p', 'd-verse left');
-    words.forEach(function (w, i) { p.appendChild(el('span', cls[i], w)); if (i < words.length - 1) p.appendChild(document.createTextNode(' ')); });
+    var p = el('p', 'd-verse left'), n = 0;
+    text.split(/([\p{L}\p{M}'’]+)/u).forEach(function (part, i) {
+      if (i % 2 === 0) { if (part) p.appendChild(document.createTextNode(part)); return; }
+      p.appendChild(el('span', cls[n++], part));
+    });
     return p;
   }
   function paintedTyped(typedWords, ops) {
@@ -203,8 +223,10 @@
     });
     return p;
   }
+  function group(label, content) { var g = el('div', 'd-group'); g.appendChild(el('h3', 'd-label', label)); g.appendChild(content); return g; }
   function renderType(body, bar, status) {
     var c = FIXED[lang];
+    body.classList.add('top'); // like the app: the reference at the top, the line to type on right under it
     body.appendChild(el('p', 'd-ref', c.ref));
     if (step === 'front') {
       var input = el('textarea', 'd-input'); input.setAttribute('aria-label', T.typeLabel); input.placeholder = T.typePlaceholder; input.rows = 1; input.value = typedText;
@@ -216,14 +238,17 @@
       setTimeout(fit, 0);
       return input;
     }
-    var words = c.text.split(/\s+/), typedWords = typedText.split(/\s+/).filter(Boolean), ops = align(words, typedWords);
+    var words = wordsOf(c.text), typedWords = wordsOf(typedText), ops = align(words, typedWords);
     var right = ops.filter(function (o) { return o[0] === 'm'; }).length;
+    var exact = typedWords.length > 0 && ops.every(function (o) { return o[0] === 'm'; });
     var results = el('div', 'd-results');
-    if (typedWords.length) {
-      results.appendChild(el('h3', 'd-label', T.yourAnswer)); results.appendChild(paintedTyped(typedWords, ops));
-      results.appendChild(el('h3', 'd-label', T.correctVerse)); results.appendChild(paintedExpected(words, ops));
+    if (exact) {
+      results.appendChild(paintedExpected(c.text, ops)); // everything right: just the verse, in green, as in the app
+    } else if (typedWords.length) {
+      results.appendChild(group(T.yourAnswer, paintedTyped(typedWords, ops)));
+      results.appendChild(group(T.correctVerse, paintedExpected(c.text, ops)));
     } else {
-      results.appendChild(el('h3', 'd-label', T.correctVerse)); results.appendChild(el('p', 'd-verse left', c.text)); // nothing typed: just the verse, as in the app
+      results.appendChild(group(T.correctVerse, el('p', 'd-verse left', c.text))); // nothing typed: just the verse, as in the app
     }
     body.appendChild(results);
     status.textContent = T.typed(right, words.length);
@@ -241,23 +266,35 @@
 
   function renderBlanks(body, bar, status) {
     var b = BLANKS[lang], parts = b.template.split(/\{(\d)\}/);
+    body.classList.add('top'); // like the app: the reference at the top, the verse right under it
     body.appendChild(el('p', 'd-ref', FIXED[lang].ref));
-    var verse = el('p', 'd-verse blanks');
+    var verse = el('p', 'd-verse blanks'), stick = null;
     for (var i = 0; i < parts.length; i++) {
-      if (i % 2 === 0) { verse.appendChild(document.createTextNode(parts[i])); continue; }
-      var n = Number(parts[i]), span;
+      if (i % 2 === 0) {
+        var text = parts[i];
+        if (stick) { var punct = /^[,.;:!?)”’]+/.exec(text); if (punct) { stick.appendChild(document.createTextNode(punct[0])); text = text.slice(punct[0].length); } stick = null; }
+        if (text) verse.appendChild(document.createTextNode(text));
+        continue;
+      }
+      var n = Number(parts[i]), span; // (an empty blank holds a no-break space, so it keeps its height)
       if (n < blankStep) {
         span = el('span', picked[n] === b.answers[n] ? '' : 'wrong', b.answers[n]);
       } else {
-        span = el('span', n === blankStep ? 'blank current' : 'blank', ' '); span.style.width = Math.max(4, b.answers[n].length) + 'ch';
+        span = el('span', n === blankStep ? 'blank current' : 'blank', '\u00a0'); span.style.width = Math.max(4, b.answers[n].length) + 'ch';
         if (n === blankStep) span.setAttribute('aria-current', 'step');
       }
-      verse.appendChild(span);
+      stick = el('span', 'nb'); stick.appendChild(span); verse.appendChild(stick); // a comma or full stop right after a blank never wraps onto a line of its own
     }
     body.appendChild(verse);
     if (blankStep >= b.answers.length) {
-      body.appendChild(el('p', 'd-msg', T.done));
-      status.textContent = verdict + ' ' + T.done;
+      status.textContent = verdict;
+      if (rating === null) { // every blank is filled: rate how it went, as in the app
+        var r = ratesRow(function (i) { rating = i; render(); });
+        bar.appendChild(r.row);
+        return r.first;
+      }
+      var msg = el('p', 'd-msg', T.rated(T.rates[rating][0], T.rates[rating][1])); body.appendChild(msg);
+      status.textContent = msg.textContent;
       var again = button(T.again, 'button secondary full', function () { reset(); render(); });
       bar.appendChild(again);
       return again;

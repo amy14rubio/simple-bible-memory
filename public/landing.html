@@ -26,8 +26,8 @@
 // Text reveal: hide the headings until landing.js has split them into words (visitors who ask for less motion never get this). If the script is slow or missing, show the text after 2.5 seconds.
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { document.documentElement.classList.add('reveal-pending'); setTimeout(function () { document.documentElement.classList.remove('reveal-pending'); }, 2500); }
 </script>
-<link rel="stylesheet" href="/landing.css?v=202611102142">
-<link rel="stylesheet" href="/footer.css?v=202611102114">
+<link rel="stylesheet" href="/landing.css?v=202611170900">
+<link rel="stylesheet" href="/footer.css?v=202611161300">
 <link rel="alternate" hreflang="en" href="/">
 <link rel="alternate" hreflang="es" href="/es">
 </head>
@@ -49,39 +49,33 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { document.document
 </div>
 </section>
 
+<section id="hello" class="hello" aria-labelledby="hello-title">
+<div class="hello-wrap">
+<div class="hello-text">
+<h2 id="hello-title">Hello there!</h2>
+<div class="letter">
+<p>The idea for this app really came from countless hours of studying and memorizing Bible verses on Anki, and wishing there was something designed specifically for Scripture memorization.</p>
+<p>Every feature you’ll find here was inspired by something I wished I had during my own Bible memorization journey. I wanted to make something that would make the process a little more enjoyable and accessible.</p>
+<p>I hope this app can be a simple, helpful little tool for you to use!</p>
+<p class="signoff">Thanks for stopping by, and God bless! ❤︎</p>
+</div>
+</div>
+<div class="pics">
+<ul class="notes" aria-label="Screenshots from my phone">
+<li><figure><img src="/landing/note/verse-psalm-73.webp" alt="Psalm 73:23–25 on a phone, with the verses highlighted in blue." width="640" height="717" loading="lazy"><figcaption>Verses I highlighted while reading…</figcaption></figure></li>
+<li><figure><img src="/landing/note/anki-list-1.webp" alt="The list of verses in my Anki deck, shown as plain white text in a table on a black screen: “128 cards shown”." width="640" height="889" loading="lazy"><figcaption>My verse list in Anki: 128 cards of plain text. That means 54 memorized verses, my progress over 1 or 2 years.</figcaption></figure></li>
+<li><figure><img src="/landing/note/verse-habacuc-2.webp" alt="Habakkuk 2:14 (in Spanish) on a phone, highlighted in gray." width="640" height="255" loading="lazy"><figcaption>…and kept forgetting to add to memorize.</figcaption></figure></li>
+</ul>
+<p class="credit">Screenshots from my phone. Verse text: Amplified® Bible, © 2015 The Lockman Foundation; Reina-Valera 1960, © Sociedades Bíblicas en América Latina.</p>
+</div>
+</div>
+</section>
+
 <section id="try" class="try" aria-labelledby="try-title">
 <h2 id="try-title">Try it right here</h2>
 <p class="sub">Pick a way to study and give it a go.</p>
 <div id="demo" class="demo" role="group" aria-label="Demo" hidden></div>
 <noscript><p class="note">The demo needs JavaScript. You can also open the app and try it there.</p></noscript>
-</section>
-
-<section class="screens" aria-labelledby="shots-title">
-<h2 id="shots-title">See it in the app</h2>
-<div class="shots" role="region" aria-label="Screenshots of the app" tabindex="0">
-<figure class="shot">
-<div class="phone"><picture><source media="(prefers-color-scheme: dark)" srcset="/landing/dark/04-decks.png"><img src="/landing/light/04-decks.png" alt="The app’s home screen: a list of collections with the number of verses to study today." width="540" height="1170" loading="lazy"></picture></div>
-<figcaption>Your collections</figcaption>
-</figure>
-<figure class="shot">
-<div class="phone"><picture><source media="(prefers-color-scheme: dark)" srcset="/landing/dark/02-spaced-repetition.png"><img src="/landing/light/02-spaced-repetition.png" alt="A verse with its reference and text, and four buttons (Again, Hard, Good, Easy) that show when it will come back." width="540" height="1170" loading="lazy"></picture></div>
-<figcaption>Rate each verse</figcaption>
-</figure>
-<figure class="shot">
-<div class="phone"><picture><source media="(prefers-color-scheme: dark)" srcset="/landing/dark/03-practice.png"><img src="/landing/light/03-practice.png" alt="Psalm 23 with some words missing and a bank of words to tap." width="540" height="1170" loading="lazy"></picture></div>
-<figcaption>Fill in the blanks</figcaption>
-</figure>
-</div>
-</section>
-
-<section id="features" class="features" aria-labelledby="feat-title">
-<h2 id="feat-title">Simple on purpose</h2>
-<ul class="grid">
-<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" x2="22" y1="8" y2="13"/><line x1="22" x2="17" y1="8" y2="13"/></svg><div><h3>No account needed</h3><p>Open it and start. Nothing to sign up for.</p></div></li>
-<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><div><h3>English and Spanish</h3><p>The whole app, in both English and Spanish.</p></div></li>
-<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 14v2.2l1.6 1"/><path d="M16 2v3"/><path d="M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338"/><path d="M3 9h5.859"/><path d="M8 2v3"/><circle cx="16" cy="16" r="6"/></svg><div><h3>Spaced repetition</h3><p>Each verse returns just before you’d forget it.</p></div></li>
-<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 5H3"/><path d="M12 19H3"/><path d="M14 3v4"/><path d="M16 17v4"/><path d="M21 12h-9"/><path d="M21 19h-5"/><path d="M21 5h-7"/><path d="M8 10v4"/><path d="M8 12H3"/></svg><div><h3>Make it yours</h3><p>Colors, fonts, text size and how you study.</p></div></li>
-</ul>
 </section>
 
 <section id="free" class="free" aria-labelledby="free-title">
@@ -110,6 +104,6 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { document.document
 </ul>
 </details>
 </footer>
-<script src="/landing.js?v=202611102114" defer></script>
+<script src="/landing.js?v=202611170800" defer></script>
 </body>
 </html>
