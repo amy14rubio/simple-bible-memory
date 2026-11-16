@@ -25,7 +25,7 @@ test('card kinds and blanks difficulty are their own pages, showing the current 
   await expect(kindsRow).toContainText('Identify the verse'); // remembered
 
   await blanksRow.click();
-  await expect(page.getByRole('radio')).toHaveCount(3);
+  await expect(page.getByRole('radio')).toHaveCount(4); // Easy, Medium, Hard, Extreme
   await expect(page.getByRole('radio', { name: 'Medium' })).toBeChecked();
   await page.getByRole('radio', { name: 'Hard' }).check();
   await page.getByRole('link', { name: 'Back' }).click();
@@ -85,3 +85,13 @@ test('the Privacy page\'s own "i" gives its summary, and Settings has just a Pri
   await expect(drawer).toContainText('you can delete your account and its data any time');
 });
 
+
+test('in Spanish the four blanks levels are Fácil, Intermedio, Difícil and Extremo', async ({ browser }) => {
+  const ctx = await browser.newContext({ locale: 'es-ES' });
+  const page = await ctx.newPage();
+  await page.goto('/#/settings/blanks');
+  await expect(page.getByRole('radio')).toHaveCount(4);
+  for (const name of ['Fácil', 'Intermedio', 'Difícil', 'Extremo']) await expect(page.getByRole('radio', { name, exact: true })).toBeVisible();
+  await expect(page.getByRole('radio', { name: 'Intermedio', exact: true })).toBeChecked(); // the default level
+  await ctx.close();
+});
