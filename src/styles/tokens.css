@@ -117,6 +117,10 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  /* iPhone and iPad draw a sheet's dimmed background as "absolute" (see components/shadcn/drawer.tsx), which is measured from the nearest
+     positioned ancestor. Without one it is measured from the top of the page's first screen, so a page scrolled down by 65px left the
+     bottom 65px of the screen undimmed. With the page itself as that ancestor, the dimmed layer covers the whole page, however far it is scrolled. */
+  position: relative;
 }
 /* Keyboard focus ring for buttons, links, radios and checkboxes (it never shows for taps or clicks). */
 :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
