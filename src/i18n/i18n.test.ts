@@ -31,8 +31,10 @@ describe('dictionaries', () => {
     for (const k of keys) for (const f of [...forms(en[k]), ...forms(es[k])]) expect(f.trim(), k).not.toBe('');
   });
 
-  it('nothing was left untranslated, except words that are the same in both languages', () => {
-    const sameInBoth = keys.filter((k) => JSON.stringify(en[k]) === JSON.stringify(es[k]));
+  it('nothing was left untranslated, except names that are the same in both languages', () => {
+    // The names of two Bible translations are written the same in English and in Spanish (the Interlinear page's captions under the verses).
+    const SAME_ON_PURPOSE = ['wordstudy.bsb', 'wordstudy.rv1909'];
+    const sameInBoth = keys.filter((k) => JSON.stringify(en[k]) === JSON.stringify(es[k]) && !SAME_ON_PURPOSE.includes(k));
     expect(sameInBoth).toEqual([]);
   });
 
