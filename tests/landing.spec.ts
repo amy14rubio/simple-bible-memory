@@ -7,13 +7,13 @@ const PAGES = [
     lang: 'English', url: '/landing.html', other: '/es', heading: 'Simple Bible Memory', tagline: 'Learn scripture by heart', open: 'Start Practicing',
     play: 'Get it on Google Play', apple: 'Download on the App Store', donate: 'Support on Ko-fi',
     show: 'Show answer', rates: ['Again', 'Hard', 'Good', 'Easy'], goodWhen: /10m/, next: 'Try another verse', first: 'Proverbs 3:5-6', second: 'Romans 5:8',
-    typeTab: 'Type', speakTab: 'Speak', blanksTab: 'Fill in the blanks', typeFull: 'For God didn’t give us a spirit of fear, but of power, love, and self-control.', typePartial: 'For God give us a spirit of fear', typeAll: /You remembered 15 of 15 words/, typeSome: /You remembered 8 of 15 words/, check: 'Show answer', speakText: 'Recite verses hands-free while you drive or go about your day. The app reads them back, and you rate yourself for easy, relaxed practice.', langName: 'English', langOther: 'Español', langOtherHref: '/es', langLabel: 'Language', hello: 'Hello there!', glad: /The idea for this app really came from countless hours of studying and memorizing Bible verses on Anki/, bye: /Thanks for stopping by, and God bless! ❤︎/, words: ['fear', 'power', 'self-control'], done: /That’s it!/, wrongWord: 'love', wrongNote: /Not quite: the word was “fear”/,
+    typeTab: 'Type', speakTab: 'Speak', blanksTab: 'Fill in the blanks', typeFull: 'For God didn’t give us a spirit of fear, but of power, love, and self-control.', typePartial: 'For God give us a spirit of fear', typeAll: /You remembered 16 of 16 words/, typeSome: /You remembered 8 of 16 words/, check: 'Show answer', speakText: 'Recite verses hands-free while you drive or go about your day. The app reads them back, and you rate yourself for easy, relaxed practice.', langName: 'English', langOther: 'Español', langOtherHref: '/es', langLabel: 'Language', hello: 'Hello there!', glad: /The idea for this app really came from countless hours of studying and memorizing Bible verses on Anki/, bye: /Thanks for stopping by, and God bless! ❤︎/, words: ['fear', 'power', 'self-control'], wrongWord: 'love', wrongNote: /Not quite: the word was “fear”/,
   },
   {
     lang: 'Spanish', url: '/es/landing.html', other: '/', heading: 'Memoria Bíblica Simple', tagline: 'Guarda las Escrituras en tu corazón', open: 'Empezar a practicar',
     play: 'Disponible en Google Play', apple: 'Descargar en el App Store', donate: 'Apoyar en Ko-fi',
     show: 'Mostrar respuesta', rates: ['Otra vez', 'Difícil', 'Bien', 'Fácil'], goodWhen: /10 min/, next: 'Probar otro versículo', first: 'Proverbios 3:5-6', second: 'Romanos 5:8',
-    typeTab: 'Escribir', speakTab: 'Hablar', blanksTab: 'Completar espacios', typeFull: 'Porque no nos ha dado Dios el espíritu de temor, sino el de fortaleza, y de amor, y de templanza.', typePartial: 'Porque no nos ha dado Dios el espiritu de temor', typeAll: /Recordaste 20 de 20 palabras/, typeSome: /Recordaste 10 de 20 palabras/, check: 'Mostrar respuesta', speakText: 'Recita versículos sin manos mientras manejas o sigues con tu día. La app te los lee de vuelta, y tú te calificas para una práctica fácil y tranquila.', langName: 'Español', langOther: 'English', langOtherHref: '/', langLabel: 'Idioma', hello: '¡Hola!', glad: /La idea de esta app nació de las incontables horas que pasé estudiando y memorizando versículos bíblicos en Anki/, bye: /¡Gracias por pasar por aquí, y que Dios te bendiga! ❤︎/, words: ['temor', 'fortaleza', 'templanza'], done: /¡Eso es!/, wrongWord: 'amor', wrongNote: /Casi: la palabra era “temor”/,
+    typeTab: 'Escribir', speakTab: 'Hablar', blanksTab: 'Completar espacios', typeFull: 'Porque no nos ha dado Dios el espíritu de temor, sino el de fortaleza, y de amor, y de templanza.', typePartial: 'Porque no nos ha dado Dios el espiritu de temor', typeAll: /Recordaste 20 de 20 palabras/, typeSome: /Recordaste 10 de 20 palabras/, check: 'Mostrar respuesta', speakText: 'Recita versículos sin manos mientras manejas o sigues con tu día. La app te los lee de vuelta, y tú te calificas para una práctica fácil y tranquila.', langName: 'Español', langOther: 'English', langOtherHref: '/', langLabel: 'Idioma', hello: '¡Hola!', glad: /La idea de esta app nació de las incontables horas que pasé estudiando y memorizando versículos bíblicos en Anki/, bye: /¡Gracias por pasar por aquí, y que Dios te bendiga! ❤︎/, words: ['temor', 'fortaleza', 'templanza'], wrongWord: 'amor', wrongNote: /Casi: la palabra era “temor”/,
   },
 ] as const;
 
@@ -58,7 +58,7 @@ for (const p of PAGES) {
       await expect(page.getByRole('button', { name: p.show })).toBeVisible(); // back at the front of the next card
     });
 
-    test('the demo: fill in the blanks, a right word fills in, a wrong word shows the right one in red, and it finishes', async ({ page }) => {
+    test('the demo: fill in the blanks, a right word fills in, a wrong word shows the right one in red, then you rate it', async ({ page }) => {
       await page.goto(p.url);
       await page.getByRole('button', { name: p.blanksTab }).click();
       const bank = page.getByRole('group').filter({ has: page.getByRole('button', { name: p.wrongWord, exact: true }) });
@@ -66,9 +66,26 @@ for (const p of PAGES) {
       await expect(page.locator('.d-verse .wrong')).toHaveText(p.words[0]); // the right word, in red
       await expect(page.getByRole('status')).toContainText(p.wrongNote);
       await bank.getByRole('button', { name: p.words[1], exact: true }).click();
+      for (const r of p.rates) await expect(page.getByRole('button', { name: new RegExp(`^${r}, `) })).toHaveCount(0); // not yet: one blank is left
       await bank.getByRole('button', { name: p.words[2], exact: true }).click();
-      await expect(page.locator('.d-msg')).toContainText(p.done);
+      for (const r of p.rates) await expect(page.getByRole('button', { name: new RegExp(`^${r}, `) })).toBeVisible(); // every blank filled: rate how it went, as in the app
       await expect(page.getByRole('button', { name: p.next })).toHaveCount(0); // only the flashcard offers another verse
+      await page.getByRole('button', { name: new RegExp(`^${p.rates[2]}, `) }).click();
+      await expect(page.locator('.d-msg')).toContainText(p.goodWhen);
+      await page.getByRole('button', { name: /^(Try again|Probar otra vez)$/ }).click(); // and the exercise starts over
+      await expect(page.locator('.d-verse .blank.current')).toHaveCount(1);
+    });
+
+    test('the blanks keep the comma or full stop that follows them on the same line, even on a narrow phone', async ({ page }) => {
+      for (const width of [320, 390]) {
+        await page.setViewportSize({ width, height: 800 });
+        await page.goto(p.url);
+        await page.getByRole('button', { name: p.blanksTab }).click();
+        const groups = await page.locator('.d-verse.blanks .nb').evaluateAll((els) => els.map((e) => ({ text: e.textContent ?? '', lines: e.getClientRects().length })));
+        expect(groups.length).toBe(3);
+        expect(groups.every((g) => /[,.]$/.test(g.text))).toBe(true); // each blank has its punctuation inside its group
+        expect(groups.every((g) => g.lines === 1), `${width}px: a blank is never split from its punctuation`).toBe(true);
+      }
     });
 
     test('the demo: type the verse, see how much was remembered, and only try the same verse again', async ({ page }) => {
@@ -87,6 +104,33 @@ for (const p of PAGES) {
       await page.getByRole('button', { name: p.check }).click();
       await expect(page.getByRole('status')).toHaveText(p.typeAll);
       await expect(page.locator('.d-results .miss')).toHaveCount(0); // nothing missed
+      await expect(page.locator('.d-results .d-label')).toHaveCount(0); // everything right: just the verse, in green, with no "Your answer" / "Correct verse" (as in the app)
+    });
+
+    test('typing: only words are painted, never a comma or full stop, and a hyphenated word is two words, as in the app', async ({ page }) => {
+      await page.goto(p.url);
+      await page.getByRole('button', { name: p.typeTab, exact: true }).click();
+      await page.getByRole('textbox').fill(p.typePartial);
+      await page.getByRole('button', { name: p.check }).click();
+      const marked = await page.locator('.d-results .miss, .d-results .ok, .d-results .bad').allTextContents();
+      expect(marked.length).toBeGreaterThan(3);
+      expect(marked.every((t) => /^[\p{L}\p{M}'’_]+$/u.test(t)), `painted: ${JSON.stringify(marked)}`).toBe(true); // letters only: no punctuation, no hyphen
+      if (p.lang === 'English') {
+        const missed = await page.locator('.d-results .miss').allTextContents();
+        expect(missed).toEqual(expect.arrayContaining(['self', 'control'])); // "self-control" is two words
+      }
+      const groups = page.locator('.d-results .d-group');
+      await expect(groups).toHaveCount(2); // your answer, and the correct verse: each label sits with its own text
+    });
+
+    test('typing results are left-aligned on a wide card: the label and the verse under it start at the same edge', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(p.url);
+      await page.getByRole('button', { name: p.typeTab, exact: true }).click();
+      await page.getByRole('button', { name: p.check }).click(); // nothing typed: just "Correct verse" and the verse
+      const left = await page.evaluate(() => ({ label: document.querySelector('.d-results .d-label')!.getBoundingClientRect().left, verse: document.querySelector('.d-results .d-verse')!.getBoundingClientRect().left, align: getComputedStyle(document.querySelector('.d-results .d-verse')!).textAlign }));
+      expect(Math.abs(left.label - left.verse)).toBeLessThanOrEqual(1);
+      expect(['left', 'start']).toContain(left.align);
     });
 
     test('the Speak tab explains hands-free practice in one positive sentence, with nothing to press', async ({ page }) => {

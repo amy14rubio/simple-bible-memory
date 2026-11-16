@@ -473,6 +473,9 @@ h1 {
   padding: 2.5rem 1.75rem 1rem;
   text-align: center;
 }
+.d-body.top {
+  justify-content: flex-start; /* typing and the blanks, like the app: the reference at the top, the line or the verse right under it */
+}
 .d-bar {
   display: grid;
   gap: 0.75rem;
@@ -629,15 +632,22 @@ h1 {
 .d-results {
   width: 100%;
   display: grid;
-  gap: 1.25rem;
+  gap: 1.5rem; /* as in the app: your answer and the correct verse are two groups with room between them… */
   text-align: left;
 }
+.d-group {
+  display: grid;
+  gap: 0.25rem; /* …and each label sits right over its own text */
+}
 .d-label {
-  margin: 0 0 0.25rem;
+  margin: 0;
   font: inherit;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--muted);
+}
+.nb {
+  white-space: nowrap; /* a blank and the comma or full stop right after it stay together */
 }
 .ok {
   color: var(--good);
@@ -891,4 +901,10 @@ img[src*='play-es'] {
     text-align: center;
     text-wrap: balance;
   }
+}
+/* but the typing results are left-aligned on the whole card, as in the app: "Your answer" / "Correct verse" and their text start at the same edge */
+.d-results .d-verse.left {
+  max-width: none;
+  text-align: left;
+  text-wrap: pretty;
 }
