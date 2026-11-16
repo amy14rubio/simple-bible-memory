@@ -7,6 +7,7 @@ import { MAX_REMINDERS, newReminder, type Reminder } from '../../domain/reminder
 import { useI18n } from '../../i18n/I18nProvider';
 import type { MessageKey } from '../../i18n';
 import { getNotifier } from '../../platform/notifications';
+import { isAndroidApp } from '../../platform/device';
 import { loadReminderSettings, saveReminderSettings, syncReminders, type ReminderSettings } from './reminders';
 import { ReminderDrawer } from './ReminderDrawer';
 import { formatTime, weekdayName } from './format';
@@ -72,7 +73,10 @@ export function RemindersSection() {
 
   return (
     <div role="group" aria-labelledby="reminders">
-      <h2 id="reminders" className="mb-2.5 px-2 font-serif text-xl">{t('settings.reminders')}</h2>
+      <h2 id="reminders" className="mb-2.5 px-2 font-serif text-xl">
+        {/* On Android only: an "i" with what to do when reminders arrive late (the system can hold a not-exact reminder back). */}
+        {notifier.available && isAndroidApp() ? <InfoLabel title={t('settings.reminders')} info={t('reminders.androidTip')} className="-my-2.5" /> : t('settings.reminders')}
+      </h2>
       <div className="rounded-3xl bg-panel px-5 py-1 [&>*:last-child]:border-b-0">
       {!notifier.available ? (
         <div data-coach="reminders" className={row}>

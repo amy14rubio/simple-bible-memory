@@ -634,6 +634,7 @@ export const es: Dictionary = {
   'reminders.defaultMessage': '¡No olvides estudiar tus versículos hoy!',
   'reminders.add': 'Añadir un recordatorio',
   'reminders.denied': 'Las notificaciones están bloqueadas para esta app. Actívalas en los ajustes del teléfono e inténtalo de nuevo.',
+  'reminders.androidTip': '¿Te llegan tarde los recordatorios?\n\nAbre los Ajustes del teléfono > Aplicaciones > Memoria Bíblica Simple > Batería, y elige Sin restricciones.\n\nEn Samsung, quita también la app de Ajustes > Batería > Límites de uso en segundo plano > Aplicaciones en suspensión.',
   'reminders.list': 'Tus recordatorios',
   'reminders.new': 'Nuevo recordatorio',
   'reminders.edit': 'Editar recordatorio',
