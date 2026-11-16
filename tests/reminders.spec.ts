@@ -48,15 +48,16 @@ test('turning them on asks for permission, starts a daily reminder with the app 
   expect(new Date(items[0]!.at).getHours()).toBe(20);
 });
 
-test('a reminder can be edited: its own message, a weekly day and time', async ({ page }) => {
+test('a reminder can be edited: its own message, a weekly day and time; there is no Save button, and what was typed is kept when the sheet is closed right away', async ({ page }) => {
   await turnOn(page);
   await page.getByRole('button', { name: /Every day at 8:00 PM/ }).click();
   const drawer = page.getByRole('dialog', { name: 'Edit reminder' });
+  await expect(drawer.getByRole('button', { name: 'Save' })).toHaveCount(0);
   await drawer.getByLabel('Repeat').selectOption('weekly');
   await drawer.getByLabel('Day').selectOption('5');
   await setTime(drawer, 'Time', '07:30');
   await drawer.getByLabel('Message').fill('Read Psalm 23 before work');
-  await drawer.getByRole('button', { name: 'Save' }).click();
+  await page.keyboard.press('Escape'); // closed at once: the message was still waiting its moment, and is saved now
   await expect(drawer).toHaveCount(0);
   await expect(page.getByRole('list', { name: 'Your reminders' })).toContainText('Every Friday at 7:30 AM');
   await expect(page.getByRole('list', { name: 'Your reminders' })).toContainText('Read Psalm 23 before work');
@@ -66,13 +67,25 @@ test('a reminder can be edited: its own message, a weekly day and time', async (
   expect(items.every((n) => new Date(n.at).getDay() === 5 && new Date(n.at).getHours() === 7)).toBe(true);
 });
 
+test('changes save by themselves while the sheet is open: the time at once, the message a moment after typing stops', async ({ page }) => {
+  await turnOn(page);
+  await page.getByRole('button', { name: /Every day at 8:00 PM/ }).click();
+  const drawer = page.getByRole('dialog', { name: 'Edit reminder' });
+  await setTime(drawer, 'Time', '06:15');
+  await expect.poll(async () => new Date((await scheduled(page))[0]!.at).getHours()).toBe(6); // the sheet is still open
+  await drawer.getByLabel('Message').fill('A quiet minute with the Word');
+  expect((await scheduled(page))[0]!.body).toBe(DEFAULT_MESSAGE); // not yet: still waiting for typing to pause
+  await expect.poll(async () => (await scheduled(page))[0]?.body, { timeout: 4000 }).toBe('A quiet minute with the Word');
+  await expect(drawer).toBeVisible(); // and the sheet stayed open
+});
+
 test('there can be two reminders, each with its own message', async ({ page }) => {
   await turnOn(page);
   await page.getByRole('button', { name: 'Add a reminder' }).click();
   const drawer = page.getByRole('dialog', { name: 'New reminder' });
   await setTime(drawer, 'Time', '08:00');
   await drawer.getByLabel('Message').fill('Good morning, a verse first!');
-  await drawer.getByRole('button', { name: 'Save' }).click();
+  await drawer.getByRole('button', { name: 'Add', exact: true }).click();
   await expect(page.getByRole('list', { name: 'Your reminders' }).getByRole('listitem')).toHaveCount(2);
   await expect.poll(async () => new Set((await scheduled(page)).map((n) => n.body)).size).toBe(2);
   const items = await scheduled(page);
@@ -83,7 +96,7 @@ test('up to ten reminders, then no more can be added, and the phone is never giv
   await turnOn(page);
   for (let i = 2; i <= 10; i++) {
     await page.getByRole('button', { name: 'Add a reminder' }).click();
-    await page.getByRole('dialog', { name: 'New reminder' }).getByRole('button', { name: 'Save' }).click();
+    await page.getByRole('dialog', { name: 'New reminder' }).getByRole('button', { name: 'Add', exact: true }).click();
     await expect(page.getByRole('list', { name: 'Your reminders' }).getByRole('listitem')).toHaveCount(i);
   }
   await expect(page.getByRole('button', { name: 'Add a reminder' })).toHaveCount(0);
@@ -100,7 +113,7 @@ test('there is no hourly option', async ({ page }) => {
 test('deleting a reminder removes it; deleting the last one turns reminders off', async ({ page }) => {
   await turnOn(page);
   await page.getByRole('button', { name: 'Add a reminder' }).click();
-  await page.getByRole('dialog', { name: 'New reminder' }).getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('dialog', { name: 'New reminder' }).getByRole('button', { name: 'Add', exact: true }).click();
   await page.getByRole('button', { name: /Every day at 8:00 PM/ }).first().click();
   await page.getByRole('dialog', { name: 'Edit reminder' }).getByRole('button', { name: 'Delete reminder' }).click();
   await expect(page.getByRole('list', { name: 'Your reminders' }).getByRole('listitem')).toHaveCount(1);
@@ -160,8 +173,8 @@ test.describe('the time button', () => {
     await expect(drawer.getByRole('button', { name: 'Time, 8:00 PM' })).toHaveText('8:00 PM');
     await setTime(drawer, 'Time', '06:15');
     await expect(drawer.getByRole('button', { name: 'Time, 6:15 AM' })).toHaveText('6:15 AM');
-    await drawer.getByRole('button', { name: 'Save' }).click();
-    await expect(page.getByRole('list', { name: 'Your reminders' })).toContainText('Every day at 6:15 AM');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('list', { name: 'Your reminders' })).toContainText('Every day at 6:15 AM'); // saved without pressing anything
   });
 
   test('midnight and noon read right', async ({ page }) => {
@@ -222,7 +235,7 @@ test.describe('in Spanish', () => {
     const drawer = page.getByRole('dialog', { name: es['reminders.edit'] as string });
     await expect(drawer.getByRole('button', { name: 'Hora, 8:00 PM' })).toHaveText('8:00 PM');
     await drawer.locator('input[data-time-for="Hora"]').fill('07:30');
-    await drawer.getByRole('button', { name: es['reminders.save'] as string }).click();
+    await page.keyboard.press('Escape');
     await expect(page.getByRole('list', { name: es['reminders.list'] as string })).toContainText('Cada día a las 7:30 AM');
     await expect(page.getByRole('list', { name: es['reminders.list'] as string })).toContainText(es['reminders.defaultMessage'] as string);
     await expect.poll(async () => (await scheduled(page))[0]?.body).toBe(es['reminders.defaultMessage']);
@@ -300,7 +313,20 @@ test('in Spanish the time is written 8:00 PM, not on a 24-hour clock, and the on
   const drawer = page.getByRole('dialog');
   await expect(drawer.getByRole('button', { name: /8:00 PM/ })).toBeVisible(); // the time button in the editor reads the same way
   await setTime(drawer, es['reminders.time'] as string, '13:00');
-  await drawer.getByRole('button', { name: es['reminders.save'] as string }).click();
+  await page.keyboard.press('Escape'); // closed: the change was already saved
   await expect(list).toContainText('Cada día a la 1:00 PM');
   await ctx.close();
+});
+
+test('a new reminder exists only once "Add" is pressed: closing the sheet without it adds nothing', async ({ page }) => {
+  await turnOn(page);
+  await page.getByRole('button', { name: 'Add a reminder' }).click();
+  const drawer = page.getByRole('dialog', { name: 'New reminder' });
+  await expect(drawer.getByRole('button', { name: 'Save' })).toHaveCount(0);
+  await setTime(drawer, 'Time', '06:00');
+  await drawer.getByLabel('Message').fill('Not added');
+  await page.keyboard.press('Escape'); // closed without Add
+  await expect(drawer).toHaveCount(0);
+  await expect(page.getByRole('list', { name: 'Your reminders' }).getByRole('listitem')).toHaveCount(1);
+  expect((await scheduled(page)).every((n) => n.body === DEFAULT_MESSAGE)).toBe(true);
 });
