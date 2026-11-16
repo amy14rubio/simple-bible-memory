@@ -22,14 +22,13 @@
   // The lines under the headings reveal word by word too, just after their heading.
   var subs = Array.prototype.slice.call(document.querySelectorAll('main .sub, .free p'));
   subs.forEach(function (el) { split(el, 450); });
-  // Cards, screenshots, the demo, the donation button and the footer fade and rise in, one after another within their group.
-  var phoneStrip = matchMedia('(max-width: 48rem)').matches; // on a phone the screenshots are a swipeable strip, so it reveals as one piece
+  // The letter, the demo, the donation button and the footer fade and rise in, one after another within their group.
   var groups = [
     { sel: ['.top .brand', '.top nav .button'], base: 0 }, // the top bar and the hero buttons play on load, after the title
     { sel: ['.hero .stores .badge'], base: 420, step: 70 },
     { sel: ['#demo'], base: 0 },
-    { sel: phoneStrip ? ['.shots'] : ['.shots .shot'], base: 0 },
-    { sel: ['.grid li'], base: 0 },
+    { sel: ['.hello .letter'], base: 0 },
+    { sel: ['.notes li'], base: 0 }, // the pictures with their notes come in one after another
     { sel: ['.free .button'], base: 0 },
     { sel: ['footer .foot-brand', 'footer .foot-col', 'footer .lang'], base: 0 }
   ];
@@ -60,7 +59,11 @@
     var bo = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('rv-go'); bo.unobserve(e.target); } });
     }, { threshold: 0.15 });
-    blocks.forEach(function (b) { bo.observe(b); });
+    // The pictures beside the note wait until they are half in view, so on the first screen only the note's title shows, not a corner of a picture.
+    var po = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('rv-go'); po.unobserve(e.target); } });
+    }, { threshold: 0.5 });
+    blocks.forEach(function (b) { (b.matches('.notes li') ? po : bo).observe(b); });
   } else heads.concat(subs, blocks).forEach(function (h) { h.classList.add('rv-go'); });
 })();
 /* The little demo on the landing page: it looks like the app's own study screens. Flip and rate a flashcard, type a verse, fill in the blanks,

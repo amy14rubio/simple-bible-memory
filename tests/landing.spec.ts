@@ -6,28 +6,25 @@ const PAGES = [
   {
     lang: 'English', url: '/landing.html', other: '/es', heading: 'Simple Bible Memory', tagline: 'Learn scripture by heart', open: 'Start Practicing',
     play: 'Get it on Google Play', apple: 'Download on the App Store', donate: 'Support on Ko-fi',
-    features: ['No account needed', 'English and Spanish', 'Spaced repetition', 'Make it yours'],
     show: 'Show answer', rates: ['Again', 'Hard', 'Good', 'Easy'], goodWhen: /10m/, next: 'Try another verse', first: 'Proverbs 3:5-6', second: 'Romans 5:8',
-    typeTab: 'Type', speakTab: 'Speak', blanksTab: 'Fill in the blanks', typeFull: 'For God didn’t give us a spirit of fear, but of power, love, and self-control.', typePartial: 'For God give us a spirit of fear', typeAll: /You remembered 15 of 15 words/, typeSome: /You remembered 8 of 15 words/, check: 'Show answer', speakText: 'Recite verses hands-free while you drive or go about your day. The app reads them back, and you rate yourself for easy, relaxed practice.', langName: 'English', langOther: 'Español', langOtherHref: '/es', langLabel: 'Language', words: ['fear', 'power', 'self-control'], done: /That’s it!/, wrongWord: 'love', wrongNote: /Not quite: the word was “fear”/,
+    typeTab: 'Type', speakTab: 'Speak', blanksTab: 'Fill in the blanks', typeFull: 'For God didn’t give us a spirit of fear, but of power, love, and self-control.', typePartial: 'For God give us a spirit of fear', typeAll: /You remembered 15 of 15 words/, typeSome: /You remembered 8 of 15 words/, check: 'Show answer', speakText: 'Recite verses hands-free while you drive or go about your day. The app reads them back, and you rate yourself for easy, relaxed practice.', langName: 'English', langOther: 'Español', langOtherHref: '/es', langLabel: 'Language', hello: 'Hello there!', glad: /The idea for this app really came from countless hours of studying and memorizing Bible verses on Anki/, bye: /Thanks for stopping by, and God bless! ❤︎/, words: ['fear', 'power', 'self-control'], done: /That’s it!/, wrongWord: 'love', wrongNote: /Not quite: the word was “fear”/,
   },
   {
     lang: 'Spanish', url: '/es/landing.html', other: '/', heading: 'Memoria Bíblica Simple', tagline: 'Guarda las Escrituras en tu corazón', open: 'Empezar a practicar',
     play: 'Disponible en Google Play', apple: 'Descargar en el App Store', donate: 'Apoyar en Ko-fi',
-    features: ['Sin cuenta', 'Español e inglés', 'Repaso espaciado', 'A tu manera'],
     show: 'Mostrar respuesta', rates: ['Otra vez', 'Difícil', 'Bien', 'Fácil'], goodWhen: /10 min/, next: 'Probar otro versículo', first: 'Proverbios 3:5-6', second: 'Romanos 5:8',
-    typeTab: 'Escribir', speakTab: 'Hablar', blanksTab: 'Completar espacios', typeFull: 'Porque no nos ha dado Dios el espíritu de temor, sino el de fortaleza, y de amor, y de templanza.', typePartial: 'Porque no nos ha dado Dios el espiritu de temor', typeAll: /Recordaste 20 de 20 palabras/, typeSome: /Recordaste 10 de 20 palabras/, check: 'Mostrar respuesta', speakText: 'Recita versículos sin manos mientras manejas o sigues con tu día. La app te los lee de vuelta, y tú te calificas para una práctica fácil y tranquila.', langName: 'Español', langOther: 'English', langOtherHref: '/', langLabel: 'Idioma', words: ['temor', 'fortaleza', 'templanza'], done: /¡Eso es!/, wrongWord: 'amor', wrongNote: /Casi: la palabra era “temor”/,
+    typeTab: 'Escribir', speakTab: 'Hablar', blanksTab: 'Completar espacios', typeFull: 'Porque no nos ha dado Dios el espíritu de temor, sino el de fortaleza, y de amor, y de templanza.', typePartial: 'Porque no nos ha dado Dios el espiritu de temor', typeAll: /Recordaste 20 de 20 palabras/, typeSome: /Recordaste 10 de 20 palabras/, check: 'Mostrar respuesta', speakText: 'Recita versículos sin manos mientras manejas o sigues con tu día. La app te los lee de vuelta, y tú te calificas para una práctica fácil y tranquila.', langName: 'Español', langOther: 'English', langOtherHref: '/', langLabel: 'Idioma', hello: '¡Hola!', glad: /La idea de esta app nació de las incontables horas que pasé estudiando y memorizando versículos bíblicos en Anki/, bye: /¡Gracias por pasar por aquí, y que Dios te bendiga! ❤︎/, words: ['temor', 'fortaleza', 'templanza'], done: /¡Eso es!/, wrongWord: 'amor', wrongNote: /Casi: la palabra era “temor”/,
   },
 ] as const;
 
 for (const p of PAGES) {
   test.describe(p.lang, () => {
-    test('has the headline, a way into the app, the four highlights and the legal links', async ({ page }) => {
+    test('has the headline, a way into the app and the legal links', async ({ page }) => {
       await page.goto(p.url);
       await expect(page.getByRole('heading', { level: 1, name: p.heading })).toBeVisible();
       await expect(page.locator('.hero .lead')).toHaveText(p.tagline); // the title, and the tagline under it
       await expect(page.getByRole('link', { name: p.open }).first()).toHaveAttribute('href', '/app');
-      for (const f of p.features) await expect(page.getByRole('heading', { level: 3, name: f })).toBeVisible();
-      await expect(page.getByRole('heading', { level: 3 })).toHaveCount(4); // four short highlights; "free" has its own section below
+      await expect(page.getByRole('heading', { level: 3 })).toHaveCount(0); // the page has no highlight cards
       await expect(page.locator('footer a[href$="privacy-policy"]')).toHaveCount(1);
       await expect(page.locator('footer a[href$="terms"]')).toHaveCount(1);
       await expect(page.locator(`link[rel="alternate"][href="${p.other}"]`)).toHaveCount(1); // points at the other language
@@ -100,6 +97,76 @@ for (const p of PAGES) {
       await expect(page.getByRole('button', { name: p.next })).toHaveCount(0);
     });
 
+    test('a personal note comes right after the hero and before the demo; there is no screenshots section any more', async ({ page }) => {
+      await page.goto(p.url);
+      const hello = page.locator('#hello');
+      await expect(hello.getByRole('heading', { level: 2, name: p.hello })).toBeVisible();
+      await expect(hello).toContainText(p.glad);
+      await expect(hello.locator('.signoff')).toHaveText(p.bye);
+      await expect(hello.locator('.letter p')).toHaveCount(4);
+      const order = await page.locator('main > section').evaluateAll((els) => els.map((e) => e.id || e.className));
+      expect(order.slice(0, 3)).toEqual(['hero', 'hello', 'try']);
+      await expect(page.locator('.shots, .screens, .phone')).toHaveCount(0);
+      await expect(page.getByText(/See it in the app|Míralo en la app/)).toHaveCount(0);
+    });
+
+    test('the note is a letter: a narrow column, left-aligned, kept tight, the sign-off set apart', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(p.url);
+      await page.addStyleTag({ content: '.rv-word { animation: none !important; } .rv-block { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }' });
+      const m = await page.evaluate(() => {
+        const col = document.querySelector('#hello .letter')!.getBoundingClientRect();
+        const para = document.querySelector('#hello .letter p')!;
+        const second = document.querySelectorAll('#hello .letter p')[1]!;
+        const sign = document.querySelector('#hello .signoff')!.getBoundingClientRect();
+        const prev = document.querySelector('#hello .letter p:nth-last-child(2)')!.getBoundingClientRect();
+        const signCss = getComputedStyle(document.querySelector('#hello .signoff')!), paraCss = getComputedStyle(para);
+        return { sameType: signCss.fontSize === paraCss.fontSize && signCss.fontFamily === paraCss.fontFamily && signCss.fontStyle === paraCss.fontStyle, width: col.width, align: getComputedStyle(para).textAlign, between: second.getBoundingClientRect().top - para.getBoundingClientRect().bottom, gap: sign.top - prev.bottom };
+      });
+      expect(m.sameType).toBe(true); // the sign-off is not bigger or in another style than the rest of the letter
+      expect(m.width).toBeLessThanOrEqual(704); // a line length that stays readable even in the wider (70%) column
+      expect(['left', 'start']).toContain(m.align);
+      expect(m.between).toBeLessThanOrEqual(16); // paragraphs close together
+      expect(m.gap).toBeGreaterThan(m.between); // but the sign-off has more room than they do
+    });
+
+    test('three pictures with notes sit to the left of the letter on a wide screen and below it on a phone; each has a description, a caption and loads', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(p.url);
+      const imgs = page.locator('#hello .notes img');
+      await expect(imgs).toHaveCount(3);
+      for (let i = 0; i < 3; i++) {
+        const img = imgs.nth(i);
+        await img.scrollIntoViewIfNeeded();
+        await expect(img).toHaveAttribute('alt', /.{20,}/);
+        await expect.poll(() => img.evaluate((e: HTMLImageElement) => e.complete && e.naturalWidth > 0)).toBe(true);
+        await expect(page.locator('#hello .notes figcaption').nth(i)).not.toBeEmpty();
+      }
+      await expect(page.locator('#hello .pics .credit')).toContainText(/Lockman/); // the small credit sits right under the pictures
+      const under = await page.evaluate(() => ({ notes: document.querySelector('#hello .notes')!.getBoundingClientRect().bottom, credit: document.querySelector('#hello .credit')!.getBoundingClientRect().top, size: parseFloat(getComputedStyle(document.querySelector('#hello .credit')!).fontSize) }));
+      expect(under.credit - under.notes).toBeLessThanOrEqual(40);
+      expect(under.size).toBeLessThanOrEqual(12);
+      const wide = await page.evaluate(() => ({ letterBox: document.querySelector('#hello .hello-text')!.getBoundingClientRect(), letter: document.querySelector('#hello .letter')!.getBoundingClientRect(), notes: document.querySelector('#hello .notes')!.getBoundingClientRect() }));
+      expect(wide.letter.left).toBeGreaterThanOrEqual(wide.notes.right); // beside it: the pictures on the left, the letter on the right
+      expect(wide.letterBox.width / (wide.letterBox.width + wide.notes.width)).toBeGreaterThanOrEqual(0.58); // the letter has the larger share (about 60%)
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(200);
+      const narrow = await page.evaluate(() => ({ letter: document.querySelector('#hello .letter')!.getBoundingClientRect(), notes: document.querySelector('#hello .notes')!.getBoundingClientRect(), over: document.documentElement.scrollWidth - document.documentElement.clientWidth }));
+      expect(narrow.notes.top).toBeGreaterThanOrEqual(narrow.letter.bottom); // below it
+      expect(narrow.over).toBe(0);
+    });
+
+    test('the first screen is only the hero: nothing of the note (title, pictures or text) is in sight until you scroll', async ({ page }) => {
+      for (const [width, height] of [[1288, 724], [1440, 900], [390, 844]] as const) {
+        await page.setViewportSize({ width, height });
+        await page.goto(p.url);
+        const top = await page.evaluate(() => document.querySelector('#hello')!.getBoundingClientRect().top);
+        expect(top, `${width}x${height}: the note starts below the screen`).toBeGreaterThanOrEqual(height);
+        const h2 = await page.evaluate(() => document.querySelector('#hello h2')!.getBoundingClientRect().top);
+        expect(h2, `${width}x${height}: and so does its title`).toBeGreaterThanOrEqual(height);
+      }
+    });
+
     test('the footer has the logo, columns of links, and a language picker that opens upwards', async ({ page }) => {
       await page.goto(p.url);
       const footer = page.locator('footer');
@@ -132,52 +199,10 @@ for (const p of PAGES) {
       await ctx.close();
     });
 
-    test('fits a phone without sideways scrolling (only the screenshots strip scrolls, inside itself)', async ({ page }) => {
+    test('fits a phone without sideways scrolling', async ({ page }) => {
       await page.setViewportSize({ width: 360, height: 740 });
       await page.goto(p.url);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
-    });
-
-    test('the highlight icons are the text color: black in light mode, white in dark mode', async ({ browser }) => {
-      for (const [scheme, color] of [['light', 'rgb(23, 23, 26)'], ['dark', 'rgb(241, 240, 236)']] as const) {
-        const ctx = await browser.newContext({ colorScheme: scheme });
-        const page = await ctx.newPage();
-        await page.goto(p.url);
-        const icons = page.locator('.grid .icon');
-        await expect(icons).toHaveCount(4);
-        for (let i = 0; i < 4; i++) await expect(icons.nth(i)).toHaveCSS('color', color);
-        await ctx.close();
-      }
-    });
-
-    test('the highlight icons are bigger and centered beside their text', async ({ page }) => {
-      await page.goto(p.url);
-      const cards = page.locator('.grid li');
-      for (let i = 0; i < 4; i++) {
-        const m = await cards.nth(i).evaluate((li) => {
-          const icon = li.querySelector('.icon')!.getBoundingClientRect(), text = li.querySelector('div')!.getBoundingClientRect();
-          return { size: icon.width, iconMid: icon.top + icon.height / 2, textMid: text.top + text.height / 2 };
-        });
-        expect(m.size).toBeGreaterThanOrEqual(36); // bigger than before (24)
-        expect(Math.abs(m.iconMid - m.textMid)).toBeLessThanOrEqual(2); // centered on the text beside it
-      }
-    });
-
-    test('on a phone each screenshot can be centered: the first and the last snap to the middle', async ({ page }) => {
-      await page.setViewportSize({ width: 390, height: 844 });
-      await page.goto(p.url);
-      const mid = () => page.locator('.shots .phone').evaluateAll((els, vw) => els.map((e) => { const r = e.getBoundingClientRect(); return Math.round(r.left + r.width / 2 - vw / 2); }), 390);
-      const start = await mid();
-      expect(Math.abs(start[0]!)).toBeLessThanOrEqual(2); // the first one is in the middle
-      await page.locator('.shots').evaluate((el) => { el.scrollLeft = el.scrollWidth; });
-      await expect.poll(async () => Math.abs((await mid())[2]!)).toBeLessThanOrEqual(2); // and so is the last
-    });
-
-    test('on a wide screen the three screenshots sit in the middle of the page', async ({ page }) => {
-      await page.setViewportSize({ width: 1200, height: 900 });
-      await page.goto(p.url);
-      const [first, last] = await page.locator('.shots .phone').evaluateAll((els) => [els[0]!, els[els.length - 1]!].map((e) => e.getBoundingClientRect()));
-      expect(Math.abs(first!.left - (1200 - last!.right))).toBeLessThanOrEqual(2); // the same space on both sides
     });
 
     test('the footer has room at the sides', async ({ page }) => {
@@ -221,30 +246,6 @@ for (const p of PAGES) {
       expect(email.height).toBeLessThan(32); // one line, not wrapped
     });
 
-    test('the screenshots have room under their heading, and no scrollbar under them', async ({ page }) => {
-      for (const width of [390, 1100]) {
-        await page.setViewportSize({ width, height: 900 });
-        await page.goto(p.url);
-        const gap = await page.evaluate(() => document.querySelector('.shots .phone')!.getBoundingClientRect().top - document.querySelector('.screens h2')!.getBoundingClientRect().bottom);
-        expect(gap).toBeGreaterThanOrEqual(48); // about 3.5rem
-        const bar = await page.locator('.shots').evaluate((el) => ({ height: el.offsetHeight - el.clientHeight, width: getComputedStyle(el).scrollbarWidth }));
-        expect(bar.width).toBe('none');
-        expect(bar.height).toBe(0); // nothing is drawn under the screenshots
-      }
-    });
-
-    test('shows real screenshots, each with a description', async ({ page }) => {
-      await page.goto(p.url);
-      const shots = page.locator('.shots img');
-      await expect(shots).toHaveCount(3);
-      for (let i = 0; i < 3; i++) {
-        const img = shots.nth(i);
-        await img.scrollIntoViewIfNeeded();
-        await expect(img).toHaveAttribute('alt', /.{20,}/); // a real description, not a file name
-        await expect.poll(() => img.evaluate((e: HTMLImageElement) => e.complete && e.naturalWidth > 0)).toBe(true);
-      }
-    });
-
     for (const scheme of ['light', 'dark'] as const) {
       test(`has no WCAG A/AA violations (${scheme})`, async ({ browser }) => {
         const ctx = await browser.newContext({ colorScheme: scheme });
@@ -272,18 +273,6 @@ test('the moving light behind the hero is decoration only: hidden from screen re
   expect(await prism.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
   await page.getByRole('link', { name: 'Start Practicing' }).last().click();
   await expect(page).toHaveURL(/\/app$|#\//);
-});
-
-test('on a wide screen the four highlight cards line up with the three phone screenshots', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/landing.html');
-  const edges = await page.evaluate(() => {
-    const phones = [...document.querySelectorAll('.shots .phone')].map((e) => e.getBoundingClientRect());
-    const grid = document.querySelector('.grid')!.getBoundingClientRect();
-    return { phones: [phones[0].left, phones[phones.length - 1].right], grid: [grid.left, grid.right] };
-  });
-  expect(Math.abs(edges.grid[0] - edges.phones[0])).toBeLessThanOrEqual(1);
-  expect(Math.abs(edges.grid[1] - edges.phones[1])).toBeLessThanOrEqual(1);
 });
 
 for (const path of ['/privacy-policy.html', '/terms.html', '/delete-account.html', '/es/privacy-policy.html', '/es/terms.html', '/es/delete-account.html']) {
@@ -316,16 +305,16 @@ for (const [lang, path, title] of [['English', '/landing.html', 'Simple Bible Me
     test('a section heading plays only once it scrolls into view', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto(path);
-      const feat = page.locator('#features h2');
+      const feat = page.locator('#try h2');
       await expect(feat).not.toHaveClass(/rv-go/);
       await feat.scrollIntoViewIfNeeded();
       await expect(feat).toHaveClass(/rv-go/);
     });
 
-    test('cards, screenshots, the demo and the footer start hidden and fade in once scrolled into view', async ({ page }) => {
+    test('the demo and the footer start hidden and fade in once scrolled into view', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto(path);
-      const card = page.locator('.grid li').first();
+      const card = page.locator('#demo');
       await expect(card).not.toHaveClass(/rv-go/);
       expect(await card.evaluate((el) => getComputedStyle(el).opacity)).toBe('0');
       await card.scrollIntoViewIfNeeded();
@@ -354,7 +343,7 @@ for (const [lang, path, title] of [['English', '/landing.html', 'Simple Bible Me
       await page.goto(path);
       await expect(page.locator('.hero h1')).toBeVisible();
       await expect(page.locator('.rv-word')).toHaveCount(0);
-      expect(await page.locator('.grid li').first().evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+      expect(await page.locator('#hello .letter').evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
       await ctx.close();
     });
   });

@@ -26,8 +26,8 @@
 // Text reveal: hide the headings until landing.js has split them into words (visitors who ask for less motion never get this). If the script is slow or missing, show the text after 2.5 seconds.
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { document.documentElement.classList.add('reveal-pending'); setTimeout(function () { document.documentElement.classList.remove('reveal-pending'); }, 2500); }
 </script>
-<link rel="stylesheet" href="/landing.css?v=202611102142">
-<link rel="stylesheet" href="/footer.css?v=202611102114">
+<link rel="stylesheet" href="/landing.css?v=202611170300">
+<link rel="stylesheet" href="/footer.css?v=202611161300">
 <link rel="alternate" hreflang="en" href="/">
 <link rel="alternate" hreflang="es" href="/es">
 </head>
@@ -49,39 +49,33 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { document.document
 </div>
 </section>
 
+<section id="hello" class="hello" aria-labelledby="hello-title">
+<div class="hello-wrap">
+<div class="hello-text">
+<h2 id="hello-title">¡Hola!</h2>
+<div class="letter">
+<p>La idea de esta app nació de las incontables horas que pasé estudiando y memorizando versículos bíblicos en Anki, deseando que existiera algo diseñado específicamente para memorizar la Escritura.</p>
+<p>Cada función que encontrarás aquí nació de algo que yo quería tener durante mi propio camino de memorización bíblica. Quise crear algo que hiciera el proceso un poco más agradable y accesible.</p>
+<p>¡Espero que esta app sea una pequeña herramienta sencilla y útil para ti!</p>
+<p class="signoff">¡Gracias por pasar por aquí, y que Dios te bendiga! ❤︎</p>
+</div>
+</div>
+<div class="pics">
+<ul class="notes" aria-label="Capturas de pantalla de mi teléfono">
+<li><figure><img src="/landing/note/verse-psalm-73.webp" alt="El Salmo 73:23–25 en inglés en un teléfono, con los versículos subrayados en azul." width="640" height="717" loading="lazy"><figcaption>Versículos que subrayaba mientras leía…</figcaption></figure></li>
+<li><figure><img src="/landing/note/anki-list-1.webp" alt="La lista de versículos de mi mazo de Anki, en texto blanco sencillo sobre una tabla negra: «128 cards shown»." width="640" height="889" loading="lazy"><figcaption>Mi lista de versículos en Anki: 128 tarjetas de texto sencillo. Son 54 versículos memorizados, mi progreso de 1 o 2 años.</figcaption></figure></li>
+<li><figure><img src="/landing/note/verse-habacuc-2.webp" alt="Habacuc 2:14 en un teléfono, subrayado en gris." width="640" height="255" loading="lazy"><figcaption>…y se me olvidaba agregarlos para memorizar.</figcaption></figure></li>
+</ul>
+<p class="credit">Capturas de pantalla de mi teléfono. Texto bíblico: Amplified® Bible, © 2015 The Lockman Foundation; Reina-Valera 1960, © Sociedades Bíblicas en América Latina.</p>
+</div>
+</div>
+</section>
+
 <section id="try" class="try" aria-labelledby="try-title">
 <h2 id="try-title">Pruébalo aquí mismo</h2>
 <p class="sub">Elige una forma de estudiar y pruébala.</p>
 <div id="demo" class="demo" role="group" aria-label="Demostración" hidden></div>
 <noscript><p class="note">La demostración necesita JavaScript. También puedes abrir la app y probarla allí.</p></noscript>
-</section>
-
-<section class="screens" aria-labelledby="shots-title">
-<h2 id="shots-title">Míralo en la app</h2>
-<div class="shots" role="region" aria-label="Capturas de pantalla de la app" tabindex="0">
-<figure class="shot">
-<div class="phone"><picture><source media="(prefers-color-scheme: dark)" srcset="/landing/dark/04-decks.png"><img src="/landing/light/04-decks.png" alt="La pantalla de inicio de la app (en inglés): una lista de carpetas con el número de versículos para estudiar hoy." width="540" height="1170" loading="lazy"></picture></div>
-<figcaption>Tus carpetas</figcaption>
-</figure>
-<figure class="shot">
-<div class="phone"><picture><source media="(prefers-color-scheme: dark)" srcset="/landing/dark/02-spaced-repetition.png"><img src="/landing/light/02-spaced-repetition.png" alt="Un versículo con su referencia y su texto (en inglés), y cuatro botones (Again, Hard, Good, Easy) que muestran cuándo volverá." width="540" height="1170" loading="lazy"></picture></div>
-<figcaption>Califica cada versículo</figcaption>
-</figure>
-<figure class="shot">
-<div class="phone"><picture><source media="(prefers-color-scheme: dark)" srcset="/landing/dark/03-practice.png"><img src="/landing/light/03-practice.png" alt="El Salmo 23 (en inglés) con algunas palabras ocultas y un banco de palabras para tocar." width="540" height="1170" loading="lazy"></picture></div>
-<figcaption>Completa los espacios</figcaption>
-</figure>
-</div>
-</section>
-
-<section id="features" class="features" aria-labelledby="feat-title">
-<h2 id="feat-title">Sencilla a propósito</h2>
-<ul class="grid">
-<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" x2="22" y1="8" y2="13"/><line x1="22" x2="17" y1="8" y2="13"/></svg><div><h3>Sin cuenta</h3><p>Ábrela y empieza. Sin nada que registrar.</p></div></li>
-<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><div><h3>Español e inglés</h3><p>Toda la app, tanto en español como en inglés.</p></div></li>
-<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 14v2.2l1.6 1"/><path d="M16 2v3"/><path d="M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338"/><path d="M3 9h5.859"/><path d="M8 2v3"/><circle cx="16" cy="16" r="6"/></svg><div><h3>Repaso espaciado</h3><p>Cada versículo vuelve antes de que lo olvides.</p></div></li>
-<li><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 5H3"/><path d="M12 19H3"/><path d="M14 3v4"/><path d="M16 17v4"/><path d="M21 12h-9"/><path d="M21 19h-5"/><path d="M21 5h-7"/><path d="M8 10v4"/><path d="M8 12H3"/></svg><div><h3>A tu manera</h3><p>Colores, letra, tamaño y cómo estudias.</p></div></li>
-</ul>
 </section>
 
 <section id="free" class="free" aria-labelledby="free-title">
@@ -110,6 +104,6 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { document.document
 </ul>
 </details>
 </footer>
-<script src="/landing.js?v=202611102114" defer></script>
+<script src="/landing.js?v=202611162100" defer></script>
 </body>
 </html>
