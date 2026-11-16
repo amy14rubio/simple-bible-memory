@@ -99,7 +99,7 @@ describe('suggestRating', () => {
 
 describe('generateCloze', () => {
   it('reassembles into the original verse exactly, punctuation included', () => {
-    for (const d of ['easy', 'medium', 'hard'] as const) {
+    for (const d of ['easy', 'medium', 'hard', 'extreme'] as const) {
       expect(rebuild(generateCloze(VERSE, d, 7))).toBe(VERSE);
     }
   });
@@ -111,9 +111,19 @@ describe('generateCloze', () => {
   });
   it('hides more words on harder levels', () => {
     const long = 'alpha bravo charlie delta echo foxtrot golf hotel india juliet kilo lima';
-    const n = (d: 'easy' | 'medium' | 'hard') => generateCloze(long, d, 3).filter((s) => s.type === 'blank').length;
+    const n = (d: 'easy' | 'medium' | 'hard' | 'extreme') => generateCloze(long, d, 3).filter((s) => s.type === 'blank').length;
     expect(n('easy')).toBeLessThan(n('medium'));
     expect(n('medium')).toBeLessThan(n('hard'));
+    expect(n('hard')).toBeLessThan(n('extreme'));
+  });
+  it('extreme hides every single word, whatever its length, and nothing else', () => {
+    const verse = 'In the beginning God created the heavens and the earth; so it is.';
+    const segs = generateCloze(verse, 'extreme', 5);
+    const blanks = segs.filter((s): s is Extract<Segment, { type: 'blank' }> => s.type === 'blank').map((s) => s.answer);
+    expect(blanks).toEqual(tokenize(verse).map((w) => w.text)); // every word, in order, short ones too
+    expect(blanks.length).toBe(13);
+    expect(segs.filter((s) => s.type === 'text').every((s) => !/\p{L}/u.test((s as { text: string }).text))).toBe(true); // what is left is only spaces and punctuation
+    expect(generateCloze(verse, 'extreme', 1)).toEqual(generateCloze(verse, 'extreme', 99)); // no randomness left: the same blanks for any seed
   });
   it('easy/medium skip short words', () => {
     const segs = generateCloze('a an the elephant', 'medium', 1);

@@ -618,10 +618,11 @@ export const en = {
   'settings.blanks': 'Fill-in-the-blanks difficulty',
   'settings.blanksGroup': 'Blanks difficulty',
   'settings.blanksHint':
-    'Sets how many words are hidden in each verse. The word bank always shows 8 words.',
+    'Sets how many words are hidden in each verse. Extreme hides every word. The word bank always shows 8 words.',
   'difficulty.easy': 'Easy',
   'difficulty.medium': 'Medium',
   'difficulty.hard': 'Hard',
+  'difficulty.extreme': 'Extreme',
   'settings.reminders': 'Notifications',
   'reminders.switch': 'Remind me to study',
   'reminders.unavailable': 'Reminders are only available in the mobile app.',

@@ -56,7 +56,7 @@ export async function setCardKinds(page: Page, kinds: 'Both' | 'Recall the passa
 }
 
 /** The fill-in-the-blanks difficulty lives only in Settings. */
-export async function setBlankDifficulty(page: Page, level: 'Easy' | 'Medium' | 'Hard') {
+export async function setBlankDifficulty(page: Page, level: 'Easy' | 'Medium' | 'Hard' | 'Extreme') {
   await page.goto('/#/settings/blanks');
   const radio = page.getByRole('radio', { name: level, exact: true });
   // The page loads the saved choice after it appears, which can undo a click made too early: retry until it sticks.

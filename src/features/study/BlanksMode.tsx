@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Card } from '../../domain/types';
-import { buildWordBank, checkCloze, generateCloze, hashSeed, isCorrectWord, wordsOf, type BankWord, type Difficulty } from '../../domain/study/cloze';
+import { buildWordBank, checkCloze, generateCloze, hashSeed, isCorrectWord, wordsOf, type BankWord, type Difficulty, EXTREME_BLANK_WIDTH } from '../../domain/study/cloze';
 import type { Rating } from '../../domain/study/rating';
 import { ActionBar, RatingBar } from './RatingBar';
 import { AnswerRegion } from './AnswerRegion';
@@ -83,7 +83,7 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
         <p lang={lang} className="scripture whitespace-pre-line text-xl leading-[2.4]">
           {segments.map((s, i) => {
             if (s.type === 'text') return <span key={i}>{s.text}</span>;
-            const width = { width: `${Math.max(4, s.answer.length)}ch` };
+            const width = { width: `${difficulty === 'extreme' ? EXTREME_BLANK_WIDTH : Math.max(4, s.answer.length)}ch` }; // (at Extreme every blank is the same size: its width would give away the word's length)
             if (s.id < step) {
               return isCorrectWord(picked[s.id]!, s.answer) ? (
                 <span key={i}>{s.answer}</span>

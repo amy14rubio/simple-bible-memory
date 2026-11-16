@@ -166,6 +166,30 @@ test.describe('blanks with a word bank', () => {
     await expect(page.getByRole('button', { name: /^Again/ })).toBeVisible(); // rating buttons appear once every blank is done
   });
 
+  test('Extreme: every word is a blank, all the same size, still filled by tapping from a bank of 8; then you rate it', async ({ page }) => {
+    const id = await createDeck(page);
+    await addCard(page, id, 'Example 5:1', 'In the beginning God created the heavens and the earth.');
+    await setCardKinds(page, 'Recall the passage');
+    await setBlankDifficulty(page, 'Extreme');
+    await study(page, id, 'blanks');
+
+    const bank = page.getByRole('group', { name: 'Word bank' });
+    await expect(bank).toBeVisible();
+    const words = 'In the beginning God created the heavens and the earth'.split(' ');
+    // every one of the 10 words is a blank (none of the verse is left showing), and all blanks are drawn the same width
+    const blanks = page.locator('p.scripture span.inline-block');
+    await expect(blanks).toHaveCount(words.length);
+    const widths = await blanks.evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().width)));
+    expect(new Set(widths).size).toBe(1); // "In" and "beginning" blanks are the same size: the width gives no clue
+    await expect(page.locator('p.scripture')).not.toContainText(/beginning|created|heavens/); // no word of the verse is showing
+    for (const word of words) {
+      expect(await bank.getByRole('button').count()).toBe(8);
+      await bank.getByRole('button', { name: word, exact: true }).first().click(); // tap the right word for this blank
+    }
+    await expect(page.getByRole('button', { name: /^Good.*suggested/ })).toBeVisible(); // every blank right: Good is suggested
+    await expect(page.locator('p.scripture')).toContainText('In the beginning God created the heavens and the earth.'); // the whole verse is back, filled in
+  });
+
   test('there is no typing and no difficulty switcher on the study screen', async ({ page }) => {
     const id = await createDeck(page);
     await addCard(page, id, 'Example 3:1', 'Alpha bravo charlie delta echo foxtrot.');
@@ -175,7 +199,7 @@ test.describe('blanks with a word bank', () => {
     await expect(page.getByRole('textbox')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Check answers' })).toHaveCount(0);
     await expect(page.getByRole('group', { name: 'Difficulty' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /^(Easy|Medium|Hard)$/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^(Easy|Medium|Hard|Extreme)$/ })).toHaveCount(0);
   });
 
   test('the difficulty set in Settings changes how many words are hidden, not the size of the bank', async ({ page }) => {

@@ -2,12 +2,18 @@ import { normalizeText, tokenize } from './normalize';
 import { shuffleSeeded } from './choices';
 import { suggestRating, type Rating } from './rating';
 
-export type Difficulty = 'easy' | 'medium' | 'hard';
-export const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard'];
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'extreme';
+export const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard', 'extreme'];
 
-/** Share of words hidden. Easy/medium only hide words of 4+ letters (the "meaty" ones). */
-const RATIO: Record<Difficulty, number> = { easy: 0.2, medium: 0.4, hard: 0.7 };
-const MIN_LENGTH: Record<Difficulty, number> = { easy: 4, medium: 4, hard: 1 };
+/** Share of words hidden. Easy/medium only hide words of 4+ letters (the "meaty" ones). Extreme hides every word. */
+const RATIO: Record<Difficulty, number> = { easy: 0.2, medium: 0.4, hard: 0.7, extreme: 1 };
+const MIN_LENGTH: Record<Difficulty, number> = { easy: 4, medium: 4, hard: 1, extreme: 1 };
+
+/**
+ * Every blank is drawn this wide (in `ch`) at the Extreme level. With every word hidden, a blank as wide as its word would tell the length of every
+ * word, so they are all the same size.
+ */
+export const EXTREME_BLANK_WIDTH = 6;
 
 export type Segment = { type: 'text'; text: string } | { type: 'blank'; answer: string; id: number };
 

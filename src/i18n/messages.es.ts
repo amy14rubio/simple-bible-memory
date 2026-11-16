@@ -624,10 +624,11 @@ export const es: Dictionary = {
   'settings.blanks': 'Dificultad de llenar el espacio en blanco',
   'settings.blanksGroup': 'Dificultad de llenar el espacio en blanco',
   'settings.blanksHint':
-    'Define cuántas palabras se ocultan en cada versículo. El banco de palabras siempre muestra 8 palabras.',
+    'Define cuántas palabras se ocultan en cada versículo. Extremo las oculta todas. El banco de palabras siempre muestra 8 palabras.',
   'difficulty.easy': 'Fácil',
-  'difficulty.medium': 'Media',
+  'difficulty.medium': 'Intermedio',
   'difficulty.hard': 'Difícil',
+  'difficulty.extreme': 'Extremo',
   'settings.reminders': 'Notificaciones',
   'reminders.switch': 'Recuérdame estudiar',
   'reminders.unavailable': 'Los recordatorios solo están disponibles en la app móvil.',
