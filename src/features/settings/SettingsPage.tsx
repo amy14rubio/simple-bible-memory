@@ -182,6 +182,10 @@ export function SettingsPage() {
         <section aria-labelledby="about">
           <h2 id="about" className={heading}>{t('settings.about')}</h2>
           <div className={panel}>
+          <Link to="/settings/about" className={`${row} hover:bg-surface`}>
+            <span>{t('about.row')}</span>
+            <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
+          </Link>
           <Link to="/welcome" data-coach="tour" className={`${row} hover:bg-surface`}>
             <span>{t('onboarding.tour')}</span>
             <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
