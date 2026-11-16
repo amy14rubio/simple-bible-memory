@@ -216,14 +216,14 @@ test.describe('in Spanish', () => {
   test('the screens, the summary and the default message are Spanish', async ({ page }) => {
     await page.goto('/#/settings');
     await page.getByRole('switch', { name: es['reminders.switch'] as string }).click();
-    await expect(page.getByRole('list', { name: es['reminders.list'] as string })).toContainText('Cada día a las 20:00');
-    // Spanish uses a 24-hour clock: no AM/PM
-    await page.getByRole('button', { name: /Cada día a las 20:00/ }).click();
+    await expect(page.getByRole('list', { name: es['reminders.list'] as string })).toContainText('Cada día a las 8:00 PM');
+    // the time is written 8:00 PM in Spanish too, not on a 24-hour clock
+    await page.getByRole('button', { name: /Cada día a las 8:00 PM/ }).click();
     const drawer = page.getByRole('dialog', { name: es['reminders.edit'] as string });
-    await expect(drawer.getByRole('button', { name: 'Hora, 20:00' })).toHaveText('20:00');
+    await expect(drawer.getByRole('button', { name: 'Hora, 8:00 PM' })).toHaveText('8:00 PM');
     await drawer.locator('input[data-time-for="Hora"]').fill('07:30');
     await drawer.getByRole('button', { name: es['reminders.save'] as string }).click();
-    await expect(page.getByRole('list', { name: es['reminders.list'] as string })).toContainText('Cada día a las 7:30');
+    await expect(page.getByRole('list', { name: es['reminders.list'] as string })).toContainText('Cada día a las 7:30 AM');
     await expect(page.getByRole('list', { name: es['reminders.list'] as string })).toContainText(es['reminders.defaultMessage'] as string);
     await expect.poll(async () => (await scheduled(page))[0]?.body).toBe(es['reminders.defaultMessage']);
   });
@@ -285,5 +285,22 @@ test('the Android tip is in Spanish too, with the Spanish app name', async ({ br
   const tip = page.getByRole('dialog');
   await expect(tip).toContainText('¿Te llegan tarde los recordatorios?');
   await expect(tip).toContainText(/Aplicaciones\s> Memoria Bíblica Simple\s> Batería/);
+  await ctx.close();
+});
+
+test('in Spanish the time is written 8:00 PM, not on a 24-hour clock, and the one o\'clock hour is "a la 1:00 PM"', async ({ browser }) => {
+  const ctx = await browser.newContext({ locale: 'es-ES' });
+  const page = await ctx.newPage();
+  await page.goto('/#/settings');
+  await page.getByRole('switch', { name: es['reminders.switch'] as string }).click();
+  const list = page.getByRole('list', { name: es['reminders.list'] as string });
+  await expect(list).toContainText('Cada día a las 8:00 PM'); // the default reminder, at 20:00
+  await expect(list).not.toContainText('20:00');
+  await page.getByRole('button', { name: /Cada día a las 8:00 PM/ }).click();
+  const drawer = page.getByRole('dialog');
+  await expect(drawer.getByRole('button', { name: /8:00 PM/ })).toBeVisible(); // the time button in the editor reads the same way
+  await setTime(drawer, es['reminders.time'] as string, '13:00');
+  await drawer.getByRole('button', { name: es['reminders.save'] as string }).click();
+  await expect(list).toContainText('Cada día a la 1:00 PM');
   await ctx.close();
 });

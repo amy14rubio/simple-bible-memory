@@ -645,6 +645,9 @@ export const en = {
   'reminders.summary.daily': 'Every day at {time}',
   'reminders.summary.every2days': 'Every 2 days at {time}',
   'reminders.summary.weekly': 'Every {day} at {time}',
+  'reminders.summary.dailyOne': 'Every day at {time}', // (the Spanish one-o'clock form differs; these exist only so both languages have the same keys)
+  'reminders.summary.every2daysOne': 'Every 2 days at {time}',
+  'reminders.summary.weeklyOne': 'Every {day} at {time}',
   'settings.backup': 'Account',
   'settings.backupBody':
     "You don't need an account. Your collections and progress are stored on this device. Export a file to back them up or move them.\n\nSigning in with Google also backs up your collections, cards, study schedule and settings to your account, and brings them to any device you sign in on. Your study log (each time you studied a card, which powers your stats) stays on the device where you studied.",
