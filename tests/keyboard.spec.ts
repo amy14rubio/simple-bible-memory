@@ -38,3 +38,22 @@ test('while the keyboard is up, the Show answer bar sits above it, not under it'
   await expect.poll(async () => { const b = (await button.boundingBox())!; return b.y + b.height; }).toBeGreaterThan(844 - 60);
   await expect(page.locator('html')).not.toHaveAttribute('data-keyboard', '');
 });
+
+test('in the Android app the page keeps no keyboard bookkeeping: the system already made room, and a half-updated reading (the page and the visible area a few milliseconds apart) must never throw the bar up the screen', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('sbm-fake-android', '1')); // the stand-in for the Android app
+  await fakeKeyboard(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const id = await createDeck(page);
+  await addCard(page, id, 'Example 1:1', 'Example verse text typed by the user.');
+  await setCardKinds(page, 'Recall the passage');
+  await page.goto(`/#/collections/${id}/study/type`);
+  const button = page.getByRole('button', { name: 'Show answer' });
+  await expect(button).toBeVisible();
+  const resting = (await button.boundingBox())!;
+  await keyboard(page, 314); // the visible area alone shrinks, as it does for a few frames while the keyboard slides in on the phone
+  await page.waitForTimeout(300);
+  const during = (await button.boundingBox())!;
+  expect(during.y).toBe(resting.y); // the bar did not move
+  await expect(page.locator('html')).not.toHaveAttribute('data-keyboard', '');
+  expect(await page.evaluate(() => document.documentElement.style.getPropertyValue('--keyboard-inset'))).toBe('');
+});
