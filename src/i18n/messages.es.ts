@@ -651,6 +651,9 @@ export const es: Dictionary = {
   'reminders.summary.daily': 'Cada día a las {time}',
   'reminders.summary.every2days': 'Cada 2 días a las {time}',
   'reminders.summary.weekly': 'Cada {day} a las {time}',
+  'reminders.summary.dailyOne': 'Cada día a la {time}',
+  'reminders.summary.every2daysOne': 'Cada 2 días a la {time}',
+  'reminders.summary.weeklyOne': 'Cada {day} a la {time}',
   'settings.backup': 'Cuenta',
   'settings.backupBody':
     'No necesitas una cuenta. Tus carpetas y tu progreso se guardan en este dispositivo. Exporta un archivo para guardarlos como copia de seguridad o pasarlos a otro dispositivo.\n\nIniciar sesión con Google también respalda tus carpetas, tarjetas, calendario de estudio y ajustes en tu cuenta, y los lleva a cualquier dispositivo en el que inicies sesión. Tu registro de estudio (cada vez que estudiaste una tarjeta, que alimenta tus estadísticas) se queda en el dispositivo donde estudiaste.',

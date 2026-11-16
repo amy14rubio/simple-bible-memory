@@ -67,7 +67,9 @@ export function RemindersSection() {
   };
 
   const summary = (r: Reminder) => {
-    const key = `reminders.summary.${r.repeat}` as MessageKey;
+    // In Spanish the one o'clock hour is "a la 1:00 PM", every other hour "a las 8:00 PM".
+    const one = language === 'es' && Number(r.time.slice(0, 2)) % 12 === 1;
+    const key = `reminders.summary.${r.repeat}${one ? 'One' : ''}` as MessageKey;
     return t(key, { time: formatTime(language, r.time), day: weekdayName(language, r.weekday) });
   };
 
