@@ -333,7 +333,7 @@ export const en = {
   'discover.preview': 'Preview',
   'about.row': 'About',
   'about.hello': 'Hello there!',
-  'about.p1': 'The idea for this app really came from countless hours of studying and memorizing Bible verses on Anki, and wishing there was something designed specifically for Scripture memorization.',
+  'about.p1': 'The idea for this app really came from countless hours of memorizing Bible verses on Anki, and wishing there was something designed specifically for Scripture memorization.',
   'about.p2': 'Every feature you’ll find here was inspired by something I wished I had during my own Bible memorization journey. I wanted to make something that would make the process a little more enjoyable and accessible.',
   'about.p3': 'I hope this app can be a simple, helpful little tool for you to use!',
   'about.signoff': 'Thanks for stopping by, and God bless! ❤︎',
