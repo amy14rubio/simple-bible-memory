@@ -329,7 +329,7 @@ export const es: Dictionary = {
   'discover.preview': 'Vista previa',
   'about.row': 'Acerca de la app',
   'about.hello': '¡Hola!',
-  'about.p1': 'La idea de esta app nació de las incontables horas que pasé estudiando y memorizando versículos bíblicos en Anki, deseando que existiera algo diseñado específicamente para memorizar la Escritura.',
+  'about.p1': 'La idea de esta app nació de las incontables horas que pasé memorizando versículos bíblicos en Anki, deseando que existiera algo diseñado específicamente para memorizar la Escritura.',
   'about.p2': 'Cada función que encontrarás aquí nació de algo que yo quería tener durante mi propio camino de memorización bíblica. Quise crear algo que hiciera el proceso un poco más agradable y accesible.',
   'about.p3': '¡Espero que esta app sea una pequeña herramienta sencilla y útil para ti!',
   'about.signoff': '¡Gracias por leer, y que Dios te bendiga! ❤︎',
