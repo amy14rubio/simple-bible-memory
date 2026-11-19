@@ -8,7 +8,7 @@ import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { useRefreshOnWrites } from '../../app/useRefreshOnWrites';
-import { AppBar, ButtonLink, EmptyState, ErrorMessage, IconButton, IconLink, SearchBar, Bar } from '../../components/ui';
+import { AppBar, ButtonLink, EmptyState, ErrorMessage, IconButton, IconLink, SearchBar, Bar, useListMotion } from '../../components/ui';
 import { DeckMenu } from './DeckMenu';
 import { loadCardKinds } from '../study/cardKinds';
 import { loadNewPerDay } from '../study/newPerDay';
@@ -135,6 +135,8 @@ export function DecksPage() {
   const canReorder = !q && !searching && (ordered?.length ?? 0) > 1;
   // Reordering is a mode, like selecting cards: touch and hold a deck to start it, "Done" (or Back) to leave it.
   const [reordering, setReordering] = useState(false);
+  const list = useRef<HTMLUListElement>(null);
+  useListMotion(list, !reordering); // searching and clearing a search change the list smoothly (not while rows are being dragged: dragging moves them itself)
   const stopReordering = () => setReordering(false);
   usePopupHistory(reordering, stopReordering); // Back leaves reordering instead of the screen
   useEffect(() => { if (reordering && !canReorder) setReordering(false); }, [reordering, canReorder]); // for example, one deck was deleted
@@ -236,7 +238,7 @@ export function DecksPage() {
       {canReorder && !reordering && <button type="button" onClick={() => setReordering(true)} className="sr-only focus:not-sr-only focus:m-3 focus:rounded-lg focus:border focus:border-border focus:px-4 focus:py-2">{t('decks.reorder')}</button>}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd} accessibility={{ announcements, screenReaderInstructions: { draggable: t('decks.dragInstructions') } }}>
         <SortableContext items={(shown ?? []).map((d) => d.id)} strategy={wide && shown && shown.length > 1 ? rectSortingStrategy : verticalListSortingStrategy}>
-          <ul className={`wide:grid wide:gap-3 wide:p-5 ${shown && shown.length > 1 ? 'wide:grid-cols-2' : ''}`}>
+          <ul ref={list} className={`wide:grid wide:gap-3 wide:p-5 ${shown && shown.length > 1 ? 'wide:grid-cols-2' : ''}`}>
             {shown?.map((d) => <DeckRow key={d.id} d={d} wide={wide} reordering={reordering} onMenu={() => setMenuFor(d)} onHold={() => { if (canReorder) setReordering(true); }} />)}
           </ul>
         </SortableContext>

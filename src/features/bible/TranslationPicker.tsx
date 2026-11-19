@@ -6,7 +6,7 @@ import { isSwitchedOff } from '../../domain/bible/switch';
 import { useCatalogue } from './catalogue';
 import { useLicensedSwitch } from './remoteSwitch';
 import { useI18n } from '../../i18n/I18nProvider';
-import { HiddenClose, PopupSearchHeader, showDialog } from '../../components/ui';
+import { HiddenClose, PopupSearchHeader, showDialog, useListMotion } from '../../components/ui';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 
 /**
@@ -30,6 +30,8 @@ export function TranslationPicker({ id, value, onChange, initialLanguage, extras
   const [language, setLanguage] = useState<string>(current?.language ?? initialLanguage);
   const [tab, setTab] = useState<'translation' | 'language'>('translation');
   const [searching, setSearching] = useState(false);
+  const list = useRef<HTMLUListElement>(null);
+  useListMotion(list); // searching, clearing and switching tabs change the list smoothly
   const [query, setQuery] = useState('');
 
   useEffect(() => {
@@ -107,7 +109,7 @@ export function TranslationPicker({ id, value, onChange, initialLanguage, extras
             ))}
           </div>
           <div id="tabpanel-picker" role="tabpanel" aria-labelledby={`tab-${tab}`} className="min-h-0 flex-1 overflow-y-auto">
-          <ul>
+          <ul ref={list}>
             {shownExtras.map((e) => (
               <li key={e.code} className="border-b border-border">
                 <button

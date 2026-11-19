@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type Ref, type TextareaHTMLAttributes } from 'react';
+import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type Ref, type RefObject, type TextareaHTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { Check, ChevronLeft, Search, X } from 'lucide-react';
@@ -153,6 +153,47 @@ export function SearchBar({ label, placeholder, value, onChange, backLabel, onCl
       <div className="flex items-center">{actions}</div>
     </header></InBarSlot>
   );
+}
+
+/**
+ * Makes a list that changes (searching, clearing a search, going back from one) change smoothly instead of jumping. After every render it looks at where
+ * each row is: a row that was already there and has moved glides from its old place to its new one, and a row that was not there before fades in
+ * and slides up a little. (Rows are the list's direct children; they are told apart by being the same page element, which React keeps for the same key.)
+ * The first time a list is shown nothing moves, only rows outside the screen are left alone, and nothing moves for reduced motion.
+ * Pass `enabled: false` while something else is moving the rows (dragging to reorder).
+ */
+export function useListMotion(list: RefObject<HTMLElement | null>, enabled = true) {
+  const before = useRef<Map<Element, number> | null>(null);
+  useLayoutEffect(() => {
+    const el = list.current;
+    // Not on screen (a closed popup, a screen still loading): there is nothing to compare, and the next time it is shown it appears as it is.
+    if (!el || el.getClientRects().length === 0) { before.current = null; return; }
+    const top = el.getBoundingClientRect().top;
+    const now = new Map<Element, number>();
+    const reach = window.innerHeight + 200;
+    const moves: { child: Element; from: number; fresh: boolean }[] = [];
+    for (const child of el.children) {
+      const rect = child.getBoundingClientRect();
+      now.set(child, rect.top - top);
+      const old = before.current?.get(child);
+      const onScreen = rect.bottom > -200 && rect.top < reach;
+      if (!enabled || !onScreen || before.current === null) continue;
+      if (old === undefined) moves.push({ child, from: 0, fresh: true });
+      else if (Math.abs(old - (rect.top - top)) > 1) moves.push({ child, from: old - (rect.top - top), fresh: false });
+    }
+    // Rows that LEFT the list mean the list is narrowing (typing in the search box): the rows that stay only settle, quickly and lightly, because this
+    // happens on every keystroke. Rows that are added (the X, going back, deleting a letter) come in with the fuller motion.
+    const narrowing = [...(before.current?.keys() ?? [])].some((child) => !now.has(child));
+    before.current = now;
+    if (prefersReducedMotion()) return;
+    const ease = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+    for (const { child, from, fresh } of moves.slice(0, 60)) {
+      child.animate(
+        fresh ? [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }] : [{ transform: `translateY(${from}px)` }, { transform: 'none' }],
+        narrowing && !fresh ? { duration: 110, easing: 'ease-out' } : { duration: fresh ? 240 : 260, easing: ease },
+      );
+    }
+  });
 }
 
 /**

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { ChevronDown, Plus } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
-import { HiddenClose, IconButton, PopupSearchHeader, showDialog } from './ui';
+import { HiddenClose, IconButton, PopupSearchHeader, showDialog, useListMotion } from './ui';
 import { usePopupHistory } from '../lib/usePopupHistory';
 
 export interface PickerOption {
@@ -43,6 +43,8 @@ export function OptionPicker({ label, value, options, onChange, variant = 'title
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
   const [group, setGroup] = useState<string | null>(null);
+  const list = useRef<HTMLUListElement>(null);
+  useListMotion(list); // searching, clearing and filtering change the list smoothly
 
   useEffect(() => {
     const d = ref.current;
@@ -113,7 +115,7 @@ export function OptionPicker({ label, value, options, onChange, variant = 'title
             </div>
           )}
 
-          <ul className="min-h-0 flex-1 overflow-y-auto border-t border-border">
+          <ul ref={list} className="min-h-0 flex-1 overflow-y-auto border-t border-border">
             {shown.map((o) => (
               <li key={o.value} className="border-b border-border last:border-b-0">
                 <button
