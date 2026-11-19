@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from '../../components/shadcn/toast';
 import { Flag, Share2 } from 'lucide-react';
-import { AppBar, BackButton, Button, EmptyState, ErrorMessage, IconButton, Page } from '../../components/ui';
+import { AppBar, BackButton, Button, EmptyState, ErrorMessage, IconButton, Page, useErrorState } from '../../components/ui';
 import { useAsync } from '../../app/useAsync';
 import { useRepositories } from '../../app/repositories';
 import { loadBackends } from '../sharing/backend';
@@ -28,19 +28,26 @@ export function DiscoverDeckPage() {
   const { exchange } = useRepositories();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string>();
+  const [error, setError] = useErrorState();
   const [reporting, setReporting] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
-  const { data, loading, error: loadError } = useAsync(async () => {
+  const { data, loading, error: loadError, reload } = useAsync(async () => {
     const { discover } = await loadBackends();
     const deck = await discover.getDeck(id);
     if (!deck) return { deck: null, cards: [], have: undefined };
     return { deck, cards: await discover.getCards(id), have: await exchange.findImported(id) };
   }, [id, exchange]);
 
+  // When the internet comes back, a collection that failed to load loads again by itself (the button does the same).
+  useEffect(() => {
+    if (!loadError) return;
+    window.addEventListener('online', reload);
+    return () => window.removeEventListener('online', reload);
+  }, [loadError, reload]);
+
   if (loading) return <><AppBar back={<BackButton to="/discover" label={t('common.back')} />} /><Page><p role="status" className="text-muted">{t('discover.loading')}</p></Page></>;
-  if (loadError) return <><AppBar back={<BackButton to="/discover" label={t('common.back')} />} /><Page><ErrorMessage error={t('discover.error')} /></Page></>;
+  if (loadError) return <><AppBar back={<BackButton to="/discover" label={t('common.back')} />} /><EmptyState title={t('discover.error')} action={<Button variant="secondary" onClick={reload}>{t('discover.retry')}</Button>}>{t('discover.errorBody')}</EmptyState></>;
   if (!data?.deck) return <><AppBar back={<BackButton to="/discover" label={t('common.back')} />} /><EmptyState title={t('discover.notFound')}>{null}</EmptyState></>;
   const { deck, cards, have } = data;
   // Published by a newer app, in a format this one might misread: it can be looked at, but not imported until the app is updated.
@@ -48,7 +55,6 @@ export function DiscoverDeckPage() {
 
   const importDeck = async () => {
     setBusy(true);
-    setError(undefined);
     try {
       // A licensed text is not in the public deck: its cards come with the reference and the translation, and the text is fetched
       // to this device from the publisher afterwards. (Such a deck's own label, a licensed code or "mixed", is not kept: the cards say it.)

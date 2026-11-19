@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Download, EyeOff, Globe, List, Pencil, Plus, Repeat, Trash2 } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
-import { ConfirmDialog, Dialog } from '../../components/ui';
+import { ConfirmDialog, Dialog, ErrorMessage, useErrorState } from '../../components/ui';
 import { useI18n } from '../../i18n/I18nProvider';
 import { ExportDrawer, type ExportTarget } from '../exchange/ExportDrawer';
 import { PublishDrawer } from '../sharing/PublishDrawer';
@@ -24,7 +24,7 @@ export function DeckMenu({ deck, onClose, onDeleted }: {
   const [publishing, setPublishing] = useState<{ id: string; title: string } | null>(null);
   const share = useSharing();
   const { data: published } = useAsync(async () => (deck ? (await sharing.getDeck(deck.id))?.publishId != null : false), [deck?.id, sharing]);
-  const [error, setError] = useState<string>();
+  const [error, setError] = useErrorState();
   // Signed out, a published deck can still be deleted here, but only here: its public copy is left alone, now and later.
   const signedIn = share.user !== null;
 
@@ -49,7 +49,7 @@ export function DeckMenu({ deck, onClose, onDeleted }: {
     <>
       {/* While the delete confirmation is up, this dialog closes on purpose: that must not clear the selected deck. */}
       <Dialog open={!!deck && !confirming} onClose={() => { if (!confirming) onClose(); }} title={deck?.title ?? t('deckMenu.defaultTitle')}>
-        {error && <p role="alert" className="mb-2 text-danger">{error}</p>}
+        {error && <div className="mb-2"><ErrorMessage error={error} /></div>}
         <nav aria-label={t('deckMenu.actions')} className="flex flex-col border-t border-border">
           <Link to={`/cards/new?collection=${deck?.id}`} onClick={onClose} className={item}><Plus size={20} aria-hidden className={icon} />{t('deckMenu.addCard')}</Link>
           <Link to={`/collections/${deck?.id}/cards`} onClick={onClose} className={item}><List size={20} aria-hidden className={icon} />{t('deckMenu.browse')}</Link>

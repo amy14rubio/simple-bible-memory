@@ -184,7 +184,7 @@ test.describe('the app in Spanish', () => {
     await page.getByRole('link', { name: 'Crea tu primera carpeta' }).click();
     await expect(page.getByRole('heading', { name: 'Nueva carpeta' })).toBeVisible();
     await page.getByRole('button', { name: 'Guardar' }).click(); // empty title
-    await expect(page.getByRole('alert')).toContainText('El título de la carpeta es obligatorio');
+    await expect(page.getByRole('alert')).toContainText('Ponle un nombre a tu carpeta.');
     await page.getByLabel('Título').fill('Versículos del camino');
     await expect(page.getByLabel('Descripción')).toBeVisible();
     await page.getByRole('button', { name: 'Guardar' }).click();
@@ -195,7 +195,7 @@ test.describe('the app in Spanish', () => {
     await expect(page.getByRole('heading', { name: 'Añadir tarjeta' })).toBeVisible();
     await page.getByLabel('Versículo(s)').fill('Juan 3:16');
     await page.getByRole('button', { name: 'Guardar' }).click(); // no passage
-    await expect(page.getByRole('alert')).toContainText('El pasaje es obligatorio');
+    await expect(page.getByRole('alert')).toContainText('Agrega el texto del pasaje.');
     await expect(page.getByLabel('Versículo(s)')).toHaveValue('Juan 3:16'); // what you typed is kept
     await page.getByLabel('Pasaje', { exact: true }).fill('Texto de ejemplo escrito por la persona.');
     await page.getByRole('button', { name: 'Guardar' }).click();

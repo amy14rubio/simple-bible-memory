@@ -2,7 +2,7 @@ import { useMemo, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileUp } from 'lucide-react';
 import { toast } from '../../components/shadcn/toast';
-import { AppBar, BackButton, Button, ErrorMessage, FormRow, Page, Switch } from '../../components/ui';
+import { AppBar, BackButton, Button, ErrorMessage, FormRow, Page, Switch, useErrorState } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { OptionPicker } from '../../components/OptionPicker';
 import { useRepositories } from '../../app/repositories';
@@ -40,7 +40,7 @@ export function ImportPage() {
   const navigate = useNavigate();
   const [loaded, setLoaded] = useState<Loaded>();
   const [errorKey, setErrorKey] = useState<MessageKey>();
-  const [error, setError] = useState<string>();
+  const [error, setError] = useErrorState();
   const [busy, setBusy] = useState(false);
 
   // For a deck file
@@ -100,7 +100,6 @@ export function ImportPage() {
   const run = async () => {
     if (!loaded) return;
     setBusy(true);
-    setError(undefined);
     try {
       const result = loaded.kind === 'deck'
         ? await exchange.importFile(loaded.file, { progress })

@@ -110,7 +110,7 @@ test.describe('adding cards: save, toast, and a cleared form', () => {
     await page.goto(`/#/cards/new?collection=${id}`);
     await reference(page).fill('John 3:16');
     await page.getByRole('button', { name: 'Save' }).click();
-    await expect(page.getByRole('alert')).toContainText('Verse text is required');
+    await expect(page.getByRole('alert')).toContainText('Add the passage text.');
     await expect(reference(page)).toHaveValue('John 3:16');
     await expect(page.getByText('John 3:16 added')).toHaveCount(0);
   });

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { en } from './messages.en';
 import { es } from './messages.es';
 import { LANGUAGES, bookName, cachedLanguagePreference, describeError, formatIntervalIn, isLanguage, parseLanguagePreference, resolveLanguage, translate, type Message, type MessageKey } from '.';
@@ -142,13 +142,17 @@ describe('book names', () => {
 
 describe('describeError', () => {
   it('translates errors the user can fix', () => {
-    expect(describeError('en', new ValidationError('deck-title-required', 'Deck title is required'))).toBe('Collection title is required');
-    expect(describeError('es', new ValidationError('deck-title-required', 'Deck title is required'))).toBe('El título de la carpeta es obligatorio');
-    expect(describeError('es', new ValidationError('reference-required', 'x'))).toBe('El versículo es obligatorio');
-    expect(describeError('es', new ValidationError('verse-text-required', 'x'))).toBe('El pasaje es obligatorio');
+    expect(describeError('en', new ValidationError('deck-title-required', 'Deck title is required'))).toBe('Give your collection a name.');
+    expect(describeError('es', new ValidationError('deck-title-required', 'Deck title is required'))).toBe('Ponle un nombre a tu carpeta.');
+    expect(describeError('es', new ValidationError('reference-required', 'x'))).toBe('Agrega el versículo, por ejemplo Juan 3:16.');
+    expect(describeError('es', new ValidationError('verse-text-required', 'x'))).toBe('Agrega el texto del pasaje.');
   });
-  it('shows technical errors as they are', () => {
-    expect(describeError('es', new Error('disk full'))).toBe('disk full');
-    expect(describeError('es', 'plain text')).toBe('plain text');
+  it('never shows technical text: a plain, friendly sentence in the interface language instead', () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(describeError('en', new Error('disk full'))).toBe('Something went wrong. Please try again.');
+    expect(describeError('es', new Error('disk full'))).toBe('Algo salió mal. Inténtalo de nuevo.');
+    expect(describeError('es', 'plain text')).toBe('Algo salió mal. Inténtalo de nuevo.');
+    expect(log).toHaveBeenCalled(); // kept for whoever is debugging
+    log.mockRestore();
   });
 });

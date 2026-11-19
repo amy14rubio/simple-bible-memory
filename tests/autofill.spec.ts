@@ -228,7 +228,7 @@ test('an open translation needs a connection to autofill, and says so', async ({
   await autofillSwitch(page).click();
   await failNext(page, 'offline');
   await page.getByLabel('Verse(s)').fill('John 3:16');
-  await expect(page.getByText(/You're offline, so the passage can't be filled in/)).toBeVisible();
+  await expect(page.getByText(/You're offline, so we can't fill in the passage/)).toBeVisible();
 });
 
 test('a passage that cannot be found says so', async ({ page }) => {
@@ -237,7 +237,7 @@ test('a passage that cannot be found says so', async ({ page }) => {
   await autofillSwitch(page).click();
   await failNext(page, 'not-found');
   await page.getByLabel('Verse(s)').fill('John 99:1');
-  await expect(page.getByText(/Couldn't find that passage in World English Bible/)).toBeVisible();
+  await expect(page.getByText(/We couldn't find that passage in World English Bible/)).toBeVisible();
 });
 
 test('a licensed text is never in an exported collection file; the reference and translation are', async ({ page }) => {

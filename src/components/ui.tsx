@@ -1,8 +1,9 @@
-import { useEffect, useId, useLayoutEffect, useRef, type ButtonHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Check, ChevronLeft, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
 import { usePopupHistory } from '../lib/usePopupHistory';
+import { prefersReducedMotion } from '../app/motion';
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'light';
 const variants: Record<Variant, string> = {
@@ -261,11 +262,52 @@ export function EmptyState({ title, children, action }: { title: string; childre
   );
 }
 
-export function ErrorMessage({ error, id }: { error: Error | string; id?: string }) {
+/** An error message and how many times one has been set: the same words twice in a row are still two messages, so the second one can be shown again. */
+export interface ErrorValue { text: string; n: number }
+/** Where a screen keeps its error: `setError('…')` shows one (again, if it is the same), `setError()` clears it. */
+export function useErrorState(): [ErrorValue | undefined, (text?: string) => void] {
+  const [value, setValue] = useState<ErrorValue>();
+  const count = useRef(0);
+  return [value, useCallback((text?: string) => setValue(text === undefined ? undefined : { text, n: ++count.current }), [])];
+}
+
+/**
+ * A message about something that went wrong. It comes in the way a screen does (slides in a little and fades in, same timing as AppShell) and
+ * goes away when tapped (it fades out). The same mistake again does not remove and re-add it (that would blink): it stays and gives a small nudge,
+ * or, if it was tapped away, comes back the same way it came the first time. People who ask their phone for reduced motion get no movement.
+ */
+export function ErrorMessage({ error, id, fixed = false }: { error: Error | string | ErrorValue; id?: string; /** A reason that must stay in view (it explains a disabled button), so tapping it does nothing. */ fixed?: boolean }) {
   const { describeError } = useI18n();
+  const box = useRef<HTMLParagraphElement>(null);
+  const [gone, setGone] = useState(false);
+  const n = typeof error === 'object' && 'n' in error ? error.n : 0;
+  const previous = useRef<number | null>(null); // the message shown last time (null: this is the first)
+  const comeBack = useRef(false);
+  useLayoutEffect(() => {
+    const prior = previous.current;
+    previous.current = n;
+    if (prior !== null && prior !== n && gone) { comeBack.current = true; setGone(false); return; } // tapped away, and now again: back it comes
+    const el = box.current;
+    const entrance = prior === null || comeBack.current;
+    comeBack.current = false;
+    if (!el || prefersReducedMotion()) return;
+    const ease = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+    const a = entrance
+      ? el.animate([{ opacity: 0.65, transform: 'translateX(24px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: ease })
+      : prior !== n ? el.animate({ transform: ['translateX(8px)', 'translateX(-5px)', 'translateX(3px)', 'none'] }, { duration: 300, easing: ease }) : undefined;
+    return () => a?.cancel();
+  }, [n, gone]);
+  const dismiss = () => {
+    const el = box.current;
+    if (!el || prefersReducedMotion()) { setGone(true); return; }
+    el.animate({ opacity: [1, 0] }, { duration: 200, easing: 'ease-out', fill: 'forwards' }).finished.then(() => setGone(true), () => setGone(true));
+  };
+  if (gone) return null;
+  const text = typeof error === 'string' ? error : error instanceof Error ? describeError(error) : error.text;
+  if (fixed) return <p ref={box} role="alert" id={id} className="rounded-lg border border-danger p-3.5 text-danger">{text}</p>;
   return (
-    <p role="alert" id={id} className="rounded-lg border border-danger p-3.5 text-danger">
-      {typeof error === 'string' ? error : describeError(error)}
+    <p ref={box} role="alert" id={id} className="rounded-lg border border-danger text-danger">
+      <button type="button" onClick={dismiss} className="block w-full cursor-pointer rounded-lg p-3.5 text-left">{text}</button>
     </p>
   );
 }
