@@ -198,12 +198,12 @@ test.describe('import a collection file', () => {
   test('bad files get a clear message and nothing is added', async ({ page }) => {
     await page.goto('/#/import');
     const cases: [string, string, RegExp][] = [
-      ['x.json', JSON.stringify({ hello: 'world' }), /isn't a collection file from this app/],
+      ['x.json', JSON.stringify({ hello: 'world' }), /doesn't look like a collection file from this app/],
       ['x.json', JSON.stringify({ app: 'simple-bible-memory', format: 99, decks: [] }), /newer version of the app/],
-      ['x.json', JSON.stringify({ app: 'simple-bible-memory', format: 1, decks: [{ title: 'T', cards: [{ reference: '', verseText: 'x' }] }] }), /damaged|isn't a valid collection file/],
+      ['x.json', JSON.stringify({ app: 'simple-bible-memory', format: 1, decks: [{ title: 'T', cards: [{ reference: '', verseText: 'x' }] }] }), /couldn't read this file/],
       ['x.json', JSON.stringify({ app: 'simple-bible-memory', format: 1, decks: [] }), /doesn't contain any collections/],
-      ['x.json', '{ not json', /damaged|isn't a valid collection file/],
-      ['x.txt', '', /Couldn't find any cards/],
+      ['x.json', '{ not json', /couldn't read this file/],
+      ['x.txt', '', /We couldn't find any cards/],
       ['x.txt', 'just one column of text', /at least two columns/],
     ];
     for (const [name, content, message] of cases) {
@@ -287,7 +287,7 @@ test.describe('in Spanish, and accessibility', () => {
     await page.goto('/#/import');
     await expect(page.getByRole('heading', { name: 'Importar carpeta' })).toBeVisible();
     await chooseFile(page, 'x.json', JSON.stringify({ hello: 1 }));
-    await expect(page.getByRole('alert')).toContainText('no es un archivo de carpeta de esta app');
+    await expect(page.getByRole('alert')).toContainText('no parece un archivo de carpeta de esta app');
     await ctx.close();
   });
 

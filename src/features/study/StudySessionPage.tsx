@@ -172,7 +172,8 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
       }
       goOn();
     } catch (e) {
-      setError(t('study.saveFailed', { message: describeError(e) }));
+      console.error(e);
+      setError(t('study.saveFailed'));
     } finally {
       busy.current = false;
     }

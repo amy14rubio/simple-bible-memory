@@ -214,7 +214,7 @@ test.describe('font', () => {
     await page.goto('/#/settings/font');
     await pickFont(page, 'Lora');
     await useFont(page).click();
-    await expect(page.getByRole('alert')).toContainText("Couldn't download Lora");
+    await expect(page.getByRole('alert')).toContainText("We couldn't download Lora");
     expect(await vars(page)).toEqual({ serif: '', sans: '' });
     await expect(useFont(page)).toBeVisible(); // try again
   });
