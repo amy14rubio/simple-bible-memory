@@ -39,6 +39,7 @@ export function createFirestoreAccount(db: Firestore, uid: () => string): Accoun
 
     async push(list) {
       const stale: string[] = [];
+      const refused: string[] = [];
       for (let i = 0; i < list.length; i += CHUNK) {
         const chunk = list.slice(i, i + CHUNK);
         try {
@@ -51,17 +52,17 @@ export function createFirestoreAccount(db: Firestore, uid: () => string): Accoun
           for (const it of chunk) {
             try { await setDoc(ref(it), body(it)); } catch (err) {
               if (!denied(err)) throw err;
-              // Refused: only "the cloud has a newer one" counts as stale. Any other refusal is a real problem, not to be hidden.
+              // Refused: only "the cloud has a newer one" counts as stale. Any other refusal is reported (as `refused`), never hidden, and never stops the rest.
               const there = await getDoc(ref(it));
               const theirs = there.exists() ? there.data() : null;
               // Refused because the cloud has a newer edit, or the same thing saved in a newer format than this app writes.
               if (theirs && typeof theirs.updatedAt === 'number' && (theirs.updatedAt > it.updatedAt || (typeof theirs.v === 'number' && theirs.v > it.v))) stale.push(itemKey(it.entity, it.id));
-              else throw err;
+              else { refused.push(itemKey(it.entity, it.id)); console.warn('The account did not accept', itemKey(it.entity, it.id)); } // set aside: the others must still be sent
             }
           }
         }
       }
-      return { stale };
+      return { stale, refused };
     },
 
     async removeAll() {

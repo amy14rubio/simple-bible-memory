@@ -1,5 +1,5 @@
 import type { AccountBackend, OutItem, RemoteItem } from './types';
-import { itemKey } from '../../domain/account/items';
+import { backupProblem, itemKey } from '../../domain/account/items';
 
 /**
  * A stand-in for the person's private area in Firestore, used by the browser tests and the engine's own tests. It keeps
@@ -41,15 +41,17 @@ export function createFakeAccount(store: FakeAccountStore, currentUid: () => str
       if (s.offline) throw new Error('offline');
       const mine = (s.items[uid] ??= {});
       const stale: string[] = [];
+      const refused: string[] = [];
       for (const it of items) {
         const key = itemKey(it.entity, it.id);
+        if (it.doc && backupProblem(it.entity, it.doc)) { refused.push(key); continue; } // like the real rules: some things are never accepted (too long, empty...)
         const existing = mine[key];
         if (existing && (it.updatedAt < existing.updatedAt || it.v < existing.v)) { stale.push(key); continue; } // like the real rules: never an older edit, never an older format over a newer one
         s.clock = Math.max(Date.now(), s.clock + 1);
         mine[key] = { entity: it.entity, id: it.id, deleted: it.deleted, updatedAt: it.updatedAt, syncedAt: s.clock, v: it.v, data: it.doc ? structuredClone(it.doc) : null };
       }
       store.save(s);
-      return { stale };
+      return { stale, refused };
     },
 
     async removeAll() {

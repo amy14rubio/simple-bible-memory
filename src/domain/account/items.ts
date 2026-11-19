@@ -91,3 +91,28 @@ export function makeItem(entity: Entity, id: string, raw: unknown): Item | null 
 export function remoteWins(remote: { updatedAt: number; hash: string }, local: { updatedAt: number; hash: string }): boolean {
   return remote.updatedAt !== local.updatedAt ? remote.updatedAt > local.updatedAt : remote.hash > local.hash;
 }
+
+/**
+ * What the account's rules (firestore.rules, "A person's own backup") accept. They are a mirror of those rules, so that when the account refuses
+ * something this device can say WHICH thing and WHY, instead of the whole backup quietly stopping. (A test checks these numbers against the rules file.)
+ */
+export const BACKUP_LIMITS = { name: 200, description: 2000, reference: 200, verseText: 20000, note: 2000, collectionsPerCard: 50 } as const;
+export type BackupProblem = 'name-empty' | 'name-too-long' | 'description-too-long' | 'reference-empty' | 'reference-too-long' | 'text-empty' | 'text-too-long' | 'note-too-long' | 'too-many-collections' | 'other';
+
+/** Why the account would refuse this item (the first reason found), or null when nothing about it breaks a rule that can be checked here. */
+export function backupProblem(entity: Entity, doc: Doc): BackupProblem | null {
+  const len = (v: unknown) => (typeof v === 'string' ? v.length : 0);
+  if (entity === 'deck') {
+    if (len(doc.title) < 1) return 'name-empty';
+    if (len(doc.title) > BACKUP_LIMITS.name) return 'name-too-long';
+    if (len(doc.description) > BACKUP_LIMITS.description) return 'description-too-long';
+  } else if (entity === 'card') {
+    if (len(doc.reference) < 1) return 'reference-empty';
+    if (len(doc.reference) > BACKUP_LIMITS.reference) return 'reference-too-long';
+    if (len(doc.verseText) > BACKUP_LIMITS.verseText) return 'text-too-long';
+    if (len(doc.verseText) < 1 && !isLicensed(typeof doc.translation === 'string' ? doc.translation : null)) return 'text-empty';
+    if (len(doc.note) > BACKUP_LIMITS.note) return 'note-too-long';
+    if (Array.isArray(doc.decks) && doc.decks.length > BACKUP_LIMITS.collectionsPerCard) return 'too-many-collections';
+  }
+  return null;
+}

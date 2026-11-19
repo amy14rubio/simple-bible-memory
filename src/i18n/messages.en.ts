@@ -467,6 +467,11 @@ export const en = {
   'account.signedInAs': 'Signed in as {name}',
   'account.backup.synced': 'Signed in as {name}. Your collections and study schedule are backed up.',
   'account.backup.syncing': 'Signed in as {name}. Backing up…',
+  'account.backup.refused.one': '1 card could not be backed up.',
+  'account.backup.refused.other': '{count} cards could not be backed up.',
+  'account.backup.refusedItems.one': '1 item could not be backed up.',
+  'account.backup.refusedItems.other': '{count} items could not be backed up.',
+  'account.backup.refusedMore': 'and {count} more',
   'account.backup.waiting':
     "Signed in as {name}. Waiting for a connection. Changes are backed up when you're back online.",
   'switch.title': 'Different account',

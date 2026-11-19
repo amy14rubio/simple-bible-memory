@@ -144,6 +144,21 @@ export function SettingsPage() {
           {share.available && share.user && share.accountStatus.state !== 'off' && (
             <div role="status" className={`${row} text-muted`}><span>{t(`account.backup.${share.accountStatus.state}` as MessageKey, { name: share.user.displayName ?? share.user.email ?? '' })}</span></div>
           )}
+          {/* Some cards the account would not take (the rest is backed up): which ones, so they can be fixed. */}
+          {share.available && share.user && share.accountStatus.state === 'synced' && share.accountStatus.refused && (() => {
+            const { count, examples } = share.accountStatus.refused;
+            const cards = examples.every((e) => e.entity === 'card');
+            const kind = cards ? 'refused' : 'refusedItems';
+            return (
+              <div role="status" className={`${row} block space-y-1 text-muted`}>
+                <p>{t(`account.backup.${kind}.${count === 1 ? 'one' : 'other'}` as MessageKey, { count })}</p>
+                <ul className="list-disc space-y-0.5 pl-5 text-sm">
+                  {examples.map((r, i) => <li key={i} className="break-words">{r.name}</li>)}
+                </ul>
+                {count > examples.length && <p className="text-sm">{t('account.backup.refusedMore', { count: count - examples.length })}</p>}
+              </div>
+            );
+          })()}
           <button type="button" onClick={() => setExporting({ ids: null, title: t('export.everything') })} className={`${row} w-full text-left hover:bg-surface`}>
             <span>{t('export.titleAll')}</span>
             <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
