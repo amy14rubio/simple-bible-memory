@@ -13,6 +13,7 @@ import type { AccountBackend, AccountStatus, OutItem, RemoteItem } from './types
  * Review history is not part of this.
  */
 const CHUNK = 400; // Firestore allows 500 writes per batch
+const FULL_READ_EVERY_MS = 24 * 60 * 60 * 1000;
 
 export type AccountChoice = 'merge' | 'replace';
 
@@ -27,6 +28,8 @@ export interface AccountSync {
   start(uid: string): Promise<void>;
   /** Stops syncing (signed out). Nothing is deleted. */
   stop(): void;
+  /** Listens to the account again from where this device left off (used when the connection was lost, the network is back, or the app comes to the front). */
+  reconnect(): void;
   /** Sends what has changed, now. Never throws: problems become the 'waiting' status. */
   syncAll(): Promise<void>;
   /** Same, a moment from now, so a burst of edits is sent once. */
@@ -39,13 +42,15 @@ export interface AccountSync {
   idle(): Promise<void>;
 }
 
-export function createAccountSync({ repo, backend, announce, online = () => (typeof navigator === 'undefined' || navigator.onLine !== false), delayMs = 1500, now = Date.now, schemaVersion = SCHEMA_VERSION }: {
+export function createAccountSync({ repo, backend, announce, online = () => (typeof navigator === 'undefined' || navigator.onLine !== false), delayMs = 1500, retryMs = 3000, now = Date.now, schemaVersion = SCHEMA_VERSION }: {
   repo: AccountRepository;
   /** Tells the rest of the app the database changed because of the account (screens refresh, public decks re-sync). */
   backend: AccountBackend;
   announce: () => void;
   online?: () => boolean;
   delayMs?: number;
+  /** How long to wait before listening again after the connection failed (it doubles each time, up to a minute). */
+  retryMs?: number;
   now?: () => number;
   /** The item format this app understands (a different one only in tests). */
   schemaVersion?: number;
@@ -64,9 +69,17 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
     return run;
   };
 
-  async function receive(items: RemoteItem[]) {
+  async function receive(incoming: RemoteItem[]) {
     const agreed = await repo.agreed();
-    const sorted = [...items].sort((a, b) => ENTITY_ORDER.indexOf(a.entity) - ENTITY_ORDER.indexOf(b.entity));
+    // What was kept aside earlier (it arrived before what it belongs to) is looked at again together with what just arrived; of two versions of
+    // one thing, the newer is used.
+    const byKey = new Map<string, RemoteItem>();
+    for (const it of [...(await repo.parked()), ...incoming]) {
+      const k = itemKey(it.entity, it.id);
+      const cur = byKey.get(k);
+      if (!cur || it.updatedAt > cur.updatedAt || (it.updatedAt === cur.updatedAt && it.syncedAt >= cur.syncedAt)) byKey.set(k, it);
+    }
+    const sorted = [...byKey.values()].sort((a, b) => ENTITY_ORDER.indexOf(a.entity) - ENTITY_ORDER.indexOf(b.entity));
     let applied = false;
     let cursor = 0;
     for (const it of sorted) {
@@ -76,6 +89,7 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
       const local = await repo.item(it.entity, it.id);
 
       if (it.deleted) {
+        await repo.unpark(it.entity, it.id); // deleted on purpose somewhere: there is nothing left to wait for
         if (!local) { if (was) await repo.forget([key]); continue; }
         if (it.updatedAt >= local.updatedAt) { await repo.apply(it.entity, it.id, null); await repo.forget([key]); applied = true; }
         else await repo.forget([key]); // edited here after it was deleted elsewhere: the edit wins and is sent again
@@ -88,20 +102,31 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
 
       const remote = makeItem(it.entity, it.id, it.data);
       if (!remote) continue;
+
+      // An item that arrives before what it belongs to (a card before its collection, a schedule before its card) is never thrown away: it is kept
+      // aside, and put in place as soon as what it belongs to is here. Only a deliberate deletion removes anything.
+      const fits = await repo.parents(it.entity, remote.doc);
+      // (Also when the card is here already and the account says it moved to a collection that is not here yet: it stays where it is until that arrives.)
+      if (fits === 'none' && (!local || (local.hash !== remote.hash && remoteWins(remote, local)))) { await repo.park(it); continue; }
+
       if (!local) {
         if (was && remote.updatedAt <= was.updatedAt) continue; // deleted here, and the account has nothing newer: the deletion is sent next
         await repo.apply(it.entity, it.id, remote.doc);
         applied = true;
       } else if (local.hash === remote.hash) {
         await repo.setAgreed([{ key, hash: local.hash, updatedAt: local.updatedAt }]);
+        await repo.unpark(it.entity, it.id);
         continue;
       } else if (remoteWins(remote, local)) {
         await repo.apply(it.entity, it.id, remote.doc);
         applied = true;
       } else {
         await repo.forget([key]); // ours is newer: make sure it is sent
+        await repo.unpark(it.entity, it.id);
         continue;
       }
+      // Put in place. A card whose collections are only partly here is filed in those now and kept aside for the rest, so it joins them when they arrive.
+      if (fits === 'all') await repo.unpark(it.entity, it.id); else await repo.park(it);
       const after = await repo.item(it.entity, it.id);
       if (after) await repo.setAgreed([{ key, hash: after.hash, updatedAt: after.updatedAt }]); else await repo.forget([key]);
     }
@@ -126,6 +151,9 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
       if (live.has(key)) continue;
       if (st.hash.startsWith(NEWER)) continue; // held for a newer app: not ours to delete
       const parsed = parseKey(key);
+      // Missing from the backed-up list is not the same as deleted: a card that has lost its link to a collection is still on the device. Only a thing that
+      // is really gone counts, so nothing is ever reported to the account as deleted by accident.
+      if (parsed && (await repo.rowExists(parsed.entity, parsed.id))) continue;
       if (!parsed || parsed.entity === 'setting') forgotten.push(key);
       else if (parsed.entity === 'schedule') forgotten.push(key); // goes when its card goes: nothing to send
       else if (st.hash !== DELETED) gone.push({ key, hash: DELETED, updatedAt: now() });
@@ -160,6 +188,24 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
   }
 
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let retry: ReturnType<typeof setTimeout> | undefined;
+  let failures = 0;
+
+  /** Listens to the account from `since`. If the connection fails, it is not left dead: it listens again after a pause (a longer one each time). */
+  function listenFrom(since: number) {
+    stopListening?.();
+    stopListening = backend.listen(
+      since,
+      (items) => { failures = 0; void exclusive(() => receive(items)).catch(() => setStatus({ state: 'waiting' })); },
+      () => {
+        setStatus({ state: 'waiting' });
+        clearTimeout(retry);
+        const delay = Math.min(60_000, retryMs * 2 ** Math.min(failures++, 6));
+        retry = setTimeout(() => { void engine.reconnect(); }, delay);
+      },
+    );
+  }
+
   const engine: AccountSync = {
     async prepare(next) {
       const owner = await repo.getMeta('owner');
@@ -187,17 +233,27 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
       // the start once, so they arrive.
       const held = [...(await repo.agreed())].filter(([, st]) => st.hash.startsWith(NEWER) && Number(st.hash.slice(NEWER.length)) <= schemaVersion);
       if (held.length) { await repo.forget(held.map(([key]) => key)); await repo.setMeta(`cursor:${next}`, '0'); }
-      const since = Number((await repo.getMeta(`cursor:${next}`)) ?? 0);
-      stopListening = backend.listen(
-        since,
-        (items) => { void exclusive(() => receive(items)).catch(() => setStatus({ state: 'waiting' })); },
-        () => setStatus({ state: 'waiting' }),
-      );
+      // Normally only what changed since the last look is asked for. But a device must never stay without something the account has, so once a day
+      // (and the first time after this was added) it asks for everything again; what it already has is simply recognised and left alone.
+      const lastFull = await repo.getMeta(`fullpull:${next}`);
+      const fullDue = lastFull === undefined || now() - Number(lastFull) > FULL_READ_EVERY_MS;
+      if (fullDue) await repo.setMeta(`fullpull:${next}`, String(now()));
+      const since = fullDue ? 0 : Number((await repo.getMeta(`cursor:${next}`)) ?? 0);
+      failures = 0;
+      listenFrom(since);
       await engine.syncAll();
+    },
+
+    reconnect() {
+      if (!uid) return;
+      clearTimeout(retry);
+      const current = uid;
+      void repo.getMeta(`cursor:${current}`).then((c) => { if (uid === current) listenFrom(Number(c ?? 0)); });
     },
 
     stop() {
       clearTimeout(timer);
+      clearTimeout(retry);
       stopListening?.();
       stopListening = undefined;
       uid = null;

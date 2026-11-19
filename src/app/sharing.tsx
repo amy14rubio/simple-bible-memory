@@ -114,11 +114,13 @@ export function SharingProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!available) return;
     const off = onDatabaseWrite(() => { engine.schedule(); account.schedule(); });
-    const online = () => { void engine.syncAll(); void account.syncAll(); };
+    const online = () => { void engine.syncAll(); void account.syncAll(); account.reconnect(); };
+    const shown = () => { if (document.visibilityState === 'visible') account.reconnect(); }; // back in front: make sure it is still listening
     window.addEventListener('online', online);
+    document.addEventListener('visibilitychange', shown);
     const unsubscribe = engine.subscribe(() => bump((n) => n + 1));
     const unsubscribeAccount = account.subscribe(() => setAccountStatus(account.status()));
-    return () => { off(); window.removeEventListener('online', online); unsubscribe(); unsubscribeAccount(); };
+    return () => { off(); window.removeEventListener('online', online); document.removeEventListener('visibilitychange', shown); unsubscribe(); unsubscribeAccount(); };
   }, [available, engine, account]);
 
   const value = useMemo<SharingValue>(() => ({

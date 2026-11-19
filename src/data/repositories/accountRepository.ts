@@ -1,5 +1,6 @@
 import type { Database, SqlValue } from '../database/Database';
 import { SETTING_KEYS, itemKey, makeItem, type Doc, type Entity, type Item } from '../../domain/account/items';
+import type { RemoteItem } from '../../features/account/types';
 
 type Row = Record<string, SqlValue>;
 
@@ -23,6 +24,17 @@ export interface AccountRepository {
   apply(entity: Entity, id: string, doc: Doc | null): Promise<void>;
   getMeta(key: string): Promise<string | undefined>;
   setMeta(key: string, value: string | null): Promise<void>;
+  /**
+   * Whether what an item points at is on this device yet: a card needs its collection(s), a schedule needs its card. 'all': everything it points
+   * at is here; 'some': a card whose collections are only partly here; 'none': nothing it points at is here (yet).
+   */
+  parents(entity: Entity, doc: Doc): Promise<'all' | 'some' | 'none'>;
+  /** Whether the thing itself is on this device (a card is on the device even when it has lost its link to a collection). */
+  rowExists(entity: Entity, id: string): Promise<boolean>;
+  /** Items that arrived before what they belong to. Kept aside, never thrown away, and tried again when anything new arrives. */
+  parked(): Promise<RemoteItem[]>;
+  park(item: RemoteItem): Promise<void>;
+  unpark(entity: Entity, id: string): Promise<void>;
   /** Forgets what was agreed (but keeps the data), so the next pass sends everything. */
   resetAgreed(): Promise<void>;
   hasDecks(): Promise<boolean>;
@@ -146,7 +158,7 @@ export function createAccountRepository(db: Database): AccountRepository {
           for (const m of doc.decks as { deckId: string; addedAt: number }[]) {
             if ((await tx.query<Row>('SELECT 1 AS x FROM decks WHERE id = ?', [m.deckId])).length > 0) wanted.push(m);
           }
-          if (wanted.length === 0) { await tx.run('DELETE FROM cards WHERE id = ?', [id]); return; } // its decks are gone
+          if (wanted.length === 0) return; // none of its collections are here: nothing to put it in, and nothing already here is removed (only a deliberate delete removes a card)
           await tx.run(
             `INSERT INTO cards (id, reference, verse_text, note, translation_code, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)
              ON CONFLICT(id) DO UPDATE SET reference = excluded.reference, note = excluded.note, translation_code = excluded.translation_code, created_at = excluded.created_at, updated_at = excluded.updated_at,
@@ -193,8 +205,46 @@ export function createAccountRepository(db: Database): AccountRepository {
       else await db.run('INSERT INTO account_sync_meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value', [key, value]);
     },
 
+    async parents(entity, doc) {
+      if (entity === 'card') {
+        const wanted = doc.decks as { deckId: string }[];
+        let here = 0;
+        for (const m of wanted) if ((await db.query<Row>('SELECT 1 AS x FROM decks WHERE id = ?', [m.deckId])).length > 0) here++;
+        return here === 0 ? 'none' : here === wanted.length ? 'all' : 'some';
+      }
+      if (entity === 'schedule') return (await db.query<Row>('SELECT 1 AS x FROM cards WHERE id = ?', [doc.cardId as string])).length > 0 ? 'all' : 'none';
+      return 'all';
+    },
+
+    async rowExists(entity, id) {
+      if (entity === 'deck') return (await db.query<Row>('SELECT 1 AS x FROM decks WHERE id = ?', [id])).length > 0;
+      if (entity === 'card') return (await db.query<Row>('SELECT 1 AS x FROM cards WHERE id = ?', [id])).length > 0;
+      if (entity === 'schedule') {
+        const cut = id.lastIndexOf('~');
+        return (await db.query<Row>('SELECT 1 AS x FROM card_schedule WHERE card_id = ? AND kind = ?', [id.slice(0, cut), id.slice(cut + 1)])).length > 0;
+      }
+      return (await db.query<Row>('SELECT 1 AS x FROM settings WHERE key = ?', [id])).length > 0;
+    },
+
+    async parked() {
+      const out: RemoteItem[] = [];
+      for (const r of await db.query<Row>("SELECT value FROM account_sync_meta WHERE key LIKE 'parked~%'")) {
+        try { out.push(JSON.parse(r.value as string) as RemoteItem); } catch { /* an unreadable entry is simply not used */ }
+      }
+      return out;
+    },
+
+    async park(item) {
+      await db.run('INSERT INTO account_sync_meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value', [`parked~${itemKey(item.entity, item.id)}`, JSON.stringify(item)]);
+    },
+
+    async unpark(entity, id) {
+      await db.run('DELETE FROM account_sync_meta WHERE key = ?', [`parked~${itemKey(entity, id)}`]);
+    },
+
     async resetAgreed() {
       await db.run('DELETE FROM account_sync_state');
+      await db.run("DELETE FROM account_sync_meta WHERE key LIKE 'parked~%'"); // what was kept aside belonged to the account this device was linked to before
     },
 
     async hasDecks() {
@@ -207,6 +257,7 @@ export function createAccountRepository(db: Database): AccountRepository {
         await tx.run('DELETE FROM cards'); // schedules, history and any leftover memberships go with them
         await tx.run('DELETE FROM sync_tombstones');
         await tx.run('DELETE FROM account_sync_state');
+        await tx.run("DELETE FROM account_sync_meta WHERE key LIKE 'parked~%'");
       });
     },
   };

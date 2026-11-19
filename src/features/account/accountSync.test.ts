@@ -396,3 +396,132 @@ describe('agreeing to the community rules follows the account', () => {
     expect(await A.settings.get<number>('terms_accepted')).toBe(1);
   });
 });
+
+/**
+ * Nothing the account has is ever thrown away just because of the ORDER it arrived in. These use a backend the test controls, so it can hand a
+ * device the account's items in separate batches, in the "wrong" order, and make the device's bookmark of what it has seen run ahead.
+ */
+describe('sync never drops what the account has (only an explicit delete removes anything)', () => {
+  type Handlers = { onItems?: (items: import('./types').RemoteItem[]) => void; since: number[]; pushed: import('./types').OutItem[] };
+  const controlled = (): { backend: import('./types').AccountBackend; h: Handlers } => {
+    const h: Handlers = { since: [], pushed: [] };
+    return {
+      h,
+      backend: {
+        listen(since, onItems) { h.since.push(since); h.onItems = onItems; return () => { h.onItems = undefined; }; },
+        async push(items) { h.pushed.push(...items); return { stale: [] }; },
+        async removeAll() {},
+      },
+    };
+  };
+  const remote = async (src: Device) => (await src.repo.items()).map((i, n): import('./types').RemoteItem => ({ entity: i.entity, id: i.id, deleted: false, updatedAt: i.updatedAt, syncedAt: 5_000 + n, v: SCHEMA_VERSION, data: i.doc }));
+  const fresh = async () => {
+    const db = await createTestDatabase();
+    const repo = createAccountRepository(db);
+    const { backend, h } = controlled();
+    const sync = createAccountSync({ repo, backend, announce: () => {}, online: () => true, delayMs: 5, now });
+    return { db, repo, h, sync, decks: createDeckRepository(db, now), cards: createCardRepository(db, now) };
+  };
+  const start = async (x: Awaited<ReturnType<typeof fresh>>) => { expect(await x.sync.prepare('amy')).toBe('ready'); await x.sync.start('amy'); };
+  const deliver = async (x: Awaited<ReturnType<typeof fresh>>, items: import('./types').RemoteItem[]) => { x.h.onItems!(items); await x.sync.idle(); };
+
+  it('a card that arrives BEFORE its collection is kept, and filed in the collection when that arrives', async () => {
+    const { deck } = await seedA();
+    const all = await remote(A);
+    const [deckItem] = all.filter((i) => i.entity === 'deck');
+    const cardItems = all.filter((i) => i.entity === 'card');
+    const B2 = await fresh();
+    await start(B2);
+    await deliver(B2, cardItems); // the cards first: their collection is not on this device yet
+    expect(await B2.decks.list()).toEqual([]);
+    await deliver(B2, [deckItem!]); // then the collection
+    expect((await B2.cards.listByDeck(deck.id)).map((c) => c.reference).sort()).toEqual(['Psalm 23:1', 'Psalm 23:2']);
+  });
+
+  it('a study schedule that arrives before its card is kept too', async () => {
+    const { deck, c1 } = await seedA();
+    await studied(A, c1.id, 5_000, 3);
+    const all = await remote(A);
+    const B2 = await fresh();
+    await start(B2);
+    await deliver(B2, all.filter((i) => i.entity === 'schedule')); // schedules first: no card yet
+    await deliver(B2, all.filter((i) => i.entity === 'card'));
+    await deliver(B2, all.filter((i) => i.entity === 'deck'));
+    expect((await B2.cards.listByDeck(deck.id)).length).toBe(2);
+    const rows = await B2.db.query<{ reps: number }>('SELECT reps FROM card_schedule WHERE card_id = ?', [c1.id]);
+    expect(rows.map((r) => r.reps)).toEqual([3]);
+  });
+
+  it('a device whose bookmark has run ahead of cards it never received still gets them (a full read from the account, at most once a day)', async () => {
+    const { deck } = await seedA();
+    const all = await remote(A);
+    const B2 = await fresh();
+    await B2.repo.setMeta('owner', 'amy');
+    await B2.repo.setMeta('cursor:amy', String(9_999_999)); // it believes it has seen everything up to far in the future
+    await start(B2);
+    expect(B2.h.since[0]).toBe(0); // so it asks for everything, not just what is newer
+    await deliver(B2, all);
+    expect((await B2.cards.listByDeck(deck.id)).length).toBe(2);
+    B2.sync.stop();
+    await start(B2);
+    expect(B2.h.since[1]).toBeGreaterThan(0); // the next start, soon after, only asks for what is new
+  });
+
+  it('a card that the account says moved to a collection this device does not have yet stays where it is until that collection arrives', async () => {
+    const d1 = await A.decks.create({ title: 'One' });
+    const d2 = await A.decks.create({ title: 'Two' });
+    const [card] = await A.cards.createMany(d1.id, [{ reference: 'John 3:16', verseText: 'For God so loved' }]);
+    const before = await remote(A);
+    const B2 = await fresh();
+    await start(B2);
+    await deliver(B2, before.filter((i) => i.id !== d2.id)); // this device has the first collection and the card, not the second collection yet
+    expect(await B2.cards.listByDeck(d1.id)).toHaveLength(1);
+    // on the other device the card moves to the second collection (the card's own record now says so)
+    await A.db.run('UPDATE deck_cards SET deck_id = ? WHERE card_id = ?', [d2.id, card!.id]);
+    await A.db.run('UPDATE cards SET updated_at = updated_at + 100 WHERE id = ?', [card!.id]);
+    const after = await remote(A);
+    const moved = after.filter((i) => i.entity === 'card').map((i) => ({ ...i, syncedAt: 9_000 }));
+    await deliver(B2, moved); // the move arrives before the second collection does
+    expect(await B2.cards.listByDeck(d1.id)).toHaveLength(1); // not lost
+    await deliver(B2, after.filter((i) => i.id === d2.id).map((i) => ({ ...i, syncedAt: 9_001 })));
+    expect(await B2.cards.listByDeck(d2.id)).toHaveLength(1); // and now in its new collection
+  });
+
+  it('when the connection to the account fails it listens again by itself, from where it left off, and then receives what it missed', async () => {
+    const { deck } = await seedA();
+    const all = await remote(A);
+    const db = await createTestDatabase();
+    const repo = createAccountRepository(db);
+    const listens: { since: number; onItems: (i: import('./types').RemoteItem[]) => void; onError: (e: unknown) => void }[] = [];
+    const backend: import('./types').AccountBackend = {
+      listen(since, onItems, onError) { listens.push({ since, onItems, onError }); return () => {}; },
+      async push() { return { stale: [] }; },
+      async removeAll() {},
+    };
+    const sync = createAccountSync({ repo, backend, announce: () => {}, online: () => true, delayMs: 5, retryMs: 5, now });
+    await sync.prepare('amy');
+    await sync.start('amy');
+    expect(listens.length).toBe(1);
+    listens[0]!.onError(new Error('connection lost')); // the listener dies
+    expect(sync.status().state).toBe('waiting');
+    await wait(40); // ...and is replaced by itself
+    expect(listens.length).toBe(2);
+    listens[1]!.onItems(all);
+    await sync.idle();
+    expect((await createCardRepository(db, now).listByDeck(deck.id)).length).toBe(2);
+    sync.stop();
+    await wait(40);
+    expect(listens.length).toBe(2); // stopped means stopped: no more listening
+  });
+
+  it('a card that has no collection row on this device is never reported to the account as deleted', async () => {
+    const { deck, c1 } = await seedA();
+    await signIn(A);
+    await settle(A);
+    expect(cloud.items['amy']![`card~${c1.id}`]!.deleted).toBe(false);
+    await A.db.run('DELETE FROM deck_cards WHERE card_id = ?', [c1.id]); // something odd happened to its collection link; the card itself is still here
+    await settle(A);
+    expect(cloud.items['amy']![`card~${c1.id}`]!.deleted).toBe(false); // not a deletion: nobody deleted it
+    void deck;
+  });
+});
