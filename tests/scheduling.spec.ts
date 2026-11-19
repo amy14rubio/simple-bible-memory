@@ -24,7 +24,9 @@ test('new card shows interval hints; Good brings it back soon (learning); Easy g
   await expect(page.getByText('1 card reviewed')).toBeVisible();
 
   // open-deck view: nothing due now, and it says when the next review is
-  await page.getByRole('link', { name: 'Back to collection' }).click();
+  await page.getByRole('link', { name: 'Back to collections' }).click();
+  await expect(page).toHaveURL(/#\/$/); // the collections list, not the one collection
+  await page.goto(`/#/collections/${id}`);
   await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   await expect(page.getByText(/Your next review is in \d+(m|h|d|mo)/)).toBeVisible();
   await expect(page.getByRole('link', { name: /Flashcard/ })).toHaveCount(0); // nothing to study right now
@@ -39,7 +41,9 @@ test('reviews persist across a reload', async ({ page }) => {
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click();
   await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
-  await page.getByRole('link', { name: 'Back to collection' }).click();
+  await page.getByRole('link', { name: 'Back to collections' }).click();
+  await expect(page).toHaveURL(/#\/$/); // the collections list, not the one collection
+  await page.goto(`/#/collections/${id}`);
   await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
 
   await page.reload(); // the review was awaited before the session ended, so it is already saved

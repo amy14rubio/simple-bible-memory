@@ -197,7 +197,7 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
             </div>
             <div className="mx-auto flex max-w-xs flex-col gap-3">
               <Button variant="secondary" onClick={() => { setIndex(0); setReviewedCards(new Set()); setQueue(shuffle(initialQueue)); }}>{t('study.practiceAgain')}</Button>
-              <ButtonLink to={`/collections/${deckId}`}>{t('common.backToDeck')}</ButtonLink>
+              <ButtonLink to="/">{t('study.backHome')}</ButtonLink>
             </div>
           </div>
         ) : (

@@ -166,11 +166,13 @@ test('extra practice: from the collection menu, covers every card, and changes n
   await expect(page.getByText(/schedule and statistics/)).toHaveCount(0);
   await expect(page.getByRole('link', { name: 'View cards' })).toHaveCount(0);
   const again = page.getByRole('button', { name: 'Practice again' });
-  const back = page.getByRole('link', { name: 'Back to collection' });
+  const back = page.getByRole('link', { name: 'Back to collections' });
   const [a, b] = [await again.boundingBox(), await back.boundingBox()];
   expect(b!.y).toBeGreaterThan(a!.y + a!.height - 1); // stacked, not side by side
 
-  await page.getByRole('link', { name: 'Back to collection' }).click();
+  await page.getByRole('link', { name: 'Back to collections' }).click();
+  await expect(page).toHaveURL(/#\/$/); // the collections list, not the one collection
+  await page.goto(`/#/collections/${id}`);
   await expect(page.getByText('2 cards to study today.')).toBeVisible(); // nothing was recorded, so both cards are still waiting
   await page.goto('/#/stats');
   await expect(page.getByRole('term').filter({ hasText: /^Days since starting$/ }).locator('xpath=preceding-sibling::dd[1]')).toHaveText('0');

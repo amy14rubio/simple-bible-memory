@@ -72,7 +72,9 @@ test('"You\'re done for today!" says when the next review is, and Keep practicin
   await expect(page.getByText(/Your next review is in \d+(m|h|d|mo)/)).toBeVisible();
   await expect(page.getByText('See you tomorrow')).toHaveCount(0);
 
-  await page.getByRole('link', { name: 'Back to collection' }).click(); // the deck page says the same, with the same two things
+  await page.getByRole('link', { name: 'Back to collections' }).click(); // goes home; the collection's own page says the same, with the same two things
+  await expect(page).toHaveURL(/#\/$/); // the collections list, not the one collection
+  await page.goto(`/#/collections/${id}`);
   await expect(page.getByRole('heading', { name: "You're done for today!" })).toBeVisible();
   await expect(page.getByText(/Your next review is in/)).toBeVisible();
   await page.getByRole('link', { name: 'Keep practicing' }).click();

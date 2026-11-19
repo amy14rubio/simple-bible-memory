@@ -258,7 +258,9 @@ test.describe('the app in Spanish', () => {
 
     await expect(page.getByRole('heading', { name: '¡Terminaste por hoy!' })).toBeVisible();
     await expect(page.getByText('2 tarjetas repasadas')).toBeVisible();
-    await page.getByRole('link', { name: 'Volver a la carpeta' }).click();
+    await page.getByRole('link', { name: 'Volver a tus carpetas' }).click();
+    await expect(page).toHaveURL(/#\/$/);
+    await page.goto(`/#/collections/${id}`);
     await expect(page.getByRole('heading', { name: '¡Terminaste por hoy!' })).toBeVisible();
     await expect(page.getByText(/Tu próximo repaso es en \d+ (min|h|d|mes|meses)/)).toBeVisible();
     await ctx.close();

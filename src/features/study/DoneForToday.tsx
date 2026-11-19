@@ -6,7 +6,7 @@ import { useI18n } from '../../i18n/I18nProvider';
  * to wonder), and "Keep practicing" opens Extra practice for anyone who is still getting the hang of their verses and wants more.
  */
 export function DoneForToday({ deckId, nextDue, reviewed, as: Heading = 'h1', showBack = true }: {
-  deckId: string; nextDue: number | null; /** Cards just reviewed (after a session). */ reviewed?: number; as?: 'h1' | 'h2'; /** Not on the deck's own page, which is where "Back to deck" goes. */ showBack?: boolean;
+  deckId: string; nextDue: number | null; /** Cards just reviewed (after a session). */ reviewed?: number; as?: 'h1' | 'h2'; /** Not on the deck's own page, which is already the collection. */ showBack?: boolean;
 }) {
   const { t, formatInterval } = useI18n();
   return (
@@ -18,7 +18,7 @@ export function DoneForToday({ deckId, nextDue, reviewed, as: Heading = 'h1', sh
       </div>
       <div className="mx-auto flex max-w-xs flex-col gap-3">
         <ButtonLink to={`/collections/${deckId}?practice=1`} variant="secondary">{t('study.keepPracticing')}</ButtonLink>
-        {showBack && <ButtonLink to={`/collections/${deckId}`}>{t('common.backToDeck')}</ButtonLink>}
+        {showBack && <ButtonLink to="/">{t('study.backHome')}</ButtonLink>}
       </div>
     </div>
   );

@@ -282,6 +282,8 @@ test('finishing every card, with none waiting, says you are done for today, with
   await study(page, id, 'flashcard');
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: /^Easy/ }).click(); // Easy graduates the card: due in days
-  await page.getByRole('link', { name: 'Back to collection' }).click();
+  await page.getByRole('link', { name: 'Back to collections' }).click();
+  await expect(page).toHaveURL(/#\/$/); // the collections list, not the one collection
+  await page.goto(`/#/collections/${id}`);
   await expect(page.getByText("You're done for today!")).toBeVisible();
 });
