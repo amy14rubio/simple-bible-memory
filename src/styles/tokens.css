@@ -144,6 +144,49 @@ select:focus-visible { outline: none; }
 .onboarding-card { animation: onboarding-in 260ms ease-out; }
 
 /* A white button: pure white in the light theme, the soft white of the primary button in the dark theme. */
+/* Buttons answer a press: they shrink a little while held and spring back with a tiny overshoot when let go. Only what is a button gets it
+   (not the full-width rows of a list). Nothing moves for people who ask their phone for reduced motion. */
+.press { transition: transform 420ms cubic-bezier(0.3, 1.9, 0.5, 1); }
+.press:active:not(:disabled):not([aria-disabled='true']) { transform: scale(0.95); transition-duration: 90ms; transition-timing-function: ease-out; }
+@media (prefers-reduced-motion: reduce) { .press, .press:active:not(:disabled):not([aria-disabled='true']) { transform: none; transition: none; } }
+
+/* Everything else you can tap answers a press too, more gently (rows, pickers, switches, chips...). `.no-press` opts out (the "i" bounces on its own).
+   :where() keeps these rules weaker than any class, so a component's own transform or transition always wins. */
+:where(button, a[href], [role='button'], [role='radio'], [role='tab'], summary, label:has(input)):where(:not(.press, .no-press)) {
+  transition: transform 420ms cubic-bezier(0.3, 1.9, 0.5, 1);
+}
+:where(button, a[href], [role='button'], [role='radio'], [role='tab'], summary, label:has(input)):where(:not(.press, .no-press, :disabled, [aria-disabled='true'])):active {
+  transform: scale(0.97);
+  transition-duration: 90ms;
+  transition-timing-function: ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(button, a[href], [role='button'], [role='radio'], [role='tab'], summary, label:has(input)):where(:not(.press, .no-press, :disabled, [aria-disabled='true'])):active { transform: none; }
+}
+
+/* Popups (the native <dialog>s: dropdown lists, confirmations, the colour picker) come in with a small spring and leave with a quick fade, over a backdrop that fades.
+   `@starting-style` and `allow-discrete` let CSS animate an element that is shown and hidden by the browser; where they are not supported
+   the popup simply appears and disappears, as before. The global reduced-motion rule below shortens all of it to nothing. */
+dialog {
+  opacity: 0;
+  /* leaving: a quick fade at the same size (no shrinking), together with the backdrop */
+  transition: opacity 80ms ease-out, overlay 80ms allow-discrete, display 80ms allow-discrete;
+}
+dialog[open] {
+  opacity: 1;
+  transform: none;
+  transition: opacity 180ms ease-out, transform 420ms cubic-bezier(0.3, 1.6, 0.5, 1), overlay 80ms allow-discrete, display 80ms allow-discrete;
+}
+@starting-style { dialog[open] { opacity: 0; transform: scale(0.92) translateY(8px); } }
+/* While a popup is open the page behind it does not scroll: not with the popup's own list at its end (scroll chaining), and not by touching the dimmed
+   background. (The gutter keeps the page from shifting sideways on a desktop when its scrollbar goes away.) */
+html:has(dialog[open]) { overflow: hidden; scrollbar-gutter: stable; }
+dialog, dialog * { overscroll-behavior: contain; }
+
+dialog::backdrop { opacity: 0; transition: opacity 80ms ease-out, overlay 80ms allow-discrete, display 80ms allow-discrete; }
+dialog[open]::backdrop { opacity: 1; }
+@starting-style { dialog[open]::backdrop { opacity: 0; } }
+
 /* The clear (X) button of the search field pops in with a tiny spring when there is text to clear. */
 .pop-in { animation: pop-in 300ms cubic-bezier(0.3, 1.6, 0.5, 1); }
 @keyframes pop-in { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }

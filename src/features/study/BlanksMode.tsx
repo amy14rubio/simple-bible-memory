@@ -120,7 +120,7 @@ export function BlanksMode({ card, sessionSeed, difficulty, deckPassages, interv
                   key={w.id}
                   type="button"
                   onClick={() => tap(w)}
-                  className="min-h-11 rounded-lg border border-border bg-background px-3.5 font-serif text-lg hover:border-foreground"
+                  className="press min-h-11 rounded-lg border border-border bg-background px-3.5 font-serif text-lg hover:border-foreground"
                 >
                   {w.text}
                 </button>

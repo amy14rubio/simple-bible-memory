@@ -6,7 +6,7 @@ import { isSwitchedOff } from '../../domain/bible/switch';
 import { useCatalogue } from './catalogue';
 import { useLicensedSwitch } from './remoteSwitch';
 import { useI18n } from '../../i18n/I18nProvider';
-import { HiddenClose, IconButton } from '../../components/ui';
+import { HiddenClose, IconButton, showDialog } from '../../components/ui';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 
 /**
@@ -35,8 +35,7 @@ export function TranslationPicker({ id, value, onChange, initialLanguage, extras
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
-    if (open && !d.open) d.showModal();
-    if (!open && d.open) d.close();
+    showDialog(d, open);
   }, [open]);
 
   // (opening starts on the language of the translation in use)
