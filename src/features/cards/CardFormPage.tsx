@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Check, CircleHelp } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
-import { AppBar, BackButton, Button, ButtonLink, ConfirmDialog, EmptyState, ErrorMessage, FormRow, GrowingTextarea, IconButton, Page, Switch, rowInput } from '../../components/ui';
+import { AppBar, BackButton, Button, ButtonLink, ConfirmDialog, EmptyState, ErrorMessage, FormRow, GrowingTextarea, IconButton, Page, Switch, rowInput, useErrorState } from '../../components/ui';
 import type { Card, DeckSummary } from '../../domain/types';
 import { DeckPicker } from '../../components/DeckPicker';
 import { InfoLabel } from '../../components/InfoDrawer';
@@ -57,12 +57,12 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
   const [reference, setReference] = useState(card?.reference ?? '');
   const [verseText, setVerseText] = useState(card?.verseText ?? '');
   const [note, setNote] = useState(card?.note ?? '');
-  const [error, setError] = useState<string>();
+  const [error, setError] = useErrorState();
   const [invalid, setInvalid] = useState<'reference' | 'passage'>();
   const [confirming, setConfirming] = useState(false);
   const [split, setSplit] = useState<SplitResult | null>(null);
   const [splitBusy, setSplitBusy] = useState(false);
-  const [splitError, setSplitError] = useState<string>();
+  const [splitError, setSplitError] = useErrorState();
   const referenceInput = useRef<HTMLInputElement>(null);
   const coach = useAddCoach(!card);
   const lang = asLang(deckList.find((d) => d.id === deckId)?.bibleLanguage); // so verses typed here are read in their own language

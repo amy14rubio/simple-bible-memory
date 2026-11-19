@@ -596,8 +596,6 @@ export const en = {
     'The font is downloaded once and kept on this device, so it works offline. Only the font in use is kept; the line at the bottom shows its size.',
   'fonts.infoSize':
     'Text size changes the whole app live as you drag. Double-tap it to go back to 100%.',
-  'fonts.offline':
-    "You're offline. Fonts you've downloaded still work; new previews and downloads need a connection.",
   'fonts.unsupported': "This browser can't keep fonts on the device, so downloads are unavailable.",
   'fonts.failed': "We couldn't download {family}. Check your internet connection and try again.",
   'customTheme.preview': 'Preview',

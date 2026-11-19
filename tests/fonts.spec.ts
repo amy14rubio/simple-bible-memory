@@ -219,6 +219,20 @@ test.describe('font', () => {
     await expect(useFont(page)).toBeVisible(); // try again
   });
 
+  test('trying again after a failed download does not make the button jump (the message stays in place)', async ({ page }) => {
+    await page.route(/fonts\.(googleapis|gstatic)\.com/, (route) => route.abort());
+    await page.goto('/#/settings/font');
+    await pickFont(page, 'Lora');
+    await useFont(page).click();
+    await expect(page.getByRole('alert')).toContainText("We couldn't download Lora");
+    const top = async () => (await useFont(page).boundingBox())!.y;
+    const before = await top();
+    const seen: number[] = [];
+    for (let i = 0; i < 3; i++) { await useFont(page).click(); for (let k = 0; k < 6; k++) { seen.push(await top()); await page.waitForTimeout(40); } }
+    await expect(page.getByRole('alert')).toContainText("We couldn't download Lora");
+    expect(seen.every((y) => y === before)).toBe(true);
+  });
+
   test('the preview card is just the verse title and the verse', async ({ page }) => {
     await page.goto('/#/settings/font');
     const card = page.getByRole('region', { name: 'Preview' });

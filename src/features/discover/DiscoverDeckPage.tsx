@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from '../../components/shadcn/toast';
 import { Flag, Share2 } from 'lucide-react';
-import { AppBar, BackButton, Button, EmptyState, ErrorMessage, IconButton, Page } from '../../components/ui';
+import { AppBar, BackButton, Button, EmptyState, ErrorMessage, IconButton, Page, useErrorState } from '../../components/ui';
 import { useAsync } from '../../app/useAsync';
 import { useRepositories } from '../../app/repositories';
 import { loadBackends } from '../sharing/backend';
@@ -28,7 +28,7 @@ export function DiscoverDeckPage() {
   const { exchange } = useRepositories();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string>();
+  const [error, setError] = useErrorState();
   const [reporting, setReporting] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
@@ -55,7 +55,6 @@ export function DiscoverDeckPage() {
 
   const importDeck = async () => {
     setBusy(true);
-    setError(undefined);
     try {
       // A licensed text is not in the public deck: its cards come with the reference and the translation, and the text is fetched
       // to this device from the publisher afterwards. (Such a deck's own label, a licensed code or "mixed", is not kept: the cards say it.)

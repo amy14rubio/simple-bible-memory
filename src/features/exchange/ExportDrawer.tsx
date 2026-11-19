@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
 import { toast } from '../../components/shadcn/toast';
-import { Button, ErrorMessage, Switch } from '../../components/ui';
+import { Button, ErrorMessage, Switch, useErrorState } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { useRepositories } from '../../app/repositories';
 import { exportFileName } from '../../domain/exchange/format';
@@ -26,7 +26,7 @@ export function ExportDrawer({ target, onClose }: { target: ExportTarget | null;
   const open = target !== null;
   const [progress, setProgress] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string>();
+  const [error, setError] = useErrorState();
   usePopupHistory(open, onClose);
 
   useEffect(() => {
@@ -36,9 +36,9 @@ export function ExportDrawer({ target, onClose }: { target: ExportTarget | null;
   const run = async () => {
     if (!target) return;
     setBusy(true);
-    setError(undefined);
     try {
       const file = await exchange.exportDecks(target.ids, { progress });
+      setError(undefined);
       const saved = await downloadTextFile(exportFileName(file.decks.map((d) => d.title)), JSON.stringify(file, null, 2));
       if (saved) { // false: the Share panel was closed without choosing anything, so nothing is said or closed
         toast.add({ title: t(target.ids === null ? 'toast.exportedAll' : 'toast.exported', { title: target.title }), type: 'success' });

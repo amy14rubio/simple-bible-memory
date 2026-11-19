@@ -8,7 +8,7 @@ import { useFont } from '../../app/fonts';
 import { useSharing } from '../../app/sharing';
 import { toast } from '../../components/shadcn/toast';
 import { ExportDrawer, type ExportTarget } from '../exchange/ExportDrawer';
-import { AppBar, BackButton, ConfirmDialog, IconButton, Page, Switch } from '../../components/ui';
+import { AppBar, BackButton, ConfirmDialog, ErrorMessage, IconButton, Page, Switch, useErrorState } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { AppleLogo } from '../../components/AppleLogo';
 import { appleSignInSupported } from '../../platform/apple';
@@ -36,7 +36,7 @@ export function SettingsPage() {
   const [exporting, setExporting] = useState<ExportTarget | null>(null);
   const share = useSharing();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [accountError, setAccountError] = useState<string>();
+  const [accountError, setAccountError] = useErrorState();
   const { settings } = useRepositories();
   const [newPerDay, setNewPerDay] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
@@ -150,7 +150,7 @@ export function SettingsPage() {
           </button>
           {share.available && (
             <>
-              {accountError && <p role="alert" className="py-2 text-danger">{accountError}</p>}
+              {accountError && <div className="py-2"><ErrorMessage error={accountError} /></div>}
               {share.user ? (
                 <>
                   {share.accountStatus.state === 'off' && <div className={row}><span className="min-w-0 truncate">{t('account.signedInAs', { name: share.user.displayName ?? share.user.email ?? '' })}</span></div>}
@@ -163,12 +163,12 @@ export function SettingsPage() {
                 </>
               ) : (
                 <>
-                  <button type="button" disabled={!share.authLoaded} onClick={() => { setAccountError(undefined); share.signIn().catch(() => setAccountError(t('publish.signInFailed'))); }} className={`${row} w-full text-left hover:bg-surface disabled:opacity-60`}>
+                  <button type="button" disabled={!share.authLoaded} onClick={() => { share.signIn().then(() => setAccountError(undefined), () => setAccountError(t('publish.signInFailed'))); }} className={`${row} w-full text-left hover:bg-surface disabled:opacity-60`}>
                     <span>{t('account.signIn')}</span>
                     <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
                   </button>
                   {appleSignInSupported() && (
-                    <button type="button" disabled={!share.authLoaded} onClick={() => { setAccountError(undefined); share.signInWithApple().catch(() => setAccountError(t('publish.signInFailed'))); }} className={`${row} w-full text-left hover:bg-surface disabled:opacity-60`}>
+                    <button type="button" disabled={!share.authLoaded} onClick={() => { share.signInWithApple().then(() => setAccountError(undefined), () => setAccountError(t('publish.signInFailed'))); }} className={`${row} w-full text-left hover:bg-surface disabled:opacity-60`}>
                       <span className="flex items-center gap-2"><AppleLogo />{t('account.signInApple')}</span>
                       <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
                     </button>

@@ -600,8 +600,6 @@ export const es: Dictionary = {
     'La letra se descarga una vez y se guarda en este dispositivo, así que funciona sin conexión. Solo se conserva la que usas; la línea de abajo muestra su tamaño.',
   'fonts.infoSize':
     'El tamaño del texto cambia toda la app en vivo mientras arrastras. Toca dos veces para volver al 100 %.',
-  'fonts.offline':
-    'No hay conexión. Las letras que ya descargaste siguen funcionando; las nuevas vistas previas y descargas necesitan conexión.',
   'fonts.unsupported':
     'Este navegador no puede guardar letras en el dispositivo, así que no se pueden descargar.',
   'fonts.failed': "No pudimos descargar {family}. Revisa tu conexión a internet e inténtalo de nuevo.",

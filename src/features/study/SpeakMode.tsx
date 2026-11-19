@@ -4,7 +4,7 @@ import type { Card } from '../../domain/types';
 import type { Rating } from '../../domain/study/rating';
 import { SpeakRunner, type Phase, type SpeakScript } from '../../domain/speak/runner';
 import type { SpeakLanguage } from '../../domain/speak/reference';
-import { Button, ErrorMessage } from '../../components/ui';
+import { Button, ErrorMessage, useErrorState } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { getVoice, keepScreenOn, liveWindowMs, speechCode } from '../../platform/voice';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -22,7 +22,7 @@ const asSpeakLang = (code: string | undefined, fallback: SpeakLanguage): SpeakLa
 /** Before the first card: what Speak does, the microphone, and a reminder to set it up before driving. */
 export function SpeakStart({ onStart }: { onStart: () => void }) {
   const { t } = useI18n();
-  const [problem, setProblem] = useState<string>();
+  const [problem, setProblem] = useErrorState();
   const [busy, setBusy] = useState(false);
   const start = async () => {
     setBusy(true);
