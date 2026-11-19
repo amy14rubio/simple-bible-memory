@@ -201,6 +201,10 @@ export function SettingsPage() {
             <span>{t('about.row')}</span>
             <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
           </Link>
+          <Link to="/settings/credits" className={`${row} hover:bg-surface`}>
+            <span>{t('credits.row')}</span>
+            <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
+          </Link>
           <Link to="/welcome" data-coach="tour" className={`${row} hover:bg-surface`}>
             <span>{t('onboarding.tour')}</span>
             <ChevronRight size={20} aria-hidden className="shrink-0 text-muted" />
