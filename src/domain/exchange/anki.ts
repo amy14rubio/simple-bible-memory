@@ -3,6 +3,15 @@
  * space, as the file's header says), with fields that contain the separator or line breaks wrapped in double quotes.
  * Lines starting with # are settings, such as `#separator:tab`, `#html:true` and `#columns:Front<tab>Back<tab>Tags`.
  */
+import { isBibleReference } from '../bible/reference';
+
+/**
+ * Anki (and the apps it is copied from) sometimes leave invisible text-direction marks and zero-width spaces around a field, for example in front
+ * of a reference written in a right-to-left or mixed text. They show nothing, but they stop "Salmos 56:3-4" from being recognised as a reference
+ * and are saved with it. (Joiners that some scripts need, U+200C and U+200D, are kept.)
+ */
+const INVISIBLE = /[\u200B\u200E\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g;
+
 export interface AnkiTable {
   /** Column names from the file's `#columns:` line, when it has one. */
   columns: string[] | null;
@@ -85,7 +94,7 @@ export function parseAnkiText(source: string): AnkiTable {
     separator = first.includes('\t') ? '\t' : (first.match(/;/g)?.length ?? 0) > (first.match(/,/g)?.length ?? 0) ? ';' : ',';
   }
   const html = settings.html ? settings.html.toLowerCase() === 'true' : /<\w+[^>]*>/.test(body);
-  const clean = (f: string) => (html ? stripHtml(f) : f.trim());
+  const clean = (f: string) => { const x = f.replace(INVISIBLE, ''); return html ? stripHtml(x) : x.trim(); };
   const rows = splitDelimited(body, separator).map((r) => r.map(clean));
   const columns = settings.columns ? settings.columns.split(separator).map((c) => c.trim()) : null;
   return { columns, rows };
@@ -103,16 +112,38 @@ export interface MappedCards {
   cards: { reference: string; verseText: string; note: string | null }[];
   /** Rows left out because the verse or the passage was empty. */
   skipped: number;
+  /** Rows that had the verse and the passage the other way round and were put right. */
+  swapped: number;
 }
 
+/**
+ * Turns the rows into cards, taking the verse and the passage from the chosen columns. A file exported from Anki sometimes has a row with the two the
+ * other way round (the passage in the verse column and the verse reference in the passage column). A row where ONLY the passage column holds something
+ * that is a Bible reference is put right, so the reference is the verse and the text is the passage. This is done only when most rows follow the chosen
+ * columns: if the columns look chosen the wrong way round for the whole file, they are left exactly as chosen (that is the person's decision).
+ */
 export function mapAnkiRows(rows: string[][], m: ColumnMapping): MappedCards {
+  const body = m.skipFirstRow ? rows.slice(1) : rows;
+  const cell = (row: string[], i: number) => (row[i] ?? '').trim();
+  let asChosen = 0;
+  let reversed = 0;
+  for (const row of body) {
+    const verseIsRef = isBibleReference(cell(row, m.verse));
+    const passageIsRef = isBibleReference(cell(row, m.passage));
+    if (verseIsRef && !passageIsRef) asChosen++;
+    else if (passageIsRef && !verseIsRef) reversed++;
+  }
+  const fixRows = reversed > 0 && asChosen > reversed;
+
   const cards: MappedCards['cards'] = [];
   let skipped = 0;
-  for (const row of m.skipFirstRow ? rows.slice(1) : rows) {
-    const reference = (row[m.verse] ?? '').trim();
-    const verseText = (row[m.passage] ?? '').trim();
+  let swapped = 0;
+  for (const row of body) {
+    let reference = cell(row, m.verse);
+    let verseText = cell(row, m.passage);
     if (!reference || !verseText) { skipped++; continue; }
-    cards.push({ reference, verseText, note: m.source === null ? null : (row[m.source] ?? '').trim() || null });
+    if (fixRows && !isBibleReference(reference) && isBibleReference(verseText)) { [reference, verseText] = [verseText, reference]; swapped++; }
+    cards.push({ reference, verseText, note: m.source === null ? null : cell(row, m.source) || null });
   }
-  return { cards, skipped };
+  return { cards, skipped, swapped };
 }

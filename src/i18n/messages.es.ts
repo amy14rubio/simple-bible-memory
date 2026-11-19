@@ -541,7 +541,7 @@ export const es: Dictionary = {
   'import.contents': 'Lo que se agregará',
   'import.cards': { one: '{count} tarjeta', other: '{count} tarjetas' },
   'import.progress': 'Importar también mi progreso',
-  'import.deckName': 'Nombre de la carpeta',
+  'import.deckName': 'Carpeta',
   'import.colVerse': 'Versículo',
   'import.colPassage': 'Pasaje',
   'import.colNote': 'Nota',
