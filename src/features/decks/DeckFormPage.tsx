@@ -4,7 +4,7 @@ import { Check, CircleHelp } from 'lucide-react';
 import { DeckCoach, useDeckCoach } from '../../components/Coach';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
-import { AppBar, BackButton, ErrorMessage, FormRow, GrowingTextarea, IconButton, Page, rowInput } from '../../components/ui';
+import { AppBar, BackButton, ErrorMessage, FormRow, GrowingTextarea, IconButton, Page, rowInput, useErrorState } from '../../components/ui';
 import { useI18n } from '../../i18n/I18nProvider';
 import { toast } from '../../components/shadcn/toast';
 import { ValidationError } from '../../domain/errors';
@@ -27,7 +27,7 @@ function DeckForm({ id, initialTitle, initialDescription, initialTranslation, no
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(initialDescription);
   const [translation, setTranslation] = useState(initialTranslation);
-  const [error, setError] = useState<string>();
+  const [error, setError] = useErrorState();
   const [titleInvalid, setTitleInvalid] = useState(false);
   const titleInput = useRef<HTMLInputElement>(null);
   const coach = useDeckCoach(!id);

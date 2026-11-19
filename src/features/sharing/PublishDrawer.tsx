@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
 import { toast } from '../../components/shadcn/toast';
-import { Button, ErrorMessage } from '../../components/ui';
+import { Button, ErrorMessage, useErrorState } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { useRepositories } from '../../app/repositories';
 import { useSharing } from '../../app/sharing';
@@ -43,7 +43,7 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
 
   const [row, setRow] = useState<PublishedDeckRow>();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string>();
+  const [error, setError] = useErrorState();
   const [accepted, setAccepted] = useState<boolean>(); // have the community rules been agreed to already? (undefined: not known yet)
   const [rules, setRules] = useState(false); // the separate community-rules drawer, shown the first time someone publishes
 
@@ -84,9 +84,9 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
 
   const run = async (action: () => Promise<void>, failed: MessageKey, done: MessageKey) => {
     setBusy(true);
-    setError(undefined);
     try {
       await action();
+      setError(undefined);
       toast.add({ title: t(done), type: 'success' });
       await reload();
       return true;
@@ -160,7 +160,7 @@ export function PublishDrawer({ deck, onClose }: { deck: { id: string; title: st
                   </>
                 ) : (
                   <>
-                    {reason && <p role="status" className="text-[0.9375rem] text-danger">{t(BLOCK_MESSAGE[reason])}</p>}
+                    {reason && <ErrorMessage fixed error={t(BLOCK_MESSAGE[reason])} />}
                     <Button
                       className="w-full"
                       disabled={busy || reason !== null || accepted === undefined}

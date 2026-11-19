@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { LoaderCircle } from 'lucide-react';
 import { MAX_SCALE, MIN_SCALE, useFont } from '../../app/fonts';
-import { AppBar, BackButton, Button, ErrorMessage, Page } from '../../components/ui';
+import { AppBar, BackButton, Button, ErrorMessage, Page, useErrorState } from '../../components/ui';
 import { OptionPicker, type PickerOption } from '../../components/OptionPicker';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { useCatalogue } from '../../app/catalogue';
@@ -55,7 +55,7 @@ export function FontPage() {
   const byName = useMemo(() => new Map(fonts.map((f) => [f.family, f])), [fonts]);
   const [selected, setSelected] = useState<string | null>(family); // what the preview shows; not applied until you press the button
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string>();
+  const [error, setError] = useErrorState();
 
   useEffect(() => setSelected(family), [family]); // follow the applied font (for example once the saved one has loaded)
   useEffect(() => () => { document.querySelectorAll('link[data-font-preview]').forEach((l) => l.remove()); }, []);
@@ -86,9 +86,9 @@ export function FontPage() {
   };
 
   const use = async () => {
-    setError(undefined);
     setBusy(true);
-    try { await apply(chosen ?? null); } catch { setError(t('fonts.failed', { family: selected ?? '' })); } finally { setBusy(false); }
+    // (An error already on screen stays while this tries again, so nothing above or below it jumps; a failure nudges it, a success removes it.)
+    try { await apply(chosen ?? null); setError(undefined); } catch { setError(t('fonts.failed', { family: selected ?? '' })); } finally { setBusy(false); }
   };
 
   return (
@@ -153,7 +153,6 @@ export function FontPage() {
 
         {status === 'loading' && <p role="status" className="text-sm text-muted">{t('fonts.loadingList')}</p>}
         {status === 'unavailable' && <p role="status" className="text-sm text-muted">{t('fonts.shortList')}</p>}
-        {!navigator.onLine && <p role="status" className="text-sm text-muted">{t('fonts.offline')}</p>}
         {!fontStorageAvailable() && <p role="status" className="text-sm text-muted">{t('fonts.unsupported')}</p>}
         {error && <ErrorMessage error={error} />}
 

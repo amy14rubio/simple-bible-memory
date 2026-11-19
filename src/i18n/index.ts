@@ -81,10 +81,14 @@ const VALIDATION_KEYS: Record<ValidationCode, MessageKey> = {
   'verse-text-required': 'error.verseTextRequired',
 };
 
-/** Text for an error in the interface language. Errors the user can fix are translated; technical ones keep their own message. */
+/**
+ * Text for an error in the interface language. Errors the person can fix are translated; anything technical is kept out of sight (it goes to the
+ * console for whoever is debugging) and the person sees a plain, friendly sentence.
+ */
 export function describeError(language: Language, error: unknown): string {
   if (error instanceof ValidationError) return translate(language, VALIDATION_KEYS[error.code]);
-  return error instanceof Error ? error.message : String(error);
+  console.error(error);
+  return translate(language, 'error.generic');
 }
 
 const CACHE_KEY = 'language-pref'; // flash-avoidance cache only; the settings table is the source of truth

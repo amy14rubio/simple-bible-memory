@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ChevronRight, Plus } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
-import { Switch, ErrorMessage } from '../../components/ui';
+import { Switch, ErrorMessage, useErrorState } from '../../components/ui';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { MAX_REMINDERS, newReminder, type Reminder } from '../../domain/reminders/schedule';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -24,7 +24,7 @@ export function RemindersSection() {
   const notifier = getNotifier();
   const [state, setState] = useState<ReminderSettings>({ enabled: false, reminders: [] });
   const [loaded, setLoaded] = useState(false); // the switch waits for the saved settings, so a quick tap is never overwritten by them
-  const [error, setError] = useState<string>();
+  const [error, setError] = useErrorState();
   // null: closed. A reminder: editing it (or a brand-new one that is not in the list yet).
   const [editing, setEditing] = useState<Reminder | null>(null);
 
@@ -42,12 +42,12 @@ export function RemindersSection() {
   }, [settings, language]);
 
   const toggle = async (on: boolean) => {
-    setError(undefined);
-    if (!on) return commit({ ...state, enabled: false });
+    if (!on) { setError(undefined); return commit({ ...state, enabled: false }); }
     if ((await notifier.requestPermission()) !== 'granted') {
       setError(t('reminders.denied'));
       return;
     }
+    setError(undefined);
     // The first time, start with one ordinary daily reminder so the switch does something straight away.
     const reminders = state.reminders.length ? state.reminders : [newReminder(new Date(), crypto.randomUUID())];
     return commit({ enabled: true, reminders });

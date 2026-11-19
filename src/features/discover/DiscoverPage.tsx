@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ListFilter, Search } from 'lucide-react';
-import { AppBar, BackButton, Button, EmptyState, ErrorMessage, IconButton, Page, SearchBar, Bar } from '../../components/ui';
+import { AppBar, BackButton, Button, EmptyState, IconButton, Page, SearchBar, Bar } from '../../components/ui';
 import { loadBackends, sharingAvailable } from '../sharing/backend';
 import { useI18n } from '../../i18n/I18nProvider';
 import { NO_FILTERS, type DiscoverFilters, type PublicDeck } from './types';
@@ -49,6 +49,13 @@ export function DiscoverPage() {
     }
   }, []);
 
+  // Google Play style: when the internet comes back, a failed list loads again by itself (the button is there too).
+  useEffect(() => {
+    if (state !== 'error') return;
+    const again = () => void load(active);
+    window.addEventListener('online', again);
+    return () => window.removeEventListener('online', again);
+  }, [state, load, active]);
   useEffect(() => { if (available) void load(active); }, [available, filters.language, filters.translation, search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filterButton = (
@@ -91,10 +98,9 @@ export function DiscoverPage() {
             </>
           )}
           {state === 'error' && (
-            <div className="space-y-3">
-              <ErrorMessage error={t('discover.error')} />
-              <Button variant="secondary" onClick={() => void load(active)}>{t('discover.retry')}</Button>
-            </div>
+            <EmptyState title={t('discover.error')} action={<Button variant="secondary" onClick={() => void load(active)}>{t('discover.retry')}</Button>}>
+              {t('discover.errorBody')}
+            </EmptyState>
           )}
           {state === 'ready' && decks.length === 0 && (
             <p className="py-6 text-center text-muted">{search.trim() || filters.language !== 'all' || filters.translation !== 'all' ? t('discover.noMatch') : `${t('discover.empty')} ${t('discover.emptyBody')}`}</p>

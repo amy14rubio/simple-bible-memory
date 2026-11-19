@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/shadcn/drawer';
 import { toast } from '../../components/shadcn/toast';
-import { Button, CheckList, ErrorMessage, GrowingTextarea } from '../../components/ui';
+import { Button, CheckList, ErrorMessage, GrowingTextarea, useErrorState } from '../../components/ui';
 import { loadBackends } from '../sharing/backend';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -14,13 +14,12 @@ export function ReportDrawer({ deckId, open, onClose }: { deckId: string; open: 
   const [reason, setReason] = useState<ReportReason>('copyright');
   const [details, setDetails] = useState('');
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string>();
+  const [error, setError] = useErrorState();
   usePopupHistory(open, onClose);
   useEffect(() => { if (open) { setReason('copyright'); setDetails(''); setError(undefined); setBusy(false); } }, [open]);
 
   const send = async () => {
     setBusy(true);
-    setError(undefined);
     try {
       await (await loadBackends()).discover.report(deckId, reason, details);
       toast.add({ title: t('report.sent'), type: 'success' });

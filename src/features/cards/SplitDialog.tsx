@@ -1,4 +1,4 @@
-import { Button, Dialog } from '../../components/ui';
+import { Button, Dialog, ErrorMessage, type ErrorValue } from '../../components/ui';
 import type { SplitResult } from '../../domain/bible/split';
 import { useI18n } from '../../i18n/I18nProvider';
 import type { MessageKey } from '../../i18n';
@@ -8,7 +8,7 @@ import type { MessageKey } from '../../i18n';
  * If the text could not be split, explains why instead.
  */
 export function SplitDialog({ result, studyCardsPerVerse, busy, error, onCancel, onConfirm }: {
-  result: SplitResult | null; studyCardsPerVerse: number; busy: boolean; error?: string; onCancel: () => void; onConfirm: () => void;
+  result: SplitResult | null; studyCardsPerVerse: number; busy: boolean; error?: ErrorValue; onCancel: () => void; onConfirm: () => void;
 }) {
   const { t } = useI18n();
   const ok = result?.ok ? result : null;
@@ -34,7 +34,7 @@ export function SplitDialog({ result, studyCardsPerVerse, busy, error, onCancel,
               </li>
             ))}
           </ol>
-          {error && <p role="alert" className="mb-3 text-danger">{error}</p>}
+          {error && <div className="mb-3"><ErrorMessage error={error} /></div>}
           <Button className="w-full" onClick={onConfirm} disabled={busy}>{t('split.create', { count: n })}</Button>
         </>
       )}

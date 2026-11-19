@@ -100,7 +100,14 @@ test('empty and offline states, and Load more', async ({ page }) => {
 
   await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('sbm-fake-cloud')!); s.offline = true; localStorage.setItem('sbm-fake-cloud', JSON.stringify(s)); });
   await page.reload();
-  await expect(page.getByText("Couldn't load public collections.")).toBeVisible();
+  await expect(page.getByText("No internet connection")).toBeVisible();
+  await expect(page.getByText("Make sure Wi-Fi or mobile data is turned on, then try again.")).toBeVisible();
+
+  // Like Google Play: a Try again button, and when the internet comes back the list loads by itself.
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('sbm-fake-cloud')!); s.offline = false; localStorage.setItem('sbm-fake-cloud', JSON.stringify(s)); window.dispatchEvent(new Event('online')); });
+  await expect(page.getByText("No internet connection")).toHaveCount(0);
+  await expect(links).toHaveCount(20);
 });
 
 test.describe('Spanish', () => {

@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
 import { CircleHelp } from 'lucide-react';
-import { AppBar, BackButton, Button, ButtonLink, ErrorMessage, IconButton, Page, Bar } from '../../components/ui';
+import { AppBar, BackButton, Button, ButtonLink, ErrorMessage, IconButton, Page, Bar, useErrorState } from '../../components/ui';
 import { FlashcardCoach, useFlashcardCoach } from '../../components/Coach';
 import { DIFFICULTIES, type Difficulty } from '../../domain/study/cloze';
 import type { Rating } from '../../domain/study/rating';
@@ -100,7 +100,7 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
   const [index, setIndex] = useState(0);
   // Which cards were reviewed this session (a card seen twice in a learning step counts once).
   const [reviewedCards, setReviewedCards] = useState<ReadonlySet<string>>(new Set());
-  const [error, setError] = useState<string>();
+  const [error, setError] = useErrorState();
   // The blanks difficulty is a setting (Settings page), not something you change mid-study.
   const difficulty: Difficulty = DIFFICULTIES.includes(initialDifficulty) ? initialDifficulty : 'medium';
   const busy = useRef(false);
@@ -157,13 +157,13 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
   const rate = useCallback(async (r: Rating) => {
     if (!entry || busy.current) return; // ignore double taps / key repeat while saving
     busy.current = true;
-    setError(undefined);
     try {
       if (!extraPractice) {
         // Every regular rating is saved before we move on: if saving fails the card stays on screen so nothing is lost.
         const schedule = await reviews.record({ cardId: entry.card.id, kind: entry.kind, rating: r, mode: mode === 'speak' ? 'flashcard' : mode }); // spoken reviews count as flashcards (the saved formats know only three modes)
         if (schedule.due - Date.now() < REQUEUE_WITHIN_MS) setQueue((q) => [...q, { card: entry.card, kind: entry.kind, schedule, again: true }]);
       }
+      setError(undefined);
       setReviewedCards((seen) => new Set(seen).add(`${entry.card.id}:${entry.kind}`));
       if (encouragement) {
         const text = pickEncouragement(r, lastMessage.current);
@@ -172,7 +172,8 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
       }
       goOn();
     } catch (e) {
-      setError(t('study.saveFailed', { message: describeError(e) }));
+      console.error(e);
+      setError(t('study.saveFailed'));
     } finally {
       busy.current = false;
     }

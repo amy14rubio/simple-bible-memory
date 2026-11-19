@@ -19,7 +19,8 @@ export function DatabaseProvider({ children }: { children: (db: Database) => Rea
 
   // Outside the language provider (it needs the database), so this reads the saved language choice directly.
   const language = currentLanguage();
-  if (error) return <p role="alert" className="p-6 text-danger">{translate(language, 'db.failed', { message: error.message })}</p>;
+  if (error) console.error(error);
+  if (error) return <p role="alert" className="m-6 rounded-lg border border-danger p-3.5 text-danger">{translate(language, 'db.failed')}</p>;
   if (!db) return <p className="p-6 text-muted">{translate(language, 'db.opening')}</p>;
   return <DatabaseContext value={db}>{children(db)}</DatabaseContext>;
 }
