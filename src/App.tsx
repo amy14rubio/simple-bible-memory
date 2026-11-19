@@ -22,6 +22,7 @@ import { BlanksPage } from './features/settings/BlanksPage';
 import { VoicePage } from './features/settings/VoicePage';
 import { PrivacyPage } from './features/settings/PrivacyPage';
 import { AboutPage } from './features/settings/AboutPage';
+import { CreditsPage } from './features/settings/CreditsPage';
 import { OnboardingPage } from './features/onboarding/OnboardingPage';
 import { ImportPage } from './features/exchange/ImportPage';
 import { DiscoverPage } from './features/discover/DiscoverPage';
@@ -91,6 +92,7 @@ export default function App() {
                     <Route path="settings/voice" element={<VoicePage />} />
                     <Route path="settings/privacy" element={<PrivacyPage />} />
                     <Route path="settings/about" element={<AboutPage />} />
+                    <Route path="settings/credits" element={<CreditsPage />} />
                     <Route path="welcome" element={<OnboardingPage />} />
                     <Route path="decks/*" element={<OldDecksLink />} />
                     <Route path="*" element={<NotFound />} />
