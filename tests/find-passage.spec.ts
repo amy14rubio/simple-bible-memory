@@ -106,6 +106,7 @@ test.describe('eBible, the second source', () => {
     const dialog = page.getByRole('dialog', { name: 'Find a Bible passage' });
     await expect(dialog.getByRole('button', { name: /Open Bible Gateway/ })).toBeVisible();
     // both sources look the same, so neither is pushed: equal white buttons, nothing underneath
+    await dialog.evaluate((el) => Promise.all(el.getAnimations().map((x) => x.finished))); // the popup has finished coming in (it is measured at its real size)
     const gatewayBox = (await dialog.getByRole('button', { name: /Open Bible Gateway/ }).boundingBox())!;
     const ebibleBox = (await dialog.getByRole('button', { name: /Open eBible/ }).boundingBox())!;
     expect(gatewayBox.width).toBe(ebibleBox.width);

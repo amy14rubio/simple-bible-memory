@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useRef } from 'react';
-import { HiddenClose } from '../../components/ui';
+import { HiddenClose, showDialog } from '../../components/ui';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 import { useI18n } from '../../i18n/I18nProvider';
 
@@ -17,8 +17,7 @@ export function ColorPickerDialog({ open, label, value, onChange, onClose }: { o
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
-    if (open && !d.open) d.showModal();
-    if (!open && d.open) d.close();
+    showDialog(d, open);
   }, [open]);
 
   return (

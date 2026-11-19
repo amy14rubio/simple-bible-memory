@@ -21,7 +21,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error: E
       <main role="alert" className="mx-auto max-w-md space-y-4 px-6 py-24 text-center">
         <h1 className="text-2xl font-semibold">{t('crash.title')}</h1>
         <p className="text-muted">{t('crash.body')}</p>
-        <button type="button" onClick={() => window.location.reload()} className="min-h-11 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
+        <button type="button" onClick={() => window.location.reload()} className="press min-h-11 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
           {t('crash.reload')}
         </button>
       </main>

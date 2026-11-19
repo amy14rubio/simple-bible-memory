@@ -19,7 +19,7 @@ export function Button({ variant = 'primary', className = '', ...props }: Button
     <button
       type="button" // default: never submit a surrounding form by accident
       {...props}
-      className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-lg px-5 text-[0.9375rem] font-medium disabled:opacity-40 ${variants[variant]} ${className}`}
+      className={`press inline-flex min-h-12 items-center justify-center gap-2 rounded-lg px-5 text-[0.9375rem] font-medium disabled:opacity-40 ${variants[variant]} ${className}`}
     />
   );
 }
@@ -27,13 +27,13 @@ export function Button({ variant = 'primary', className = '', ...props }: Button
 /** Same look as Button, for links that navigate. */
 export function ButtonLink({ to, variant = 'primary', className = '', children }: { to: string; variant?: Variant; className?: string; children: ReactNode }) {
   return (
-    <Link to={to} className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-lg px-5 text-[0.9375rem] font-medium ${variants[variant]} ${className}`}>
+    <Link to={to} className={`press inline-flex min-h-12 items-center justify-center gap-2 rounded-lg px-5 text-[0.9375rem] font-medium ${variants[variant]} ${className}`}>
       {children}
     </Link>
   );
 }
 
-const iconButton = 'flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-surface disabled:opacity-40';
+const iconButton = 'press flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-surface disabled:opacity-40';
 
 export function IconButton({ label, children, className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { label: string }) {
   return (
@@ -312,6 +312,15 @@ export function ErrorMessage({ error, id, fixed = false }: { error: Error | stri
   );
 }
 
+/**
+ * Opens or closes a native <dialog>. A closing dialog stays on screen for its short fade-out, and for that moment it is made inert and hidden from
+ * assistive technology: it can not be tapped, focused or read out while the next popup (a confirmation, say) is already coming in.
+ */
+export function showDialog(d: HTMLDialogElement, open: boolean) {
+  if (open) { d.inert = false; d.removeAttribute('aria-hidden'); if (!d.open) d.showModal(); }
+  else { d.inert = true; d.setAttribute('aria-hidden', 'true'); if (d.open) d.close(); }
+}
+
 /** Native <dialog>: focus trapping, Escape-to-close and a backdrop for free. */
 export function Dialog({ open, onClose, title, children, closeOnBack = false, closeLabel }: {
   open: boolean; onClose: () => void; title: string; children: ReactNode;
@@ -323,8 +332,7 @@ export function Dialog({ open, onClose, title, children, closeOnBack = false, cl
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
-    if (open && !d.open) d.showModal();
-    if (!open && d.open) d.close();
+    showDialog(d, open);
   }, [open]);
   return (
     <dialog

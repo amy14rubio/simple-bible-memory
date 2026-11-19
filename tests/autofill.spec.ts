@@ -355,6 +355,7 @@ test('no accessibility violations: the form with autofill on, and the picker ope
   expect(problems(results)).toEqual([]);
   await translationButton(page).click();
   await expect(page.getByRole('dialog', { name: 'Choose a translation' })).toBeVisible();
+  await page.getByRole('dialog', { name: 'Choose a translation' }).evaluate((el) => Promise.all(el.getAnimations().map((x) => x.finished))); // fully in (colours are checked at their real values)
   results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   expect(problems(results)).toEqual([]);
   await closeWithEscape(page);

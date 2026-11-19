@@ -48,7 +48,7 @@ export function RatingBar({ suggested, intervals, onRate }: { suggested?: Rating
           key={r}
           type="button"
           onClick={() => onRate(r)}
-          className={`flex min-h-14 flex-col-reverse items-center justify-center rounded-lg border border-border bg-background hover:border-foreground ${
+          className={`press flex min-h-14 flex-col-reverse items-center justify-center rounded-lg border border-border bg-background hover:border-foreground ${
             r === suggested ? 'ring-2 ring-foreground ring-offset-2 ring-offset-background' : ''
           }`}
         >

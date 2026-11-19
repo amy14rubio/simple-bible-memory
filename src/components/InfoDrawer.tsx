@@ -24,13 +24,13 @@ export function InfoLabel({ title, info, className = '' }: { title: string; info
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className={`group inline-block py-2.5 text-left ${className}`}
+        className={`no-press group inline-block py-2.5 text-left ${className}`}
       >
         {/* the icon is glued to the last word, so it can never wrap onto a line of its own */}
         {head}
         <span className="whitespace-nowrap">
           {last}
-          <Info size={14} aria-hidden className="ml-1.5 inline-block align-[-0.06em] text-muted group-hover:text-foreground" />
+          <Info size={14} aria-hidden className="ml-1.5 inline-block align-[-0.06em] text-muted transition-transform duration-[420ms] ease-[cubic-bezier(0.3,1.9,0.5,1)] group-hover:text-foreground group-active:scale-[0.7] group-active:duration-100 group-active:ease-out motion-reduce:transition-none motion-reduce:group-active:scale-100" />
         </span>
       </button>
       <Drawer open={open} onOpenChange={setOpen} showSwipeHandle>

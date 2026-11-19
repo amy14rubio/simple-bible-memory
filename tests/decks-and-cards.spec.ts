@@ -9,7 +9,7 @@ test('empty state, then the full collection and card workflow persists across re
   await page.getByRole('link', { name: 'Create your first collection' }).click();
   await page.getByLabel('Title').fill('Commute verses');
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByRole('heading', { name: 'Commute verses' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Commute verses', level: 1 })).toBeVisible();
   await expect(page.getByText('Nothing to study yet')).toBeVisible();
 
   // add a card from the empty deck (user-entered example text, not a real translation)

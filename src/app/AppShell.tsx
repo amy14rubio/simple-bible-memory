@@ -18,7 +18,7 @@ import { useKeyboardInset } from './useKeyboardInset';
 import { useLicensedText } from '../features/bible/useLicensedText';
 
 const tab = ({ isActive }: { isActive: boolean }) =>
-  `flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-xs font-medium ${isActive ? 'text-foreground' : 'text-muted'}`;
+  `press flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-xs font-medium ${isActive ? 'text-foreground' : 'text-muted'}`;
 
 /** Only the home screen has the bottom bar (as in the wireframes); every other screen has its own back arrow. */
 export function AppShell() {

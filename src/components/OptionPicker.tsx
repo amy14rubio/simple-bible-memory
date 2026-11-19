@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { ChevronDown, ChevronLeft, Plus, Search, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
-import { HiddenClose, IconButton } from './ui';
+import { HiddenClose, IconButton, showDialog } from './ui';
 import { usePopupHistory } from '../lib/usePopupHistory';
 
 export interface PickerOption {
@@ -47,8 +47,7 @@ export function OptionPicker({ label, value, options, onChange, variant = 'title
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
-    if (open && !d.open) d.showModal();
-    if (!open && d.open) d.close();
+    showDialog(d, open);
   }, [open]);
 
   const close = () => { setOpen(false); setSearching(false); setQuery(''); setGroup(null); };
