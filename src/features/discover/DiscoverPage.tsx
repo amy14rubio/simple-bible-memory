@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ListFilter, Search } from 'lucide-react';
-import { AppBar, BackButton, Button, EmptyState, IconButton, Page, SearchBar, Bar } from '../../components/ui';
+import { AppBar, BackButton, Button, EmptyState, IconButton, Page, SearchBar, Bar, useListMotion } from '../../components/ui';
 import { loadBackends, sharingAvailable } from '../sharing/backend';
 import { useI18n } from '../../i18n/I18nProvider';
 import { NO_FILTERS, type DiscoverFilters, type PublicDeck } from './types';
@@ -28,6 +28,8 @@ export function DiscoverPage() {
   const [more, setMore] = useState(false);
   const [seen, setSeen] = useState<{ translations: string[]; languages: string[] }>({ translations: [], languages: [] }); // what decks have used so far (the filter offers those too)
   const request = useRef(0); // only the newest request may change the screen
+  const list = useRef<HTMLUListElement>(null);
+  useListMotion(list); // a new search or filter changes the list smoothly
 
   const search = useDebounced(query, 350);
   const active: DiscoverFilters = { ...filters, query: search };
@@ -106,7 +108,7 @@ export function DiscoverPage() {
             <p className="py-6 text-center text-muted">{search.trim() || filters.language !== 'all' || filters.translation !== 'all' ? t('discover.noMatch') : `${t('discover.empty')} ${t('discover.emptyBody')}`}</p>
           )}
           {state === 'ready' && decks.length > 0 && (
-            <ul className="-mx-5">
+            <ul ref={list} className="-mx-5">
               {decks.map((d) => (
                 <li key={d.id} className="border-b border-border">
                   <Link to={`/discover/${d.id}`} className="block px-5 py-4 hover:bg-surface">

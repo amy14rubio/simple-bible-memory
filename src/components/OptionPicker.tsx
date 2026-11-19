@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { ChevronDown, ChevronLeft, Plus, Search, X } from 'lucide-react';
+import { ChevronDown, Plus } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
-import { HiddenClose, IconButton, showDialog } from './ui';
+import { HiddenClose, IconButton, PopupSearchHeader, showDialog, useListMotion } from './ui';
 import { usePopupHistory } from '../lib/usePopupHistory';
 
 export interface PickerOption {
@@ -43,6 +43,8 @@ export function OptionPicker({ label, value, options, onChange, variant = 'title
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
   const [group, setGroup] = useState<string | null>(null);
+  const list = useRef<HTMLUListElement>(null);
+  useListMotion(list); // searching, clearing and filtering change the list smoothly
 
   useEffect(() => {
     const d = ref.current;
@@ -84,29 +86,18 @@ export function OptionPicker({ label, value, options, onChange, variant = 'title
         className="m-auto max-h-[85dvh] w-[min(26rem,calc(100%-2rem))] overflow-hidden rounded-3xl border border-border bg-background p-0 text-foreground backdrop:bg-black/50"
       >
         <div className="flex max-h-[85dvh] flex-col">
-          <div className="flex h-16 shrink-0 items-center gap-1 px-3">
-            {searching ? (
-              <>
-                <IconButton label={t('decks.searchClose')} onClick={() => { setSearching(false); setQuery(''); }}><ChevronLeft size={22} aria-hidden /></IconButton>
-                <input
-                  aria-label={searchLabel}
-                  type="search"
-                  autoFocus
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={searchLabel}
-                  className="min-w-0 flex-1 bg-transparent px-2 text-base placeholder:text-muted [&::-webkit-search-cancel-button]:appearance-none"
-                />
-                {query && <IconButton label={t('search.clear')} onClick={() => setQuery('')}><X size={20} aria-hidden /></IconButton>}
-              </>
-            ) : (
-              <>
-                <h2 className="min-w-0 flex-1 truncate px-2 font-serif text-xl font-medium tracking-tight">{popupTitle}</h2>
-                <IconButton label={searchLabel} onClick={() => setSearching(true)}><Search size={20} aria-hidden /></IconButton>
-              </>
-            )}
-            {onCreate && <IconButton label={onCreate.label} onClick={() => { close(); onCreate.run(); }}><Plus size={22} aria-hidden /></IconButton>}
-          </div>
+          <PopupSearchHeader
+            title={popupTitle}
+            searchLabel={searchLabel}
+            closeLabel={t('decks.searchClose')}
+            clearLabel={t('search.clear')}
+            searching={searching}
+            onOpen={() => setSearching(true)}
+            onClose={() => { setSearching(false); setQuery(''); }}
+            query={query}
+            onQuery={setQuery}
+            extra={onCreate && <IconButton label={onCreate.label} onClick={() => { close(); onCreate.run(); }}><Plus size={22} aria-hidden /></IconButton>}
+          />
 
           {filters && (
             <div role="group" aria-label={filtersLabel} className="flex shrink-0 gap-2 overflow-x-auto border-t border-border px-4 py-2.5 [scrollbar-width:none]">
@@ -124,7 +115,7 @@ export function OptionPicker({ label, value, options, onChange, variant = 'title
             </div>
           )}
 
-          <ul className="min-h-0 flex-1 overflow-y-auto border-t border-border">
+          <ul ref={list} className="min-h-0 flex-1 overflow-y-auto border-t border-border">
             {shown.map((o) => (
               <li key={o.value} className="border-b border-border last:border-b-0">
                 <button

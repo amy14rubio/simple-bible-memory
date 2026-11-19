@@ -1,7 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type Ref, type TextareaHTMLAttributes } from 'react';
+import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type Ref, type RefObject, type TextareaHTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, ChevronLeft, X } from 'lucide-react';
+import { Check, ChevronLeft, Search, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
 import { usePopupHistory } from '../lib/usePopupHistory';
 import { prefersReducedMotion } from '../app/motion';
@@ -152,6 +152,118 @@ export function SearchBar({ label, placeholder, value, onChange, backLabel, onCl
       )}
       <div className="flex items-center">{actions}</div>
     </header></InBarSlot>
+  );
+}
+
+/**
+ * Makes a list that changes (searching, clearing a search, going back from one) change smoothly instead of jumping. After every render it looks at where
+ * each row is: a row that was already there and has moved glides from its old place to its new one, and a row that was not there before fades in
+ * and slides up a little. (Rows are the list's direct children; they are told apart by being the same page element, which React keeps for the same key.)
+ * The first time a list is shown nothing moves, only rows outside the screen are left alone, and nothing moves for reduced motion.
+ * Pass `enabled: false` while something else is moving the rows (dragging to reorder).
+ */
+export function useListMotion(list: RefObject<HTMLElement | null>, enabled = true) {
+  const before = useRef<Map<Element, number> | null>(null);
+  useLayoutEffect(() => {
+    const el = list.current;
+    // Not on screen (a closed popup, a screen still loading): there is nothing to compare, and the next time it is shown it appears as it is.
+    if (!el || el.getClientRects().length === 0) { before.current = null; return; }
+    const top = el.getBoundingClientRect().top;
+    const now = new Map<Element, number>();
+    const reach = window.innerHeight + 200;
+    const moves: { child: Element; from: number; fresh: boolean }[] = [];
+    for (const child of el.children) {
+      const rect = child.getBoundingClientRect();
+      now.set(child, rect.top - top);
+      const old = before.current?.get(child);
+      const onScreen = rect.bottom > -200 && rect.top < reach;
+      if (!enabled || !onScreen || before.current === null) continue;
+      if (old === undefined) moves.push({ child, from: 0, fresh: true });
+      else if (Math.abs(old - (rect.top - top)) > 1) moves.push({ child, from: old - (rect.top - top), fresh: false });
+    }
+    // Rows that LEFT the list mean the list is narrowing (typing in the search box): the rows that stay only settle, quickly and lightly, because this
+    // happens on every keystroke. Rows that are added (the X, going back, deleting a letter) come in with the fuller motion.
+    const narrowing = [...(before.current?.keys() ?? [])].some((child) => !now.has(child));
+    before.current = now;
+    if (prefersReducedMotion()) return;
+    const ease = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+    for (const { child, from, fresh } of moves.slice(0, 60)) {
+      child.animate(
+        fresh ? [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }] : [{ transform: `translateY(${from}px)` }, { transform: 'none' }],
+        narrowing && !fresh ? { duration: 110, easing: 'ease-out' } : { duration: fresh ? 240 : 260, easing: ease },
+      );
+    }
+  });
+}
+
+/**
+ * The header of a popup that can turn into a search field (the dropdown lists, the translation picker): a title with a search icon, which becomes
+ * a back arrow and a field. It moves like the search bar on a page does: the field grows out of the search icon's side and the back arrow slides in;
+ * going back, the field folds away and the title eases in again. Nothing moves when the person has asked their phone for reduced motion.
+ */
+export function PopupSearchHeader({ title, searchLabel, closeLabel, clearLabel, searching, onOpen, onClose, query, onQuery, extra }: {
+  title: string; searchLabel: string; closeLabel: string; clearLabel: string;
+  searching: boolean; onOpen: () => void; onClose: () => void; query: string; onQuery: (q: string) => void;
+  /** More icons after the search icon (for example a + button). */
+  extra?: ReactNode;
+}) {
+  const row = useRef<HTMLDivElement>(null);
+  const input = useRef<HTMLInputElement>(null);
+  const back = useRef<HTMLButtonElement>(null);
+  const was = useRef(searching);
+  const closing = useRef(false);
+  const ease = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+
+  useLayoutEffect(() => {
+    const before = was.current;
+    was.current = searching;
+    closing.current = false;
+    if (before === searching || prefersReducedMotion()) return;
+    const animations = searching
+      ? [
+          input.current?.animate([{ opacity: 0, clipPath: 'inset(0 0 0 70%)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)' }], { duration: 280, easing: ease }),
+          back.current?.animate([{ opacity: 0, transform: 'translateX(-10px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: ease }),
+        ]
+      : [row.current?.querySelector('h2')?.animate({ opacity: [0, 1], transform: ['translateX(-10px)', 'none'] }, { duration: 240, easing: ease })];
+    return () => animations.forEach((a) => a?.cancel());
+  }, [searching]);
+
+  const leave = () => {
+    if (closing.current) return;
+    closing.current = true;
+    if (prefersReducedMotion() || !input.current) { onClose(); return; }
+    const out = [
+      input.current.animate([{ clipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(0 0 0 100%)' }], { duration: 200, easing: ease, fill: 'forwards' }),
+      back.current?.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateX(-10px)' }], { duration: 160, easing: ease, fill: 'forwards' }),
+    ];
+    Promise.all(out.map((a) => a?.finished)).then(onClose, onClose);
+  };
+
+  return (
+    <div ref={row} className="flex h-16 shrink-0 items-center gap-1 px-3">
+      {searching ? (
+        <>
+          <IconButton ref={back} label={closeLabel} onClick={leave}><ChevronLeft size={22} aria-hidden /></IconButton>
+          <input
+            ref={input}
+            aria-label={searchLabel}
+            type="search"
+            autoFocus
+            value={query}
+            onChange={(e) => onQuery(e.target.value)}
+            placeholder={searchLabel}
+            className="min-w-0 flex-1 bg-transparent px-2 text-base placeholder:text-muted [&::-webkit-search-cancel-button]:appearance-none"
+          />
+          {query && <IconButton label={clearLabel} className="pop-in" onClick={() => onQuery('')}><X size={20} aria-hidden /></IconButton>}
+        </>
+      ) : (
+        <>
+          <h2 className="min-w-0 flex-1 truncate px-2 font-serif text-xl font-medium tracking-tight">{title}</h2>
+          <IconButton label={searchLabel} onClick={onOpen}><Search size={20} aria-hidden /></IconButton>
+        </>
+      )}
+      {extra}
+    </div>
   );
 }
 

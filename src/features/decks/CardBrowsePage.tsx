@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CheckCheck, FolderInput, Plus, Search, Trash2, X } from 'lucide-react';
 import { useRepositories } from '../../app/repositories';
 import { useAsync } from '../../app/useAsync';
-import { AppBar, BackButton, ButtonLink, ConfirmDialog, EmptyState, ErrorMessage, IconButton, IconLink, Page, SearchBar, Bar } from '../../components/ui';
+import { AppBar, BackButton, ButtonLink, ConfirmDialog, EmptyState, ErrorMessage, IconButton, IconLink, Page, SearchBar, Bar, useListMotion } from '../../components/ui';
 import { DeckPicker } from '../../components/DeckPicker';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useRefreshOnWrites } from '../../app/useRefreshOnWrites';
@@ -30,6 +30,8 @@ export function CardBrowsePage() {
   const { decks, cards } = useRepositories();
   const navigate = useNavigate();
   const [searching, setSearching] = useState(false);
+  const rows = useRef<HTMLTableSectionElement>(null);
+  useListMotion(rows); // searching and clearing a search change the list smoothly
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [selecting, setSelecting] = useState(false);
@@ -160,7 +162,7 @@ export function CardBrowsePage() {
               <th scope="col" className="py-3 pr-5 font-medium">{t('browse.passage')}</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody ref={rows}>
             {shown.map((c) => (
               // The whole row opens the card, and nothing outside the row does. The link inside is for keyboards and screen readers.
               <tr
