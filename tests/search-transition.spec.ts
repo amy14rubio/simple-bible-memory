@@ -63,3 +63,70 @@ test('after search closes the top bar eases its title back in (no hard swap)', a
   }));
   expect(seen).toBe(true);
 });
+
+test.describe('the search inside a dropdown popup moves like the search on a page', () => {
+  const openPopupSearch = async (page: import('@playwright/test').Page) => {
+    await createDeck(page, 'Alpha');
+    await page.goto('/#/stats');
+    await page.getByRole('button', { name: /^Show statistics for:/ }).click();
+    const dialog = page.locator('dialog[open]');
+    await expect(dialog).toBeVisible();
+    await dialog.evaluate((el) => Promise.all(el.getAnimations().map((x) => x.finished))); // the popup itself has come in
+    return dialog;
+  };
+  const running = (el: import('@playwright/test').Locator) => el.evaluate((e) => e.getAnimations().filter((a) => !(a instanceof CSSTransition)).length);
+
+  test('the field grows in, and folds away when it closes, and the title eases back', async ({ page }) => {
+    const dialog = await openPopupSearch(page);
+    await dialog.getByRole('button', { name: /^Search/ }).click();
+    const field = dialog.getByRole('searchbox');
+    const early = await field.evaluate((el) => new Promise<number>((resolve) => requestAnimationFrame(() => resolve(el.getAnimations().filter((a) => !(a instanceof CSSTransition)).length))));
+    expect(early).toBeGreaterThan(0);
+    await expect.poll(() => running(field)).toBe(0); // settled
+
+    // typing makes the clear button pop in
+    await field.fill('Al');
+    expect(await running(dialog.getByRole('button', { name: 'Clear search' }))).toBeGreaterThan(0);
+
+    // going back: the field folds first, and then the title (not the field) is there, easing in
+    const eased = await page.evaluate(() => new Promise<boolean>((resolve) => {
+      const open = document.querySelector('dialog[open]')!;
+      const back = [...open.querySelectorAll('button')].find((b) => /^Close search/.test(b.getAttribute('aria-label') ?? ''))!;
+      back.click();
+      const started = performance.now();
+      const look = () => {
+        const title = open.querySelector('h2');
+        if (title && title.getAnimations().some((a) => !(a instanceof CSSTransition))) resolve(true);
+        else if (performance.now() - started > 1500) resolve(false);
+        else requestAnimationFrame(look);
+      };
+      look();
+    }));
+    expect(eased).toBe(true);
+    await expect(dialog.getByRole('searchbox')).toHaveCount(0);
+    await expect(dialog.getByRole('button', { name: /^Search/ })).toBeVisible();
+  });
+
+  test('the translation picker has the same motion', async ({ page }) => {
+    const id = await createDeck(page, 'Alpha');
+    await page.goto(`/#/collections/${id}/edit`);
+    await page.getByRole('button', { name: /^Translation:/ }).click();
+    const dialog = page.locator('dialog[open]');
+    await expect(dialog).toBeVisible();
+    await dialog.evaluate((el) => Promise.all(el.getAnimations().map((x) => x.finished)));
+    await dialog.getByRole('button', { name: /^Search/ }).click();
+    const early = await dialog.getByRole('searchbox').evaluate((el) => new Promise<number>((resolve) => requestAnimationFrame(() => resolve(el.getAnimations().filter((a) => !(a instanceof CSSTransition)).length))));
+    expect(early).toBeGreaterThan(0);
+  });
+
+  test('with reduced motion nothing moves, and the search still opens and closes', async ({ browser }) => {
+    const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+    const page = await ctx.newPage();
+    const dialog = await openPopupSearch(page);
+    await dialog.getByRole('button', { name: /^Search/ }).click();
+    expect(await running(dialog.getByRole('searchbox'))).toBe(0);
+    await dialog.getByRole('button', { name: /^Close search/ }).click();
+    await expect(dialog.getByRole('searchbox')).toHaveCount(0);
+    await ctx.close();
+  });
+});

@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type Ref, type TextareaHTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, ChevronLeft, X } from 'lucide-react';
+import { Check, ChevronLeft, Search, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
 import { usePopupHistory } from '../lib/usePopupHistory';
 import { prefersReducedMotion } from '../app/motion';
@@ -152,6 +152,77 @@ export function SearchBar({ label, placeholder, value, onChange, backLabel, onCl
       )}
       <div className="flex items-center">{actions}</div>
     </header></InBarSlot>
+  );
+}
+
+/**
+ * The header of a popup that can turn into a search field (the dropdown lists, the translation picker): a title with a search icon, which becomes
+ * a back arrow and a field. It moves like the search bar on a page does: the field grows out of the search icon's side and the back arrow slides in;
+ * going back, the field folds away and the title eases in again. Nothing moves when the person has asked their phone for reduced motion.
+ */
+export function PopupSearchHeader({ title, searchLabel, closeLabel, clearLabel, searching, onOpen, onClose, query, onQuery, extra }: {
+  title: string; searchLabel: string; closeLabel: string; clearLabel: string;
+  searching: boolean; onOpen: () => void; onClose: () => void; query: string; onQuery: (q: string) => void;
+  /** More icons after the search icon (for example a + button). */
+  extra?: ReactNode;
+}) {
+  const row = useRef<HTMLDivElement>(null);
+  const input = useRef<HTMLInputElement>(null);
+  const back = useRef<HTMLButtonElement>(null);
+  const was = useRef(searching);
+  const closing = useRef(false);
+  const ease = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+
+  useLayoutEffect(() => {
+    const before = was.current;
+    was.current = searching;
+    closing.current = false;
+    if (before === searching || prefersReducedMotion()) return;
+    const animations = searching
+      ? [
+          input.current?.animate([{ opacity: 0, clipPath: 'inset(0 0 0 70%)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)' }], { duration: 280, easing: ease }),
+          back.current?.animate([{ opacity: 0, transform: 'translateX(-10px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: ease }),
+        ]
+      : [row.current?.querySelector('h2')?.animate({ opacity: [0, 1], transform: ['translateX(-10px)', 'none'] }, { duration: 240, easing: ease })];
+    return () => animations.forEach((a) => a?.cancel());
+  }, [searching]);
+
+  const leave = () => {
+    if (closing.current) return;
+    closing.current = true;
+    if (prefersReducedMotion() || !input.current) { onClose(); return; }
+    const out = [
+      input.current.animate([{ clipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(0 0 0 100%)' }], { duration: 200, easing: ease, fill: 'forwards' }),
+      back.current?.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateX(-10px)' }], { duration: 160, easing: ease, fill: 'forwards' }),
+    ];
+    Promise.all(out.map((a) => a?.finished)).then(onClose, onClose);
+  };
+
+  return (
+    <div ref={row} className="flex h-16 shrink-0 items-center gap-1 px-3">
+      {searching ? (
+        <>
+          <IconButton ref={back} label={closeLabel} onClick={leave}><ChevronLeft size={22} aria-hidden /></IconButton>
+          <input
+            ref={input}
+            aria-label={searchLabel}
+            type="search"
+            autoFocus
+            value={query}
+            onChange={(e) => onQuery(e.target.value)}
+            placeholder={searchLabel}
+            className="min-w-0 flex-1 bg-transparent px-2 text-base placeholder:text-muted [&::-webkit-search-cancel-button]:appearance-none"
+          />
+          {query && <IconButton label={clearLabel} className="pop-in" onClick={() => onQuery('')}><X size={20} aria-hidden /></IconButton>}
+        </>
+      ) : (
+        <>
+          <h2 className="min-w-0 flex-1 truncate px-2 font-serif text-xl font-medium tracking-tight">{title}</h2>
+          <IconButton label={searchLabel} onClick={onOpen}><Search size={20} aria-hidden /></IconButton>
+        </>
+      )}
+      {extra}
+    </div>
   );
 }
 

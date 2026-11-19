@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, ChevronLeft, Search, X } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import { autofillSources, sourceFor } from '../../domain/bible/sources';
 import { languageName, loadLanguageNames } from '../../domain/bible/languageNames';
 import { isSwitchedOff } from '../../domain/bible/switch';
 import { useCatalogue } from './catalogue';
 import { useLicensedSwitch } from './remoteSwitch';
 import { useI18n } from '../../i18n/I18nProvider';
-import { HiddenClose, IconButton, showDialog } from '../../components/ui';
+import { HiddenClose, PopupSearchHeader, showDialog } from '../../components/ui';
 import { usePopupHistory } from '../../lib/usePopupHistory';
 
 /**
@@ -79,28 +79,17 @@ export function TranslationPicker({ id, value, onChange, initialLanguage, extras
         className="m-auto max-h-[85dvh] w-[min(26rem,calc(100%-2rem))] overflow-hidden rounded-3xl border border-border bg-background p-0 text-foreground backdrop:bg-black/50"
       >
         <div className="flex max-h-[85dvh] flex-col">
-          <div className="flex h-16 shrink-0 items-center gap-1 px-3">
-            {searching ? (
-              <>
-                <IconButton label={t('decks.searchClose')} onClick={() => { setSearching(false); setQuery(''); }}><ChevronLeft size={22} aria-hidden /></IconButton>
-                <input
-                  aria-label={searchLabel}
-                  type="search"
-                  autoFocus
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={searchLabel}
-                  className="min-w-0 flex-1 bg-transparent px-2 text-base placeholder:text-muted [&::-webkit-search-cancel-button]:appearance-none"
-                />
-                {query && <IconButton label={t('search.clear')} onClick={() => setQuery('')}><X size={20} aria-hidden /></IconButton>}
-              </>
-            ) : (
-              <>
-                <h2 className="min-w-0 flex-1 truncate px-2 font-serif text-xl font-medium tracking-tight">{title}</h2>
-                <IconButton label={searchLabel} onClick={() => setSearching(true)}><Search size={20} aria-hidden /></IconButton>
-              </>
-            )}
-          </div>
+          <PopupSearchHeader
+            title={title}
+            searchLabel={searchLabel}
+            closeLabel={t('decks.searchClose')}
+            clearLabel={t('search.clear')}
+            searching={searching}
+            onOpen={() => setSearching(true)}
+            onClose={() => { setSearching(false); setQuery(''); }}
+            query={query}
+            onQuery={setQuery}
+          />
           <div role="tablist" aria-label={title} className="flex shrink-0 border-b border-border px-3">
             {(['translation', 'language'] as const).map((name) => (
               <button
