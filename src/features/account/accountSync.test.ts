@@ -525,3 +525,117 @@ describe('sync never drops what the account has (only an explicit delete removes
     void deck;
   });
 });
+
+describe('one thing the account refuses never stops the rest from being backed up', () => {
+  const build = async (refuse: (key: string) => boolean) => {
+    const db = await createTestDatabase();
+    const repo = createAccountRepository(db);
+    const sent: string[][] = [];
+    const backend: import('./types').AccountBackend = {
+      listen() { return () => {}; },
+      async push(items) {
+        sent.push(items.map((i) => itemKey(i.entity, i.id)));
+        return { stale: [], refused: items.map((i) => itemKey(i.entity, i.id)).filter(refuse) };
+      },
+      async removeAll() {},
+    };
+    const sync = createAccountSync({ repo, backend, announce: () => {}, online: () => true, delayMs: 5, now });
+    const decks = createDeckRepository(db, now);
+    const cards = createCardRepository(db, now);
+    return { db, repo, sync, sent, decks, cards };
+  };
+  const itemKey = (entity: string, id: string) => `${entity}~${id}`;
+
+  it('the others are sent and marked as backed up; the refused one is named', async () => {
+    const y = await build(() => false);
+    const deck = await y.decks.create({ title: 'Mine' });
+    const made = await y.cards.createMany(deck.id, [
+      { reference: 'Psalm 1:1', verseText: 'Blessed is the man' },
+      { reference: 'R'.repeat(250), verseText: 'a reference far too long for the account' },
+      { reference: 'Psalm 1:2', verseText: 'his delight' },
+    ]);
+    const refusedKey = itemKey('card', made[1]!.id);
+    const sent: string[] = [];
+    const sync = createAccountSync({
+      repo: y.repo,
+      backend: { listen() { return () => {}; }, async push(items) { items.forEach((i) => sent.push(itemKey(i.entity, i.id))); return { stale: [], refused: [refusedKey] }; }, async removeAll() {} },
+      announce: () => {}, online: () => true, delayMs: 5, now,
+    });
+    await sync.prepare('amy');
+    await sync.start('amy');
+    await sync.syncAll();
+    await sync.idle();
+    const agreed = await y.repo.agreed();
+    expect(agreed.get(refusedKey)!.hash.startsWith('refused:')).toBe(true); // recorded as refused...
+    expect(agreed.get(itemKey('card', made[0]!.id))!.hash.startsWith('refused:')).toBe(false); // ...and the others as backed up
+    expect(agreed.get(itemKey('card', made[2]!.id))!.hash.startsWith('refused:')).toBe(false);
+    expect(sync.status()).toMatchObject({ state: 'synced', refused: { count: 1, examples: [{ entity: 'card', name: 'R'.repeat(60) }] } });
+
+    // not sent again while unchanged...
+    sent.length = 0;
+    await sync.syncAll();
+    expect(sent).not.toContain(refusedKey);
+    // ...but sent again once it is edited
+    await y.cards.update(made[1]!.id, { reference: 'Psalm 1:3', verseText: 'fixed' });
+    await sync.syncAll();
+    expect(sent).toContain(refusedKey);
+    sync.stop();
+  });
+
+  it('a refused item is tried once more the next time the app is opened', async () => {
+    const x = await build(() => false);
+    const deck = await x.decks.create({ title: 'Mine' });
+    const [card] = await x.cards.createMany(deck.id, [{ reference: 'John 3:16', verseText: 'For God so loved' }]);
+    const key = itemKey('card', card!.id);
+    const sent: string[] = [];
+    let refuse = true;
+    const sync = createAccountSync({
+      repo: x.repo,
+      backend: { listen() { return () => {}; }, async push(items) { items.forEach((i) => sent.push(itemKey(i.entity, i.id))); return { stale: [], refused: refuse ? [key] : [] }; }, async removeAll() {} },
+      announce: () => {}, online: () => true, delayMs: 5, now,
+    });
+    await sync.prepare('amy');
+    await sync.start('amy');
+    await sync.syncAll();
+    expect(sync.status()).toMatchObject({ refused: { count: 1 } });
+    refuse = false; // (the rules, or the thing, got fixed)
+    sent.length = 0;
+    sync.stop();
+    await sync.prepare('amy');
+    await sync.start('amy');
+    await sync.idle();
+    expect(sent).toContain(key);
+    expect((sync.status() as { refused?: unknown }).refused).toBeUndefined();
+    sync.stop();
+  });
+});
+
+describe('what the account accepts (a mirror of firestore.rules)', () => {
+  it('names the rule a deck or card would break, and says nothing about ones that are fine', async () => {
+    const { backupProblem } = await import('../../domain/account/items');
+    const card = { reference: 'John 3:16', verseText: 'For God so loved', note: null, decks: [{ deckId: 'a', addedAt: 1 }] } as never;
+    expect(backupProblem('card', card)).toBeNull();
+    expect(backupProblem('card', { ...(card as object), reference: '' } as never)).toBe('reference-empty');
+    expect(backupProblem('card', { ...(card as object), reference: 'x'.repeat(201) } as never)).toBe('reference-too-long');
+    expect(backupProblem('card', { ...(card as object), verseText: '' } as never)).toBe('text-empty');
+    expect(backupProblem('card', { ...(card as object), verseText: 'x'.repeat(20001) } as never)).toBe('text-too-long');
+    expect(backupProblem('card', { ...(card as object), note: 'x'.repeat(2001) } as never)).toBe('note-too-long');
+    expect(backupProblem('card', { ...(card as object), decks: Array.from({ length: 51 }, (_, i) => ({ deckId: String(i), addedAt: 1 })) } as never)).toBe('too-many-collections');
+    expect(backupProblem('deck', { title: '', description: null } as never)).toBe('name-empty');
+    expect(backupProblem('deck', { title: 'x'.repeat(201), description: null } as never)).toBe('name-too-long');
+    expect(backupProblem('deck', { title: 'ok', description: 'x'.repeat(2001) } as never)).toBe('description-too-long');
+  });
+
+  it('uses the same numbers as the rules file', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { BACKUP_LIMITS } = await import('../../domain/account/items');
+    const rules = readFileSync('firestore.rules', 'utf8');
+    const live = rules.slice(rules.indexOf('function liveDeck'), rules.indexOf('function liveSchedule'));
+    expect(live).toContain(`isText(d.title, 1, ${BACKUP_LIMITS.name})`);
+    expect(live).toContain(`isTextOrNull(d.description, ${BACKUP_LIMITS.description})`);
+    expect(live).toContain(`isText(d.reference, 1, ${BACKUP_LIMITS.reference})`);
+    expect(live).toContain(`isText(d.verseText, 1, ${BACKUP_LIMITS.verseText})`);
+    expect(live).toContain(`isTextOrNull(d.note, ${BACKUP_LIMITS.note})`);
+    expect(live).toContain(`d.decks.size() <= ${BACKUP_LIMITS.collectionsPerCard}`);
+  });
+});

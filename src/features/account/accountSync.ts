@@ -1,5 +1,5 @@
 import type { AccountRepository } from '../../data/repositories/accountRepository';
-import { ENTITY_ORDER, NEWER, SCHEMA_VERSION, itemKey, parseKey, remoteWins, makeItem, type Entity } from '../../domain/account/items';
+import { ENTITY_ORDER, NEWER, SCHEMA_VERSION, itemKey, parseKey, remoteWins, makeItem, type Doc, type Entity } from '../../domain/account/items';
 import type { AccountBackend, AccountStatus, OutItem, RemoteItem } from './types';
 
 /**
@@ -14,6 +14,10 @@ import type { AccountBackend, AccountStatus, OutItem, RemoteItem } from './types
  */
 const CHUNK = 400; // Firestore allows 500 writes per batch
 const FULL_READ_EVERY_MS = 24 * 60 * 60 * 1000;
+/** Marks, in the "last agreed" record, an item the account refused ("refused:" + its fingerprint): it is not sent again until it changes or the app is opened again. */
+const REFUSED = 'refused:';
+/** How many refused things are named in the status (the rest are counted). */
+const MAX_NAMED = 10;
 
 export type AccountChoice = 'merge' | 'replace';
 
@@ -162,13 +166,22 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
     if (forgotten.length) await repo.forget(forgotten);
   }
 
-  async function send() {
+  /** An item the account would not take, named for the person (a card by its verse reference, a collection by its name). */
+  type Refused = { entity: Entity; name: string };
+  const describe = (entity: Entity, doc: Doc | null): Refused => ({
+    entity,
+    name: String((entity === 'deck' ? doc?.title : entity === 'card' ? doc?.reference : '') ?? '').replace(/\s+/g, ' ').trim().slice(0, 60),
+  });
+
+  async function send(): Promise<Refused[]> {
     const items = await repo.items();
     const agreed = await repo.agreed();
     const out: (OutItem & { hash?: string })[] = [];
+    const refused: Refused[] = [];
     for (const i of items) {
       const was = agreed.get(itemKey(i.entity, i.id))?.hash;
       if (was?.startsWith(NEWER)) continue; // the account holds a newer format of this: never overwrite it
+      if (was === REFUSED + i.hash) { refused.push(describe(i.entity, i.doc)); continue; } // refused before and unchanged since: not sent again (until the app is opened again)
       if (was !== i.hash) out.push({ entity: i.entity, id: i.id, deleted: false, updatedAt: i.updatedAt, v: schemaVersion, doc: i.doc, hash: i.hash });
     }
     const live = new Set(items.map((i) => itemKey(i.entity, i.id)));
@@ -179,12 +192,17 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
     out.sort((a, b) => ENTITY_ORDER.indexOf(a.entity) - ENTITY_ORDER.indexOf(b.entity));
     for (let i = 0; i < out.length; i += CHUNK) {
       const chunk = out.slice(i, i + CHUNK);
-      const { stale } = await backend.push(chunk.map(({ hash: _h, ...rest }) => rest));
-      const refused = new Set(stale);
-      const sent = chunk.filter((c) => !refused.has(itemKey(c.entity, c.id)));
+      const { stale, refused: no = [] } = await backend.push(chunk.map(({ hash: _h, ...rest }) => rest));
+      const notSent = new Set([...stale, ...no]);
+      const sent = chunk.filter((c) => !notSent.has(itemKey(c.entity, c.id)));
       await repo.setAgreed(sent.filter((c) => !c.deleted).map((c) => ({ key: itemKey(c.entity, c.id), hash: c.hash!, updatedAt: c.updatedAt })));
       await repo.forget(sent.filter((c) => c.deleted).map((c) => itemKey(c.entity, c.id)));
+      // The account would not take these. They are set aside (and said so), and everything else carries on: one item must never stop the backup of all the others.
+      const turnedDown = chunk.filter((c) => no.includes(itemKey(c.entity, c.id)) && !c.deleted);
+      await repo.setAgreed(turnedDown.map((c) => ({ key: itemKey(c.entity, c.id), hash: REFUSED + c.hash!, updatedAt: c.updatedAt })));
+      for (const c of turnedDown) refused.push(describe(c.entity, c.doc));
     }
+    return refused;
   }
 
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -238,6 +256,9 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
       const lastFull = await repo.getMeta(`fullpull:${next}`);
       const fullDue = lastFull === undefined || now() - Number(lastFull) > FULL_READ_EVERY_MS;
       if (fullDue) await repo.setMeta(`fullpull:${next}`, String(now()));
+      // Things the account refused are tried once more each time the app is opened (the rules, or the thing itself, may have changed).
+      const tryAgain = [...(await repo.agreed())].filter(([, st]) => st.hash.startsWith(REFUSED)).map(([key]) => key);
+      if (tryAgain.length) await repo.forget(tryAgain);
       const since = fullDue ? 0 : Number((await repo.getMeta(`cursor:${next}`)) ?? 0);
       failures = 0;
       listenFrom(since);
@@ -267,7 +288,10 @@ export function createAccountSync({ repo, backend, announce, online = () => (typ
         await noteDeletions();
         if (!online()) { setStatus({ state: 'waiting' }); return; }
         setStatus({ state: 'syncing' });
-        try { await send(); setStatus({ state: 'synced', at: now() }); }
+        try {
+          const refused = await send();
+          setStatus({ state: 'synced', at: now(), ...(refused.length ? { refused: { count: refused.length, examples: refused.slice(0, MAX_NAMED) } } : {}) });
+        }
         catch { setStatus({ state: 'waiting' }); }
       });
     },

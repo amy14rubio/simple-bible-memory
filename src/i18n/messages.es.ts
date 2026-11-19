@@ -467,6 +467,11 @@ export const es: Dictionary = {
   'account.signedInAs': 'Sesión iniciada como {name}',
   'account.backup.synced': 'Sesión iniciada como {name}. Tus carpetas y tu calendario de estudio están respaldados.',
   'account.backup.syncing': 'Sesión iniciada como {name}. Respaldando…',
+  'account.backup.refused.one': 'No se pudo respaldar 1 tarjeta.',
+  'account.backup.refused.other': 'No se pudieron respaldar {count} tarjetas.',
+  'account.backup.refusedItems.one': 'No se pudo respaldar 1 elemento.',
+  'account.backup.refusedItems.other': 'No se pudieron respaldar {count} elementos.',
+  'account.backup.refusedMore': 'y {count} más',
   'account.backup.waiting':
     'Sesión iniciada como {name}. Esperando conexión. Los cambios se respaldarán cuando vuelvas a estar en línea.',
   'switch.title': 'Otra cuenta',

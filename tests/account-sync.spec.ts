@@ -149,3 +149,34 @@ test.describe('privacy note', () => {
     });
   });
 });
+
+test('a card the account refuses (a verse reference over 200 characters) does not stop the rest from being backed up, and Settings lists which card', async ({ page }) => {
+  const id = await createDeck(page, 'Psalms');
+  await addCard(page, id, 'John 3:16', 'For God so loved the world.');
+  await addCard(page, id, 'Esta es una cita larga '.repeat(15), 'A card whose reference is far too long for the account.');
+  await addCard(page, id, 'Psalm 23:1', 'The Lord is my shepherd.');
+  await addCard(page, id, 'Psalm 23:2', 'He makes me lie down in green pastures.');
+  await page.goto('/#/settings');
+  await page.getByRole('button', { name: 'Sign in with Google' }).click();
+  const region = page.getByRole('region', { name: 'Account' });
+  await expect(region.getByText('1 card could not be backed up.', { exact: true })).toBeVisible();
+  // a bulleted list names the card (no explanation of why)
+  const bullets = region.getByRole('listitem');
+  await expect(bullets).toHaveCount(1);
+  await expect(bullets.first()).toContainText('Esta es una cita larga');
+  await expect(region.getByText(/longer than/)).toHaveCount(0);
+  // the good cards (and the collection) were sent
+  const cards = (await itemKeys(page)).filter((k) => k.startsWith('card~'));
+  expect(cards).toHaveLength(3);
+});
+
+test('several refused cards are listed as bullets, and the account line counts them', async ({ page }) => {
+  const id = await createDeck(page, 'Imported');
+  for (let i = 1; i <= 3; i++) await addCard(page, id, `Verso demasiado largo número ${i} `.repeat(10), `Passage ${i}.`);
+  await addCard(page, id, 'John 3:16', 'For God so loved the world.');
+  await page.goto('/#/settings');
+  await page.getByRole('button', { name: 'Sign in with Google' }).click();
+  const region = page.getByRole('region', { name: 'Account' });
+  await expect(region.getByText('3 cards could not be backed up.', { exact: true })).toBeVisible();
+  await expect(region.getByRole('listitem')).toHaveCount(3);
+});

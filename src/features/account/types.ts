@@ -16,8 +16,11 @@ export interface AccountBackend {
    * happens. Returns a function that stops listening.
    */
   listen(since: number, onItems: (items: RemoteItem[]) => void, onError: (error: unknown) => void): () => void;
-  /** Sends items. `stale` lists the ones the cloud refused because it already has a newer version ("entity~id"). Throws if the network is down. */
-  push(items: OutItem[]): Promise<{ stale: string[] }>;
+  /**
+   * Sends items. `stale` lists the ones the cloud refused because it already has a newer version ("entity~id"); `refused` the ones its rules do not
+   * accept at all. One refused item never stops the others from being sent. Throws only when something is wrong with sending itself (the network is down).
+   */
+  push(items: OutItem[]): Promise<{ stale: string[]; refused?: string[] }>;
   /** Removes everything in the person's private area (used when they delete their account). */
   removeAll(): Promise<void>;
 }
@@ -25,5 +28,6 @@ export interface AccountBackend {
 export type AccountStatus =
   | { state: 'off' } // not signed in
   | { state: 'syncing' }
-  | { state: 'synced'; at: number }
+  /** `refused`: things the account would not take (the rest was backed up), with the first ones named. */
+  | { state: 'synced'; at: number; refused?: { count: number; examples: { entity: Entity; name: string }[] } }
   | { state: 'waiting' }; // offline, or something went wrong: it will try again
