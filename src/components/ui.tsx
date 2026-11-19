@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type Ref, type TextareaHTMLAttributes } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Check, ChevronLeft, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
@@ -35,7 +35,7 @@ export function ButtonLink({ to, variant = 'primary', className = '', children }
 
 const iconButton = 'flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-surface disabled:opacity-40';
 
-export function IconButton({ label, children, className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { label: string }) {
+export function IconButton({ label, children, className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { label: string; ref?: Ref<HTMLButtonElement> }) {
   return (
     <button type="button" aria-label={label} {...props} className={`${iconButton} ${className}`}>
       {children}
@@ -59,10 +59,21 @@ export function BackButton({ to, label }: { to?: string; label?: string }) {
   );
 }
 
+/** When search last closed: the top bar that comes back right after it eases its title in, so leaving search is a hand-off, not a swap. */
+let searchClosedAt = -Infinity;
+
 /** Top bar with a hairline underneath, as in the wireframes. */
 export function AppBar({ title, titleSlot, back, actions, serif = true, titleId }: { title?: ReactNode; titleSlot?: ReactNode; back?: ReactNode; actions?: ReactNode; serif?: boolean; titleId?: string }) {
+  const bar = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    if (prefersReducedMotion() || performance.now() - searchClosedAt > 400) return;
+    // everything but the icons on the right (the back arrow and the title) eases in from the left, like the search field eased out to the right
+    const parts = [...(bar.current?.children ?? [])].slice(0, -1);
+    const animations = parts.map((el) => el.animate({ opacity: [0, 1], transform: ['translateX(-10px)', 'none'] }, { duration: 240, easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)' }));
+    return () => animations.forEach((a) => a.cancel());
+  }, []);
   return (
-    <header className="sticky top-0 z-20 box-content flex h-14 items-center gap-1 border-b border-border bg-background px-2 pt-[var(--safe-top)]">
+    <header ref={bar} className="sticky top-0 z-20 box-content flex h-14 items-center gap-1 border-b border-border bg-background px-2 pt-[var(--safe-top)]">
       {back}
       {titleSlot ?? (title ? <h1 id={titleId} className={`min-w-0 flex-1 truncate px-2 text-lg ${serif ? 'font-serif font-medium tracking-tight' : 'font-semibold'}`}>{title}</h1> : <div className="flex-1" />)}
       <div className="flex items-center">{actions}</div>
@@ -81,9 +92,37 @@ export function SearchBar({ label, placeholder, value, onChange, backLabel, onCl
 }) {
   const { t } = useI18n();
   const input = useRef<HTMLInputElement>(null);
+  const back = useRef<HTMLButtonElement>(null);
+  const ease = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+
+  // Coming in: the field grows out of the right-hand side (where the search icon was) while the back arrow slides in from the left.
+  useLayoutEffect(() => {
+    if (prefersReducedMotion()) return;
+    const animations = [
+      input.current?.animate([{ opacity: 0, clipPath: 'inset(0 0 0 70%)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)' }], { duration: 280, easing: ease }),
+      back.current?.animate([{ opacity: 0, transform: 'translateX(-10px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: ease }),
+    ];
+    return () => animations.forEach((a) => a?.cancel());
+  }, []);
+
+  // Going out: the field folds back toward the right (where the search icon is), staying solid and slowing down at the end (ease-out); then the
+  // screen's own top bar comes back and eases its title in (see AppBar), so there is no frame where one is simply swapped for the other.
+  const closing = useRef(false);
+  const leave = () => {
+    if (closing.current) return;
+    closing.current = true;
+    if (prefersReducedMotion() || !input.current) { onClose(); return; }
+    const out = [
+      input.current.animate([{ clipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(0 0 0 100%)' }], { duration: 200, easing: ease, fill: 'forwards' }),
+      back.current?.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateX(-10px)' }], { duration: 160, easing: ease, fill: 'forwards' }),
+    ];
+    const done = () => { searchClosedAt = performance.now(); onClose(); };
+    Promise.all(out.map((a) => a?.finished)).then(done, done);
+  };
+
   return (
     <header className="sticky top-0 z-20 box-content flex h-14 items-center gap-1 border-b border-border bg-background px-2 pt-[var(--safe-top)]">
-      <IconButton label={backLabel} onClick={onClose}><ChevronLeft size={22} aria-hidden /></IconButton>
+      <IconButton ref={back} label={backLabel} onClick={leave}><ChevronLeft size={22} aria-hidden /></IconButton>
       <input
         ref={input}
         aria-label={label}
@@ -92,12 +131,12 @@ export function SearchBar({ label, placeholder, value, onChange, backLabel, onCl
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+        onKeyDown={(e) => { if (e.key === 'Escape') leave(); }}
         // the browser's own clear button is hidden so ours looks the same everywhere
         className="min-w-0 flex-1 bg-transparent px-2 text-base placeholder:text-muted [&::-webkit-search-cancel-button]:appearance-none"
       />
       {value && (
-        <IconButton label={t('search.clear')} onClick={() => { onChange(''); input.current?.focus(); }}><X size={20} aria-hidden /></IconButton>
+        <IconButton label={t('search.clear')} className="pop-in" onClick={() => { onChange(''); input.current?.focus(); }}><X size={20} aria-hidden /></IconButton>
       )}
       <div className="flex items-center">{actions}</div>
     </header>
