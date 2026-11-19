@@ -545,7 +545,7 @@ export const en = {
   'import.contents': 'What will be added',
   'import.cards': { one: '{count} card', other: '{count} cards' },
   'import.progress': 'Import my progress too',
-  'import.deckName': 'Collection name',
+  'import.deckName': 'Collection',
   'import.colVerse': 'Verse',
   'import.colPassage': 'Passage',
   'import.colNote': 'Note',

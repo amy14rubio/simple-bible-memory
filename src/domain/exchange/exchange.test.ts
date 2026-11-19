@@ -153,4 +153,36 @@ describe('Anki plain text', () => {
     expect(m.skipped).toBe(2);
     expect(mapAnkiRows(rows, { verse: 1, passage: 0, source: null, skipFirstRow: false }).cards).toHaveLength(3);
   });
+
+  describe('rows with the verse and the passage the other way round', () => {
+    const map = { verse: 0, passage: 1, source: null, skipFirstRow: false } as const;
+    const good = [['1 Timoteo 4:12-13', 'Ninguno tenga en poco tu juventud'], ['Proverbios 4:23', 'Sobre toda cosa guardada, guarda tu corazón'], ['Salmos 56:3-4', 'En el día que temo, Yo en ti confío'], ['Juan 3:16', 'Porque de tal manera amó Dios al mundo']];
+
+    it('puts a swapped row right, and says how many', () => {
+      const rows = [...good, ['Porque no nos ha dado Dios el espíritu de temor, sino de poder, de amor y de dominio propio.', '2 Timoteo 1:7'], ['Mateo 5:3', 'Bienaventurados los pobres en espíritu']];
+      const m = mapAnkiRows(rows, map);
+      expect(m.swapped).toBe(1);
+      expect(m.cards).toContainEqual({ reference: '2 Timoteo 1:7', verseText: 'Porque no nos ha dado Dios el espíritu de temor, sino de poder, de amor y de dominio propio.', note: null });
+      expect(m.cards.every((c) => c.reference.length <= 40)).toBe(true); // no passage is left in the reference
+    });
+
+    it('leaves a file alone when it is the columns that look chosen the wrong way round for most rows', () => {
+      const flipped = good.map(([a, b]) => [b!, a!]); // every row has the text first
+      const m = mapAnkiRows(flipped, map);
+      expect(m.swapped).toBe(0);
+      expect(m.cards[0]).toEqual({ reference: 'Ninguno tenga en poco tu juventud', verseText: '1 Timoteo 4:12-13', note: null }); // exactly as chosen
+    });
+
+    it('does nothing to rows that are fine, or whose verse is not a reference at all', () => {
+      const m = mapAnkiRows([...good, ['A note to self', 'More text that is not a reference']], map);
+      expect(m.swapped).toBe(0);
+      expect(m.cards).toHaveLength(5);
+    });
+  });
+
+  it('removes invisible direction marks, so "Salmos 56:3-4" is recognised as a reference', () => {
+    const t = parseAnkiText('#separator:tab\n\u202d\u202dSalmos 56:3-4\tEn el d\u00eda que temo\n');
+    expect(t.rows[0]![0]).toBe('Salmos 56:3-4');
+    expect(mapAnkiRows([...t.rows, ['Juan 3:16', 'Porque de tal manera'], ['Mateo 5:3', 'Bienaventurados']], { verse: 0, passage: 1, source: null, skipFirstRow: false }).swapped).toBe(0);
+  });
 });

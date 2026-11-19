@@ -222,7 +222,7 @@ test.describe('import from Anki', () => {
   test('reads the file, guesses the columns, shows a preview, and creates a collection', async ({ page }) => {
     await page.goto('/#/import');
     await chooseFile(page, 'Memory verses.txt', ANKI, 'text/plain');
-    await expect(page.getByLabel('Collection name')).toHaveValue('Memory verses');
+    await expect(page.getByLabel('Collection', { exact: true })).toHaveValue('Memory verses');
     await expect(page.getByRole('button', { name: /^Verse:/ })).toContainText('Front');
     await expect(page.getByRole('button', { name: /^Passage:/ })).toContainText('Back');
     await expect(page.getByRole('button', { name: /^Note:/ })).toContainText('None');
@@ -248,13 +248,34 @@ test.describe('import from Anki', () => {
     await expect(page.getByLabel('Note', { exact: true })).toHaveValue('kids');
   });
 
+  test('a row with the verse and the passage the other way round is put right quietly (no note in the preview)', async ({ page }) => {
+    const rows = [
+      '#separator:tab', '#columns:Front\tBack',
+      '1 Timoteo 4:12\tNinguno tenga en poco tu juventud',
+      'Porque no nos ha dado Dios el espíritu de temor, sino de poder, de amor y de dominio propio.\t2 Timoteo 1:7', // swapped
+      'Salmos 56:3\tEn el día que temo, yo en ti confío',
+      'Mateo 5:3\tBienaventurados los pobres en espíritu',
+    ].join('\n');
+    await page.goto('/#/import');
+    await chooseFile(page, 'Versos.txt', rows, 'text/plain');
+    const preview = page.getByRole('region', { name: 'What will be added' });
+    await expect(preview).toContainText('4 cards ready to import.');
+    await expect(preview).not.toContainText('other way round'); // fixed quietly: no note about it
+    await page.getByRole('button', { name: 'Import', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Versos' })).toBeVisible();
+    await page.getByRole('button', { name: 'Collection actions' }).click();
+    await page.getByRole('dialog').getByRole('link', { name: 'View cards' }).click();
+    await expect(page.getByRole('link', { name: '2 Timoteo 1:7' })).toBeVisible(); // the reference is the verse, not the passage
+    await expect(page.getByRole('row')).toHaveCount(5); // header + 4 cards
+  });
+
   test('"First row is a header" skips the first row; the collection name can be changed', async ({ page }) => {
     await page.goto('/#/import');
     await chooseFile(page, 'plain.csv', 'Verse,Text\nJohn 3:16,For God so loved\nPsalm 23:1,The Lord is my shepherd\n', 'text/csv');
     await expect(page.getByRole('region', { name: 'What will be added' })).toContainText('3 cards ready'); // the header row counts as a card for now
     await page.getByRole('switch', { name: 'First row is a header' }).click();
     await expect(page.getByRole('region', { name: 'What will be added' })).toContainText('2 cards ready');
-    await page.getByLabel('Collection name').fill('My Anki collection');
+    await page.getByLabel('Collection', { exact: true }).fill('My Anki collection');
     await page.getByRole('button', { name: 'Import', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'My Anki collection' })).toBeVisible();
   });
