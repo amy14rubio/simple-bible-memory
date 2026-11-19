@@ -9,21 +9,21 @@ test('a screen opened from the bottom of Settings starts at the top; Back leaves
   await page.getByRole('button', { name: 'Close' }).first().click({ timeout: 1500 }).catch(() => {}); // the first-visit guide, if it is up
   const privacy = page.getByRole('link', { name: /Privacy/ });
   await privacy.scrollIntoViewIfNeeded();
-  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(100); // Settings is long: this is the bottom of it
+  expect(await page.evaluate(() => document.getElementById('app-scroll')!.scrollTop)).toBeGreaterThan(100); // Settings is long: this is the bottom of it
   await privacy.click();
   await expect(page).toHaveURL(/#\/settings\/privacy$/);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expect.poll(() => page.evaluate(() => document.getElementById('app-scroll')!.scrollTop)).toBe(0);
 });
 
 test('changes that keep the same screen do not scroll to the top', async ({ page }) => {
   await page.goto('/#/settings');
   await page.getByRole('button', { name: 'Close' }).first().click({ timeout: 1500 }).catch(() => {});
   await page.getByRole('link', { name: /Privacy/ }).scrollIntoViewIfNeeded();
-  const before = await page.evaluate(() => window.scrollY);
+  const before = await page.evaluate(() => document.getElementById('app-scroll')!.scrollTop);
   await page.getByRole('button', { name: 'Export data' }).click(); // a drawer: the screen behind it stays where it was
   await expect(page.getByRole('dialog')).toBeVisible();
-  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThanOrEqual(before - 2);
+  expect(await page.evaluate(() => document.getElementById('app-scroll')!.scrollTop)).toBeGreaterThanOrEqual(before - 2);
 });
 
 test('going Back returns to where the screen was scrolled; a screen opened new still starts at the top', async ({ page }) => {
@@ -31,12 +31,12 @@ test('going Back returns to where the screen was scrolled; a screen opened new s
   await page.getByRole('button', { name: 'Close' }).first().click({ timeout: 1500 }).catch(() => {});
   const privacy = page.getByRole('link', { name: /Privacy/ });
   await privacy.scrollIntoViewIfNeeded();
-  const before = await page.evaluate(() => window.scrollY);
+  const before = await page.evaluate(() => document.getElementById('app-scroll')!.scrollTop);
   expect(before).toBeGreaterThan(100);
   await privacy.click();
   await expect(page).toHaveURL(/#\/settings\/privacy$/);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0); // new: at the top
+  await expect.poll(() => page.evaluate(() => document.getElementById('app-scroll')!.scrollTop)).toBe(0); // new: at the top
   await page.getByRole('link', { name: 'Back', exact: true }).click();
   await expect(page).toHaveURL(/#\/settings$/);
-  await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 3000 }).toBeGreaterThan(before - 4); // back: where it was
+  await expect.poll(() => page.evaluate(() => document.getElementById('app-scroll')!.scrollTop), { timeout: 3000 }).toBeGreaterThan(before - 4); // back: where it was
 });

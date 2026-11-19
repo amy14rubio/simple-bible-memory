@@ -59,7 +59,7 @@ function DeckForm({ id, initialTitle, initialDescription, initialTranslation, no
         titleId="form-heading"
         title={id ? t('deckForm.rename') : t('deckForm.new')}
         back={<BackButton label={t('common.cancel')} />}
-        actions={<>{!id && <IconButton label={t('coach.deck.replay')} onClick={coach.start}><CircleHelp size={22} aria-hidden /></IconButton>}<IconButton type="submit" data-coach="save" label={t('common.save')}><Check size={22} aria-hidden /></IconButton></>}
+        actions={<>{!id && <IconButton label={t('coach.deck.replay')} onClick={coach.start}><CircleHelp size={22} aria-hidden /></IconButton>}<IconButton form="deck-form" type="submit" data-coach="save" label={t('common.save')}><Check size={22} aria-hidden /></IconButton></>}
       />
       <Page className="space-y-4 pt-2">
         {error && <ErrorMessage id="form-error" error={error} />}

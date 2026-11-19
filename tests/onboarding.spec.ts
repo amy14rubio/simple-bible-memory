@@ -212,7 +212,7 @@ test.describe('for screen readers and small screens', () => {
         const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']).analyze();
         expect(results.violations.map((v) => v.id), `card ${i + 1}`).toEqual([]);
         expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
-        expect(await page.evaluate(() => document.documentElement.scrollHeight - document.documentElement.clientHeight), `card ${i + 1} fits without scrolling`).toBeLessThanOrEqual(0); // the buttons stay on screen, even with a clip
+        expect(await page.evaluate(() => (() => { const a = document.getElementById('app-scroll')!; return a.scrollHeight - a.clientHeight; })()), `card ${i + 1} fits without scrolling`).toBeLessThanOrEqual(0); // the buttons stay on screen, even with a clip
         if (i < 5) await next(page).click();
       }
       await ctx.close();

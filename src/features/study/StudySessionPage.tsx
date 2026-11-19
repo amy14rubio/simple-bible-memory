@@ -217,7 +217,7 @@ function Session({ encouragement, verseLang, heading, deckId, mode, extraPractic
   );
 
   return (
-    <div className="relative flex min-h-dvh flex-col">
+    <div className="relative flex min-h-[100cqh] flex-col">
       {bannerEl}
       {/* Not drawn, but screen readers can still read how far through the session you are. */}
       <progress className="sr-only" max={queue.length} value={index} aria-label={t('study.progress')} />

@@ -150,7 +150,7 @@ test.describe('the box stays below the highlighted part when the page can scroll
         const tip = (await guide(page).boundingBox())!;
         expect(part.y, `${anchor}: highlighted part is on the screen`).toBeGreaterThanOrEqual(0);
         expect(part.y + part.height, `${anchor}: highlighted part is on the screen`).toBeLessThanOrEqual(height);
-        const roomBelow = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight - window.scrollY);
+        const roomBelow = await page.evaluate(() => (() => { const a = document.getElementById('app-scroll')!; return a.scrollHeight - a.clientHeight - a.scrollTop; })());
         if (roomBelow > 4) expect(tip.y, `${anchor}: box is below the part (not jumped above it)`).toBeGreaterThanOrEqual(part.y + part.height);
         if (i < anchors.length - 1) await guide(page).getByRole('button', { name: 'Next' }).click();
       }

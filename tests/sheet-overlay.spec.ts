@@ -13,8 +13,8 @@ for (const [name, width, height] of [['iPad portrait', 820, 1180], ['iPad landsc
     await page.addInitScript((css) => { document.addEventListener('DOMContentLoaded', () => { const s = document.createElement('style'); s.textContent = css; document.head.appendChild(s); }); }, IOS_RULE);
     await page.goto('/#/settings');
     await page.getByRole('switch', { name: 'Remind me to study' }).click();
-    await page.evaluate(() => window.scrollTo(0, 120)); // the page behind the sheet is scrolled down a little, as on an iPad
-    await expect.poll(() => page.evaluate(() => Math.round(scrollY))).toBeGreaterThan(0);
+    await page.evaluate(() => document.getElementById('app-scroll')!.scrollTo(0, 120)); // the page behind the sheet is scrolled down a little, as on an iPad
+    await expect.poll(() => page.evaluate(() => Math.round(document.getElementById('app-scroll')!.scrollTop))).toBeGreaterThan(0);
     await page.getByRole('button', { name: 'Add a reminder' }).click();
     const sheet = page.getByRole('dialog', { name: 'New reminder' });
     await expect(sheet).toBeVisible();
@@ -28,7 +28,7 @@ for (const [name, width, height] of [['iPad portrait', 820, 1180], ['iPad landsc
       await page.waitForTimeout(600); // the overlay has faded in
       const cover = await page.evaluate(() => {
         const o = document.querySelector('[data-slot="drawer-overlay"]')!.getBoundingClientRect();
-        return { top: o.top, bottom: o.bottom, left: o.left, right: o.right, vw: innerWidth, vh: innerHeight, scrolled: scrollY };
+        return { top: o.top, bottom: o.bottom, left: o.left, right: o.right, vw: innerWidth, vh: innerHeight, scrolled: document.getElementById('app-scroll')!.scrollTop };
       });
       expect(cover.scrolled, `${which}: the page really is scrolled`).toBeGreaterThan(0);
       expect(cover.top, `${which}: covers the top`).toBeLessThanOrEqual(0);

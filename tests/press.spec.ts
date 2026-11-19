@@ -91,20 +91,22 @@ test("the collection popup keeps its collection's name while it fades out (it ne
 test('while a popup is open the page behind it does not scroll, even when the list inside reaches its end', async ({ page }) => {
   await page.route(/fonts\.(googleapis|gstatic)\.com/, (route) => route.abort());
   await page.goto('/#/settings/font');
-  await page.evaluate(() => { document.body.style.minHeight = '4000px'; });
+  await expect(page.getByRole('button', { name: /^Font:/ })).toBeVisible();
+  await page.evaluate(() => { (document.getElementById('app-scroll')!.firstElementChild as HTMLElement).style.minHeight = '4000px'; });
   await page.getByRole('button', { name: /^Font:/ }).click();
   await expect(page.locator('dialog[open]')).toBeVisible();
   const list = page.locator('dialog[open] ul');
   await list.hover();
   for (let i = 0; i < 12; i++) await page.mouse.wheel(0, 600); // far past the end of the list
   await page.waitForTimeout(300);
-  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  expect(await page.evaluate(() => document.getElementById('app-scroll')!.scrollTop)).toBe(0);
   await page.mouse.move(5, 5); // over the dimmed background
   for (let i = 0; i < 4; i++) await page.mouse.wheel(0, 600);
   await page.waitForTimeout(300);
-  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  expect(await page.evaluate(() => document.getElementById('app-scroll')!.scrollTop)).toBe(0);
   await page.keyboard.press('Escape');
   await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await page.mouse.move(700, 400); // over the content (not the sidebar, and the top bar does not scroll)
   await page.mouse.wheel(0, 600); // and with the popup gone, the page scrolls again
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await expect.poll(() => page.evaluate(() => document.getElementById('app-scroll')!.scrollTop)).toBeGreaterThan(0);
 });
