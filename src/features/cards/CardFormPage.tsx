@@ -139,7 +139,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
         titleId="form-heading"
         title={card ? t('cardForm.edit') : t('cardForm.add')}
         back={<BackButton label={t('common.cancel')} />}
-        actions={<>{!card && <IconButton label={t('coach.add.replay')} onClick={coach.start}><CircleHelp size={22} aria-hidden /></IconButton>}<IconButton type="submit" data-coach="save" label={t('common.save')}><Check size={22} aria-hidden /></IconButton></>}
+        actions={<>{!card && <IconButton label={t('coach.add.replay')} onClick={coach.start}><CircleHelp size={22} aria-hidden /></IconButton>}<IconButton form="card-form" type="submit" data-coach="save" label={t('common.save')}><Check size={22} aria-hidden /></IconButton></>}
       />
       <Page className="space-y-5 pt-2">
         {error && <ErrorMessage id="form-error" error={error} />}

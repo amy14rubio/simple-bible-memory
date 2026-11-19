@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type Ref, type TextareaHTMLAttributes } from 'react';
+import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type Ref, type TextareaHTMLAttributes } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { Check, ChevronLeft, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider';
@@ -62,6 +63,17 @@ export function BackButton({ to, label }: { to?: string; label?: string }) {
 /** When search last closed: the top bar that comes back right after it eases its title in, so leaving search is a hand-off, not a swap. */
 let searchClosedAt = -Infinity;
 
+/**
+ * Where the top bar goes. The app shell has a fixed slot above the one scrolling area, and every screen's bar (AppBar or SearchBar) is drawn into it,
+ * so a screen keeps writing `<AppBar/>` followed by its content, but the bar never scrolls and the scrollbar only runs along the content.
+ * (Outside the shell there is no slot and the bar is drawn where it is written.)
+ */
+export const AppBarSlot = createContext<HTMLElement | null>(null);
+function InBarSlot({ children }: { children: ReactNode }) {
+  const slot = useContext(AppBarSlot);
+  return slot ? createPortal(children, slot) : <>{children}</>;
+}
+
 /** Top bar with a hairline underneath, as in the wireframes. */
 export function AppBar({ title, titleSlot, back, actions, serif = true, titleId }: { title?: ReactNode; titleSlot?: ReactNode; back?: ReactNode; actions?: ReactNode; serif?: boolean; titleId?: string }) {
   const bar = useRef<HTMLElement>(null);
@@ -73,11 +85,11 @@ export function AppBar({ title, titleSlot, back, actions, serif = true, titleId 
     return () => animations.forEach((a) => a.cancel());
   }, []);
   return (
-    <header ref={bar} className="sticky top-0 z-20 box-content flex h-14 items-center gap-1 border-b border-border bg-background px-2 pt-[var(--safe-top)]">
+    <InBarSlot><header ref={bar} className="sticky top-0 z-20 box-content flex h-14 items-center gap-1 border-b border-border bg-background px-2 pt-[var(--safe-top)]">
       {back}
       {titleSlot ?? (title ? <h1 id={titleId} className={`min-w-0 flex-1 truncate px-2 text-lg ${serif ? 'font-serif font-medium tracking-tight' : 'font-semibold'}`}>{title}</h1> : <div className="flex-1" />)}
       <div className="flex items-center">{actions}</div>
-    </header>
+    </header></InBarSlot>
   );
 }
 
@@ -121,7 +133,7 @@ export function SearchBar({ label, placeholder, value, onChange, backLabel, onCl
   };
 
   return (
-    <header className="sticky top-0 z-20 box-content flex h-14 items-center gap-1 border-b border-border bg-background px-2 pt-[var(--safe-top)]">
+    <InBarSlot><header className="sticky top-0 z-20 box-content flex h-14 items-center gap-1 border-b border-border bg-background px-2 pt-[var(--safe-top)]">
       <IconButton ref={back} label={backLabel} onClick={leave}><ChevronLeft size={22} aria-hidden /></IconButton>
       <input
         ref={input}
@@ -139,7 +151,7 @@ export function SearchBar({ label, placeholder, value, onChange, backLabel, onCl
         <IconButton label={t('search.clear')} className="pop-in" onClick={() => { onChange(''); input.current?.focus(); }}><X size={20} aria-hidden /></IconButton>
       )}
       <div className="flex items-center">{actions}</div>
-    </header>
+    </header></InBarSlot>
   );
 }
 
@@ -224,11 +236,9 @@ export function GrowingTextarea({ className = '', value, ...props }: TextareaHTM
     // (the screen "jumps back up" while you type a long verse). So remember where every scrolling ancestor was, and put it back.
     const saved: [Element, number][] = [];
     for (let p: Element | null = el.parentElement; p; p = p.parentElement) if (p.scrollTop > 0) saved.push([p, p.scrollTop]);
-    const [pageX, pageY] = [window.scrollX, window.scrollY];
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
     for (const [p, top] of saved) p.scrollTop = top;
-    if (window.scrollY !== pageY) window.scrollTo(pageX, pageY);
   }, [value]);
   return (
     <textarea

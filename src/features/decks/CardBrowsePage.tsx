@@ -62,7 +62,7 @@ export function CardBrowsePage() {
     } else if (wasSelecting.current) {
       setAnnounce(t('browse.selectionEnded'));
       // Back to the screen's heading (not the Select button, which would pop into view and shift the list under the pointer).
-      const heading = document.querySelector<HTMLElement>('main h1');
+      const heading = document.querySelector<HTMLElement>('h1');
       if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); }
     }
     wasSelecting.current = selecting;

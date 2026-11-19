@@ -96,7 +96,7 @@ for (const [width, height] of [[375, 667], [360, 640]] as const) {
     await expect(page.getByRole('heading', { name: 'Hands-free study' })).toBeVisible();
     const start = (await page.getByRole('button', { name: 'Start' }).boundingBox())!;
     expect(start.y + start.height).toBeLessThanOrEqual(height);
-    const extra = await page.evaluate(() => document.documentElement.scrollHeight - document.documentElement.clientHeight);
+    const extra = await page.evaluate(() => (() => { const a = document.getElementById('app-scroll')!; return a.scrollHeight - a.clientHeight; })());
     expect(extra).toBeLessThanOrEqual(0);
   });
 }

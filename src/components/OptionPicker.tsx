@@ -109,7 +109,7 @@ export function OptionPicker({ label, value, options, onChange, variant = 'title
           </div>
 
           {filters && (
-            <div role="group" aria-label={filtersLabel} className="flex shrink-0 gap-2 overflow-x-auto border-t border-border px-4 py-2.5">
+            <div role="group" aria-label={filtersLabel} className="flex shrink-0 gap-2 overflow-x-auto border-t border-border px-4 py-2.5 [scrollbar-width:none]">
               {[{ value: null, label: allLabel ?? '' }, ...filters].map((f) => (
                 <button
                   key={f.value ?? 'all'}

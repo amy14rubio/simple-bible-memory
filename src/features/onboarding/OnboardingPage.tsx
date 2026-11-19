@@ -63,7 +63,7 @@ export function OnboardingPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-sm flex-col px-8 pb-[calc(var(--safe-bottom)+1.5rem)] pt-[calc(var(--safe-top)+1rem)]">
+    <div className="mx-auto flex min-h-[100cqh] max-w-sm flex-col px-8 pb-[calc(var(--safe-bottom)+1.5rem)] pt-[calc(var(--safe-top)+1rem)]">
       <section
         aria-label={t('onboarding.title')}
         onPointerDown={down}

@@ -1,9 +1,10 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useLocation, useNavigationType } from 'react-router-dom';
 import { directionOf } from './motion';
+import { scroller } from './scroller';
 
 /**
- * Where each screen is scrolled to. A screen you go to starts at the top (the app is one page whose content is swapped, so the browser would
+ * Where each screen is scrolled to. A screen you go to starts at the top (the app is one scrolling area whose content is swapped, so it would
  * otherwise keep the old screen's position: Privacy opened from the bottom of Settings opened scrolled to the bottom). Going back puts the screen
  * you return to where you left it. Changes that keep the same screen (a popup, a search, a filter) are left alone.
  */
@@ -17,9 +18,10 @@ export function useScrollToTop() {
 
   // remember how far the screen on view is scrolled
   useEffect(() => {
-    const onScroll = () => { positions.current.set(current.current, window.scrollY); };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const area = scroller();
+    const onScroll = () => { positions.current.set(current.current, area.scrollTop); };
+    area.addEventListener('scroll', onScroll, { passive: true });
+    return () => area.removeEventListener('scroll', onScroll);
   }, []);
 
   useLayoutEffect(() => {
@@ -29,7 +31,7 @@ export function useScrollToTop() {
     current.current = pathname;
     cancel.current?.();
     const target = going === 'back' ? positions.current.get(pathname) ?? 0 : 0;
-    window.scrollTo(0, 0);
+    scroller().scrollTo(0, 0);
     if (target <= 0) return;
     // A screen fills in after its data loads, so it may not be tall enough yet: try again for a moment, until it is (or the person scrolls).
     let frames = 0;
@@ -39,8 +41,9 @@ export function useScrollToTop() {
     window.addEventListener('touchstart', stop, { passive: true });
     const step = () => {
       if (stopped) return;
-      const room = document.documentElement.scrollHeight - window.innerHeight;
-      if (room >= target - 1) { window.scrollTo(0, target); stop(); return; }
+      const area = scroller();
+      const room = area.scrollHeight - area.clientHeight;
+      if (room >= target - 1) { area.scrollTo(0, target); stop(); return; }
       if (++frames < 45) requestAnimationFrame(step); else stop();
     };
     requestAnimationFrame(step);
