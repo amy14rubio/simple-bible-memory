@@ -328,7 +328,7 @@ export const es: Dictionary = {
   'discover.open': 'Abrirla',
   'discover.preview': 'Vista previa',
   'credits.row': 'Reconocimientos',
-  'credits.thanks': '¡Aunque desarrollé esta app por mi cuenta, no lo hice sin ayuda! Gracias a todas las personas que ayudaron a probarla, y gracias a todos los proyectos y recursos que hicieron posible esta app.',
+  'credits.thanks': '¡Aunque desarrollé esta aplicación por mi cuenta, no lo hice sin ayuda! Gracias a todas las personas que ayudaron a probarla, y gracias a todos los proyectos y recursos que hicieron posible esta aplicación. ¡Por encima de todo, doy toda la gloria y las gracias a Dios!',
   'credits.section.texts': 'Textos bíblicos',
   'credits.section.wordstudy': 'Estudio de palabras',
   'credits.section.find': 'Buscar pasajes',
