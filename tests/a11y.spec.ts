@@ -4,7 +4,10 @@ import { addCard, setCardKinds, tapFirstBankWord, wordBankOpen, closeWithEscape 
 
 async function audit(page: Page, label: string) {
   // A screen fades in when it opens; check its real colours, not a frame halfway through.
-  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))));
+  const settle = () => page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))));
+  await settle();
+  await page.waitForTimeout(250); // (a list that loads its rows starts its own fade a moment after the screen's)
+  await settle();
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   const summary = results.violations.map((v) => `${v.id}: ${v.help} -> ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' | ')}`);
   expect(summary, `accessibility violations on ${label}`).toEqual([]);

@@ -18,7 +18,7 @@ const MODES: { mode: string; title: MessageKey; hint: MessageKey; Icon: LucideIc
   { mode: 'blanks', title: 'mode.blanks', hint: 'mode.blanksHint', Icon: TextCursorInput },
 ];
 
-const tile = 'flex w-full aspect-[5/4] flex-col justify-between rounded-lg border p-4';
+const tile = 'flex w-full flex-col justify-between gap-3 rounded-lg border p-4 @min-[19rem]:aspect-[5/4]'; // (the 5:4 shape only when two sit side by side)
 
 /** "Open deck view": how do you want to study? plus the deck's card counts. */
 export function DeckHomePage() {
@@ -95,13 +95,15 @@ export function DeckHomePage() {
 function StudyTiles({ id, practice = false }: { id: string; practice?: boolean }) {
   const { t } = useI18n();
   return (
-    <ul className="mx-auto grid max-w-md grid-cols-2 gap-3">
+    // two tiles across while there is room for both (measured in rem, so big text gets one column instead of words spilling out of their tile)
+    <div className="@container">
+    <ul className="mx-auto grid max-w-md grid-cols-1 gap-3 @min-[19rem]:grid-cols-2">
       {MODES.map(({ mode, title, hint, Icon }) => (
         <li key={mode} className="flex">
           <Link to={`/collections/${id}/study/${mode}${practice ? '?practice=1' : ''}`} className={`${tile} border-border bg-background hover:bg-surface`}>
             <Icon size={22} aria-hidden className="text-muted" />
             <span>
-              <span className="block font-serif text-lg">{t(title)}</span>
+              <span className="block break-words font-serif text-lg">{t(title)}</span>
               <span className="text-[0.8125rem] text-muted">{t(hint)}</span>
             </span>
           </Link>
@@ -110,9 +112,10 @@ function StudyTiles({ id, practice = false }: { id: string; practice?: boolean }
       <li className="flex">
         <Link to={`/collections/${id}/study/speak${practice ? '?practice=1' : ''}`} className={`${tile} border-border bg-background hover:bg-surface`}>
           <Mic size={22} aria-hidden className="text-muted" />
-          <span><span className="block font-serif text-lg">{t('mode.speak')}</span><span className="text-[0.8125rem] text-muted">{t('mode.speakHint')}</span></span>
+          <span><span className="block break-words font-serif text-lg">{t('mode.speak')}</span><span className="text-[0.8125rem] text-muted">{t('mode.speakHint')}</span></span>
         </Link>
       </li>
     </ul>
+    </div>
   );
 }

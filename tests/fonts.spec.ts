@@ -46,6 +46,13 @@ async function mockGoogleFonts(page: Page): Promise<Seen> {
 const trigger = (page: Page) => page.getByRole('button', { name: /^Font:/ });
 const popup = (page: Page) => page.getByRole('dialog', { name: 'Select a font' });
 const pickFont = async (page: Page, name: string) => { await trigger(page).click(); await popup(page).getByRole('button', { name, exact: true }).click(); };
+/** Double-taps the slider's thumb where it already sits (so the first tap changes nothing, and the page does not shift before the second). */
+const dblclickThumb = async (page: Page) => {
+  const slider = page.getByLabel('Text size');
+  const box = (await slider.boundingBox())!;
+  const [min, max, value] = await slider.evaluate((e) => [Number((e as HTMLInputElement).min), Number((e as HTMLInputElement).max), Number((e as HTMLInputElement).value)]);
+  await slider.dblclick({ position: { x: 8 + ((value - min) / (max - min)) * (box.width - 16), y: box.height / 2 } });
+};
 const useFont = (page: Page) => page.getByRole('button', { name: 'Use this font' });
 const vars = (page: Page) => page.evaluate(() => ({ serif: document.documentElement.style.getPropertyValue('--font-serif'), sans: document.documentElement.style.getPropertyValue('--font-sans') }));
 const cacheKeys = (page: Page) => page.evaluate(async () => (await (await caches.open('fonts-v1')).keys()).map((r) => new URL(r.url).pathname));
@@ -269,7 +276,7 @@ test.describe('font', () => {
     expect(await height()).toBe(rowBefore); // rows, buttons and spacing do not grow, only the text
 
     await page.goto('/#/settings/font');
-    await page.getByLabel('Text size').dblclick();
+    await dblclickThumb(page);
     await expect.poll(() => page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('16px');
   });
 
@@ -278,10 +285,10 @@ test.describe('font', () => {
     await page.goto('/#/settings/font');
     const rootSize = () => page.evaluate(() => getComputedStyle(document.documentElement).fontSize);
     const row = page.locator('div').filter({ has: page.getByLabel('Text size') }).last();
-    for (const target of [page.getByText('Text size', { exact: true }), page.getByLabel('Text size'), row.getByText(/^\d+%$/)]) {
+    for (const target of [page.getByText('Text size', { exact: true }), 'thumb', row.getByText(/^\d+%$/)] as const) {
       await page.getByLabel('Text size').fill('130');
       expect(await rootSize()).toBe('20.8px');
-      await target.dblclick();
+      if (target === 'thumb') await dblclickThumb(page); else await target.dblclick();
       await expect.poll(rootSize).toBe('16px');
       await expect(page.getByLabel('Text size')).toHaveValue('100');
     }
@@ -314,14 +321,16 @@ test.describe('font', () => {
     expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('16px');
   });
 
-  test('the size range is 85% to 150%', async ({ page }) => {
+  test('the size range is 85% to 200%', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 }); // phone size: the 100% size (16px) is the phone's; bigger screens scale up (see responsive.spec.ts)
     await page.goto('/#/settings/font');
     const slider = page.getByLabel('Text size');
     await expect(slider).toHaveAttribute('min', '85');
-    await expect(slider).toHaveAttribute('max', '150');
-    await slider.fill('150');
-    expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('24px');
+    await expect(slider).toHaveAttribute('max', '200');
+    await slider.fill('200');
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('32px');
+    await page.reload();
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('32px'); // remembered, from the first frame
   });
 
   test('the "i" explains how downloaded fonts work, the line at the bottom, and the live text size', async ({ page }) => {

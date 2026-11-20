@@ -171,16 +171,17 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
           <FormRow label={t('cardForm.verses')} coach="verse">{(fid) => <input id={fid} ref={referenceInput} lang={lang} aria-invalid={invalid === 'reference' || undefined} aria-describedby={invalid === 'reference' ? 'form-heading form-error' : 'form-heading'} className={rowInput} value={reference} onChange={(e) => { setReference(e.target.value); if (licensed) setVerseText(''); setInvalid(undefined); setError(undefined); }} placeholder={t('cardForm.versesPlaceholder')} autoFocus={!card} />}</FormRow>
           <FormRow
             label={t('cardForm.note')}
-            labelNode={<InfoLabel title={t('cardForm.note')} info={t('cardForm.noteInfo')} className="w-24 shrink-0 text-[0.9375rem] font-medium" />}
+            labelNode={<InfoLabel title={t('cardForm.note')} info={t('cardForm.noteInfo')} className="text-[0.9375rem] font-medium" />}
           >
             {(fid) => <input id={fid} aria-label={t('cardForm.note')} className={rowInput} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('common.optional')} />}
           </FormRow>
           {canAutofill && (
             <>
               <FormRow
+                inline
                 coach="autofill"
                 label={t('autofill.label')}
-                labelNode={<span id="autofill-label" className="w-24 shrink-0"><InfoLabel title={t('autofill.label')} info={t('autofill.info')} className="text-[0.9375rem] font-medium" /></span>}
+                labelNode={<span id="autofill-label"><InfoLabel title={t('autofill.label')} info={t('autofill.info')} className="text-[0.9375rem] font-medium" /></span>}
               >
                 {() => (
                   <div className="flex justify-end">

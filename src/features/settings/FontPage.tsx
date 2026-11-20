@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { LoaderCircle } from 'lucide-react';
 import { MAX_SCALE, MIN_SCALE, useFont } from '../../app/fonts';
-import { AppBar, BackButton, Button, ErrorMessage, Page, useErrorState } from '../../components/ui';
+import { AppBar, BackButton, Button, ErrorMessage, FormRow, Page, useErrorState } from '../../components/ui';
 import { OptionPicker, type PickerOption } from '../../components/OptionPicker';
 import { InfoLabel } from '../../components/InfoDrawer';
 import { useCatalogue } from '../../app/catalogue';
@@ -78,7 +78,8 @@ export function FontPage() {
   } as CSSProperties;
 
   const lastTap = useRef({ time: 0, x: 0, y: 0 });
-  const onSizeTap = (e: React.PointerEvent) => {
+  // (Counted when the tap is complete, as a click: resetting any earlier would shrink the page before the tap lands, and whatever moved up under the finger would take it.)
+  const onSizeTap = (e: React.MouseEvent) => {
     const last = lastTap.current;
     const quick = e.timeStamp - last.time < 350 && Math.hypot(e.clientX - last.x, e.clientY - last.y) < 40;
     lastTap.current = quick ? { time: 0, x: 0, y: 0 } : { time: e.timeStamp, x: e.clientX, y: e.clientY };
@@ -109,8 +110,8 @@ export function FontPage() {
         back={<BackButton to="/settings" label={t('common.back')} />}
       />
       <Page className="space-y-6 pt-2">
-        <div className="flex items-center gap-4 border-b border-border py-1.5">
-          <span id="font-row-label" className="w-24 shrink-0 text-[0.9375rem] font-medium">{t('settings.font')}</span>
+        <FormRow label={t('settings.font')} labelNode={<span id="font-row-label" className="block text-[0.9375rem] font-medium">{t('settings.font')}</span>}>
+          {() => (
           <OptionPicker
             variant="field"
             label={t('settings.font')}
@@ -125,7 +126,8 @@ export function FontPage() {
             filtersLabel={t('fonts.categories')}
             allLabel={t('fonts.cat.all')}
           />
-        </div>
+          )}
+        </FormRow>
 
         <section aria-label={t('customTheme.preview')} style={previewStyle} className="space-y-3 rounded-3xl bg-panel px-5 py-6">
           <p className="font-serif text-xl font-medium">{sampleReference}</p>
@@ -134,10 +136,13 @@ export function FontPage() {
 
         <div>
           {/* Two quick taps anywhere on this row (the label, the slider or the percentage) reset the size to 100%. */}
-          <div className="flex touch-manipulation items-center gap-4 py-1" onPointerUp={onSizeTap}>
-            <label htmlFor="text-size" className="w-24 shrink-0 text-[0.9375rem] font-medium">{t('fonts.size')}</label>
+          {/* One line at every size, as it always was: a layout that changed with the text size would move the slider under your finger while you drag it. The name and the percentage widen with the text. */}
+          <div className="flex touch-manipulation items-center gap-4 py-1" onClick={onSizeTap}>
+            {/* (A name, not a <label for>: a tap on a label is passed on to the slider as a second click, which would count as a double-tap) */}
+            <span id="text-size-label" className="w-[calc(var(--spacing)*24*var(--icon-scale,1))] shrink-0 text-[0.9375rem] font-medium">{t('fonts.size')}</span>
             <input
               id="text-size"
+              aria-labelledby="text-size-label"
               type="range"
               min={MIN_SCALE * 100}
               max={MAX_SCALE * 100}
@@ -147,7 +152,7 @@ export function FontPage() {
               aria-valuetext={new Intl.NumberFormat(language, { style: 'percent' }).format(scale)}
               className="min-w-0 flex-1 accent-[var(--foreground)]"
             />
-            <span aria-hidden className="w-12 text-right text-sm text-muted">{new Intl.NumberFormat(language, { style: 'percent' }).format(scale)}</span>
+            <span aria-hidden className="min-w-[calc(var(--spacing)*12*var(--icon-scale,1))] shrink-0 whitespace-nowrap text-right text-sm text-muted">{new Intl.NumberFormat(language, { style: 'percent' }).format(scale)}</span>
           </div>
         </div>
 
