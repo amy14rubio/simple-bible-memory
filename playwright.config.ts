@@ -3,6 +3,8 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: 'tests',
   globalSetup: './tests/global-setup.ts',
+  // Tests that add several cards reload the page each time (the database starts again), so on a busy machine (many workers at once) 30 s ran out in the middle of setting up.
+  timeout: 60_000,
   // A little patience: the first screens after a cold start are slower than a warm run.
   expect: { timeout: 10_000 },
   // A fake key turns the full-catalogue code path on; every Google request is answered by the tests, never sent.

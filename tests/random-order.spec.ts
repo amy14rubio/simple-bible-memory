@@ -12,6 +12,7 @@ const firstCard = async (page: import('@playwright/test').Page, deckId: string) 
 };
 
 test('a collection\'s list for the day is random, not just the order the verses were added in', async ({ page }) => {
+  test.setTimeout(240_000); // thirty cards, each one a page load and a reload: slow by nature, and slower still with many tests running at once
   // The same six verses in five decks: each deck has its own random list, so they do not all start with the first verse added.
   const firsts: string[] = [];
   for (let d = 0; d < 5; d++) {
