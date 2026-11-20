@@ -361,3 +361,25 @@ test('no accessibility violations: the form with autofill on, and the picker ope
   await closeWithEscape(page);
   void fake;
 });
+
+test.describe('Spanish: the language names in the picker', () => {
+  test.use({ locale: 'es-ES' });
+  test('every language starts with a capital letter, and English and Spanish come first as "Inglés" and "Español"', async ({ page }) => {
+    await page.goto('/#/collections/new');
+    await page.getByLabel('Título').fill('Versículos');
+    await page.getByRole('button', { name: 'Guardar' }).click();
+    await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
+    const id = page.url().match(/#\/collections\/([0-9a-f-]{36})$/)![1]!;
+    await page.goto(`/#/cards/new?collection=${id}`);
+    await page.getByRole('switch', { name: 'Autocompletar' }).click();
+    await page.getByRole('button', { name: /^Traducción: / }).click();
+    const dialog = page.getByRole('dialog', { name: 'Elige una traducción' });
+    await dialog.getByRole('tab', { name: 'Idioma' }).click();
+    const names = dialog.getByRole('tabpanel').getByRole('button');
+    await expect(names.first()).toHaveText('Inglés'); // with its accent, and a capital
+    await expect(names.nth(1)).toHaveText('Español');
+    const all = await names.allInnerTexts();
+    expect(all.length).toBeGreaterThan(10);
+    for (const name of all) expect(name.trim(), name).toMatch(/^[^\p{L}]*\p{Lu}/u); // none starts in lower case (the first LETTER: a name may begin with an apostrophe)
+  });
+});
