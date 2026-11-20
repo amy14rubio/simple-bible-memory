@@ -26,7 +26,7 @@
 // Text reveal: hide the headings until landing.js has split them into words (visitors who ask for less motion never get this). If the script is slow or missing, show the text after 2.5 seconds.
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { document.documentElement.classList.add('reveal-pending'); setTimeout(function () { document.documentElement.classList.remove('reveal-pending'); }, 2500); }
 </script>
-<link rel="stylesheet" href="/landing.css?v=202611170900">
+<link rel="stylesheet" href="/landing.css?v=202611202330">
 <link rel="stylesheet" href="/footer.css?v=202611161300">
 <link rel="alternate" hreflang="en" href="/">
 <link rel="alternate" hreflang="es" href="/es">
@@ -41,18 +41,52 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { document.document
 <main>
 <section class="hero">
 <div class="prism" aria-hidden="true"></div>
+<div class="hero-copy">
 <h1>Memoria Bíblica Simple</h1>
 <p class="lead">Guarda las Escrituras en tu corazón</p>
 <div class="stores">
 <a class="badge" href="https://play.google.com/store/apps/details?id=app.simplebiblememory"><img src="/badges/play-es.png?v=202611102119" alt="Disponible en Google Play" width="574" height="174"></a>
 <a class="badge" href="https://apps.apple.com/us/app/simple-bible-memory/id6827304569"><img src="/badges/appstore-es.svg" alt="Descargar en el App Store" width="120" height="40"></a>
 </div>
+</div>
+<div class="phone hero-phone" data-scrub><div class="phone-in"><img src="/landing/phone/simple.webp?v=1" alt="La app Memoria Bíblica Simple en un teléfono, con una lista de carpetas." width="760" height="1389" fetchpriority="high"></div></div>
+</section>
+
+<section id="spaced" class="spaced" aria-labelledby="spaced-title">
+<div class="spaced-wrap" data-scrub>
+<div class="phone spaced-phone"><div class="phone-in"><img src="/landing/phone/spaced.webp?v=1" alt="Una tarjeta de Jeremías 29:11 con cuatro botones, Otra vez, Difícil, Bien y Fácil, cada uno con el tiempo en que vuelve el versículo." width="760" height="1389" loading="lazy"></div></div>
+<div class="spaced-text">
+<h2 id="spaced-title">Repaso espaciado incluido</h2>
+<p class="spaced-lede">Califica qué tan bien recordaste un versículo y la app decide cuándo mostrártelo otra vez: pronto si te costó, semanas después cuando ya lo sabes. Tu tiempo se va en los versículos que lo necesitan.</p>
+<ul class="ratings" data-scrub aria-label="Cuándo vuelve el versículo con cada calificación"><li class="again" style="--t:0.08"><span class="when">1 min</span><span class="name">Otra vez</span></li><li class="hard" style="--t:0.15"><span class="when">6 min</span><span class="name">Difícil</span></li><li class="good" style="--t:0.22"><span class="when">10 min</span><span class="name">Bien</span></li><li class="easy" style="--t:0.29"><span class="when">8 d</span><span class="name">Fácil</span></li></ul>
+</div>
+</div>
+</section>
+
+<section id="simple" class="simple" aria-labelledby="simple-title">
+<h2 id="simple-title">Hecha para no estorbar</h2>
+<p class="sub">Toca una tarjeta para voltearla.</p>
+<ul class="flips">
+<li><button class="flip" type="button" aria-pressed="false"><span class="flip-in"><span class="face front"><span class="perk-icon"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg></span><span class="flip-title">Cuatro formas de estudiar</span><span class="turn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></span></span><span class="face back"><span class="flip-title">Cuatro formas de estudiar</span><span class="flip-lines"><span class="flip-line">Tarjetas</span><span class="flip-line">Escríbelo de memoria</span><span class="flip-line">Completa los espacios, cuatro niveles</span><span class="flip-line">Sin manos: escucha y habla</span></span></span></span></button></li>
+<li><button class="flip" type="button" aria-pressed="false"><span class="flip-in"><span class="face front"><span class="perk-icon"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20h.01"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/><path d="M5 12.859a10 10 0 0 1 5.17-2.69"/><path d="M19 12.859a10 10 0 0 0-2.007-1.523"/><path d="M2 8.82a15 15 0 0 1 4.177-2.643"/><path d="M22 8.82a15 15 0 0 0-11.288-3.764"/><path d="m2 2 20 20"/></svg></span><span class="flip-title">Sin conexión ni cuenta</span><span class="turn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></span></span><span class="face back"><span class="flip-title">Sin conexión ni cuenta</span><span class="flip-lines"><span class="flip-line">Funciona sin señal con tus versículos guardados</span><span class="flip-line">No necesitas cuenta</span><span class="flip-line">Copia de seguridad opcional con Google</span></span></span></span></button></li>
+<li><button class="flip" type="button" aria-pressed="false"><span class="flip-in"><span class="face front"><span class="perk-icon"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg></span><span class="flip-title">Comparte y descubre</span><span class="turn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></span></span><span class="face back"><span class="flip-title">Comparte y descubre</span><span class="flip-lines"><span class="flip-line">Comparte una carpeta con un enlace</span><span class="flip-line">Explora e importa lo que otros publicaron</span><span class="flip-line">Publica sin mostrar tu nombre ni correo</span></span></span></span></button></li>
+<li><button class="flip" type="button" aria-pressed="false"><span class="flip-in"><span class="face front"><span class="perk-icon"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg></span><span class="flip-title">Estudio interlineal</span><span class="turn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></span></span><span class="face back"><span class="flip-title">Estudio interlineal</span><span class="flip-lines"><span class="flip-line">Toca cualquier palabra de un versículo</span><span class="flip-line">Mira el hebreo o el griego detrás</span></span></span></span></button></li>
+<li><button class="flip" type="button" aria-pressed="false"><span class="flip-in"><span class="face front"><span class="perk-icon"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg></span><span class="flip-title">Agrega un versículo en segundos</span><span class="turn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></span></span><span class="face back"><span class="flip-title">Agrega un versículo en segundos</span><span class="flip-lines"><span class="flip-line">Escribe la referencia y el pasaje se completa</span><span class="flip-line">Agrega un versículo o un pasaje entero</span></span></span></span></button></li>
+<li><button class="flip" type="button" aria-pressed="false"><span class="flip-in"><span class="face front"><span class="perk-icon"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg></span><span class="flip-title">Hazla tuya</span><span class="turn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></span></span><span class="face back"><span class="flip-title">Hazla tuya</span><span class="flip-lines"><span class="flip-line">Elige los colores de tu tema personalizado</span><span class="flip-line">Elige tu propio tipo de letra</span><span class="flip-line">Tus propios recordatorios</span><span class="flip-line">Español o inglés</span></span></span></span></button></li>
+</ul>
+</section>
+
+<section id="try" class="try" aria-labelledby="try-title" hidden>
+<h2 id="try-title">Pruébalo aquí mismo</h2>
+<p class="sub">Elige una forma de estudiar y pruébala.</p>
+<div id="demo" class="demo" role="group" aria-label="Demostración" hidden></div>
+<noscript><p class="note">La demostración necesita JavaScript. También puedes abrir la app y probarla allí.</p></noscript>
 </section>
 
 <section id="hello" class="hello" aria-labelledby="hello-title">
 <div class="hello-wrap">
 <div class="hello-text">
-<h2 id="hello-title">¡Hola!</h2>
+<h2 id="hello-title">Un mensaje de la desarrolladora</h2>
 <div class="letter">
 <p>La idea de esta app nació de las incontables horas que pasé memorizando versículos bíblicos en Anki, deseando que existiera algo diseñado específicamente para memorizar la Escritura.</p>
 <p>Cada función que encontrarás aquí nació de algo que yo quería tener durante mi propio camino de memorización bíblica. Quise crear algo que hiciera el proceso un poco más agradable y accesible.</p>
@@ -69,13 +103,6 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { document.document
 <p class="credit">Capturas de pantalla de mi teléfono. Texto bíblico: Amplified® Bible, © 2015 The Lockman Foundation; Reina-Valera 1960, © Sociedades Bíblicas en América Latina.</p>
 </div>
 </div>
-</section>
-
-<section id="try" class="try" aria-labelledby="try-title">
-<h2 id="try-title">Pruébalo aquí mismo</h2>
-<p class="sub">Elige una forma de estudiar y pruébala.</p>
-<div id="demo" class="demo" role="group" aria-label="Demostración" hidden></div>
-<noscript><p class="note">La demostración necesita JavaScript. También puedes abrir la app y probarla allí.</p></noscript>
 </section>
 
 <section id="free" class="free" aria-labelledby="free-title">
@@ -104,6 +131,6 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { document.document
 </ul>
 </details>
 </footer>
-<script src="/landing.js?v=202611170800" defer></script>
+<script src="/landing.js?v=202611202000" defer></script>
 </body>
 </html>

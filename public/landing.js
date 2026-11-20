@@ -26,6 +26,9 @@
   var groups = [
     { sel: ['.top .brand', '.top nav .button'], base: 0 }, // the top bar and the hero buttons play on load, after the title
     { sel: ['.hero .stores .badge'], base: 420, step: 70 },
+    { sel: ['.hero .phone'], base: 250 },
+    { sel: ['.spaced-phone'], base: 0 },
+    { sel: ['.flips li'], base: 0, step: 90 },
     { sel: ['#demo'], base: 0 },
     { sel: ['.hello .letter p'], base: 0 }, // each paragraph of the note comes in a moment after the one before (they all start when the letter comes into view)
     { sel: ['.notes li'], base: 0 }, // the pictures with their notes come in one after another
@@ -323,4 +326,47 @@
 
   root.hidden = false;
   render();
+})();
+
+(function () {
+  // Motion on the phones: how far each one has travelled through the screen (--p, 0 to 1) moves it a little, and on a computer the hero phone leans toward the pointer.
+  // Nothing runs for visitors who ask for less motion (the page then shows the phones still).
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var spots = Array.prototype.slice.call(document.querySelectorAll('.hero-phone, .spaced-wrap, .ratings'));
+  if (!spots.length) return;
+  var queued = false;
+  var update = function () {
+    queued = false;
+    var vh = window.innerHeight;
+    spots.forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.bottom < -200 || r.top > vh + 200) return;
+      var p = (vh - r.top) / (vh + r.height);
+      el.style.setProperty('--p', Math.min(1, Math.max(0, p)).toFixed(3));
+    });
+  };
+  var ask = function () { if (!queued) { queued = true; requestAnimationFrame(update); } };
+  window.addEventListener('scroll', ask, { passive: true });
+  window.addEventListener('resize', ask);
+  update();
+  // On a computer, a phone leans a little toward the pointer while it is over the part of the page the phone belongs to.
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    [['.hero', '.hero-phone'], ['.spaced-wrap', '.spaced-phone']].forEach(function (pair) {
+      var area = document.querySelector(pair[0]), phone = document.querySelector(pair[1]);
+      if (!area || !phone) return;
+      area.addEventListener('pointermove', function (e) {
+        var r = area.getBoundingClientRect();
+        phone.style.setProperty('--mx', (((e.clientX - r.left) / r.width) * 2 - 1).toFixed(3));
+        phone.style.setProperty('--my', (((e.clientY - r.top) / r.height) * 2 - 1).toFixed(3));
+      });
+      area.addEventListener('pointerleave', function () { phone.style.setProperty('--mx', 0); phone.style.setProperty('--my', 0); });
+    });
+  }
+})();
+
+(function () {
+  // The feature cards: a tap (or Enter or Space) turns a card over and keeps it turned until you tap again. With a mouse, hovering turns it too (that part is CSS).
+  Array.prototype.forEach.call(document.querySelectorAll('.flip'), function (b) {
+    b.addEventListener('click', function () { b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); });
+  });
 })();
