@@ -339,7 +339,7 @@ export const en = {
   'discover.open': 'Open it',
   'discover.preview': 'Preview',
   'credits.row': 'Made Possible By',
-  'credits.thanks': 'I might have made this app as a solo developer, but I didn’t do it alone! Thank you to everyone who helped test the app, and thank you to every project and resource that helped make this app possible!',
+  'credits.thanks': 'I might have made this app as a solo developer, but I didn’t do it alone! Thank you to everyone who helped test the app, and thank you to every project and resource that helped make this app possible! Above all, I give all thanks and glory to God!',
   'credits.section.texts': 'Bible texts',
   'credits.section.wordstudy': 'Word study',
   'credits.section.find': 'Finding passages',
