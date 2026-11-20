@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canSplit, splitPassage } from './split';
+import { canSplit, namedVerses, splitPassage, verseReference } from './split';
 import { parseReference, withPassage } from './reference';
 
 // Example text only: short, clearly-labeled stand-ins typed for the tests, not a real translation.
@@ -139,5 +139,22 @@ describe('splitPassage: problems are explained', () => {
   it('rejects a verse that has a number but no text', () => {
     const r = splitPassage('Psalm 130:1-2', '1 2 Example two second.');
     expect(!r.ok && r.message).toMatch(/Verse 1 has no text/);
+  });
+});
+
+describe('the pieces Autofill uses to split', () => {
+  it('writes the reference of one verse in the same style as the original, in either language', () => {
+    expect(verseReference('Psalm 130:1-3', 2)).toBe('Psalm 130:2');
+    expect(verseReference('Psalm 130', 5)).toBe('Psalm 130:5');
+    expect(verseReference('Salmos 130', 1)).toBe('Salmos 130:1');
+    expect(verseReference('1 Juan 1:1-3', 3)).toBe('1 Juan 1:3');
+    expect(verseReference('Jude 3-5', 4)).toBe('Jude 4'); // a one-chapter book written without a chapter number
+    expect(verseReference('John 3:16', 16)).toBe('John 3:16');
+    expect(verseReference('not a reference', 1)).toBeNull();
+  });
+  it('lists the verses a reference names, or says nothing for a whole chapter', () => {
+    expect(namedVerses('Psalm 130:1-3')).toEqual([1, 2, 3]);
+    expect(namedVerses('Romans 8:28,30')).toEqual([28, 30]);
+    expect(namedVerses('Psalm 130')).toBeNull();
   });
 });

@@ -275,6 +275,12 @@ export const es: Dictionary = {
   'split.bothWays':
     'Cada versículo se estudia en ambos sentidos, así que tendrás {count} tarjetas de estudio.',
   'split.leftOut': 'Se omitió (texto antes del versículo {verse}): "{text}"',
+  'split.lookingUp': 'Buscando los versículos…',
+  'split.lookingUpCount': 'Buscando los versículos… {done} de {total}',
+  'split.licensedNote': 'El texto de cada versículo se completa en este dispositivo, desde la editorial.',
+  'split.error.lookup-offline': 'Sin conexión, no podemos buscar los versículos. Inténtalo cuando vuelvas a tener conexión.',
+  'split.error.lookup-busy': 'Son muchas búsquedas a la vez. Espera un momento e inténtalo de nuevo.',
+  'split.error.lookup-failed': 'No pudimos buscar esos versículos ahora mismo. Inténtalo en un momento.',
   'split.listLabel': 'Tarjetas que se crearán',
   'split.create': { one: 'Crear {count} tarjeta', other: 'Crear {count} tarjetas' },
   'split.error.not-splittable':

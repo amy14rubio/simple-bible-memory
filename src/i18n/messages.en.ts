@@ -281,6 +281,12 @@ export const en = {
   },
   'split.bothWays': 'Each verse is studied both ways, so you will have {count} study cards.',
   'split.leftOut': 'Left out (text before verse {verse}): "{text}"',
+  'split.lookingUp': 'Looking up the verses…',
+  'split.lookingUpCount': 'Looking up the verses… {done} of {total}',
+  'split.licensedNote': 'The text of each verse fills in on this device, from the publisher.',
+  'split.error.lookup-offline': "You're offline, so we can't look up the verses. Try again when you're back online.",
+  'split.error.lookup-busy': 'That is a lot of lookups at once. Wait a moment and try again.',
+  'split.error.lookup-failed': "We couldn't look up those verses right now. Try again in a moment.",
   'split.listLabel': 'Cards to create',
   'split.create': { one: 'Create {count} card', other: 'Create {count} cards' },
   'split.error.not-splittable':

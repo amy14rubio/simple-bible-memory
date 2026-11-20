@@ -362,6 +362,127 @@ test('no accessibility violations: the form with autofill on, and the picker ope
   void fake;
 });
 
+test.describe('split into separate verses, with Autofill on', () => {
+  const split = (page: Page) => page.getByRole('button', { name: 'Split into separate verses' });
+  const dialog = (page: Page) => page.getByRole('dialog', { name: 'Split into separate verses' });
+
+  test('a range is split by asking the translation for each verse, so no verse numbers are needed', async ({ page }) => {
+    const id = await createDeck(page, 'Psalms');
+    await newCardForm(page, id);
+    await autofillSwitch(page).click();
+    await page.getByLabel('Verse(s)').fill('Psalm 130:1-3');
+    await expect(page.getByLabel('Passage', { exact: true })).toHaveValue('Fake WEB text of Psalm 130:1-3.'); // filled in as one block, with no verse numbers
+    await expect(split(page)).toBeVisible(); // ...and the button is there anyway
+
+    await split(page).click();
+    const d = dialog(page);
+    const items = d.getByRole('list', { name: 'Cards to create' }).getByRole('listitem');
+    await expect(items).toHaveCount(3);
+    for (const n of [1, 2, 3]) await expect(items.nth(n - 1)).toContainText(`Psalm 130:${n}Fake WEB text of Psalm 130:${n}.`);
+    await d.getByRole('button', { name: 'Create 3 cards' }).click();
+    await expect(page.getByText('3 verses added')).toBeVisible();
+
+    await page.goto(`/#/collections/${id}/cards`);
+    await expect(page.getByRole('link', { name: 'Psalm 130:2' })).toBeVisible();
+    await expect(page.getByRole('row')).toHaveCount(4); // header + 3 cards, each its own verse
+  });
+
+  test('a whole chapter is split into as many verses as the chapter has', async ({ page }) => {
+    const id = await createDeck(page, 'Psalms');
+    await newCardForm(page, id);
+    await page.evaluate(() => { (window as unknown as { __fakeYouVersion: { chapterVerses: number } }).__fakeYouVersion.chapterVerses = 4; });
+    await autofillSwitch(page).click();
+    await page.getByLabel('Verse(s)').fill('Psalm 130');
+    await split(page).click();
+    await expect(dialog(page).getByRole('list', { name: 'Cards to create' }).getByRole('listitem')).toHaveCount(4);
+    await expect(dialog(page).getByRole('button', { name: 'Create 4 cards' })).toBeVisible();
+  });
+
+  test('the button is only there for a chapter or several verses', async ({ page }) => {
+    const id = await createDeck(page, 'Psalms');
+    await newCardForm(page, id);
+    await autofillSwitch(page).click();
+    await page.getByLabel('Verse(s)').fill('John 3:16');
+    await expect(page.getByLabel('Passage', { exact: true })).toHaveValue('Fake WEB text of John 3:16.');
+    await expect(split(page)).toHaveCount(0); // a single verse: nothing to split
+    await page.getByLabel('Verse(s)').fill('John 3:16-18');
+    await expect(split(page)).toBeVisible();
+  });
+
+  test('a licensed translation is split without fetching any text: the cards are saved with the reference and the translation only', async ({ page }) => {
+    const id = await createDeck(page, 'Psalms');
+    await newCardForm(page, id);
+    await autofillSwitch(page).click();
+    await chooseTranslation(page, 'NASB 2020');
+    await page.getByLabel('Verse(s)').fill('Psalm 130:1-3');
+    await expect(page.getByLabel('Passage', { exact: true })).toHaveValue('Fake NASB2020 text of Psalm 130:1-3.');
+    const before = (await fake(page)).asked.length;
+    await split(page).click();
+    const d = dialog(page);
+    await expect(d.getByRole('list', { name: 'Cards to create' }).getByRole('listitem')).toHaveCount(3);
+    await expect(d.getByText('The text of each verse fills in on this device, from the publisher.')).toBeVisible();
+    expect((await fake(page)).asked.length).toBe(before); // nothing was asked for: the publisher's text is not kept
+    await d.getByRole('button', { name: 'Create 3 cards' }).click();
+    await expect(page.getByText('3 verses added')).toBeVisible();
+  });
+
+  test('when the lookup fails it says so, and nothing is created', async ({ page }) => {
+    const id = await createDeck(page, 'Psalms');
+    await newCardForm(page, id);
+    await autofillSwitch(page).click();
+    await page.getByLabel('Verse(s)').fill('Psalm 130:1-3');
+    await expect(page.getByLabel('Passage', { exact: true })).toHaveValue('Fake WEB text of Psalm 130:1-3.');
+    await failNext(page, 'offline');
+    await split(page).click();
+    await expect(dialog(page)).toContainText("You're offline, so we can't look up the verses.");
+    await expect(dialog(page).getByRole('button', { name: /^Create/ })).toHaveCount(0);
+    await closeWithEscape(page);
+    await page.goto(`/#/collections/${id}/cards`);
+    await expect(page.getByRole('row')).toHaveCount(0); // no cards were made
+  });
+});
+
+test.describe('split into separate verses, with Autofill on, in Spanish', () => {
+  test.use({ locale: 'es-ES' });
+  const deckEs = async (page: Page) => {
+    await page.goto('/#/collections/new');
+    await page.getByLabel('Título').fill('Salmos');
+    await page.getByRole('button', { name: 'Guardar' }).click();
+    await page.waitForURL(/#\/collections\/[0-9a-f-]{36}$/);
+    return page.url().match(/#\/collections\/([0-9a-f-]{36})$/)![1]!;
+  };
+
+  test('"Separar en versículos" works on "Salmos 130:1-3", with the preview, the cards and the messages in Spanish', async ({ page }) => {
+    const id = await deckEs(page);
+    await page.goto(`/#/cards/new?collection=${id}`);
+    await expect(page.getByLabel('Versículo(s)')).toBeVisible();
+    await page.getByRole('switch', { name: 'Autocompletar' }).click();
+    await page.getByLabel('Versículo(s)').fill('Salmos 130:1-3');
+    await expect(page.getByLabel('Pasaje', { exact: true })).toHaveValue(/Fake \w+ text of Salmos 130:1-3\./);
+    await page.getByRole('button', { name: 'Separar en versículos' }).click();
+    const d = page.getByRole('dialog', { name: 'Separar en versículos' });
+    const items = d.getByRole('list').getByRole('listitem');
+    await expect(items).toHaveCount(3);
+    await expect(items.nth(1)).toContainText('Salmos 130:2');
+    await d.getByRole('button', { name: 'Crear 3 tarjetas' }).click();
+    await expect(page.getByText(/3 versículos/)).toBeVisible();
+    await page.goto(`/#/collections/${id}/cards`);
+    await expect(page.getByRole('link', { name: 'Salmos 130:3' })).toBeVisible();
+  });
+
+  test('a failed lookup is explained in Spanish', async ({ page }) => {
+    const id = await deckEs(page);
+    await page.goto(`/#/cards/new?collection=${id}`);
+    await expect(page.getByLabel('Versículo(s)')).toBeVisible();
+    await page.getByRole('switch', { name: 'Autocompletar' }).click();
+    await page.getByLabel('Versículo(s)').fill('Salmos 130:1-3');
+    await expect(page.getByLabel('Pasaje', { exact: true })).toHaveValue(/Fake \w+ text of Salmos 130:1-3\./);
+    await failNext(page, 'offline');
+    await page.getByRole('button', { name: 'Separar en versículos' }).click();
+    await expect(page.getByRole('dialog', { name: 'Separar en versículos' })).toContainText('Sin conexión, no podemos buscar los versículos.');
+  });
+});
+
 test.describe('Spanish: the language names in the picker', () => {
   test.use({ locale: 'es-ES' });
   test('every language starts with a capital letter, and English and Spanish come first as "Inglés" and "Español"', async ({ page }) => {
