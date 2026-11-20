@@ -317,6 +317,8 @@ test.describe('in Spanish, and accessibility', () => {
       const ctx = await browser.newContext({ colorScheme: scheme });
       const page = await ctx.newPage();
       const audit = async () => {
+        // (the colours are measured once everything has finished appearing: halfway through a fade the text is see-through and reads lighter than it is)
+        await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))));
         const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
         expect(r.violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
       };

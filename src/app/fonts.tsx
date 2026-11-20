@@ -36,7 +36,8 @@ export function FontProvider({ settings, children }: { settings: SettingsReposit
   const [stored, setStored] = useState<StoredFont | null>(null);
   const storedRef = useRef(stored);
   storedRef.current = stored;
-  const [scale, setScaleState] = useState(1);
+  // Starts from the size remembered on this device (the same one index.html applied before the app drew), so the text does not drop to 100% until the database has answered.
+  const [scale, setScaleState] = useState(() => { try { const cached = parseFloat(localStorage.getItem(SCALE_CACHE) ?? ''); return Number.isFinite(cached) ? clampScale(cached) : 1; } catch { return 1; } });
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
