@@ -8,7 +8,7 @@ export interface SplitVerse {
 }
 
 /** Why a passage could not be split. The screen turns the code (and `verse`, if any) into text in the user's language. */
-export type SplitErrorCode = 'not-splittable' | 'single-verse' | 'no-markers' | 'missing-verse' | 'empty-verse' | 'cannot-split';
+export type SplitErrorCode = 'not-splittable' | 'single-verse' | 'no-markers' | 'missing-verse' | 'empty-verse' | 'cannot-split' | 'lookup-offline' | 'lookup-busy' | 'lookup-failed';
 
 export type SplitResult =
   | { ok: true; verses: SplitVerse[]; ignored: string }
@@ -25,6 +25,18 @@ export function canSplit(reference: string): boolean {
   const span = parseReference(reference)?.span;
   return !!span && (span.verses === null || span.verses.length > 1);
 }
+
+/** The reference of one verse of a chapter or range, written in the same style as the original ("Salmos 130:1"). Null if the reference cannot be split. */
+export function verseReference(reference: string, verse: number): string | null {
+  const parsed = parseReference(reference);
+  if (!parsed?.span) return null;
+  const named = parsed.span.verses;
+  const singleChapterBook = named !== null && !parsed.passage.includes(':'); // Jude 3-5 style: a one-chapter book written without a chapter number
+  return withPassage(reference, singleChapterBook ? String(verse) : `${parsed.span.chapter}:${verse}`);
+}
+
+/** The verses a reference names ("Psalm 130:1-3" is 1, 2, 3), or null for a whole chapter (the translation says how many verses that has). */
+export const namedVerses = (reference: string): number[] | null => parseReference(reference)?.span?.verses ?? null;
 
 /** Matches verse number `n` standing on its own: "2 Lord", "[2] Lord", "(2)Lord", "²Lord". Never part of 130 or 2:1. */
 function markerRegex(n: number) {
@@ -50,12 +62,10 @@ const tidy = (t: string) => t.replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').t
 export function splitPassage(reference: string, passage: string): SplitResult {
   const parsed = parseReference(reference);
   if (!parsed?.span) return { ok: false, code: 'not-splittable', message: 'Splitting works for one chapter or several verses of one chapter, for example Psalm 130 or Psalm 130:1-2.' };
-  const { chapter, verses: named } = parsed.span;
+  const { verses: named } = parsed.span;
   if (named !== null && named.length < 2) return { ok: false, code: 'single-verse', message: 'This is a single verse, so there is nothing to split.' };
 
   const text = [...passage.replace(/\r/g, '')].map((c) => (SUPERSCRIPT.includes(c) ? String(SUPERSCRIPT.indexOf(c)) : c)).join('');
-  // Jude 3-5 style: a one-chapter book written without a chapter number.
-  const singleChapterBook = named !== null && !parsed.passage.includes(':');
 
   // Where does each verse start (marker) and where does its text begin?
   const found: { verse: number; markerStart: number; textStart: number }[] = [];
@@ -80,7 +90,7 @@ export function splitPassage(reference: string, passage: string): SplitResult {
     const end = i + 1 < found.length ? found[i + 1]!.markerStart : text.length;
     const body = tidy(text.slice(f.textStart, end));
     if (!body) return { ok: false, code: 'empty-verse', verse: f.verse, message: `Verse ${f.verse} has no text after its number.` };
-    const ref = withPassage(reference, singleChapterBook ? String(f.verse) : `${chapter}:${f.verse}`);
+    const ref = verseReference(reference, f.verse);
     if (!ref) return { ok: false, code: 'cannot-split', message: 'This reference could not be split.' };
     out.push({ verse: f.verse, reference: ref, text: body });
   }

@@ -24,6 +24,7 @@ import { useAutofill } from './useAutofill';
 import { isSwitchedOff } from '../../domain/bible/switch';
 import { useLicensedSwitch } from '../bible/remoteSwitch';
 import { SplitDialog } from './SplitDialog';
+import { lookUpSplit } from './splitLookup';
 
 /** "Add card" (/cards/new?collection=ID; the older ?deck=ID still works) and "Edit card" (/cards/:id/edit). */
 export function CardFormPage() {
@@ -62,6 +63,8 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
   const [confirming, setConfirming] = useState(false);
   const [split, setSplit] = useState<SplitResult | null>(null);
   const [splitBusy, setSplitBusy] = useState(false);
+  const [splitLookup, setSplitLookup] = useState<{ done: number; total: number } | null>(null); // the verses are being asked for (Autofill on)
+  const lookupRun = useRef(0); // which lookup is the current one: closing the preview ends it
   const [splitError, setSplitError] = useErrorState();
   const referenceInput = useRef<HTMLInputElement>(null);
   const coach = useAddCoach(!card);
@@ -112,12 +115,26 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
     }
   };
 
+  /** Opens the preview: cut from the pasted text (Autofill off), or, with Autofill on, ask the translation for each verse. */
+  const startSplit = async () => {
+    setSplitError(undefined);
+    if (!autofill || !source) { setSplit(splitPassage(reference, verseText)); return; }
+    const run = ++lookupRun.current;
+    setSplit(null);
+    setSplitLookup({ done: 0, total: 0 });
+    const result = await lookUpSplit(source, reference, (done, total) => { if (run === lookupRun.current) setSplitLookup({ done, total }); }, () => run !== lookupRun.current);
+    if (run !== lookupRun.current) return; // closed while it was looking
+    setSplitLookup(null);
+    setSplit(result);
+  };
+  const cancelSplit = () => { lookupRun.current++; setSplitLookup(null); setSplit(null); };
+
   const confirmSplit = async () => {
     if (!split?.ok) return;
     setSplitBusy(true);
     setSplitError(undefined);
     try {
-      await cards.createMany(deckId, split.verses.map((v) => ({ reference: v.reference, verseText: v.text, note })));
+      await cards.createMany(deckId, split.verses.map((v) => ({ reference: v.reference, verseText: v.text, note, translationCode })));
       toast.add({ title: t('toast.versesAdded', { count: split.verses.length }), type: 'success' });
       setSplit(null);
       setSplitBusy(false);
@@ -216,10 +233,11 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
           />
           {autofill && <AutofillStatus state={fill} translation={source?.name ?? ''} licensed={licensed} hasText={!!verseText} off={off} />}
           {licensed && <Attribution code={source?.code} className="pt-1" />}
-          {/* Only offered when it can actually be used: a chapter or several verses, with a passage to split. */}
-          {!card && !autofill && canSplit(reference) && verseText.trim() && (
+          {/* Only offered when it can actually be used: a chapter or several verses. With Autofill off there must be a passage to cut by its verse numbers; with
+              Autofill on the verses are looked up one by one, so the reference is enough. */}
+          {!card && canSplit(reference) && (autofill ? !!source : !!verseText.trim()) && (
             <div className="flex justify-center pt-3">
-              <Button variant="secondary" onClick={() => { setSplitError(undefined); setSplit(splitPassage(reference, verseText)); }}>
+              <Button variant="secondary" onClick={startSplit}>
                 {t('cardForm.split')}
               </Button>
             </div>
@@ -233,7 +251,7 @@ function CardForm({ card, decks: deckList, initialDeckId, studyCardsPerVerse }: 
         )}
       </Page>
       {coach.open && <AddCoach onClose={coach.close} autofill={autofill && canAutofill} />}
-      <SplitDialog result={split} studyCardsPerVerse={studyCardsPerVerse} busy={splitBusy} error={splitError} onCancel={() => setSplit(null)} onConfirm={confirmSplit} />
+      <SplitDialog result={split} lookup={splitLookup} licensed={licensed} studyCardsPerVerse={studyCardsPerVerse} busy={splitBusy} error={splitError} onCancel={cancelSplit} onConfirm={confirmSplit} />
       <ConfirmDialog
         open={confirming}
         title={t('cardForm.deleteTitle')}

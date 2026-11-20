@@ -1,5 +1,7 @@
 import { sourceFor, type BibleSource, type SourceDetails } from '../domain/bible/sources';
 import { usfmBook, usfmPassages } from '../domain/bible/usfm';
+import { parseReference } from '../domain/bible/reference';
+import { namedVerses } from '../domain/bible/split';
 
 /**
  * Fetches Bible text from the YouVersion Platform (https://developers.youversion.com): GET /v1/bibles/{id}/passages/{USFM},
@@ -19,6 +21,8 @@ export interface PassageSource {
   fetchPassage(source: BibleSource, reference: string): Promise<string>;
   /** The publisher's own notice for one version. */
   details(id: number): Promise<SourceDetails>;
+  /** The numbers of the verses a chapter or range covers ("Psalm 130:1-3" is 1, 2, 3; "Psalm 130" is however many verses that chapter has in this translation). */
+  verseNumbers(source: BibleSource, reference: string): Promise<number[]>;
 }
 
 const BASE = 'https://api.youversion.com/v1';
@@ -73,6 +77,15 @@ function realSource(key: string | undefined): PassageSource {
       const r = (await get(`/bibles/${id}`)) as { copyright?: unknown; publisher_url?: unknown };
       return { copyright: typeof r.copyright === 'string' ? r.copyright : null, publisherUrl: typeof r.publisher_url === 'string' ? r.publisher_url : null };
     },
+    async verseNumbers(source, reference) {
+      if (!key) throw new PassageError('not-configured');
+      const named = namedVerses(reference);
+      if (named) return named;
+      const parsed = parseReference(reference);
+      if (!parsed?.span) throw new PassageError('not-found');
+      const count = await lastVerse(source.yvId, parsed.book, parsed.span.chapter);
+      return Array.from({ length: count }, (_, i) => i + 1);
+    },
     async fetchPassage(source, reference) {
       if (!key) throw new PassageError('not-configured');
       const pieces = await usfmPassages(reference, (book, chapter) => lastVerse(source.yvId, book, chapter));
@@ -95,6 +108,8 @@ export interface FakeYouVersion {
   asked: { code: string; reference: string }[];
   /** What the next requests do instead of working: 'offline', 'not-found'... (one entry each, in order). */
   failWith: PassageProblem[];
+  /** How many verses a whole chapter has in the stand-in (the same for every chapter). Default 6. */
+  chapterVerses?: number;
   /** Wait this long before answering (ms). */
   delayMs: number;
 }
@@ -105,6 +120,12 @@ function fakeSource(): PassageSource {
     available: () => true,
     async details(id) {
       return { copyright: `Copyright of version ${id}`, publisherUrl: null };
+    },
+    async verseNumbers(source, reference) {
+      const problem = state.failWith.shift();
+      if (problem) throw new PassageError(problem);
+      if (!sourceFor(source.code)) throw new PassageError('not-found');
+      return namedVerses(reference) ?? Array.from({ length: state.chapterVerses ?? 6 }, (_, i) => i + 1);
     },
     async fetchPassage(source, reference) {
       state.asked.push({ code: source.code, reference });
