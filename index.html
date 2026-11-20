@@ -24,7 +24,7 @@
       // And the text size, so the page does not jump when the saved size loads.
       try {
         var scale = parseFloat(localStorage.getItem("text-scale") || "");
-        if (scale >= 0.85 && scale <= 1.5) document.documentElement.style.setProperty("--text-scale", String(scale));
+        if (scale >= 0.85 && scale <= 2) document.documentElement.style.setProperty("--text-scale", String(scale));
       } catch (e) {}
       // Same idea for the language: the saved choice, else the browser's first supported language, else English.
       // (Keep the list in sync with LANGUAGES in src/i18n/index.ts.)

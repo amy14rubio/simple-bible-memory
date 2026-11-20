@@ -117,7 +117,9 @@ html, body { overflow: hidden; overscroll-behavior: none; }
 /* Sideways scrolling works wherever there is something to scroll (a row of chips, a wide table), but its scrollbar is never drawn. */
 *::-webkit-scrollbar:horizontal { display: none; height: 0; }
 /* Icons are drawn in pixels (size={22}), so they follow the screen's size class here. */
-svg.lucide { zoom: var(--ui-scale, 1); }
+svg.lucide { zoom: calc(var(--ui-scale, 1) * var(--icon-scale, 1)); }
+/* Icons and their tap areas follow the text size only part of the way (half of the growth): twice the text is not twice the icon. */
+:root { --icon-scale: max(1, calc(1 + (var(--text-scale, 1) - 1) * 0.5)); }
 
 body {
   background: var(--background);

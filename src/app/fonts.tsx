@@ -13,7 +13,7 @@ const VARIABLES = ['--font-serif', '--font-sans'] as const;
 const SCALE_KEY = 'text_scale';
 const SCALE_CACHE = 'text-scale'; // flash-avoidance cache only (read by the script in index.html)
 export const MIN_SCALE = 0.85;
-export const MAX_SCALE = 1.5;
+export const MAX_SCALE = 2;
 const clampScale = (n: number) => Math.min(MAX_SCALE, Math.max(MIN_SCALE, Math.round(n * 20) / 20));
 
 interface FontContextValue {

@@ -32,7 +32,9 @@ const panel = 'rounded-3xl bg-panel px-5 py-1 [&>*:last-child]:border-b-0';
 export function SettingsPage() {
   const { t, preference: languagePreference } = useI18n();
   const { preference } = useTheme();
-  const { family: fontFamily } = useFont();
+  const { family: fontFamily, scale } = useFont();
+  // A row of a name and its current value. With big text, when both do not fit on one line the value goes under the name instead of squeezing it; up to 125% the rows are as they always were (the name wraps inside its own space, the value stays on the right).
+  const valueRow = scale > 1.25 ? `${row} flex-wrap gap-y-0` : row;
   const [exporting, setExporting] = useState<ExportTarget | null>(null);
   const share = useSharing();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -69,21 +71,21 @@ export function SettingsPage() {
           <h2 id="personalization" className={heading}>{t('settings.personalization')}</h2>
           {/* Language, theme and font are one step of the Settings guide (they are all about how the app looks and reads). */}
           <div data-coach="look" className={panel}>
-            <Link to="/settings/language" className={`${row} hover:bg-surface`}>
+            <Link to="/settings/language" className={`${valueRow} hover:bg-surface`}>
               <span>{t('settings.language')}</span>
               <span className="flex items-center gap-1 text-muted">
                 {languagePreference === 'system' ? t('settings.languageSystem') : LANGUAGES.find((l) => l.code === languagePreference)?.name}
                 <ChevronRight size={20} aria-hidden />
               </span>
             </Link>
-            <Link to="/settings/theme" className={`${row} hover:bg-surface`}>
+            <Link to="/settings/theme" className={`${valueRow} hover:bg-surface`}>
               <span>{t('settings.theme')}</span>
               <span className="flex items-center gap-1 text-muted">
                 {t(THEME_LABEL[preference])}
                 <ChevronRight size={20} aria-hidden />
               </span>
             </Link>
-            <Link to="/settings/font" className={`${row} hover:bg-surface`}>
+            <Link to="/settings/font" className={`${valueRow} hover:bg-surface`}>
               <span>{t('settings.font')}</span>
               <span className="flex min-w-0 items-center gap-1 text-muted">
                 <span className="truncate">{fontFamily ?? t('fonts.default')}</span>
@@ -96,14 +98,14 @@ export function SettingsPage() {
         <section aria-labelledby="study">
           <h2 id="study" className={heading}>{t('settings.study')}</h2>
           <div className={panel}>
-          <Link to="/settings/card-kinds" data-coach="kinds" className={`${row} hover:bg-surface`}>
+          <Link to="/settings/card-kinds" data-coach="kinds" className={`${valueRow} hover:bg-surface`}>
             <span>{t('settings.kindsLegend')}</span>
             <span className="flex items-center gap-1 text-muted">
               {t(`kinds.${kinds}.title` as MessageKey)}
               <ChevronRight size={20} aria-hidden />
             </span>
           </Link>
-          <Link to="/settings/blanks" data-coach="blanks" className={`${row} hover:bg-surface`}>
+          <Link to="/settings/blanks" data-coach="blanks" className={`${valueRow} hover:bg-surface`}>
             <span>{t('settings.blanks')}</span>
             <span className="flex items-center gap-1 text-muted">
               {t(`difficulty.${difficulty}` as MessageKey)}
@@ -215,9 +217,9 @@ export function SettingsPage() {
           </Link>
           {share.available && (
             <div className={row}>
-              <InfoLabel title={t('settings.contact')} info={t('settings.contactBody')} className="whitespace-nowrap" />
+              <InfoLabel title={t('settings.contact')} info={t('settings.contactBody')} className="min-w-0" />
               {/* the address is shown where there is room; on a phone the row is just the label and the arrow (the link still says the address) */}
-              <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Simple Bible Memory')}`} aria-label={CONTACT_EMAIL} className="-my-2 flex min-w-0 items-center gap-1 py-2 pl-8 text-muted hover:text-foreground">
+              <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Simple Bible Memory')}`} aria-label={CONTACT_EMAIL} className="-my-2 flex shrink-0 items-center gap-1 py-2 pl-4 text-muted hover:text-foreground sm:min-w-0 sm:shrink sm:pl-8">
                 <span className="hidden truncate sm:inline">{CONTACT_EMAIL}</span>
                 <ChevronRight size={20} aria-hidden className="shrink-0" />
               </a>

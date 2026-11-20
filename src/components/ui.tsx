@@ -34,7 +34,7 @@ export function ButtonLink({ to, variant = 'primary', className = '', children }
   );
 }
 
-const iconButton = 'press flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-surface disabled:opacity-40';
+const iconButton = 'press flex size-[calc(var(--spacing)*11*var(--icon-scale,1))] shrink-0 items-center justify-center rounded-full hover:bg-surface disabled:opacity-40';
 
 export function IconButton({ label, children, className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { label: string; ref?: Ref<HTMLButtonElement> }) {
   return (
@@ -85,9 +85,9 @@ export function AppBar({ title, titleSlot, back, actions, serif = true, titleId 
     return () => animations.forEach((a) => a.cancel());
   }, []);
   return (
-    <InBarSlot><header ref={bar} className="sticky top-0 z-20 box-content flex h-14 items-center gap-1 border-b border-border bg-background px-2 pt-[var(--safe-top)]">
+    <InBarSlot><header ref={bar} className="sticky top-0 z-20 box-content flex min-h-14 items-center gap-1 border-b border-border bg-background px-2 pt-[var(--safe-top)]">
       {back}
-      {titleSlot ?? (title ? <h1 id={titleId} className={`min-w-0 flex-1 truncate px-2 text-lg ${serif ? 'font-serif font-medium tracking-tight' : 'font-semibold'}`}>{title}</h1> : <div className="flex-1" />)}
+      {titleSlot ?? (title ? <h1 id={titleId} className={`min-w-0 flex-1 line-clamp-3 break-words px-2 py-1 text-[calc(1.125rem*min(1,1.5/var(--text-scale,1)))] leading-snug ${serif ? 'font-serif font-medium tracking-tight' : 'font-semibold'}`}>{title}</h1> : <div className="flex-1" />)}
       <div className="flex items-center">{actions}</div>
     </header></InBarSlot>
   );
@@ -133,7 +133,7 @@ export function SearchBar({ label, placeholder, value, onChange, backLabel, onCl
   };
 
   return (
-    <InBarSlot><header className="sticky top-0 z-20 box-content flex h-14 items-center gap-1 border-b border-border bg-background px-2 pt-[var(--safe-top)]">
+    <InBarSlot><header className="sticky top-0 z-20 box-content flex min-h-14 items-center gap-1 border-b border-border bg-background px-2 pt-[var(--safe-top)]">
       <IconButton ref={back} label={backLabel} onClick={leave}><ChevronLeft size={22} aria-hidden /></IconButton>
       <input
         ref={input}
@@ -324,13 +324,21 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
   );
 }
 
-/** Label on the left, control on the right, hairline below: the wireframe's form rows. */
-export function FormRow({ label, labelNode, coach, children }: { label: string; /** Replaces the plain label (for example a label with an "i"). The field then needs its own aria-label, since this is not a <label>. */ labelNode?: ReactNode; /** Names the row for the "Add card" guide to point at (see AddCoach). */ coach?: string; children: (id: string) => ReactNode }) {
+/**
+ * Label on the left, control on the right, hairline below: the wireframe's form rows. When the row is too narrow for both (big text, or a small
+ * screen: the width is measured in rem, so it follows the text size) the label sits above its control instead of running into it.
+ * `inline` keeps a row side by side at every size (a switch is small: its label just wraps).
+ */
+export function FormRow({ label, labelNode, coach, inline = false, children }: { label: string; /** Replaces the plain label (for example a label with an "i"). The field then needs its own aria-label, since this is not a <label>. */ labelNode?: ReactNode; /** Names the row for the "Add card" guide to point at (see AddCoach). */ coach?: string; inline?: boolean; children: (id: string) => ReactNode }) {
   const id = useId();
   return (
-    <div data-coach={coach} className="flex items-center gap-4 border-b border-border py-1.5">
-      {labelNode ?? <label htmlFor={id} className="w-24 shrink-0 text-[0.9375rem] font-medium">{label}</label>}
-      <div className="min-w-0 flex-1">{children(id)}</div>
+    <div data-coach={coach} className="@container border-b border-border">
+      <div className={`flex gap-x-4 py-1.5 ${inline ? 'items-center' : 'flex-col @min-[19rem]:flex-row @min-[19rem]:items-center'}`}>
+        <div className={inline ? 'max-w-[65%] shrink-0' : '@min-[19rem]:w-24 @min-[19rem]:shrink-0'}>
+          {labelNode ?? <label htmlFor={id} className="block text-[0.9375rem] font-medium">{label}</label>}
+        </div>
+        <div className="min-w-0 flex-1">{children(id)}</div>
+      </div>
     </div>
   );
 }
