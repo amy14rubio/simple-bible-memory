@@ -1249,13 +1249,13 @@ body > footer {
   outline-offset: 3px;
 }
 .perk-icon {
-  display: grid;
-  place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 0.875rem;
-  background: var(--bg);
+  display: block; /* just the icon, on the card itself, lined up with the title's left edge */
   color: var(--fg);
+  line-height: 0;
+}
+.perk-icon .icon {
+  width: 1.75rem;
+  height: 1.75rem;
 }
 .flip-title {
   font-family: 'Literata', Georgia, serif;
@@ -1291,16 +1291,6 @@ body > footer {
   border-radius: 50%;
   background: currentColor;
   opacity: 0.55;
-}
-.turn {
-  position: absolute;
-  right: 1.25rem;
-  bottom: 1.25rem;
-  color: var(--muted);
-  transition: transform 0.5s ease;
-}
-.flip:hover .turn {
-  transform: rotate(180deg);
 }
 @media (prefers-reduced-motion: reduce) {
   .flip {
@@ -1344,5 +1334,16 @@ body > footer .foot {
   }
   .hello-text {
     max-width: 33rem;
+  }
+}
+
+/* Every card as tall as the tallest one, while the text is its normal size. With big text (the page's width in rem gets small) each card keeps the height its own words need,
+   so no card turns into a very tall one just because another has more to say. */
+.simple {
+  container-type: inline-size;
+}
+@container (min-width: 17rem) {
+  .flips {
+    grid-auto-rows: 1fr;
   }
 }
