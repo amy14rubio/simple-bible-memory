@@ -7,15 +7,19 @@ const PAGES = [
     lang: 'English', url: '/landing.html', other: '/es', heading: 'Simple Bible Memory', tagline: 'Learn scripture by heart', open: 'Start Practicing',
     play: 'Get it on Google Play', apple: 'Download on the App Store', donate: 'Support on Ko-fi',
     show: 'Show answer', rates: ['Again', 'Hard', 'Good', 'Easy'], goodWhen: /10m/, next: 'Try another verse', first: 'Proverbs 3:5-6', second: 'Romans 5:8',
-    typeTab: 'Type', speakTab: 'Speak', blanksTab: 'Fill in the blanks', typeFull: 'For God didn’t give us a spirit of fear, but of power, love, and self-control.', typePartial: 'For God give us a spirit of fear', typeAll: /You remembered 16 of 16 words/, typeSome: /You remembered 8 of 16 words/, check: 'Show answer', speakText: 'Recite verses hands-free while you drive or go about your day. The app reads them back, and you rate yourself for easy, relaxed practice.', langName: 'English', langOther: 'Español', langOtherHref: '/es', langLabel: 'Language', hello: 'Hello there!', glad: /The idea for this app really came from countless hours of memorizing Bible verses on Anki/, bye: /Thanks for stopping by, and God bless! ❤︎/, words: ['fear', 'power', 'self-control'], wrongWord: 'love', wrongNote: /Not quite: the word was “fear”/,
+    typeTab: 'Type', speakTab: 'Speak', blanksTab: 'Fill in the blanks', typeFull: 'For God didn’t give us a spirit of fear, but of power, love, and self-control.', typePartial: 'For God give us a spirit of fear', typeAll: /You remembered 16 of 16 words/, typeSome: /You remembered 8 of 16 words/, check: 'Show answer', speakText: 'Recite verses hands-free while you drive or go about your day. The app reads them back, and you rate yourself for easy, relaxed practice.', langName: 'English', langOther: 'Español', langOtherHref: '/es', langLabel: 'Language', hello: 'A message from the developer', glad: /The idea for this app really came from countless hours of memorizing Bible verses on Anki/, bye: /Thanks for stopping by, and God bless! ❤︎/, words: ['fear', 'power', 'self-control'], wrongWord: 'love', wrongNote: /Not quite: the word was “fear”/,
   },
   {
     lang: 'Spanish', url: '/es/landing.html', other: '/', heading: 'Memoria Bíblica Simple', tagline: 'Guarda las Escrituras en tu corazón', open: 'Empezar a practicar',
     play: 'Disponible en Google Play', apple: 'Descargar en el App Store', donate: 'Apoyar en Ko-fi',
     show: 'Mostrar respuesta', rates: ['Otra vez', 'Difícil', 'Bien', 'Fácil'], goodWhen: /10 min/, next: 'Probar otro versículo', first: 'Proverbios 3:5-6', second: 'Romanos 5:8',
-    typeTab: 'Escribir', speakTab: 'Hablar', blanksTab: 'Completar espacios', typeFull: 'Porque no nos ha dado Dios el espíritu de temor, sino el de fortaleza, y de amor, y de templanza.', typePartial: 'Porque no nos ha dado Dios el espiritu de temor', typeAll: /Recordaste 20 de 20 palabras/, typeSome: /Recordaste 10 de 20 palabras/, check: 'Mostrar respuesta', speakText: 'Recita versículos sin manos mientras manejas o sigues con tu día. La app te los lee de vuelta, y tú te calificas para una práctica fácil y tranquila.', langName: 'Español', langOther: 'English', langOtherHref: '/', langLabel: 'Idioma', hello: '¡Hola!', glad: /La idea de esta app nació de las incontables horas que pasé memorizando versículos bíblicos en Anki/, bye: /¡Gracias por leer, y que Dios te bendiga! ❤︎/, words: ['temor', 'fortaleza', 'templanza'], wrongWord: 'amor', wrongNote: /Casi: la palabra era “temor”/,
+    typeTab: 'Escribir', speakTab: 'Hablar', blanksTab: 'Completar espacios', typeFull: 'Porque no nos ha dado Dios el espíritu de temor, sino el de fortaleza, y de amor, y de templanza.', typePartial: 'Porque no nos ha dado Dios el espiritu de temor', typeAll: /Recordaste 20 de 20 palabras/, typeSome: /Recordaste 10 de 20 palabras/, check: 'Mostrar respuesta', speakText: 'Recita versículos sin manos mientras manejas o sigues con tu día. La app te los lee de vuelta, y tú te calificas para una práctica fácil y tranquila.', langName: 'Español', langOther: 'English', langOtherHref: '/', langLabel: 'Idioma', hello: 'Un mensaje de la desarrolladora', glad: /La idea de esta app nació de las incontables horas que pasé memorizando versículos bíblicos en Anki/, bye: /¡Gracias por leer, y que Dios te bendiga! ❤︎/, words: ['temor', 'fortaleza', 'templanza'], wrongWord: 'amor', wrongNote: /Casi: la palabra era “temor”/,
   },
 ] as const;
+
+/** The "Try it right here" demo is hidden for now (see `#try` in landing.html). Flip this to true when it comes back and its tests run again. */
+const DEMO_SHOWN = false;
+const demoTest = DEMO_SHOWN ? test : test.skip;
 
 for (const p of PAGES) {
   test.describe(p.lang, () => {
@@ -46,7 +50,7 @@ for (const p of PAGES) {
       for (const badge of [play, store]) expect(await badge.locator('img').evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0); // the official badge image loads
     });
 
-    test('the demo: flip a flashcard, rate it, see when it comes back, try another verse', async ({ page }) => {
+    demoTest('the demo: flip a flashcard, rate it, see when it comes back, try another verse', async ({ page }) => {
       await page.goto(p.url);
       await expect(page.locator('#demo').getByText(p.first, { exact: true })).toBeVisible();
       await page.getByRole('button', { name: p.show }).click();
@@ -58,7 +62,7 @@ for (const p of PAGES) {
       await expect(page.getByRole('button', { name: p.show })).toBeVisible(); // back at the front of the next card
     });
 
-    test('the demo: fill in the blanks, a right word fills in, a wrong word shows the right one in red, then you rate it', async ({ page }) => {
+    demoTest('the demo: fill in the blanks, a right word fills in, a wrong word shows the right one in red, then you rate it', async ({ page }) => {
       await page.goto(p.url);
       await page.getByRole('button', { name: p.blanksTab }).click();
       const bank = page.getByRole('group').filter({ has: page.getByRole('button', { name: p.wrongWord, exact: true }) });
@@ -76,7 +80,7 @@ for (const p of PAGES) {
       await expect(page.locator('.d-verse .blank.current')).toHaveCount(1);
     });
 
-    test('the blanks keep the comma or full stop that follows them on the same line, even on a narrow phone', async ({ page }) => {
+    demoTest('the blanks keep the comma or full stop that follows them on the same line, even on a narrow phone', async ({ page }) => {
       for (const width of [320, 390]) {
         await page.setViewportSize({ width, height: 800 });
         await page.goto(p.url);
@@ -88,7 +92,7 @@ for (const p of PAGES) {
       }
     });
 
-    test('the demo: type the verse, see how much was remembered, and only try the same verse again', async ({ page }) => {
+    demoTest('the demo: type the verse, see how much was remembered, and only try the same verse again', async ({ page }) => {
       await page.goto(p.url);
       await page.getByRole('button', { name: p.typeTab, exact: true }).click();
       await page.getByRole('textbox').fill(p.typePartial);
@@ -107,7 +111,7 @@ for (const p of PAGES) {
       await expect(page.locator('.d-results .d-label')).toHaveCount(0); // everything right: just the verse, in green, with no "Your answer" / "Correct verse" (as in the app)
     });
 
-    test('typing: only words are painted, never a comma or full stop, and a hyphenated word is two words, as in the app', async ({ page }) => {
+    demoTest('typing: only words are painted, never a comma or full stop, and a hyphenated word is two words, as in the app', async ({ page }) => {
       await page.goto(p.url);
       await page.getByRole('button', { name: p.typeTab, exact: true }).click();
       await page.getByRole('textbox').fill(p.typePartial);
@@ -123,7 +127,7 @@ for (const p of PAGES) {
       await expect(groups).toHaveCount(2); // your answer, and the correct verse: each label sits with its own text
     });
 
-    test('typing results are left-aligned on a wide card: the label and the verse under it start at the same edge', async ({ page }) => {
+    demoTest('typing results are left-aligned on a wide card: the label and the verse under it start at the same edge', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto(p.url);
       await page.getByRole('button', { name: p.typeTab, exact: true }).click();
@@ -133,7 +137,7 @@ for (const p of PAGES) {
       expect(['left', 'start']).toContain(left.align);
     });
 
-    test('the Speak tab explains hands-free practice in one positive sentence, with nothing to press', async ({ page }) => {
+    demoTest('the Speak tab explains hands-free practice in one positive sentence, with nothing to press', async ({ page }) => {
       await page.goto(p.url);
       await page.getByRole('button', { name: p.speakTab, exact: true }).click();
       await expect(page.locator('#demo .d-explain')).toHaveText(p.speakText); // hands-free practice, and you rate yourself
@@ -141,17 +145,47 @@ for (const p of PAGES) {
       await expect(page.getByRole('button', { name: p.next })).toHaveCount(0);
     });
 
-    test('a personal note comes right after the hero and before the demo; there is no screenshots section any more', async ({ page }) => {
+    test('the sections come in this order: hero, spaced repetition, features, the note, then support; the demo is hidden for now', async ({ page }) => {
       await page.goto(p.url);
       const hello = page.locator('#hello');
       await expect(hello.getByRole('heading', { level: 2, name: p.hello })).toBeVisible();
       await expect(hello).toContainText(p.glad);
       await expect(hello.locator('.signoff')).toHaveText(p.bye);
       await expect(hello.locator('.letter p')).toHaveCount(4);
-      const order = await page.locator('main > section').evaluateAll((els) => els.map((e) => e.id || e.className));
-      expect(order.slice(0, 3)).toEqual(['hero', 'hello', 'try']);
-      await expect(page.locator('.shots, .screens, .phone')).toHaveCount(0);
-      await expect(page.getByText(/See it in the app|Míralo en la app/)).toHaveCount(0);
+      const order = await page.locator('main > section:not([hidden])').evaluateAll((els) => els.map((e) => e.id || e.className));
+      expect(order).toEqual(['hero', 'spaced', 'simple', 'hello', 'free']);
+      await expect(page.locator('#try')).toBeHidden(); // the demo section is not shown
+    });
+
+    test('spaced repetition shows when a new card comes back: 1 min, 6 min, 10 min, 8 days, for Again, Hard, Good, Easy', async ({ page }) => {
+      await page.goto(p.url);
+      const chips = page.locator('#spaced .ratings li');
+      await expect(chips).toHaveCount(4);
+      const names = await chips.locator('.name').allTextContents();
+      expect(names).toEqual([...p.rates]);
+      const whens = await chips.locator('.when').allTextContents();
+      expect(whens[2]).toMatch(/^10\s?min/); // Good: ten minutes, the same figure the app shows for a new card
+    });
+
+    test('the feature cards turn over on a tap, and turn back on a second tap', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(p.url);
+      const cards = page.locator('#simple .flip');
+      await expect(cards).toHaveCount(6);
+      const first = cards.first();
+      await expect(first).toHaveAttribute('aria-pressed', 'false');
+      await first.evaluate((el: HTMLElement) => el.click()); // the cards float gently, so a "wait until it holds still" click would never start
+      await expect(first).toHaveAttribute('aria-pressed', 'true');
+      await first.evaluate((el: HTMLElement) => el.click());
+      await expect(first).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    test('on a phone the feature cards all have the same height, and nothing spills out of them', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(p.url);
+      const sizes = await page.locator('#simple .flip').evaluateAll((els) => els.map((e) => ({ h: Math.round(e.getBoundingClientRect().height), spill: [...e.querySelectorAll('.face')].some((f) => f.scrollHeight > f.clientHeight + 1) })));
+      expect(new Set(sizes.map((x) => x.h)).size).toBe(1);
+      expect(sizes.some((x) => x.spill)).toBe(false);
     });
 
     test('the note is a letter: a narrow column, left-aligned, kept tight, the sign-off set apart', async ({ page }) => {
@@ -192,7 +226,7 @@ for (const p of PAGES) {
       expect(under.size).toBeLessThanOrEqual(12);
       const wide = await page.evaluate(() => ({ letterBox: document.querySelector('#hello .hello-text')!.getBoundingClientRect(), letter: document.querySelector('#hello .letter')!.getBoundingClientRect(), notes: document.querySelector('#hello .notes')!.getBoundingClientRect() }));
       expect(wide.letter.left).toBeGreaterThanOrEqual(wide.notes.right); // beside it: the pictures on the left, the letter on the right
-      expect(wide.letterBox.width / (wide.letterBox.width + wide.notes.width)).toBeGreaterThanOrEqual(0.58); // the letter has the larger share (about 60%)
+      expect(wide.letterBox.width / (wide.letterBox.width + wide.notes.width)).toBeGreaterThanOrEqual(0.52); // the letter has the larger share (55% of the row, minus the gap)
       await page.setViewportSize({ width: 390, height: 844 });
       await page.waitForTimeout(200);
       const narrow = await page.evaluate(() => ({ letter: document.querySelector('#hello .letter')!.getBoundingClientRect(), notes: document.querySelector('#hello .notes')!.getBoundingClientRect(), over: document.documentElement.scrollWidth - document.documentElement.clientWidth }));
@@ -304,7 +338,8 @@ for (const p of PAGES) {
         const page = await ctx.newPage();
         await page.goto(p.url);
         await page.addStyleTag({ content: '.rv-word { animation: none !important; } .rv-block { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }' }); // check the finished page, not something caught halfway through its reveal
-        await page.getByRole('button', { name: p.show }).click(); // the demo in its other state too
+        if (DEMO_SHOWN) await page.getByRole('button', { name: p.show }).click(); // the demo in its other state too
+        await page.locator('#simple .flip').first().evaluate((el: HTMLElement) => el.click()); // and a card turned over
         const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
         expect(results.violations).toEqual([]);
         await ctx.close();
@@ -357,16 +392,16 @@ for (const [lang, path, title] of [['English', '/landing.html', 'Simple Bible Me
     test('a section heading plays only once it scrolls into view', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto(path);
-      const feat = page.locator('#try h2');
+      const feat = page.locator('#simple h2');
       await expect(feat).not.toHaveClass(/rv-go/);
       await feat.scrollIntoViewIfNeeded();
       await expect(feat).toHaveClass(/rv-go/);
     });
 
-    test('the demo and the footer start hidden and fade in once scrolled into view', async ({ page }) => {
+    test('the feature cards and the footer start hidden and fade in once scrolled into view', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto(path);
-      const card = page.locator('#demo');
+      const card = page.locator('#simple .flips li').last();
       await expect(card).not.toHaveClass(/rv-go/);
       expect(await card.evaluate((el) => getComputedStyle(el).opacity)).toBe('0');
       await card.scrollIntoViewIfNeeded();
