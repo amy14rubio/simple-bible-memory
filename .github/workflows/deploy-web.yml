@@ -1,0 +1,47 @@
+# CD (continuous deployment): publishes the website and the web app to Firebase Hosting.
+#
+# For now it only runs when you press "Run workflow" on the Actions tab (workflow_dispatch).
+# docs/ci-cd.md explains how to make it run by itself after every merge to main.
+name: Deploy web
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false   # never cut a deploy in half
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # "production" is a GitHub Environment. In Settings > Environments you can require your approval before this job starts.
+    environment: production
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Deploy to Firebase Hosting
+        # `firebase deploy` runs the "predeploy" step from firebase.json (npm run build:web) by itself.
+        # The VITE_* values are baked into the app at build time, which is why they are needed here.
+        env:
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+          VITE_GOOGLE_FONTS_API_KEY: ${{ secrets.VITE_GOOGLE_FONTS_API_KEY }}
+          VITE_YOUVERSION_APP_KEY: ${{ secrets.VITE_YOUVERSION_APP_KEY }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-key.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-key.json"
+          npx --yes firebase-tools@15.3.1 deploy --only hosting --project simple-bible-memory
+          rm -f "$RUNNER_TEMP/firebase-key.json"

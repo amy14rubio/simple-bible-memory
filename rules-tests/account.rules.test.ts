@@ -31,7 +31,7 @@ const heard = (uid: string, since = 0) => new Promise<RemoteItem[]>((resolve, re
 describe('saving and listening', () => {
   it('stores every kind of thing, and the person hears them back, oldest first', async () => {
     const b = backend('alice');
-    await expect(b.push([deck('d1', 100), card('c1', 100), schedule('c1', 'recall', 100), schedule('c1', 'identify', 100), setting('card_kinds', 'both', 100), setting('new_cards_per_day', 5, 100)])).resolves.toEqual({ stale: [] });
+    await expect(b.push([deck('d1', 100), card('c1', 100), schedule('c1', 'recall', 100), schedule('c1', 'identify', 100), setting('card_kinds', 'both', 100), setting('new_cards_per_day', 5, 100)])).resolves.toEqual({ stale: [], refused: [] });
     const items = await heard('alice');
     expect(items.map((i) => `${i.entity}~${i.id}`).sort()).toEqual(['card~c1', 'deck~d1', 'schedule~c1~identify', 'schedule~c1~recall', 'setting~card_kinds', 'setting~new_cards_per_day']);
     expect(items.every((i) => i.syncedAt > 0 && i.deleted === false)).toBe(true);
@@ -62,32 +62,32 @@ describe('cards in a licensed translation are saved without their text', () => {
   });
 
   it('a licensed card with an empty text is accepted', async () => {
-    await expect(backend('alice').push([deck('d1', 100), licensed('c1', '')])).resolves.toEqual({ stale: [] });
+    await expect(backend('alice').push([deck('d1', 100), licensed('c1', '')])).resolves.toEqual({ stale: [], refused: [] });
     expect((await heard('alice')).find((i) => i.id === 'c1')?.data).toMatchObject({ translation: 'NASB2020', verseText: '' });
   });
 
   it('a licensed card with the publisher\'s text in it is refused: the account never holds that text', async () => {
-    await expect(backend('alice').push([licensed('c1', 'For God so loved the world')])).rejects.toBeTruthy();
+    await expect(backend('alice').push([licensed('c1', 'For God so loved the world')])).resolves.toEqual({ stale: [], refused: ['card~c1'] });
   });
 
   it('every licensed translation is held to it', async () => {
     for (const code of ['NASB2020', 'NASB1995', 'AMP', 'EASY', 'LBLA', 'NBLA']) {
-      await expect(backend('alice').push([licensed(`x-${code}`, 'text', code)])).rejects.toBeTruthy();
-      await expect(backend('alice').push([licensed(`y-${code}`, '', code)])).resolves.toEqual({ stale: [] });
+      await expect(backend('alice').push([licensed(`x-${code}`, 'text', code)])).resolves.toEqual({ stale: [], refused: [`card~x-${code}`] });
+      await expect(backend('alice').push([licensed(`y-${code}`, '', code)])).resolves.toEqual({ stale: [], refused: [] });
     }
   });
 
   it('a translation from the platform\'s list (YV + its id), or any other name that is not an open one, is licensed too', async () => {
-    await expect(backend('alice').push([licensed('x1', 'text', 'YV2692')])).rejects.toBeTruthy();
-    await expect(backend('alice').push([licensed('x2', '', 'YV2692')])).resolves.toEqual({ stale: [] });
-    await expect(backend('alice').push([licensed('x3', 'text', 'SOMETHING')])).rejects.toBeTruthy();
-    await expect(backend('alice').push([licensed('x4', '', 'SOMETHING')])).resolves.toEqual({ stale: [] });
+    await expect(backend('alice').push([licensed('x1', 'text', 'YV2692')])).resolves.toEqual({ stale: [], refused: ['card~x1'] });
+    await expect(backend('alice').push([licensed('x2', '', 'YV2692')])).resolves.toEqual({ stale: [], refused: [] });
+    await expect(backend('alice').push([licensed('x3', 'text', 'SOMETHING')])).resolves.toEqual({ stale: [], refused: ['card~x3'] });
+    await expect(backend('alice').push([licensed('x4', '', 'SOMETHING')])).resolves.toEqual({ stale: [], refused: [] });
   });
 
   it('an ordinary card still needs its text, and may name its own open translation', async () => {
-    await expect(backend('alice').push([licensed('c1', '', null)])).rejects.toBeTruthy(); // no translation, no text
-    await expect(backend('alice').push([licensed('c2', '', 'KJV')])).rejects.toBeTruthy(); // an open translation keeps its text
-    await expect(backend('alice').push([licensed('c3', 'In the beginning', 'KJV')])).resolves.toEqual({ stale: [] });
+    await expect(backend('alice').push([licensed('c1', '', null)])).resolves.toEqual({ stale: [], refused: ['card~c1'] }); // no translation, no text
+    await expect(backend('alice').push([licensed('c2', '', 'KJV')])).resolves.toEqual({ stale: [], refused: ['card~c2'] }); // an open translation keeps its text
+    await expect(backend('alice').push([licensed('c3', 'In the beginning', 'KJV')])).resolves.toEqual({ stale: [], refused: [] });
   });
 });
 
@@ -95,7 +95,7 @@ describe('the newest edit wins', () => {
   it('an older version never replaces a newer one, and the app is told which', async () => {
     const b = backend('alice');
     await b.push([deck('d1', 200, 'Newer')]);
-    await expect(b.push([deck('d1', 100, 'Older'), deck('d2', 100, 'Unrelated')])).resolves.toEqual({ stale: ['deck~d1'] }); // the rest still goes through
+    await expect(b.push([deck('d1', 100, 'Older'), deck('d2', 100, 'Unrelated')])).resolves.toEqual({ stale: ['deck~d1'], refused: [] }); // the rest still goes through
     const items = await heard('alice');
     expect((items.find((i) => i.id === 'd1')!.data as { title: string }).title).toBe('Newer');
     expect(items.some((i) => i.id === 'd2')).toBe(true);
@@ -104,14 +104,14 @@ describe('the newest edit wins', () => {
   it('the same time, or a later one, replaces it', async () => {
     const b = backend('alice');
     await b.push([deck('d1', 100, 'First')]);
-    await expect(b.push([deck('d1', 100, 'Same time')])).resolves.toEqual({ stale: [] });
-    await expect(b.push([deck('d1', 300, 'Later')])).resolves.toEqual({ stale: [] });
+    await expect(b.push([deck('d1', 100, 'Same time')])).resolves.toEqual({ stale: [], refused: [] });
+    await expect(b.push([deck('d1', 300, 'Later')])).resolves.toEqual({ stale: [], refused: [] });
   });
 
   it('a deletion older than an edit does not win either', async () => {
     const b = backend('alice');
     await b.push([card('c1', 300)]);
-    await expect(b.push([gone('card', 'c1', 200)])).resolves.toEqual({ stale: ['card~c1'] });
+    await expect(b.push([gone('card', 'c1', 200)])).resolves.toEqual({ stale: ['card~c1'], refused: [] });
   });
 });
 
@@ -165,7 +165,7 @@ describe('the format version (v)', () => {
   it('the client reports a refusal for the newer format as stale, not as an error, and nothing is lost', async () => {
     await assertSucceeds(put('alice', 'deck~d', { ...okDeck, v: 2, title: 'From the new app', updatedAt: 10 }));
     const oldApp = { ...deck('d', 500), v: 1 }; // later edit time, older format
-    await expect(backend('alice').push([oldApp])).resolves.toEqual({ stale: ['deck~d'] });
+    await expect(backend('alice').push([oldApp])).resolves.toEqual({ stale: ['deck~d'], refused: [] });
     const d = (await heard('alice')).find((i) => i.id === 'd')!;
     expect((d.data as { title: string }).title).toBe('From the new app');
   });

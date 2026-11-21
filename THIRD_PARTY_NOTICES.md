@@ -15,7 +15,6 @@ Checked against each installed package's license metadata (2026-10-13). Bible te
 | cn (class-name merging, used by shadcn components) | MIT | yes |
 | recharts (charting, used for the card-counts pie chart) | MIT | yes, loaded only on the Statistics screen |
 | shadcn/ui Drawer and Chart (source added to `src/components/shadcn/`, then restyled) | MIT | yes |
-| shadcn skill (`.claude/skills/shadcn`, guidance for AI assistants) | see the shadcn/ui repository | no (development aid only) |
 | tailwindcss | MIT | build-time CSS only |
 | vite, vitest, typescript, oxlint, @vitejs/plugin-react, @types/* | MIT / Apache-2.0 | no (dev only) |
 | @playwright/test | Apache-2.0 | no (dev only) |

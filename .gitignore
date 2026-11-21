@@ -52,3 +52,8 @@ GoogleService-Info.plist
 firebase-debug.log*
 firestore-debug.log
 ui-debug.log
+
+# Personal tooling (AI helpers and their settings): specific to one person's setup, never shared
+.claude/
+.agents/
+skills-lock.json
