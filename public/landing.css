@@ -17,6 +17,7 @@
 }
 :root {
   --gutter: 1.75rem;
+  --wide: 72rem; /* the width of everything on a computer: the top bar, every section and the footer share it, so their edges line up */
   --bg: #f8f8f6;
   --fg: #17171a;
   --muted: #5e5e5a;
@@ -133,7 +134,7 @@ button:focus-visible,
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.75rem max(var(--gutter), calc((100% - 64rem) / 2));
+  padding: 0.75rem max(var(--gutter), calc((100% - var(--wide)) / 2 + var(--gutter)));
   border-bottom: 1px solid transparent;
 }
 /* See-through at the top of the page so the light behind the hero shows; it gets a background once the page scrolls (landing.js adds .scrolled), so text never runs under it. */
@@ -246,12 +247,12 @@ main {
   display: block;
 }
 section {
-  max-width: 64rem;
+  max-width: var(--wide);
   margin: 0 auto;
   padding: 6.5rem var(--gutter) 0;
 }
 h2 {
-  font-size: clamp(1.6rem, 4vw, 2.125rem);
+  font-size: clamp(1.75rem, 1rem + 2vw, 2.5rem);
   line-height: 1.2;
   font-weight: 500;
   letter-spacing: -0.01em;
@@ -338,7 +339,7 @@ h2 {
   }
 }
 h1 {
-  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-size: clamp(2.75rem, 1.5rem + 5vw, 4.5rem);
   line-height: 1.1;
   letter-spacing: -0.02em;
   margin: 0 auto 1rem;
@@ -346,7 +347,7 @@ h1 {
 }
 .lead {
   color: var(--fg);
-  font-size: 1.25rem;
+  font-size: 1.375rem;
   max-width: 32rem;
   margin: 0 auto 2rem;
 }
@@ -701,11 +702,16 @@ h1 {
 /* a note from me (.hello): the letter on the left, four pictures with notes beside it (stacked below it on a phone) */
 .hello {
   text-align: left;
-  padding-top: 4.5rem;
+  padding-top: 8.5rem; /* more room after the feature cards */
+}
+@media (max-width: 55.99rem) {
+  .hello {
+    padding-top: 7rem;
+  }
 }
 .hello-wrap {
   display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); /* the pictures on the left (40%), the letter on the right (60%) */
+  grid-template-columns: minmax(0, 45fr) minmax(0, 55fr); /* the pictures on the left (45%), the letter on the right (55%) */
   gap: 2.5rem;
   align-items: start;
 }
@@ -907,4 +913,437 @@ img[src*='play-es'] {
   max-width: none;
   text-align: left;
   text-wrap: pretty;
+}
+
+/* ---- hero with the phone, spaced repetition, the short list ---- */
+/* The hero: the words on the left and a tilted phone on the right (stacked and centered on a phone). The old page behind it is unchanged. */
+.hero {
+  display: grid;
+  gap: 2.5rem;
+  max-width: var(--wide);
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  min-height: 0;
+}
+.hero-copy {
+  min-width: 0;
+}
+.hero .lead {
+  margin-bottom: 2rem;
+}
+.phone {
+  justify-self: center;
+  width: min(70vw, 17rem);
+}
+.spaced-phone {
+  width: min(62vw, 15rem);
+  margin-bottom: 0.5rem;
+}
+.phone img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 28px 36px rgb(0 0 0 / 0.16));
+}
+@media (prefers-color-scheme: dark) {
+  .phone img {
+    filter: drop-shadow(0 28px 40px rgb(0 0 0 / 0.5));
+  }
+}
+@media (min-width: 56rem) {
+  .hero {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    align-items: center;
+    gap: 3rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    min-height: calc(100svh - 4rem); /* the first screen less the top bar, with the words and the phone in the middle of it */
+  }
+  .hero-copy {
+    text-align: left;
+  }
+  .hero h1 {
+    margin-left: 0;
+    max-width: 12ch;
+  }
+  .hero .lead {
+    margin-left: 0;
+  }
+  .hero .lead {
+    margin-bottom: 2.25rem;
+  }
+  .hero .stores {
+    justify-content: flex-start;
+  }
+  .phone {
+    width: clamp(16rem, 28vw, 21rem);
+  }
+  .spaced-phone {
+    width: clamp(14rem, 22vw, 17rem);
+  }
+  .hero-phone,
+  .spaced-phone {
+    justify-self: center; /* each phone sits in the middle of its column, close to the words */
+  }
+}
+
+/* Motion: landing.js writes how far an element has travelled through the screen (--p, 0 to 1) and where the pointer is (--mx, --my). Nothing here runs for visitors who ask for less motion. */
+.phone-in {
+  transform: translate3d(0, calc((var(--p, 0.5) - 0.5) * -80px), 0) rotate(calc((var(--p, 0.5) - 0.5) * 3deg));
+  will-change: transform;
+}
+.hero-phone .phone-in {
+  /* No 3D turning: the mockup is already drawn at an angle, and turning it again with perspective stretches it. The phone just drifts a little toward the pointer. */
+  transform: translate3d(calc(var(--mx, 0) * 12px), calc((var(--p, 0.5) - 0.5) * -80px + var(--my, 0) * 10px), 0) rotate(calc((var(--p, 0.5) - 0.5) * 3deg + var(--mx, 0) * 1deg));
+  transition: transform 0.35s ease-out;
+}
+.hero-phone img,
+.spaced-phone img {
+  animation: bob 7s ease-in-out infinite;
+}
+.spaced-phone img {
+  animation-delay: -3s;
+}
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* spaced repetition: the phone on the left, the idea and the four ratings on the right */
+.spaced {
+  max-width: var(--wide);
+}
+body > footer {
+  max-width: var(--wide);
+}
+.spaced-wrap {
+  --p: 1; /* fully shown until the script says otherwise */
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+.spaced h2 {
+  text-align: left;
+}
+.spaced-lede {
+  color: var(--muted);
+  max-width: 32rem;
+  margin: 0 0 1.75rem;
+  text-wrap: pretty;
+}
+.ratings {
+  --p: 1; /* fully shown until the script says otherwise */
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  max-width: 30rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ratings li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.75rem 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  line-height: 1.2;
+  /* each one appears as the section scrolls into view, and goes away again if you scroll back */
+  opacity: clamp(0, calc((var(--p) - var(--t, 0)) * 16), 1);
+  transform: translateY(calc((1 - clamp(0, calc((var(--p) - var(--t, 0)) * 16), 1)) * 14px));
+}
+.ratings .when {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.ratings .name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+.ratings .again .name {
+  color: var(--again);
+}
+.ratings .hard .name {
+  color: var(--hard);
+}
+.ratings .good .name {
+  color: var(--good);
+}
+.ratings .easy .name {
+  color: var(--easy);
+}
+.spaced-phone .phone-in {
+  transform: translate3d(calc(var(--mx, 0) * 12px), calc((var(--p, 0.5) - 0.5) * -60px + var(--my, 0) * 10px), 0) rotate(calc((var(--p, 0.5) - 0.5) * -3deg + var(--mx, 0) * 1deg));
+  transition: transform 0.35s ease-out;
+}
+@media (max-width: 55.99rem) {
+  .spaced {
+    padding-top: 3rem;
+  }
+}
+@media (min-width: 56rem) {
+  .spaced {
+    padding-top: 3rem; /* the hero already leaves room below the phone */
+  }
+}
+@media (min-width: 56rem) {
+  .spaced-wrap {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 4rem;
+  }
+}
+@media (max-width: 55.99rem) {
+  .spaced-text {
+    order: 1; /* on a phone the words come first and the phone after them, so the two phones are never one under the other */
+  }
+  .spaced-phone {
+    display: none; /* on a phone the hero's phone is enough: no second screenshot */
+  }
+  .spaced h2,
+  .spaced-lede {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .ratings {
+    margin: 0 auto;
+  }
+}
+
+.reveal-pending .hero .phone {
+  visibility: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .phone-in,
+  .hero-phone .phone-in,
+  .spaced-phone .phone-in {
+    transform: none;
+    transition: none;
+  }
+  .hero-phone img,
+  .spaced-phone img {
+    animation: none;
+  }
+  .ratings li {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hello-wrap {
+  gap: 3rem;
+}
+
+/* the feature cards: they float, and turn over (on a tap, or on hover with a mouse) to explain */
+.flips {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 36rem) {
+  .flips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+  .face {
+    min-height: 14rem;
+  }
+}
+@media (min-width: 56rem) {
+  .flips {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+.flips li {
+  display: flex;
+}
+.flip {
+  --k: 0;
+  position: relative;
+  display: flex;
+  flex: 1;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  perspective: 1100px;
+  -webkit-tap-highlight-color: transparent;
+  animation: float 7s ease-in-out infinite;
+  animation-delay: calc(var(--k) * -1.3s);
+}
+.flips li:nth-child(2) .flip { --k: 1; }
+.flips li:nth-child(3) .flip { --k: 2; }
+.flips li:nth-child(4) .flip { --k: 3; }
+.flips li:nth-child(5) .flip { --k: 4; }
+.flips li:nth-child(6) .flip { --k: 5; }
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+.flip-in {
+  /* both faces share one grid cell, so the card is as tall as its longer face (big text or Spanish never spills out of it) */
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.3, 1.25, 0.4, 1);
+}
+.flip[aria-pressed='true'] .flip-in {
+  transform: rotateY(180deg);
+}
+@media (hover: hover) and (pointer: fine) {
+  .flip:hover .flip-in {
+    transform: rotateY(180deg);
+  }
+}
+.face {
+  grid-area: 1 / 1;
+  min-height: 10.5rem; /* shorter on a phone, where the cards stack one under another */
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 0 14px 30px -18px rgb(0 0 0 / 0.35);
+}
+.front {
+  background: var(--surface);
+  justify-content: space-between;
+}
+.back {
+  background: var(--primary);
+  color: var(--primary-fg);
+  border-color: var(--primary);
+  transform: rotateY(180deg);
+  justify-content: center;
+}
+.flip:focus-visible {
+  outline: none;
+}
+.flip:focus-visible .front,
+.flip:focus-visible .back {
+  outline: 2px solid var(--fg);
+  outline-offset: 3px;
+}
+.perk-icon {
+  display: block; /* just the icon, on the card itself, lined up with the title's left edge */
+  color: var(--fg);
+  line-height: 0;
+}
+.perk-icon .icon {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+.flip-title {
+  font-family: 'Literata', Georgia, serif;
+  font-size: 1.375rem;
+  line-height: 1.2;
+  font-weight: 500;
+  text-wrap: balance;
+}
+.back .flip-title {
+  font-size: 1.125rem;
+  font-family: inherit;
+  font-weight: 600;
+  opacity: 0.75;
+}
+.flip-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.flip-line {
+  display: flex;
+  gap: 0.6rem;
+  font-size: 1rem;
+  line-height: 1.35;
+  text-wrap: balance; /* the lines break evenly, so a lone word never hangs on a line of its own */
+}
+.flip-line::before {
+  content: '';
+  flex: none;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-top: 0.5em;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+}
+@media (prefers-reduced-motion: reduce) {
+  .flip {
+    animation: none;
+  }
+  /* no spinning: the back simply replaces the front */
+  .flip-in {
+    transform: none !important;
+    transition: none;
+  }
+  .face {
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
+    transform: none;
+  }
+  .back {
+    opacity: 0;
+  }
+  .flip[aria-pressed='true'] .back {
+    opacity: 1;
+  }
+  .flip[aria-pressed='true'] .front {
+    opacity: 0;
+  }
+}
+
+/* the footer's line runs the width of the content (not out into the page's side margins) */
+body > footer {
+  border-top: 0;
+  padding-top: 0;
+}
+body > footer .foot {
+  padding-top: 3rem;
+  border-top: 1px solid var(--border);
+}
+
+/* the letter: more room between the pictures and the words, and the words in a narrower column (a comfortable line length) */
+@media (min-width: 56rem) {
+  .hello-wrap {
+    gap: 5rem;
+  }
+  .hello-text {
+    max-width: 33rem;
+  }
+}
+
+/* Every card as tall as the tallest one, while the text is its normal size. With big text (the page's width in rem gets small) each card keeps the height its own words need,
+   so no card turns into a very tall one just because another has more to say. */
+.simple {
+  container-type: inline-size;
+}
+@container (min-width: 17rem) {
+  .flips {
+    grid-auto-rows: 1fr;
+  }
 }
