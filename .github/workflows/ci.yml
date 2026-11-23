@@ -1,0 +1,117 @@
+# CI (continuous integration): on every pull request and every push to main, GitHub starts a fresh Linux
+# machine, installs the project and runs the checks. A red cross on a pull request means "do not merge yet".
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# The workflow only needs to read the code.
+permissions:
+  contents: read
+
+# A new push to the same pull request cancels the older, now pointless run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, types, unit tests, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22
+          cache: npm            # keeps downloaded packages between runs, so installs are fast
+      - run: npm ci             # installs exactly what package-lock.json says
+      - run: npm run lint
+      - run: npx tsc -b         # type-check
+      - run: npm test           # unit and repository tests (Vitest)
+      - run: npm run build
+
+  # The browser tests take about 40 minutes on one machine, so they are split over four ("sharding"): each machine runs a quarter of them at the same time.
+  # They run on pull requests only; what reaches main has already passed there.
+  e2e:
+    name: Browser tests shard ${{ matrix.shard }} of 4
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false      # one failing shard does not stop the others, so you see every failure in one go
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Find the Playwright version (the browser download is cached per version)
+        id: pw
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+      - run: npx playwright install --with-deps chromium   # quick when the browser came from the cache
+      - run: npx playwright test --shard=${{ matrix.shard }}/4 --retries=1   # one retry: a test that only passes on the second try is reported as flaky
+      - name: Keep the report when something fails
+        if: failure()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: playwright-report-shard-${{ matrix.shard }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # One check with a steady name for all the shards together (this is the one to require in the branch rules).
+  e2e-done:
+    name: Browser tests (Playwright)
+    needs: e2e
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: All shards passed (or were skipped on a push to main)
+        run: |
+          echo "e2e result: ${{ needs.e2e.result }}"
+          [ "${{ needs.e2e.result }}" = "success" ] || [ "${{ needs.e2e.result }}" = "skipped" ]
+
+  rules:
+    name: Firestore security rules
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v6.3.0      # the Firestore emulator needs Java
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npm install --global firebase-tools@15.3.1
+      - run: npm run test:rules
+
+  secrets:
+    name: Scan for leaked secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read   # the scanner lists the pull request's commits
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0        # the whole history, not just the latest commit
+      - uses: gitleaks/gitleaks-action@v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

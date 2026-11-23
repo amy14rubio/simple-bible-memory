@@ -1,0 +1,7 @@
+# Dependabot opens a pull request when a GitHub Action we use has a new version (CI then checks it like any other change).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

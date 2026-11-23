@@ -1,6 +1,7 @@
 {
   "name": "simple-bible-memory",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -9,6 +10,8 @@
     "clips": "playwright test -c playwright.clips.config.ts",
     "build:web": "npm run build && node scripts/make-web.mjs",
     "lint": "oxlint",
+    "private:restore": "node scripts/restore-private-files.mjs",
+    "private:save": "node scripts/restore-private-files.mjs --save",
     "preview": "vite preview",
     "test": "vitest run",
     "test:e2e": "playwright test",

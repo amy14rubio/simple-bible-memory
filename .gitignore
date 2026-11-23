@@ -52,3 +52,13 @@ GoogleService-Info.plist
 firebase-debug.log*
 firestore-debug.log
 ui-debug.log
+
+# Personal tooling (AI helpers and their settings): specific to one person's setup, never shared
+.claude/
+.agents/
+skills-lock.json
+
+# Translation list and language names: they come from the YouVersion API, whose terms about republishing them are unconfirmed, so they stay out of the public repo.
+# Anyone with their own YouVersion key can make them: node scripts/make-translation-data.mjs (see docs/youversion.md). Without them the app lists the hand-written texts only.
+src/domain/bible/catalogue.json
+src/domain/bible/languageNames.json

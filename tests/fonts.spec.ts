@@ -53,7 +53,7 @@ const dblclickThumb = async (page: Page) => {
   const [min, max, value] = await slider.evaluate((e) => [Number((e as HTMLInputElement).min), Number((e as HTMLInputElement).max), Number((e as HTMLInputElement).value)]);
   await slider.dblclick({ position: { x: 8 + ((value - min) / (max - min)) * (box.width - 16), y: box.height / 2 } });
 };
-const useFont = (page: Page) => page.getByRole('button', { name: 'Use this font' });
+const applyFontButton = (page: Page) => page.getByRole('button', { name: 'Use this font' });
 const vars = (page: Page) => page.evaluate(() => ({ serif: document.documentElement.style.getPropertyValue('--font-serif'), sans: document.documentElement.style.getPropertyValue('--font-sans') }));
 const cacheKeys = (page: Page) => page.evaluate(async () => (await (await caches.open('fonts-v1')).keys()).map((r) => new URL(r.url).pathname));
 
@@ -66,7 +66,7 @@ test.describe('font', () => {
     await row.click();
     await expect(page).toHaveURL(/#\/settings\/font$/);
     await expect(page.getByRole('heading', { name: 'Font' })).toBeVisible();
-    await expect(useFont(page)).toHaveCount(0); // nothing to apply yet
+    await expect(applyFontButton(page)).toHaveCount(0); // nothing to apply yet
   });
 
   test('the font list is the same popup as the collection picker: names in their own typeface, search and category chips', async ({ page }) => {
@@ -143,7 +143,7 @@ test.describe('font', () => {
     await pickFont(page, 'Lora');
     await expect(page.getByRole('dialog')).toHaveCount(0); // the popup closed
     await expect(trigger(page)).toContainText('Lora');
-    await expect(useFont(page)).toBeVisible();
+    await expect(applyFontButton(page)).toBeVisible();
     const card = page.getByRole('region', { name: 'Preview' });
     await expect.poll(() => card.evaluate((e) => getComputedStyle(e).getPropertyValue('--font-serif'))).toContain('"Lora"');
     expect(await vars(page)).toEqual({ serif: '', sans: '' }); // the app itself is untouched
@@ -155,8 +155,8 @@ test.describe('font', () => {
     const seen = await mockGoogleFonts(page);
     await page.goto('/#/settings/font');
     await pickFont(page, 'Lora');
-    await useFont(page).click();
-    await expect(useFont(page)).toHaveCount(0);
+    await applyFontButton(page).click();
+    await expect(applyFontButton(page)).toHaveCount(0);
     await expect.poll(async () => await vars(page)).toEqual({ serif: expect.stringContaining('"Lora"'), sans: expect.stringContaining('"Lora"') });
     expect(await page.evaluate(() => document.fonts.check('16px "Lora"'))).toBe(true);
     expect(await page.evaluate(() => getComputedStyle(document.body).fontFamily)).toContain('Lora');
@@ -174,12 +174,12 @@ test.describe('font', () => {
     await mockGoogleFonts(page);
     await page.goto('/#/settings/font');
     await pickFont(page, 'Lora');
-    await useFont(page).click();
-    await expect(useFont(page)).toHaveCount(0);
+    await applyFontButton(page).click();
+    await expect(applyFontButton(page)).toHaveCount(0);
     expect((await cacheKeys(page)).every((k) => k.includes('Lora'))).toBe(true);
 
     await pickFont(page, 'Inter');
-    await useFont(page).click();
+    await applyFontButton(page).click();
     await expect.poll(async () => (await vars(page)).serif).toContain('"Inter"');
     await expect.poll(async () => (await cacheKeys(page)).length).toBeGreaterThan(0);
     expect((await cacheKeys(page)).every((k) => k.includes('Inter'))).toBe(true); // Lora's files are gone
@@ -189,8 +189,8 @@ test.describe('font', () => {
     await mockGoogleFonts(page);
     await page.goto('/#/settings/font');
     await pickFont(page, 'Lora');
-    await useFont(page).click();
-    await expect(useFont(page)).toHaveCount(0);
+    await applyFontButton(page).click();
+    await expect(applyFontButton(page)).toHaveCount(0);
     await pickFont(page, 'Default');
     await page.getByRole('button', { name: 'Use default font' }).click();
     await expect.poll(async () => (await vars(page)).serif).toBe('');
@@ -203,8 +203,8 @@ test.describe('font', () => {
     await mockGoogleFonts(page);
     await page.goto('/#/settings/font');
     await pickFont(page, 'Merriweather');
-    await useFont(page).click();
-    await expect(useFont(page)).toHaveCount(0);
+    await applyFontButton(page).click();
+    await expect(applyFontButton(page)).toHaveCount(0);
     await page.waitForTimeout(500); // let the choice be written
 
     await page.unroute('https://fonts.googleapis.com/**');
@@ -220,22 +220,22 @@ test.describe('font', () => {
     await page.route(/fonts\.(googleapis|gstatic)\.com/, (route) => route.abort());
     await page.goto('/#/settings/font');
     await pickFont(page, 'Lora');
-    await useFont(page).click();
+    await applyFontButton(page).click();
     await expect(page.getByRole('alert')).toContainText("We couldn't download Lora");
     expect(await vars(page)).toEqual({ serif: '', sans: '' });
-    await expect(useFont(page)).toBeVisible(); // try again
+    await expect(applyFontButton(page)).toBeVisible(); // try again
   });
 
   test('trying again after a failed download does not make the button jump (the message stays in place)', async ({ page }) => {
     await page.route(/fonts\.(googleapis|gstatic)\.com/, (route) => route.abort());
     await page.goto('/#/settings/font');
     await pickFont(page, 'Lora');
-    await useFont(page).click();
+    await applyFontButton(page).click();
     await expect(page.getByRole('alert')).toContainText("We couldn't download Lora");
-    const top = async () => (await useFont(page).boundingBox())!.y;
+    const top = async () => (await applyFontButton(page).boundingBox())!.y;
     const before = await top();
     const seen: number[] = [];
-    for (let i = 0; i < 3; i++) { await useFont(page).click(); for (let k = 0; k < 6; k++) { seen.push(await top()); await page.waitForTimeout(40); } }
+    for (let i = 0; i < 3; i++) { await applyFontButton(page).click(); for (let k = 0; k < 6; k++) { seen.push(await top()); await page.waitForTimeout(40); } }
     await expect(page.getByRole('alert')).toContainText("We couldn't download Lora");
     expect(seen.every((y) => y === before)).toBe(true);
   });
@@ -364,7 +364,7 @@ test.describe('font', () => {
       await mockGoogleFonts(page);
       await page.goto('/#/settings/font');
       await pickFont(page, 'Lora');
-      await expect(useFont(page)).toBeVisible();
+      await expect(applyFontButton(page)).toBeVisible();
       await page.waitForTimeout(400);
       const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
       expect(r.violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
