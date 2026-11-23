@@ -15,6 +15,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:e2e:flaky": "playwright test --only-changed=origin/main --repeat-each=10 --retries=0 --pass-with-no-tests",
     "ios:sync": "npm run build && npx cap sync ios",
     "ios:open": "npx cap open ios",
     "test:rules": "PATH=\"/opt/homebrew/opt/openjdk@21/bin:$PATH\" firebase emulators:exec --only firestore --project demo-simple-bible-memory \"vitest run --config vitest.rules.config.ts\""

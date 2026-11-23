@@ -136,6 +136,9 @@ test('turning the switch off cancels everything, and turning it on again brings 
 
 test('it is remembered, and re-planned when the app opens again', async ({ page }) => {
   await turnOn(page);
+  // the first reminder is saved a moment after the switch flips: wait for it before reloading, or the reload can beat the save
+  await expect(page.getByRole('list', { name: 'Your reminders' })).toContainText('Every day at 8:00 PM');
+  await expect.poll(async () => (await scheduled(page)).length).toBeGreaterThan(50);
   await page.evaluate(() => localStorage.removeItem('sbm-fake-scheduled'));
   await page.reload();
   await expect(remindersSwitch(page)).toBeChecked();

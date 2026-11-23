@@ -39,6 +39,9 @@ test('switching a translation off empties its text on the device, hides it, and 
   await expect(dialog.getByRole('button', { name: /New American Standard Bible 2020/ })).toHaveCount(0);
   await expect(dialog.getByRole('button', { name: /New American Standard Bible 1995/ })).toBeVisible(); // only the one that was switched off
   await page.keyboard.press('Escape');
+  // closing a popup removes its history entry with an asynchronous history.back(); reloading while that is still
+  // pending can leave the reload waiting for ever, so wait until the entry is gone
+  await expect.poll(() => page.evaluate(() => window.history.state?.popup === true)).toBe(false);
 
   await setSwitch(page, null); // switched on again
   await page.reload();
