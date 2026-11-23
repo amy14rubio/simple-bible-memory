@@ -6,12 +6,13 @@ import { useI18n } from '../i18n/I18nProvider';
 import { usePopupHistory } from '../lib/usePopupHistory';
 import { prefersReducedMotion } from '../app/motion';
 
-type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'light';
+type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'light' | 'outline';
 const variants: Record<Variant, string> = {
   primary: 'bg-primary text-primary-foreground hover:opacity-90',
   secondary: 'border border-border bg-background hover:bg-surface',
   danger: 'border border-danger text-danger hover:bg-surface',
   ghost: 'hover:bg-surface',
+  outline: 'border border-border hover:bg-surface', // transparent: takes the colour of whatever it sits on
   light: 'btn-light', // a white button (see tokens.css)
 };
 

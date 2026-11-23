@@ -40,10 +40,10 @@ export function FindPassageHelper({ reference, language }: { reference: string; 
           <p>{t('find.p2')}</p>
           {offline && <p role="status">{t('find.offline')}</p>}
         </div>
-        {/* Equal importance: the same white button for each. */}
+        {/* Equal importance: the same transparent outlined button for each. */}
         <div className="mt-6 space-y-3">
-          <Button variant="light" className="w-full" onClick={() => go(gateway)}>{t('find.openGateway')} <ExternalLink size={16} aria-hidden /></Button>
-          {ebible && <Button variant="light" className="w-full" onClick={() => go(ebible)}>{t('find.openEbible')} <ExternalLink size={16} aria-hidden /></Button>}
+          <Button variant="outline" className="w-full" onClick={() => go(gateway)}>{t('find.openGateway')} <ExternalLink size={16} aria-hidden /></Button>
+          {ebible && <Button variant="outline" className="w-full" onClick={() => go(ebible)}>{t('find.openEbible')} <ExternalLink size={16} aria-hidden /></Button>}
         </div>
       </Dialog>
     </>
