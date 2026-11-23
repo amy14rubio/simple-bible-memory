@@ -105,13 +105,13 @@ test.describe('eBible, the second source', () => {
     await helper(page).click();
     const dialog = page.getByRole('dialog', { name: 'Find a Bible passage' });
     await expect(dialog.getByRole('button', { name: /Open Bible Gateway/ })).toBeVisible();
-    // both sources look the same, so neither is pushed: equal white buttons, nothing underneath
+    // both sources look the same, so neither is pushed: equal transparent buttons, nothing underneath
     await dialog.evaluate((el) => Promise.all(el.getAnimations().map((x) => x.finished))); // the popup has finished coming in (it is measured at its real size)
     const gatewayBox = (await dialog.getByRole('button', { name: /Open Bible Gateway/ }).boundingBox())!;
     const ebibleBox = (await dialog.getByRole('button', { name: /Open eBible/ }).boundingBox())!;
     expect(gatewayBox.width).toBe(ebibleBox.width);
     expect(gatewayBox.height).toBe(ebibleBox.height);
-    for (const name of [/Open Bible Gateway/, /Open eBible/]) expect(await dialog.getByRole('button', { name }).evaluate((e) => getComputedStyle(e).backgroundColor)).toBe('rgb(255, 255, 255)'); // white
+    for (const name of [/Open Bible Gateway/, /Open eBible/]) expect(await dialog.getByRole('button', { name }).evaluate((e) => getComputedStyle(e).backgroundColor)).toBe('rgba(0, 0, 0, 0)'); // transparent: they take the colour of the dialog
     const popup = context.waitForEvent('page');
     await dialog.getByRole('button', { name: /Open eBible/ }).click();
     expect((await popup).url()).toBe('https://ebible.org/study/?w1=bible&t1=local%3Aeng-web&v1=JN3_16');
