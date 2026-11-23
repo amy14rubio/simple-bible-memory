@@ -1,5 +1,5 @@
 /* The landing page: the app's own look (ink on paper, one rose accent, serif for scripture) as plain files: no build step.
-   The only script is the small demo (landing.js). */
+   The only script is landing.js (the text reveal, the phone motion and the flip cards). */
 /* The app's own typefaces (the same files the app uses): Literata for scripture and headings, Instrument Sans for everything else. Latin covers Spanish. */
 @font-face {
   font-family: 'Literata';
@@ -89,9 +89,7 @@ body {
 h1,
 h2,
 h3,
-.brand,
-.d-ref,
-.d-verse {
+.brand {
   font-family: Literata, Georgia, 'Times New Roman', serif;
 }
 h1,
@@ -323,7 +321,7 @@ h2 {
 .hero {
   text-align: center;
   padding-top: 11rem; /* lower than the original 8rem */
-  padding-bottom: 5rem; /* phones: more room, so "Try it right here" starts lower on the screen */
+  padding-bottom: 5rem; /* phones: more room before the next section */
   /* The hero is as tall as the first screen (the screen's height less the top bar), so the note below it starts out of sight and nothing of it shows until you scroll.
      Only the space under the hero grows: its content stays exactly where it was (at the top, under its own padding). Content taller than that simply makes it taller. */
   min-height: calc(100vh - 4rem);
@@ -390,314 +388,6 @@ h1 {
   }
 }
 
-/* demo: it looks like the app's own study screen (the card in the middle, the buttons along the bottom) */
-.demo {
-  max-width: 26rem;
-  margin: 0 auto;
-}
-.tabs {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.25rem;
-  padding: 0.25rem;
-  margin: 0 auto 1.25rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-}
-.tab {
-  min-height: 2.75rem; /* 44px: a comfortable touch target */
-  padding: 0.25rem 0.4rem;
-  border: 0;
-  border-radius: 0.5rem;
-  background: transparent;
-  color: var(--muted);
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.2;
-  cursor: pointer;
-}
-@media (max-width: 30rem) {
-  .tabs {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-/* On a tablet or desktop the demo is laid out sideways, as wide as the page's other blocks: the ways to study down the left, the card on the right */
-@media (min-width: 48rem) {
-  .demo {
-    display: grid;
-    grid-template-columns: 15rem 1fr;
-    column-gap: 2rem;
-    align-items: stretch; /* the sidebar runs the whole height of the card */
-    max-width: 56rem;
-  }
-  .tabs {
-    grid-template-columns: 1fr;
-    align-content: start;
-    gap: 0.25rem;
-    margin: 0;
-  }
-  .tab {
-    min-height: 3rem;
-    padding: 0.5rem 1rem;
-    text-align: left;
-    font-size: 0.9375rem;
-  }
-  .demo-card {
-    grid-column: 2;
-    min-height: 31rem;
-  }
-}
-.tab[aria-pressed='true'] {
-  background: var(--bg);
-  color: var(--fg);
-  box-shadow: 0 0 0 1px var(--border);
-}
-.demo-card {
-  display: flex;
-  flex-direction: column;
-  min-height: 30rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 1.25rem;
-  overflow: hidden;
-  box-shadow: 0 1px 0 var(--border);
-}
-.d-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-  padding: 2.5rem 1.75rem 1rem;
-  text-align: center;
-}
-.d-body.top {
-  justify-content: flex-start; /* typing and the blanks, like the app: the reference at the top, the line or the verse right under it */
-}
-.d-bar {
-  display: grid;
-  gap: 0.75rem;
-  padding: 0.75rem 1.75rem 1.75rem;
-}
-.d-ref {
-  font-size: 1.5rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-  margin: 0;
-}
-.d-ref.big {
-  font-size: 1.875rem;
-}
-.d-verse {
-  margin: 0;
-  font-size: 1.25rem;
-  line-height: 1.7;
-}
-.d-verse.left {
-  text-align: left;
-  font-size: 1.125rem;
-}
-/* a verse set in left-aligned lines stays a column in the middle of the card, so on a wide card it lines up with the title and the buttons */
-.d-verse.left,
-.d-verse.blanks {
-  width: 100%;
-  max-width: 30rem;
-}
-.d-verse.blanks {
-  text-align: left;
-  line-height: 2.3;
-}
-.d-msg {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.975rem;
-}
-.button.full {
-  width: 100%;
-}
-.d-rates {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.5rem;
-}
-.rate {
-  display: flex;
-  flex-direction: column-reverse;
-  align-items: center;
-  justify-content: center;
-  min-height: 3.5rem;
-  padding: 0.25rem 0;
-  border: 1px solid var(--border);
-  border-radius: 0.625rem;
-  background: var(--bg);
-  font: inherit;
-  cursor: pointer;
-}
-.rate:hover {
-  border-color: var(--fg);
-}
-.rate small {
-  font-size: 0.75rem;
-  color: var(--muted);
-}
-.rate-name {
-  font-size: 0.9375rem;
-  font-weight: 600;
-}
-.again {
-  color: var(--again);
-}
-.hard {
-  color: var(--hard);
-}
-.good {
-  color: var(--good);
-}
-.easy {
-  color: var(--easy);
-}
-.d-verse .blank {
-  display: inline-block;
-  margin: 0 0.1rem;
-  border-bottom: 2px dashed var(--muted);
-  vertical-align: baseline;
-}
-.d-verse .blank.current {
-  border: 2px solid var(--fg);
-  border-radius: 0.375rem;
-  background: var(--surface);
-}
-.d-verse .wrong {
-  color: var(--again);
-  font-weight: 600;
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
-}
-.d-bank {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
-}
-.word {
-  min-height: 2.75rem;
-  padding: 0 0.9rem;
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  background: var(--bg);
-  color: var(--fg);
-  font: inherit;
-  font-family: Literata, Georgia, serif;
-  font-size: 1.1rem;
-  cursor: pointer;
-}
-.word:hover {
-  border-color: var(--fg);
-}
-.note {
-  text-align: center;
-  color: var(--muted);
-}
-
-/* typing: a plain line to type on that turns rose while you type (like the app's), then your answer and the correct verse */
-.d-input {
-  display: block;
-  width: 100%;
-  padding: 0.5rem 0;
-  border: 0;
-  border-bottom: 1px solid var(--border);
-  border-radius: 0;
-  background: transparent;
-  color: var(--fg);
-  font: inherit;
-  font-family: Literata, Georgia, serif;
-  font-size: 1.125rem;
-  line-height: 1.7;
-  resize: none;
-  overflow: hidden;
-  text-align: left;
-}
-.d-input::placeholder {
-  color: var(--muted);
-}
-.d-input:focus {
-  outline: none;
-  border-bottom-color: var(--accent);
-  box-shadow: 0 1px 0 0 var(--accent);
-}
-.d-results {
-  width: 100%;
-  display: grid;
-  gap: 1.5rem; /* as in the app: your answer and the correct verse are two groups with room between them… */
-  text-align: left;
-}
-.d-group {
-  display: grid;
-  gap: 0.25rem; /* …and each label sits right over its own text */
-}
-.d-label {
-  margin: 0;
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--muted);
-}
-.nb {
-  white-space: nowrap; /* a blank and the comma or full stop right after it stay together */
-}
-.ok {
-  color: var(--good);
-}
-.bad {
-  color: var(--again);
-}
-.miss {
-  color: var(--again);
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
-  padding: 0 0.1rem;
-}
-
-/* speaking: a short explanation with the mic, not a demo */
-.mic {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 3.5rem;
-  height: 3.5rem;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  color: var(--muted);
-}
-.mic.on {
-  background: var(--surface);
-  color: var(--fg);
-  animation: pulse 1.6s ease-in-out infinite;
-}
-@keyframes pulse {
-  50% {
-    opacity: 0.6;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .mic.on {
-    animation: none;
-  }
-}
-.d-explain {
-  margin: 0;
-  max-width: 21rem;
-  color: var(--muted);
-  font-size: 1.05rem;
-  line-height: 1.6;
-}
 
 /* a note from me (.hello): the letter on the left, four pictures with notes beside it (stacked below it on a phone) */
 .hello {
@@ -862,7 +552,7 @@ h1 {
     filter: blur(0);
   }
 }
-/* cards, screenshots, the demo, the donation button and the footer: fade, rise and sharpen once they come into view */
+/* cards, screenshots, the donation button and the footer: fade, rise and sharpen once they come into view */
 .rv-block {
   opacity: 0 !important; /* beats a button's own :hover and disabled opacity while it is still hidden */
   transform: translateY(16px);
@@ -900,20 +590,6 @@ img[src*='play-es'] {
   border-radius: 0.45rem;
 }
 
-/* on the wide demo card the verse's lines are centered too (left-aligned lines in a column leave the empty space on the right, which looks off-center) */
-@media (min-width: 48rem) {
-  .d-verse.left,
-  .d-verse.blanks {
-    text-align: center;
-    text-wrap: balance;
-  }
-}
-/* but the typing results are left-aligned on the whole card, as in the app: "Your answer" / "Correct verse" and their text start at the same edge */
-.d-results .d-verse.left {
-  max-width: none;
-  text-align: left;
-  text-wrap: pretty;
-}
 
 /* ---- hero with the phone, spaced repetition, the short list ---- */
 /* The hero: the words on the left and a tilted phone on the right (stacked and centered on a phone). The old page behind it is unchanged. */
