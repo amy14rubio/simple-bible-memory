@@ -17,7 +17,7 @@ npm install
 npm run dev
 ```
 
-You do not need any keys or accounts to work on most of the app. See "Optional services" in the [README](README.md) for the YouVersion, Google Fonts and Firebase keys. **Use your own, and never commit them.** To work on sharing or Discover without Firebase, set `VITE_SHARING_BACKEND=fake` in `.env.local`.
+You do not need any keys or accounts to work on most of the app. See "Optional services" in [docs/development.md](docs/development.md) for the YouVersion, Google Fonts and Firebase keys. **Use your own, and never commit them.** To work on sharing or Discover without Firebase, set `VITE_SHARING_BACKEND=fake` in `.env.local`.
 
 ## Making a change
 
