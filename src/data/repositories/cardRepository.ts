@@ -227,11 +227,14 @@ export function createCardRepository(db: Database, now: Clock = Date.now): CardR
       const t = now();
       return db.transaction(async (tx) => {
         const moved: MovedCards = { toDeckId, from: [] };
+        // They file after everything already in the destination, even when that was added in this very millisecond (a tie would sort them by their creation date instead).
+        const top = (await tx.query<Row>('SELECT MAX(added_at) AS m FROM deck_cards WHERE deck_id = ?', [toDeckId]))[0]?.m;
+        const filedAt = typeof top === 'number' ? Math.max(t, top + 1) : t;
         for (const [i, id] of ids.entries()) {
           const was = await tx.query<Row>('SELECT deck_id, added_at FROM deck_cards WHERE card_id = ?', [id]);
           moved.from.push({ cardId: id, memberships: was.map((r) => ({ deckId: r.deck_id as string, addedAt: r.added_at as number })) });
           await tx.run('DELETE FROM deck_cards WHERE card_id = ? AND deck_id != ?', [id, toDeckId]);
-          await tx.run('INSERT OR IGNORE INTO deck_cards (deck_id, card_id, added_at) VALUES (?, ?, ?)', [toDeckId, id, t + i]);
+          await tx.run('INSERT OR IGNORE INTO deck_cards (deck_id, card_id, added_at) VALUES (?, ?, ?)', [toDeckId, id, filedAt + i]);
           await forgetRemoval(tx, toDeckId, id);
           await tx.run('UPDATE cards SET updated_at = ? WHERE id = ?', [t + i, id]); // so the move reaches the person's other devices
         }

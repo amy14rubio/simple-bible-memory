@@ -89,6 +89,14 @@ describe('moving cards to another deck', () => {
     expect((await cards.listByDeck(a.id))[0]!.id).toBe(c2.id);
   });
 
+  it('they still file after what is already there when everything happens in the same millisecond', async () => {
+    const { b, c1, c3 } = await seed();
+    const frozen = createCardRepository(db, () => Date.now() + 10_000); // one timestamp for the card added to B and for the move
+    await frozen.create(b.id, { reference: 'Psalm 1:1', verseText: 'x' });
+    await frozen.moveMany([c3.id, c1.id], b.id);
+    expect(await ids(b.id)).toEqual(['Psalm 1:1', 'John 3:18', 'John 3:16']);
+  });
+
   it('keeps study progress and history (they belong to the card)', async () => {
     const { b, c1 } = await seed();
     await cards.moveMany([c1.id], b.id);
