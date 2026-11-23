@@ -89,7 +89,7 @@ Because `main` is protected by the required checks from Part 1, a pull request c
 
 ## The landing photos: deploy the website from your Mac for now
 
-The three phone photos in the "message from the developer" section (`public/landing/note/`) show Bible text under a license, so they are **not in git**. They exist in your working copy (git ignores them) and in a backup at `~/Desktop/sbm/note-photos-backup/`.
+The three phone photos in the "message from the developer" section (`public/landing/note/`) show Bible text under a license, so they are **not in git**. They exist in your working copy (git ignores them) and in your private folder, `~/sbm-private-files/`.
 
 A deploy builds from whatever files are on the machine that runs it. So:
 
@@ -98,7 +98,7 @@ A deploy builds from whatever files are on the machine that runs it. So:
 
 So keep the deploy workflow on the manual button, and keep deploying the website from your Mac, until you decide the letter alone is how you want the page to look. To let the robot deploy the photos, they would have to be stored somewhere private that the workflow can download (for example a GitHub secret holding a zip, or a private Firebase Storage file). That is possible but not set up.
 
-If you ever lose your working copy, restore the three files from the backup folder into `public/landing/note/`.
+If the photos ever go missing from your working copy, `npm run private:restore` puts them back (see "Private files that are not in git" below).
 
 ## Safety notes
 
