@@ -101,6 +101,17 @@ The deploy builds from the repository only. The landing page uses phone screensh
 - The service-account key does not expire. Rotate it (create a new key, update the secret, delete the old key) if you ever think it leaked, and once a year anyway. A keyless setup called Workload Identity Federation exists and is a good next step when you are comfortable with this one.
 - Each action is pinned to an exact version. Dependabot proposes updates; read the pull request like any other.
 
-## Data that is not in git: deploy from your Mac
+## Private files that are not in git: deploy from your Mac
 
-The translation list (`src/domain/bible/catalogue.json`) and the language names (`languageNames.json`) come from the YouVersion API and are not in git. They are baked into the app at build time, so **a deploy made by the robot would publish an app that offers only the hand-listed translations.** Keep deploying the website and web app from your Mac, where those files are in your working copy. If you lose them, make them again with `node scripts/make-translation-data.mjs` (it needs `VITE_YOUVERSION_APP_KEY` in `.env.local`).
+Some files the site and app need are not in git, because they are not ours to republish: the three landing-page phone photos (`public/landing/note/`, they show licensed Bible text) and the YouVersion translation list and language names (`src/domain/bible/catalogue.json`, `languageNames.json`). They are baked into the build, so **a deploy made by the robot would publish a site without the photos and an app that offers only the hand-listed translations.** Keep deploying from your Mac, where they are in your working copy.
+
+Where they live: one folder outside the repository, `~/sbm-private-files/` (or the folder in `SBM_PRIVATE_DIR`), with the files at the same paths as in the repo. It is the only copy that matters, so keep it backed up (Time Machine or iCloud).
+
+- **They come back by themselves.** `npm run private:restore` copies back whatever is missing and never overwrites. A git hook (`.githooks/post-checkout` and `post-merge`) runs it after every checkout, pull and rebase, so switching branches or pulling a branch that stops tracking them does not leave you without them.
+- **After a fresh clone, turn the hook on once:** `git config core.hooksPath .githooks`, then `npm run private:restore`.
+- **When you make new ones** (for example after `node scripts/make-translation-data.mjs`), run `npm run private:save` to copy them into the private folder.
+- In a copy without the private folder (a contributor's), all of this does nothing.
+
+### Could the robot deploy them too?
+
+Yes, and it is the natural next step if you want push-button deploys from GitHub. The private files would live in a small **private** GitHub repository (for example `simple-bible-memory-private`, with the same folder layout), and the deploy workflow would check it out into the right paths before building, using a read-only deploy key stored as a GitHub secret. The same private repository could replace `~/sbm-private-files/` as the source for the restore script. It is not set up yet.

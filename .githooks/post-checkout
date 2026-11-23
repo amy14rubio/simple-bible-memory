@@ -1,0 +1,3 @@
+#!/bin/sh
+# Puts the maintainer's private files back after a checkout (see scripts/restore-private-files.mjs). Does nothing in a copy that has none.
+node scripts/restore-private-files.mjs --quiet || true
