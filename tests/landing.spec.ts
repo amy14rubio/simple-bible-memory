@@ -326,8 +326,9 @@ for (const [lang, path, title] of [['English', '/landing.html', 'Simple Bible Me
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto(path);
       const card = page.locator('#simple .flips li').last();
+      await expect(card).toHaveClass(/rv-block/); // the page script has marked it as hidden (before that it is simply visible)
       await expect(card).not.toHaveClass(/rv-go/);
-      expect(await card.evaluate((el) => getComputedStyle(el).opacity)).toBe('0');
+      await expect.poll(() => card.evaluate((el) => getComputedStyle(el).opacity)).toBe('0'); // it fades out first, so wait for it to be gone
       await card.scrollIntoViewIfNeeded();
       await expect(card).toHaveAttribute('data-revealed', ''); // it has finished appearing and is back to its normal styles
       expect(await card.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
