@@ -6,8 +6,12 @@
  */
 let table: Record<string, string[]> | null = null;
 
+/** The file made by scripts/make-language-names.mjs, when this copy has it (it is not in git; without it the phone's own language names are used). */
+const bundled = import.meta.glob<{ default: Record<string, string[]> }>('./languageNames.json');
+
 export async function loadLanguageNames(): Promise<void> {
-  table ??= (await import('./languageNames.json')).default as Record<string, string[]>;
+  const [load] = Object.values(bundled);
+  table ??= load ? (await load()).default : {};
 }
 
 /**

@@ -57,3 +57,8 @@ ui-debug.log
 .claude/
 .agents/
 skills-lock.json
+
+# Translation list and language names: they come from the YouVersion API, whose terms about republishing them are unconfirmed, so they stay out of the public repo.
+# Anyone with their own YouVersion key can make them: node scripts/make-translation-data.mjs (see docs/youversion.md). Without them the app lists the hand-written texts only.
+src/domain/bible/catalogue.json
+src/domain/bible/languageNames.json

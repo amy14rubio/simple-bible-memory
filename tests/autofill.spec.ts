@@ -1,8 +1,12 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { closeWithEscape, createDeck, openDeck } from './helpers';
 import { parseExportFile } from '../src/domain/exchange/format';
+
+/** The full translation list and language names come from the YouVersion API and are not in git, so the tests that check them only run in a copy that has the files. */
+const FULL_LIST = existsSync('src/domain/bible/catalogue.json') && existsSync('src/domain/bible/languageNames.json');
+const NEEDS_FULL_LIST = 'the full translation list is not in this copy of the repository (docs/youversion.md)';
 
 /** The YouVersion service is a stand-in here (VITE_FAKE_YOUVERSION): it makes up "Fake NASB2020 text of John 3:16." and can be told to fail. */
 type Fake = { asked: { code: string; reference: string }[]; failWith: string[]; delayMs: number };
@@ -84,6 +88,7 @@ test('the picker has a Translation tab and a Language tab', async ({ page }) => 
 });
 
 test('the search looks through whatever the open tab lists: translations on one tab, languages on the other', async ({ page }) => {
+  test.skip(!FULL_LIST, NEEDS_FULL_LIST);
   const id = await createDeck(page, 'Verses');
   await newCardForm(page, id);
   await autofillSwitch(page).click();
@@ -112,6 +117,7 @@ test('the search looks through whatever the open tab lists: translations on one 
 });
 
 test('every language the platform has translations in is offered, except Biblica\'s and The Passion Translation', async ({ page }) => {
+  test.skip(!FULL_LIST, NEEDS_FULL_LIST);
   const id = await createDeck(page, 'Verses');
   await newCardForm(page, id);
   await autofillSwitch(page).click();
@@ -486,6 +492,7 @@ test.describe('split into separate verses, with Autofill on, in Spanish', () => 
 test.describe('Spanish: the language names in the picker', () => {
   test.use({ locale: 'es-ES' });
   test('every language starts with a capital letter, and English and Spanish come first as "Inglés" and "Español"', async ({ page }) => {
+    test.skip(!FULL_LIST, NEEDS_FULL_LIST);
     await page.goto('/#/collections/new');
     await page.getByLabel('Título').fill('Versículos');
     await page.getByRole('button', { name: 'Guardar' }).click();

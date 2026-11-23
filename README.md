@@ -53,6 +53,7 @@ Everything below is optional. Each one needs **your own** account or key; never 
 | What you want | Variable in `.env.local` | Notes |
 |---|---|---|
 | Passage autofill from YouVersion | `VITE_YOUVERSION_APP_KEY` | Request a key at [developers.youversion.com](https://developers.youversion.com). Without it people type or paste their own verses. |
+| The full list of 1,400 translations | `node scripts/make-translation-data.mjs` | Needs the key above. It writes `src/domain/bible/catalogue.json` and `languageNames.json`, which are not in git. Without them the picker offers the public-domain texts listed by hand in `src/domain/bible/sources.ts`. |
 | Full Google Fonts catalogue | `VITE_GOOGLE_FONTS_API_KEY` | Without it the Font page offers a short hand-picked list. See [docs/features.md](docs/features.md). |
 | Sharing, Discover and account backup | `VITE_FIREBASE_*` | Create your own Firebase project; see `.env.example`. |
 | Try sharing with no Firebase at all | `VITE_SHARING_BACKEND=fake` | An in-memory stand-in: nothing is saved or sent. Good for working on the Discover and sharing screens. |

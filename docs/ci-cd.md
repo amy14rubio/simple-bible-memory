@@ -100,3 +100,7 @@ The deploy builds from the repository only. The landing page uses phone screensh
 - Do not use the `pull_request_target` trigger with a checkout of the pull request's code. It gives a stranger's code your secrets.
 - The service-account key does not expire. Rotate it (create a new key, update the secret, delete the old key) if you ever think it leaked, and once a year anyway. A keyless setup called Workload Identity Federation exists and is a good next step when you are comfortable with this one.
 - Each action is pinned to an exact version. Dependabot proposes updates; read the pull request like any other.
+
+## Data that is not in git: deploy from your Mac
+
+The translation list (`src/domain/bible/catalogue.json`) and the language names (`languageNames.json`) come from the YouVersion API and are not in git. They are baked into the app at build time, so **a deploy made by the robot would publish an app that offers only the hand-listed translations.** Keep deploying the website and web app from your Mac, where those files are in your working copy. If you lose them, make them again with `node scripts/make-translation-data.mjs` (it needs `VITE_YOUVERSION_APP_KEY` in `.env.local`).
