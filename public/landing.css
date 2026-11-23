@@ -1013,6 +1013,18 @@ body > footer .foot {
   }
 }
 
+/* Without the photos (a copy of the site that does not have them) the letter is on its own, centered, in the same narrow column */
+.hello-wrap.no-pics {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+.hello-wrap.no-pics .hello-text {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  max-width: 38rem;
+}
+
 /* Every card as tall as the tallest one, while the text is its normal size. With big text (the page's width in rem gets small) each card keeps the height its own words need,
    so no card turns into a very tall one just because another has more to say. */
 .simple {

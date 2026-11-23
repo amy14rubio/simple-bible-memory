@@ -87,12 +87,18 @@ on:
 
 Because `main` is protected by the required checks from Part 1, a pull request cannot be merged while CI is red, so what reaches `main` has already passed. With the `production` environment's required reviewer, each merge then waits for your **Approve** before anything goes live; remove the reviewer if you want it fully automatic.
 
-## Before the first automatic deploy: the landing screenshots
+## The landing photos: deploy the website from your Mac for now
 
-The deploy builds from the repository only. The landing page uses phone screenshots (`public/landing/note/`) that show copyrighted Bible translations; the plan for the open-source release is to remove them from the repository. After that, a deploy made by the robot would publish a landing page with broken images. Pick one before turning on automatic deploys:
+The three phone photos in the "message from the developer" section (`public/landing/note/`) show Bible text under a license, so they are **not in git**. They exist in your working copy (git ignores them) and in your private folder, `~/sbm-private-files/`.
 
-1. retake those screenshots with public-domain verses (WEB, RV1909) and commit them; or
-2. keep deploying from your Mac until that is done.
+A deploy builds from whatever files are on the machine that runs it. So:
+
+- **`firebase deploy` on your Mac** includes the photos (they are in your working copy). Nothing changes for you.
+- **The robot (GitHub Actions) does not have them.** A deploy from there publishes the site *without* the photos, and the landing page shows just the letter, centered. That is a valid look (the page falls back to it by itself), but it would replace the version people see today.
+
+So keep the deploy workflow on the manual button, and keep deploying the website from your Mac, until you decide the letter alone is how you want the page to look. To let the robot deploy the photos, they would have to be stored somewhere private that the workflow can download (for example a GitHub secret holding a zip, or a private Firebase Storage file). That is possible but not set up.
+
+If the photos ever go missing from your working copy, `npm run private:restore` puts them back (see "Private files that are not in git" below).
 
 ## Safety notes
 

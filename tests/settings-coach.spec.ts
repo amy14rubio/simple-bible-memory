@@ -82,6 +82,10 @@ test.describe('in Spanish', () => {
 });
 
 test.describe('going into a setting and back', () => {
+  // These click the page underneath the guide. The guide's box goes below the highlighted row if it fits, and above it if not; on the default 720 px screen step 2 fits with 0 px to spare,
+  // so on a machine that draws the text 1 px taller the box flipped above the row and covered the link that was about to be clicked. A taller screen leaves a safe margin.
+  test.use({ viewport: { width: 1280, height: 900 } });
+
   test('the guide carries on at the step it was on', async ({ page }) => {
     await page.goto('/#/settings');
     await guide(page).getByRole('button', { name: 'Next' }).click();

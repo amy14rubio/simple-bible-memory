@@ -84,7 +84,7 @@ src/
   data/         database interface, adapters, migrations, repositories
   platform/     what differs per platform: YouVersion, notifications, voice, deep links, widgets
   i18n/         English and Spanish messages
-public/         the website (landing page, legal pages) and static assets
+public/         the website (landing page, legal pages) and static assets. The three phone photos beside the letter on the landing page are not included (they show licensed Bible text); without them the page shows just the letter.
 web-data/       data files served by the website (Spanish word-study dictionaries)
 tests/          Playwright browser tests
 rules-tests/    Firestore rules tests

@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+/** The three phone photos beside the letter are kept out of git (they show licensed Bible text), so a fresh clone does not have them. */
+const HAS_PHOTOS = existsSync(join(process.cwd(), 'public/landing/note/verse-psalm-73.webp'));
 
 /** The landing page is a plain file (like the privacy policy), with a small script for the text reveal, the phone motion and the flip cards. */
 const PAGES = [
@@ -109,7 +114,26 @@ for (const p of PAGES) {
       expect(m.gap).toBeGreaterThan(m.between); // but the sign-off has more room than they do
     });
 
+    test('without the photos the letter stands alone, centered, with no broken pictures and no empty column', async ({ page }) => {
+      await page.route('**/landing/note/*', (route) => route.abort());
+      for (const width of [1280, 390]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(p.url);
+        await page.locator('#hello').scrollIntoViewIfNeeded();
+        await expect(page.locator('#hello .pics')).toHaveCount(0); // the pictures and their credit are gone
+        await expect(page.locator('#hello .hello-wrap')).toHaveClass(/no-pics/);
+        const m = await page.evaluate(() => {
+          const l = document.querySelector('#hello .letter')!.getBoundingClientRect();
+          return { left: l.left, right: window.innerWidth - l.right, width: l.width, over: document.documentElement.scrollWidth - document.documentElement.clientWidth };
+        });
+        expect(Math.abs(m.left - m.right), `${width}px: the letter is centered`).toBeLessThanOrEqual(2);
+        expect(m.width).toBeLessThanOrEqual(640);
+        expect(m.over).toBe(0);
+      }
+    });
+
     test('three pictures with notes sit to the left of the letter on a wide screen and below it on a phone; each has a description, a caption and loads', async ({ page }) => {
+      test.skip(!HAS_PHOTOS, 'the phone photos are not in this copy of the repository');
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto(p.url);
       const imgs = page.locator('#hello .notes img');
@@ -318,8 +342,10 @@ for (const [lang, path, title] of [['English', '/landing.html', 'Simple Bible Me
       const paras = page.locator('#hello .letter p');
       await expect(paras).toHaveCount(4);
       expect(await paras.evaluateAll((els) => els.map((e) => (e as HTMLElement).style.getPropertyValue('--d')))).toEqual(['0ms', '110ms', '220ms', '330ms']); // staggered
-      for (let i = 0; i < 4; i++) await expect(paras.nth(i)).not.toHaveClass(/rv-go/); // not shown while the note is below the screen
-      expect(await paras.first().evaluate((el) => getComputedStyle(el).opacity)).toBe('0');
+      await expect.poll(() => paras.last().evaluate((el) => getComputedStyle(el).opacity)).toBe('0'); // the script hides them with a short fade; wait until that has finished
+      const before = await paras.evaluateAll((els) => els.map((e) => ({ go: e.classList.contains('rv-go'), opacity: getComputedStyle(e).opacity }))); // one read, so the class and the opacity are from the same moment
+      expect(before.map((b) => b.go)).toEqual([false, false, false, false]); // not shown while the note is below the screen
+      expect(before.map((b) => b.opacity)).toEqual(['0', '0', '0', '0']);
       await page.locator('#hello .letter').scrollIntoViewIfNeeded();
       for (let i = 0; i < 4; i++) await expect(paras.nth(i)).toHaveAttribute('data-revealed', '', { timeout: 4000 }); // all of them end up shown, back to their normal styles
       expect(await paras.last().evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
