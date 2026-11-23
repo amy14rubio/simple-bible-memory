@@ -1,8 +1,18 @@
+<p align="center"><img src="docs/images/cover.jpg" alt="Simple Bible Memory: a red heart with a cross, on the page of an old Bible" width="720"></p>
+
 # Simple Bible Memory
 
 Learn scripture by heart. Simple Bible Memory is a free app for memorizing Bible verses, built around **spaced repetition**: you rate how well you remembered a verse, and the app decides when to show it again. It is available in English and Spanish.
 
 [Website](https://simple-bible-memory.web.app) · [Google Play](https://play.google.com/store/apps/details?id=app.simplebiblememory) · [App Store](https://apps.apple.com/us/app/simple-bible-memory/id6827304569) · [Support on Ko-fi](https://ko-fi.com/simplebiblememory)
+
+<p align="center">
+  <img src="docs/app-store-assets/iphone-6.9/1-home.png" alt="The list of collections" width="19%">
+  <img src="docs/app-store-assets/iphone-6.9/2-type.png" alt="Typing a verse from memory" width="19%">
+  <img src="docs/app-store-assets/iphone-6.9/3-rate.png" alt="Rating how well a verse was remembered, with the time until it comes back" width="19%">
+  <img src="docs/app-store-assets/iphone-6.9/4-blanks.png" alt="Filling in the blanks from a bank of words" width="19%">
+  <img src="docs/app-store-assets/iphone-6.9/5-stats.png" alt="Statistics: verses memorized and progress by book" width="19%">
+</p>
 
 This repository holds the whole project: the web app, the Android and iPhone/iPad apps (the same code, wrapped with [Capacitor](https://capacitorjs.com)), the website, and the tests.
 
