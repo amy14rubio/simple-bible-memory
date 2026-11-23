@@ -23,7 +23,7 @@ Store releases (Google Play, App Store) stay manual, see `android-release.md` an
 ## Part 1: turn CI on (nothing to configure)
 
 1. Merge or push this branch. GitHub notices the `.github/workflows` folder by itself.
-2. Open a pull request. At the bottom of the page you will see **Checks** with four lines (checks, e2e, rules, secrets), each spinning, then a green tick or a red cross. Click **Details** on any line to read its log; it is the same output you see in your terminal.
+2. Open a pull request. At the bottom of the page you will see **Checks** with a few lines (checks, four browser-test shards, rules, secrets), each spinning, then a green tick or a red cross. Click **Details** on any line to read its log; it is the same output you see in your terminal.
 3. To rerun a failed job: **Actions** tab, pick the run, **Re-run failed jobs**.
 
 If a red cross is only a flaky browser test, `e2e` already retries once and marks such a test "flaky" instead of failing.
