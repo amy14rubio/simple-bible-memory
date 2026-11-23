@@ -138,3 +138,19 @@
     b.addEventListener('click', function () { b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); });
   });
 })();
+(function () {
+  // The three phone photos next to the letter are not part of the open-source repository (they show Bible text under a license). A copy of the site that does not have them
+  // simply shows the letter: a picture that cannot load is taken out, and when none is left the whole column goes and the letter is centered.
+  var wrap = document.querySelector('.hello-wrap');
+  var pics = wrap && wrap.querySelector('.pics');
+  if (!pics) return;
+  function drop(img) {
+    var li = img.closest('li');
+    if (li) li.remove();
+    if (!pics.querySelector('.notes li')) { pics.remove(); wrap.classList.add('no-pics'); }
+  }
+  Array.prototype.forEach.call(pics.querySelectorAll('.notes img'), function (img) {
+    if (img.complete && img.naturalWidth === 0) drop(img);
+    else img.addEventListener('error', function () { drop(img); }, { once: true });
+  });
+})();
