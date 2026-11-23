@@ -18,7 +18,7 @@ A fresh machine every time is the point: if CI is green, the project works from 
 | `.github/workflows/deploy-web.yml` | only when you press **Run workflow** | builds and deploys the website and web app to Firebase Hosting |
 | `.github/dependabot.yml` | monthly | opens a pull request when a GitHub Action we use has a new version |
 
-Store releases (Google Play, App Store) stay manual, see `android-release.md` and `ios-release.md`. Firestore rules are not deployed by the robot either: `firebase deploy --only firestore:rules --project simple-bible-memory` stays a human decision.
+Store releases (Google Play, App Store) stay manual, and are done by the maintainer. Firestore rules are not deployed by the robot either: `firebase deploy --only firestore:rules --project simple-bible-memory` stays a human decision.
 
 ## Part 1: turn CI on (nothing to configure)
 

@@ -42,7 +42,7 @@ These keys end up inside the built app, so restrict them in the provider's conso
 
 ## Android and iPhone/iPad
 
-The native apps are the web app inside [Capacitor](https://capacitorjs.com). Signing keys and Firebase config files for them are not in the repository. Release steps: [android-release.md](android-release.md) and [ios-release.md](ios-release.md). If you build your own version, change the app id and use your own accounts (see [../BRANDING.md](../BRANDING.md)).
+The native apps are the web app inside [Capacitor](https://capacitorjs.com). Signing keys and Firebase config files for them are not in the repository. The maintainer's release steps are not part of this repository. If you build your own version, change the app id and use your own accounts (see [../BRANDING.md](../BRANDING.md)).
 
 ## More notes
 

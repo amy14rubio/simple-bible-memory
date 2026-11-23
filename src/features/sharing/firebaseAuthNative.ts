@@ -11,8 +11,7 @@ import { RECENT_MS, toUser } from './firebaseAuth';
  * in inside an embedded web view (which is what the popup the website uses would be), so here the phone's own account picker does the
  * signing in, and its result is handed to the same Firebase sign-in the website uses. Everything after that (the signed-in person,
  * sync, publishing) is identical.
- * Needs the app registered in Firebase (google-services.json on Android, GoogleService-Info.plist on iOS; see docs/android-release.md
- * and docs/ios-release.md).
+ * Needs the app registered in Firebase (google-services.json on Android, GoogleService-Info.plist on iOS; neither file is in the repository).
  */
 export function createNativeFirebaseAuth(auth: Auth): AuthBackend {
   /** Asks the phone for the person's Google account and turns the answer into a Firebase credential. */

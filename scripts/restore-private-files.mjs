@@ -19,7 +19,19 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PRIVATE = process.env.SBM_PRIVATE_DIR ?? path.join(homedir(), 'sbm-private-files');
 /** What is kept privately, as paths from the repository's root: a file, or a folder (everything directly inside it). */
-const ITEMS = ['public/landing/note', 'src/domain/bible/catalogue.json', 'src/domain/bible/languageNames.json'];
+const ITEMS = [
+  'public/landing/note',
+  'src/domain/bible/catalogue.json',
+  'src/domain/bible/languageNames.json',
+  // the maintainer's release notes and store material
+  'docs/android-release.md',
+  'docs/ios-release.md',
+  'docs/play-store-listing.md',
+  'docs/play-store-updates.md',
+  'docs/accessibility-report.md',
+  'docs/play-assets',
+  'docs/app-store-assets',
+];
 
 const save = process.argv.includes('--save');
 const quiet = process.argv.includes('--quiet');
