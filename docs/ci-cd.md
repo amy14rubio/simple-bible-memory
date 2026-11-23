@@ -14,7 +14,7 @@ A fresh machine every time is the point: if CI is green, the project works from 
 
 | File | When it runs | What it does |
 |---|---|---|
-| `.github/workflows/ci.yml` | every pull request, and every push to `main` | four parallel jobs: **checks** (lint, type-check, unit tests, build), **e2e** (Playwright browser tests), **rules** (Firestore security rules in the emulator), **secrets** (gitleaks scans the whole history for keys) |
+| `.github/workflows/ci.yml` | every pull request, and every push to `main` | parallel jobs: **checks** (lint, type-check, unit tests, build), **e2e** (the Playwright browser tests, split over four machines, "shards", so the 40-minute suite takes about 10; pull requests only), **rules** (Firestore security rules in the emulator), **secrets** (gitleaks scans the whole history for keys). A fifth tiny job, **Browser tests (Playwright)**, waits for the four shards and is the single check to require |
 | `.github/workflows/deploy-web.yml` | only when you press **Run workflow** | builds and deploys the website and web app to Firebase Hosting |
 | `.github/dependabot.yml` | monthly | opens a pull request when a GitHub Action we use has a new version |
 
