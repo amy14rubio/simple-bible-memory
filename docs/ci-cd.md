@@ -109,7 +109,7 @@ If the photos ever go missing from your working copy, `npm run private:restore` 
 
 ## Private files that are not in git: deploy from your Mac
 
-Some files the site and app need are not in git, because they are not ours to republish: the three landing-page phone photos (`public/landing/note/`, they show licensed Bible text) and the YouVersion translation list and language names (`src/domain/bible/catalogue.json`, `languageNames.json`). They are baked into the build, so **a deploy made by the robot would publish a site without the photos and an app that offers only the hand-listed translations.** Keep deploying from your Mac, where they are in your working copy.
+Some files the site and app need are not in git, because they are not ours to republish: the three landing-page phone photos (`public/landing/note/`, they show licensed Bible text) and the YouVersion translation list and language names (`src/domain/bible/catalogue.json`, `languageNames.json`). They are baked into the build, so **a deploy made from a plain copy of this repository would publish a site without the photos and an app that offers only the hand-listed translations.** The deploy workflow fetches them from a private repository (see the end of this section); deploying from your Mac, where they are in your working copy, works too.
 
 Where they live: one folder outside the repository, `~/sbm-private-files/` (or the folder in `SBM_PRIVATE_DIR`), with the files at the same paths as in the repo. It is the only copy that matters, so keep it backed up (Time Machine or iCloud).
 
@@ -118,6 +118,8 @@ Where they live: one folder outside the repository, `~/sbm-private-files/` (or t
 - **When you make new ones** (for example after `node scripts/make-translation-data.mjs`), run `npm run private:save` to copy them into the private folder.
 - In a copy without the private folder (a contributor's), all of this does nothing.
 
-### Could the robot deploy them too?
+### The robot deploys them too
 
-Yes, and it is the natural next step if you want push-button deploys from GitHub. The private files would live in a small **private** GitHub repository (for example `simple-bible-memory-private`, with the same folder layout), and the deploy workflow would check it out into the right paths before building, using a read-only deploy key stored as a GitHub secret. The same private repository could replace `~/sbm-private-files/` as the source for the restore script. It is not set up yet.
+The deploy workflow fetches the private files from a small **private** repository, `simple-bible-memory-private` (the same folder layout as this one, holding only the three photos and the two YouVersion files). It reads it with a **read-only deploy key**: the public half is on the private repository (Settings > Deploy keys), the private half is the secret `SBM_PRIVATE_KEY` here. Before building, the workflow puts the files in place and **stops if any is missing**, so a deploy can never publish a site without them.
+
+When you change the private files, update that repository too (and `npm run private:save` for your own folder). Deploying from your Mac still works as before.

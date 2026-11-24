@@ -22,6 +22,21 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v7.0.1
+      # The landing photos and the YouVersion data are not in this (public) repository. They live in a small private one,
+      # which a read-only deploy key lets this job read. See docs/ci-cd.md.
+      - name: Fetch the private files
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: amy14rubio/simple-bible-memory-private
+          ssh-key: ${{ secrets.SBM_PRIVATE_KEY }}
+          path: private-files
+          persist-credentials: false
+      - name: Put them in place, and stop if any is missing (a deploy without them would publish a worse site)
+        run: |
+          SBM_PRIVATE_DIR="$GITHUB_WORKSPACE/private-files" node scripts/restore-private-files.mjs
+          for f in public/landing/note/anki-list-1.webp public/landing/note/verse-habacuc-2.webp public/landing/note/verse-psalm-73.webp src/domain/bible/catalogue.json src/domain/bible/languageNames.json; do
+            test -s "$f" || { echo "Missing $f: not deploying."; exit 1; }
+          done
       - uses: actions/setup-node@v7.1.0
         with:
           node-version: 22
