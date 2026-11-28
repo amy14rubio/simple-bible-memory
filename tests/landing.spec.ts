@@ -248,6 +248,11 @@ for (const p of PAGES) {
       await ctx.close();
     });
 
+    test('the footer links to the source code on GitHub', async ({ page }) => {
+      await page.goto(p.url);
+      await expect(page.locator('footer a[href="https://github.com/amy14rubio/simple-bible-memory"]')).toBeVisible();
+    });
+
     test('on a phone the footer is one column, and the email address fits on one line', async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(p.url);
